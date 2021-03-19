@@ -8,5 +8,5 @@ Sources
 =======
 
 * [ARM7TDMI Tech Spec](https://developer.arm.com/documentation/ddi0210/c) ([mirror](https://github.com/velipso/gba/blob/main/mirror/arm7tdmi.pdf))
-* [CowBite Hardware Spec](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) ([mirror](https://github.com/velipso/gba/blob/main/mirror/cowbite.html))
-* [GBATEK No$GBA](http://problemkaputt.de/gbatek.htm) ([mirror](https://github.com/velipso/gba/blob/main/mirror/gbatek.html))
+* [CowBite Hardware Spec](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) ([mirror](https://cdn.githubraw.com/velipso/gba/main/mirror/cowbite.html))
+* [GBATEK No$GBA](http://problemkaputt.de/gbatek.htm) ([mirror](https://cdn.githubraw.com/velipso/gba/blob/main/mirror/gbatek.html))

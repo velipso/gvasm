@@ -15,3 +15,71 @@ Current ideas:
 7. If using infinite registers, should have a way to write code that uses registers directly, and
    have it interface with the register allocator
 8. Start with JavaScript and port to C once it's looking good (?)
+
+Syntax
+======
+
+```
+// Comments
+/* more */
+
+set {base = 0x80000000}
+
+gba {
+	title = "Foo"
+	game = "1234"
+	developer = "12"
+	debug = true
+	version = 0x12
+}
+
+embed label("./some/file.bmp")
+
+data namespace {
+	u8 FOO = 1
+	s8 FOO = 1
+	u16 FOO = 1
+	s16 FOO = 1
+	u32 BAR = 1
+	s32 BAR = 1
+	rstr FOO = "bar"
+	cstr BAR = "bar"
+	ptr FOO = &namespace.BAR
+	u8 FOO[] = {1, 2, 3, 4, 5}
+	u8[] = {
+		0x00, 0x01, 0x02
+	}
+}
+
+addr label(0x0) {}
+
+addr namespace(fast/slow/save/0x0) {
+	u8 FOO
+	s8 FOO
+	union {
+		u16 FOO
+		s16 FOO
+	}
+	u32 FOO
+	s32 FOO
+	ptr FOO
+	u8 FOO[10]
+}
+
+include("./some/file.s")
+
+arm label(param1, param2) reserve(r0, r1) {
+	reserve(r0, r1) {
+	}
+	...arm code...
+inner_label:
+	goto label(param1, param2)
+	call label(param1, param2), (result1, result2)
+	return (result1, result2)
+}
+
+thumb label(param1, param2) {
+	...thumb code...
+}
+
+```

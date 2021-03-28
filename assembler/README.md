@@ -37,11 +37,11 @@ embed label("./some/file.bmp")
 
 data namespace {
 	u8 FOO = 1
-	s8 FOO = 1
+	i8 FOO = 1
 	u16 FOO = 1
-	s16 FOO = 1
+	i16 FOO = 1
 	u32 BAR = 1
-	s32 BAR = 1
+	i32 BAR = 1
 	rstr FOO = "bar"
 	cstr BAR = "bar"
 	ptr FOO = &namespace.BAR
@@ -55,13 +55,13 @@ addr label(0x0) {}
 
 addr namespace(fast/slow/save/0x0) {
 	u8 FOO
-	s8 FOO
+	i8 FOO
 	union {
 		u16 FOO
-		s16 FOO
+		i16 FOO
 	}
 	u32 FOO
-	s32 FOO
+	i32 FOO
 	ptr FOO
 	u8 FOO[10]
 }

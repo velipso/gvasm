@@ -90,6 +90,21 @@ function parseARM(op){
 	// xxxx 01xx xxxx xxxx xxxx xxxx xxxx xxxx
 	else if ((op & 0x0C000000) === 0x04000000){
 		category = 'Load/store register/unsigned byte';
+		// xxxx xxIP UBWL Rn:4 Rd:4 addrMode:12
+		// 0000 0101 1001
+		// Rn = 1111 (r15/pc)
+		// Rd = 1101 (r13)
+		// addrMode = 0001 1010 0000
+		var I = (op & 0x02000000) !== 0;
+		var P = (op & 0x01000000) !== 0;
+		var U = (op & 0x00800000) !== 0;
+		var byte = (op & 0x00400000) !== 0;
+		var W = (op & 0x00200000) !== 0;
+		var L = (op & 0x00100000) !== 0;
+		var Rn = (op >> 16) & 0xF;
+		var Rd = (op >> 12) & 0xF;
+		var addrMode = op & 0xFFF;
+
 	}
 	// xxxx 011x xxxx xxxx xxxx xxxx xxx1 xxxx
 	else if ((op & 0x0E000010) === 0x06000010){
@@ -163,7 +178,13 @@ global.disassembleGBA = function(data){
 
 global.disassembleBIOS = function(data){
 	var read = reader(data);
+	var ops = [];
+
+	for (var i = 0; i < 100; i++)
+		ops.push(parseARM(read.u32be()));
+
 	return {
+		ops: ops
 	};
 };
 

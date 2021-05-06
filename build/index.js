@@ -30,7 +30,7 @@ const ops = [
 	codeParts: [
 		{s: 24, k: 'offset', sym: 'offset'},
 		{s: 1, k: 'enum', sym: 'link', enum: ['', 'l']},
-		{s: 3, k: 'value', v: 9},
+		{s: 3, k: 'value', v: 5},
 		condition
 	],
 	syntax: ['b$link$cond $offset']
@@ -51,6 +51,8 @@ const ops = [
 //    <#expression>
 //
 // There should be 3 * 7 = 21 entries in this section
+
+// mov/mvn
 {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
@@ -98,9 +100,7 @@ const ops = [
 		{s: 2, k: 'value', v: 0},
 		condition
 	],
-	syntax: [
-		'$oper$cond$s $Rd, $Rm, lsr #32'
-	]
+	syntax: ['$oper$cond$s $Rd, $Rm, lsr #32']
 }, {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
@@ -121,9 +121,7 @@ const ops = [
 		{s: 2, k: 'value', v: 0},
 		condition
 	],
-	syntax: [
-		'$oper$cond$s $Rd, $Rm, asr #32'
-	]
+	syntax: ['$oper$cond$s $Rd, $Rm, asr #32']
 }, {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
@@ -144,9 +142,7 @@ const ops = [
 		{s: 2, k: 'value', v: 0},
 		condition
 	],
-	syntax: [
-		'$oper$cond$s $Rd, $Rm, rrx'
-	]
+	syntax: ['$oper$cond$s $Rd, $Rm, rrx']
 }, {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
@@ -191,8 +187,6 @@ const ops = [
 	],
 	syntax: ['$oper$cond$s $Rd, $Rm, $shift $Rs']
 }, {
-	//todo: true
-	// mov/mvn where immediate=1, <Op2>=#expression
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
 	category: 'Data Processing',
@@ -210,7 +204,9 @@ const ops = [
 		condition
 	],
 	syntax: ['$oper$cond$s $Rd, #$expression']
-}, {
+},
+// tst/teq/cmp/cmn
+{
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.2',
 	category: 'Data Processing',
@@ -237,17 +233,71 @@ const ops = [
 		'$oper$cond $Rn, $Rm, ror #0'
 	]
 }, {
-	todo: true
-	// shift=lsr, amount=0, syntax for shift should be `lsr #32`
-}, {
-	todo: true
-	// shift=asr, amount=0, syntax for shift should be `asr #32`
-}, {
-	todo: true
-	// shift=ror, amount=0, syntax for shift should be `rrx`
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.2',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 1}, // shift = lsr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			'tst', 'teq', 'cmp', 'cmn', false, false, false, false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond $Rn, $Rm, lsr #32']
 }, {
 	arm: true,
-	ref: '4.5,4.5.8.2',
+	ref: '4.5,4.5.2,4.5.8.2',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 2}, // shift = asr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			'tst', 'teq', 'cmp', 'cmn', false, false, false, false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond $Rn, $Rm, asr #32']
+}, {
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.2',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 3}, // shift = ror
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			'tst', 'teq', 'cmp', 'cmn', false, false, false, false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond $Rn, $Rm, rrx']
+}, {
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.2',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
@@ -267,23 +317,136 @@ const ops = [
 	],
 	syntax: ['$oper$cond $Rn, $Rm, $shift #$amount']
 }, {
-	todo: true
-	// whole category where 4.5.2 shift is a register (Rs), register specified shift amount
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 1}, // register specified shift amount
+		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
+		{s: 1, k: 'value', v: 0},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			'tst', 'teq', 'cmp', 'cmn', false, false, false, false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond $Rn, $Rm, $shift $Rs']
 }, {
-	todo: true
-	// tst/teq/cmp/cmn where immediate=1, <Op2>=#expression
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 12, k: 'rotimm', sym: 'expression'},
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			'tst', 'teq', 'cmp', 'cmn', false, false, false, false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 1}, // immediate = 1
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond $Rn, #$expression']
+},
+// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic
+{
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 0}, // shift = lsl
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'$oper$cond$s $Rd, $Rn, $Rm',
+		'$oper$cond$s $Rd, $Rn, $Rm, lsr #0',
+		'$oper$cond$s $Rd, $Rn, $Rm, asr #0',
+		'$oper$cond$s $Rd, $Rn, $Rm, ror #0'
+	]
 }, {
-	todo: true
-	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=0, shift=lsl, amount=0
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 1}, // shift = lsr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, lsr #32']
 }, {
-	todo: true
-	// shift=lsr, amount=0, syntax for shift should be `lsr #32`
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 2}, // shift = asr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, asr #32']
 }, {
-	todo: true
-	// shift=asr, amount=0, syntax for shift should be `asr #32`
-}, {
-	todo: true
-	// shift=ror, amount=0, syntax for shift should be `rrx`
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 3}, // shift = ror
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, rrx']
 }, {
 	todo: true
 	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=0, catch all
@@ -326,6 +489,7 @@ function check(it){
 		done: () => {
 			if (!result)
 				console.error('Failed validation for:', it);
+			return result;
 		}
 	};
 	return my;
@@ -348,13 +512,14 @@ ops.filter(op => !op.todo).forEach(op => check(op)
 		.pint('s')
 		.adt('k', {
 			register: (p, v) => validSym(p, v),
-			value: p => p.uint('v'),
+			value: (p, v) => p.uint('v') && v.v >= 0 && v.v < (1 << v.s),
 			enum: (p, v) => validSym(p, v) && p.enum('enum') && v.enum.length === (1 << v.s),
 			ignored: (p, v) => validSym(p, v) && p.uint('v'),
 			immediate: (p, v) => validSym(p, v),
 			offset: (p, v) => validSym(p, v) && v.s === 24,
 			rotimm: (p, v) => validSym(p, v) && v.s === 12
 		})
+		.done()
 	)
 	.done()
 );

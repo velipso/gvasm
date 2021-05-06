@@ -33,19 +33,31 @@ const ops = [
 		{s: 3, k: 'value', v: 9},
 		condition
 	],
-	syntax: ['b$link $offset']
+	syntax: ['b$link$cond $offset']
 },
 
 //
 // DATA PROCESSING
 //
+// 1. mov/mvn                                     OR
+//    cmp/cmn/teq/tst                             OR
+//    and/eor/sub/rsb/add/adc/sbc/rsc/orr/bic
+// 2. Rm, (lsl/asr/ror) #0                        OR
+//    Rm, lsr #32                                 OR
+//    Rm, asr #32                                 OR
+//    Rm, rrx                                     OR
+//    Rm, <shiftname> #expression                 OR
+//    Rm, <shiftname> <register>                  OR
+//    <#expression>
+//
+// There should be 3 * 7 = 21 entries in this section
 {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
-		{s: 1, k: 'value', v: 0},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
 		{s: 2, k: 'value', sym: 'shift', v: 0}, // shift = lsl
 		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
 		{s: 4, k: 'register', sym: 'Rd'},
@@ -61,26 +73,87 @@ const ops = [
 	],
 	syntax: [
 		'$oper$cond$s $Rd, $Rm',
+		'$oper$cond$s $Rd, $Rm, lsl #0',
 		'$oper$cond$s $Rd, $Rm, lsr #0',
 		'$oper$cond$s $Rd, $Rm, asr #0',
 		'$oper$cond$s $Rd, $Rm, ror #0'
 	]
-}, {
-	todo: true
-	// shift=lsr, amount=0, syntax for shift should be `lsr #32`
-}, {
-	todo: true
-	// shift=asr, amount=0, syntax for shift should be `asr #32`
-}, {
-	todo: true
-	// shift=ror, amount=0, syntax for shift should be `rrx`
 }, {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.1',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
-		{s: 1, k: 'value', v: 0},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 1}, // shift = lsr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'ignored', sym: 'Rn', v: 0}, // Rn is ignored for mov/mvn
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, 'mov', false, 'mvn'
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'$oper$cond$s $Rd, $Rm, lsr #32'
+	]
+}, {
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 2}, // shift = asr
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'ignored', sym: 'Rn', v: 0}, // Rn is ignored for mov/mvn
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, 'mov', false, 'mvn'
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'$oper$cond$s $Rd, $Rm, asr #32'
+	]
+}, {
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'value', sym: 'shift', v: 3}, // shift = ror
+		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'ignored', sym: 'Rn', v: 0}, // Rn is ignored for mov/mvn
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, 'mov', false, 'mvn'
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'$oper$cond$s $Rd, $Rm, rrx'
+	]
+}, {
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
 		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
 		{s: 5, k: 'immediate', sym: 'amount'},
 		{s: 4, k: 'register', sym: 'Rd'},
@@ -96,15 +169,54 @@ const ops = [
 	],
 	syntax: ['$oper$cond$s $Rd, $Rm, $shift #$amount']
 }, {
-	todo: true
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 1}, // register specified shift amount
+		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
+		{s: 1, k: 'value', v: 0},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'ignored', sym: 'Rn', v: 0}, // Rn is ignored for mov/mvn
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, 'mov', false, 'mvn'
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rm, $shift $Rs']
+}, {
+	//todo: true
 	// mov/mvn where immediate=1, <Op2>=#expression
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.1',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 12, k: 'rotimm', sym: 'expression'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'ignored', sym: 'Rn', v: 0}, // Rn is ignored for mov/mvn
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, 'mov', false, 'mvn'
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 1}, // immediate = 1
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, #$expression']
 }, {
 	arm: true,
 	ref: '4.5,4.5.2,4.5.8.2',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
-		{s: 1, k: 'value', v: 0},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
 		{s: 2, k: 'value', sym: 'shift', v: 0}, // shift = lsl
 		{s: 5, k: 'value', sym: 'amount', v: 0}, // amount = 0
 		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
@@ -139,10 +251,10 @@ const ops = [
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
-		{s: 1, k: 'value', v: 0},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
 		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
 		{s: 5, k: 'immediate', sym: 'amount'},
-		{s: 4, k: 'ignored', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
+		{s: 4, k: 'ignored', sym: 'Rd', v: 0}, // Rd is ignored for tst/teq/cmp/cmn
 		{s: 4, k: 'register', sym: 'Rn'},
 		{s: 1, k: 'value', sym: 's', v: 1}, // s is always 1 for tst/teq/cmp/cmn
 		{s: 4, k: 'enum', sym: 'oper', enum: [
@@ -154,6 +266,9 @@ const ops = [
 		condition
 	],
 	syntax: ['$oper$cond $Rn, $Rm, $shift #$amount']
+}, {
+	todo: true
+	// whole category where 4.5.2 shift is a register (Rs), register specified shift amount
 }, {
 	todo: true
 	// tst/teq/cmp/cmn where immediate=1, <Op2>=#expression
@@ -171,19 +286,10 @@ const ops = [
 	// shift=ror, amount=0, syntax for shift should be `rrx`
 }, {
 	todo: true
-	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=0, shift=lsl, amount=0
-}, {
-	todo: true
-	// shift=lsr, amount=0, syntax for shift should be `lsr #32`
-}, {
-	todo: true
-	// shift=asr, amount=0, syntax for shift should be `asr #32`
-}, {
-	todo: true
-	// shift=ror, amount=0, syntax for shift should be `rrx`
-}, {
-	todo: true
 	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=0, catch all
+}, {
+	todo: true
+	// whole category where 4.5.2 shift is a register (Rs), register specified shift amount
 }, {
 	todo: true
 	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=1
@@ -216,13 +322,18 @@ function check(it){
 		reg: (k, r) => my.ch(k, `reg ${r}`, v => r.test(v)),
 		list: (k, c) => my.ch(k, 'list', v => Array.isArray(v) && v.every(i => c(check(i)))),
 		adt: (k, o) => my.ch(k, `adt ${Object.keys(o)}`,
-			v => typeof o[v] === 'function' && o[v](my)),
+			v => typeof o[v] === 'function' && o[v](my, it)),
 		done: () => {
 			if (!result)
 				console.error('Failed validation for:', it);
 		}
 	};
 	return my;
+}
+
+function validSym(p, v){
+	return p.str('sym') && p.reg('sym', /^[a-zA-Z][a-zA-Z0-9_]*$/) &&
+		v.sym !== 'op' && v.sym !== 'asm'; // reserved symbols
 }
 
 ops.filter(op => !op.todo).forEach(op => check(op)
@@ -236,13 +347,13 @@ ops.filter(op => !op.todo).forEach(op => check(op)
 	.list('codeParts', p => p
 		.pint('s')
 		.adt('k', {
-			register: p => p.str('sym') && /^[a-zA-Z0-9_]*$/.test(p.sym) &&
-				p.sym !== 'op' && p.sym !== 'asm', // reserved symbols
+			register: (p, v) => validSym(p, v),
 			value: p => p.uint('v'),
-			enum: p => p.str('sym').enum('enum') && p.enum.length === (1 << p.s),
-			ignored: p => p.uint('v'),
-			immediate: p => p.str('sym'),
-			offset: p => true
+			enum: (p, v) => validSym(p, v) && p.enum('enum') && v.enum.length === (1 << v.s),
+			ignored: (p, v) => validSym(p, v) && p.uint('v'),
+			immediate: (p, v) => validSym(p, v),
+			offset: (p, v) => validSym(p, v) && v.s === 24,
+			rotimm: (p, v) => validSym(p, v) && v.s === 12
 		})
 	)
 	.done()
@@ -290,6 +401,7 @@ ops.filter(op => !op.todo && op.arm).forEach((op, opi) => {
 			case 'enum':
 			case 'immediate':
 			case 'offset':
+			case 'rotimm':
 				out.push(`\t\tconst ${p.sym} = ${
 					bpos === 0 ? 'op' : `(op >> ${bpos})`
 				} & ${hex((1 << p.s) - 1)}; // ${p.k}`);
@@ -321,6 +433,8 @@ ops.filter(op => !op.todo && op.arm).forEach((op, opi) => {
 			case 'value':
 			case 'ignored':
 				break;
+			default:
+				throw new Error('Unknown code part kind: ' + p.k);
 		}
 		bpos += p.s;
 	});
@@ -353,6 +467,7 @@ ops.filter(op => !op.todo && op.arm).forEach((op, opi) => {
 					} break;
 					case 'immediate':
 					case 'offset': // TODO: figure out offsetting labels???
+					case 'rotimm': // TODO: figure out 12-bit rotated immedate values
 						out.push(`\t\tasm += ${sym};`);
 						break;
 					default:

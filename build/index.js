@@ -188,7 +188,7 @@ const ops = [
 	syntax: ['$oper$cond$s $Rd, $Rm, $shift $Rs']
 }, {
 	arm: true,
-	ref: '4.5,4.5.2,4.5.8.1',
+	ref: '4.5,4.5.3,4.5.8.1',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 12, k: 'rotimm', sym: 'expression'},
@@ -318,7 +318,7 @@ const ops = [
 	syntax: ['$oper$cond $Rn, $Rm, $shift #$amount']
 }, {
 	arm: true,
-	ref: '4.5,4.5.2,4.5.8.1',
+	ref: '4.5,4.5.2,4.5.8.2',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 4, k: 'register', sym: 'Rm'},
@@ -340,7 +340,7 @@ const ops = [
 	syntax: ['$oper$cond $Rn, $Rm, $shift $Rs']
 }, {
 	arm: true,
-	ref: '4.5,4.5.2,4.5.8.1',
+	ref: '4.5,4.5.3,4.5.8.2',
 	category: 'Data Processing',
 	codeParts: [
 		{s: 12, k: 'rotimm', sym: 'expression'},
@@ -448,18 +448,144 @@ const ops = [
 	],
 	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, rrx']
 }, {
-	todo: true
-	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=0, catch all
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 0}, // instruction specified shift amount
+		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
+		{s: 5, k: 'immediate', sym: 'amount'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, $shift #$amount']
 }, {
-	todo: true
-	// whole category where 4.5.2 shift is a register (Rs), register specified shift amount
+	arm: true,
+	ref: '4.5,4.5.2,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 1, k: 'value', v: 1}, // register specified shift amount
+		{s: 2, k: 'enum', sym: 'shift', enum: ['lsl/asl', 'lsr', 'asr', 'ror']},
+		{s: 1, k: 'value', v: 0},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, $Rm, $shift $Rs']
+
 }, {
-	todo: true
-	// and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic where immediate=1
-}
+	arm: true,
+	ref: '4.5,4.5.3,4.5.8.3',
+	category: 'Data Processing',
+	codeParts: [
+		{s: 12, k: 'rotimm', sym: 'expression'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 4, k: 'enum', sym: 'oper', enum: [
+			'and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc',
+			false, false, false, false, 'orr', false, 'bic', false
+		]},
+		{s: 1, k: 'value', sym: 'immediate', v: 1}, // immediate = 1
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['$oper$cond$s $Rd, $Rn, #$expression']
+},
 
 //
 // PSR TRANSFER
+//
+
+{
+	arm: true,
+	ref: '4.6,4.6.4.1',
+	category: 'PSR Transfer',
+	codeParts: [
+		{s: 12, k: 'value', v: 0},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 6, k: 'value', v: 15},
+		{s: 1, k: 'enum', sym: 'psr', enum: ['cpsr', 'spsr']},
+		{s: 5, k: 'value', v: 2},
+		condition
+	],
+	syntax: [
+		'mrs$cond $Rd, $psr',
+		'mov$cond $Rd, $psr'
+	]
+}, {
+	arm: true,
+	ref: '4.6,4.6.4.2',
+	category: 'PSR Transfer',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 8, k: 'value', v: 0},
+		{s: 10, k: 'value', v: 671},
+		{s: 1, k: 'enum', sym: 'psr', enum: ['cpsr', 'spsr']},
+		{s: 5, k: 'value', v: 2},
+		condition
+	],
+	syntax: [
+		'msr$cond $psr, $Rm',
+		'mov$cond $psr, $Rm'
+	]
+}, {
+	arm: true,
+	ref: '4.6,4.6.4.3',
+	category: 'PSR Transfer',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 8, k: 'value', v: 0},
+		{s: 10, k: 'value', v: 655},
+		{s: 1, k: 'enum', sym: 'psrf', enum: ['cpsr_flg', 'spsr_flg']},
+		{s: 2, k: 'value', v: 2},
+		{s: 1, k: 'value', sym: 'immediate', v: 0}, // immediate = 0
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'msr$cond $psrf, $Rm',
+		'mov$cond $psrf, $Rm'
+	]
+}, {
+	arm: true,
+	ref: '4.6,4.6.4.4',
+	category: 'PSR Transfer',
+	codeParts: [
+		{s: 12, k: 'rotimm', sym: 'expression'},
+		{s: 10, k: 'value', v: 655},
+		{s: 1, k: 'enum', sym: 'psrf', enum: ['cpsr_flg', 'spsr_flg']},
+		{s: 2, k: 'value', v: 2},
+		{s: 1, k: 'value', sym: 'immediate', v: 1}, // immediate = 1
+		{s: 2, k: 'value', v: 0},
+		condition
+	],
+	syntax: [
+		'msr$cond $psrf, #$expression',
+		'mov$cond $psrf, #$expression'
+	]
+}
+
+//
+// MULTIPLY AND MULTIPLY-ACCUMULATE
 //
 ];
 
@@ -505,7 +631,8 @@ ops.filter(op => !op.todo).forEach(op => check(op)
 	.reg('ref', /^[0-9]+(\.[0-9]+)*(,[0-9]+(\.[0-9]+)*)*$/)
 	.inc('category', [
 		'Branch',
-		'Data Processing'
+		'Data Processing',
+		'PSR Transfer'
 	])
 	.strList('syntax')
 	.list('codeParts', p => p

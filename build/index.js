@@ -582,11 +582,80 @@ const ops = [
 		'msr$cond $psrf, #$expression',
 		'mov$cond $psrf, #$expression'
 	]
-}
+},
 
 //
 // MULTIPLY AND MULTIPLY-ACCUMULATE
 //
+
+{
+	arm: true,
+	ref: '4.7,4.7.4.1',
+	category: 'Multiply and Multiply-Accumulate',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 4, k: 'value', v: 9},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'value', sym: 'Rn', v: 0}, // Rn must be 0
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 1, k: 'value', v: 0}, // multiply only
+		{s: 6, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['mul$cond$s $Rd, $Rm, $Rs']
+}, {
+	arm: true,
+	ref: '4.7,4.7.4.2',
+	category: 'Multiply and Multiply-Accumulate',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 4, k: 'value', v: 9},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'register', sym: 'Rn'},
+		{s: 4, k: 'register', sym: 'Rd'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 1, k: 'value', v: 1}, // multiply and accumulate
+		{s: 6, k: 'value', v: 0},
+		condition
+	],
+	syntax: ['mla$cond$s $Rd, $Rm, $Rs, $Rn']
+},
+
+//
+// MULTIPLY LONG AND MULTIPLY-ACCUMULATE LONG
+//
+
+{
+	arm: true,
+	ref: '4.8,4.8.4',
+	category: 'Multiply Long and Multiply-Accumulate Long',
+	codeParts: [
+		{s: 4, k: 'register', sym: 'Rm'},
+		{s: 4, k: 'value', v: 9},
+		{s: 4, k: 'register', sym: 'Rs'},
+		{s: 4, k: 'register', sym: 'RdLo'},
+		{s: 4, k: 'register', sym: 'RdHi'},
+		{s: 1, k: 'enum', sym: 's', enum: ['', 's']},
+		{s: 1, k: 'enum', sym: 'oper', enum: ['mull', 'mlal']},
+		{s: 1, k: 'enum', sym: 'u', enum: ['u', 's']},
+		{s: 5, k: 'value', v: 1},
+		condition
+	],
+	syntax: ['$u$oper$cond$s $RdLo, $RdHi, $Rm, $Rs']
+}
+
+//
+// SINGLE DATA TRANSFER
+//
+
+// 4.9,4.9.8.2.1     <LDR,STR>{cond}{B} Rd, [Rn]                         pre-index, offset of zero
+// 4.9,4.9.8.2.2     <LDR,STR>{cond}{B} Rd, [Rn,<#{+/-}expression>]{!}   pre-index
+// 4.9,4.9.8.2.3     <LDR,STR>{cond}{B} Rd, [Rn,{+/-}Rm]{!}              pre-index, shift=0
+// 4.9,4.9.8.2.3     <LDR,STR>{cond}{B} Rd, [Rn,{+/-}Rm, <shift>]{!}     pre-index
+// 4.9,4.9.8.3.1     <LDR,STR>{cond}{B}{T} Rd, [Rn], <#{+/-}expression>  post-index
+// 4.9,4.9.8.3.2     <LDR,STR>{cond}{B}{T} Rd, [Rn], {+/-}Rm             post-index, shift=0
+// 4.9,4.9.8.3.2     <LDR,STR>{cond}{B}{T} Rd, [Rn], {+/-}Rm, <shift>    post-index
 ];
 
 function check(it){
@@ -632,7 +701,9 @@ ops.filter(op => !op.todo).forEach(op => check(op)
 	.inc('category', [
 		'Branch',
 		'Data Processing',
-		'PSR Transfer'
+		'PSR Transfer',
+		'Multiply and Multiply-Accumulate',
+		'Multiply Long and Multiply-Accumulate Long'
 	])
 	.strList('syntax')
 	.list('codeParts', p => p

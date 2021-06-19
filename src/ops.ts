@@ -108,7 +108,7 @@ interface ICodePartOffsetHigh {
   sym: string;
 }
 
-type ICodePart =
+export type ICodePart =
   | ICodePartArmRegister
   | ICodePartValue
   | ICodePartEnum1
@@ -123,7 +123,7 @@ type ICodePart =
   | ICodePartOffsetLow
   | ICodePartOffsetHigh;
 
-interface IOp {
+export interface IOp {
   arm: boolean;
   ref: string;
   category:
@@ -1098,8 +1098,8 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
-      "mrs$cond $Rd, $psr",
       "mov$cond $Rd, $psr",
+      "mrs$cond $Rd, $psr",
     ],
   },
   {
@@ -1115,8 +1115,8 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
-      "msr$cond $psr, $Rm",
       "mov$cond $psr, $Rm",
+      "msr$cond $psr, $Rm",
     ],
   },
   {
@@ -1134,8 +1134,8 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
-      "msr$cond $psrf, $Rm",
       "mov$cond $psrf, $Rm",
+      "msr$cond $psrf, $Rm",
     ],
   },
   {
@@ -1152,8 +1152,8 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
-      "msr$cond $psrf, #$expression",
       "mov$cond $psrf, #$expression",
+      "msr$cond $psrf, #$expression",
     ],
   },
 

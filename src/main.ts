@@ -8,6 +8,7 @@
 import { init } from "./init.ts";
 import { make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
+import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
 
 function printVersion() {
   console.log(`gbasm - Assembler and disassembler for Game Boy Advance homebrew
@@ -34,7 +35,7 @@ function printDisHelp() {
 
 <input>      The input .gba or .bin file
 -o <output>  The output file (default: input with .gbasm extension)
--f <format>  The input format (default: autodetect from extension)
+-f <format>  The input format (default: gba)
 
 Formats:
 -f gba       Input is a .gba file
@@ -100,7 +101,12 @@ export function parseDisArgs(args: string[]): number | IDisArgs {
     return 1;
   }
 
-  return { input, output, format };
+  return {
+    input,
+    format: format ?? "gba",
+    output: output ??
+      path.format({ ...path.parse(input), base: undefined, ext: ".gbasm" }),
+  };
 }
 
 export async function main(args: string[]): Promise<number> {

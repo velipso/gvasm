@@ -3,7 +3,7 @@
 // gbasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gba
+// Project Home: https://github.com/velipso/gbasm
 //
 
 import { main } from "./src/main.ts";

@@ -1,7 +1,7 @@
 //
 // GBA Tools by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gba
+// Project Home: https://github.com/velipso/gbasm
 //
 
 const fs = require('fs');

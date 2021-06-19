@@ -18,7 +18,7 @@ Data Processing OPs
 Parameters
 ----------
 
-* `cond` - See [condition codes](https://github.com/velipso/gba/blob/main/docs/condition.md)
+* `cond` - See [condition codes](https://github.com/velipso/gbasm/blob/main/docs/condition.md)
 * `Rn` - Source register
 * `Rd` - Destination register
 * `Rs` - Shift amount specified in bottom byte of register (cannot be R15)

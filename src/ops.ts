@@ -133,7 +133,8 @@ export interface IOp {
     | "Multiply and Multiply-Accumulate"
     | "Multiply Long and Multiply-Accumulate Long"
     | "Single Data Transfer"
-    | "Halfword and Signed Data Transfer";
+    | "Halfword and Signed Data Transfer"
+    | "Block Data Transfer";
   codeParts: ICodePart[];
   syntax: [string, ...string[]];
 }
@@ -247,6 +248,11 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
+      "$oper$s$cond $Rd, $Rm",
+      "$oper$s$cond $Rd, $Rm, lsl #0",
+      "$oper$s$cond $Rd, $Rm, lsr #0",
+      "$oper$s$cond $Rd, $Rm, asr #0",
+      "$oper$s$cond $Rd, $Rm, ror #0",
       "$oper$cond$s $Rd, $Rm",
       "$oper$cond$s $Rd, $Rm, lsl #0",
       "$oper$cond$s $Rd, $Rm, lsr #0",
@@ -293,7 +299,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rm, lsr #32"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rm, lsr #32",
+      "$oper$cond$s $Rd, $Rm, lsr #32",
+    ],
   },
   {
     arm: true,
@@ -334,7 +343,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rm, asr #32"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rm, asr #32",
+      "$oper$cond$s $Rd, $Rm, asr #32",
+    ],
   },
   {
     arm: true,
@@ -375,7 +387,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rm, rrx"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rm, rrx",
+      "$oper$cond$s $Rd, $Rm, rrx",
+    ],
   },
   {
     arm: true,
@@ -416,7 +431,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rm, $shift #$amount"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rm, $shift #$amount",
+      "$oper$cond$s $Rd, $Rm, $shift #$amount",
+    ],
   },
   {
     arm: true,
@@ -458,7 +476,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rm, $shift $Rs"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rm, $shift $Rs",
+      "$oper$cond$s $Rd, $Rm, $shift $Rs",
+    ],
   },
   {
     arm: true,
@@ -496,7 +517,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, #$expression"],
+    syntax: [
+      "$oper$s$cond $Rd, #$expression",
+      "$oper$cond$s $Rd, #$expression",
+    ],
   },
   // tst/teq/cmp/cmn
   {
@@ -830,6 +854,10 @@ export const ops: readonly IOp[] = Object.freeze([
       condition,
     ],
     syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm",
+      "$oper$s$cond $Rd, $Rn, $Rm, lsr #0",
+      "$oper$s$cond $Rd, $Rn, $Rm, asr #0",
+      "$oper$s$cond $Rd, $Rn, $Rm, ror #0",
       "$oper$cond$s $Rd, $Rn, $Rm",
       "$oper$cond$s $Rd, $Rn, $Rm, lsr #0",
       "$oper$cond$s $Rd, $Rn, $Rm, asr #0",
@@ -875,7 +903,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, $Rm, lsr #32"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm, lsr #32",
+      "$oper$cond$s $Rd, $Rn, $Rm, lsr #32",
+    ],
   },
   {
     arm: true,
@@ -916,7 +947,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, $Rm, asr #32"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm, asr #32",
+      "$oper$cond$s $Rd, $Rn, $Rm, asr #32",
+    ],
   },
   {
     arm: true,
@@ -957,7 +991,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, $Rm, rrx"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm, rrx",
+      "$oper$cond$s $Rd, $Rn, $Rm, rrx",
+    ],
   },
   {
     arm: true,
@@ -998,7 +1035,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, $Rm, $shift #$amount"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm, $shift #$amount",
+      "$oper$cond$s $Rd, $Rn, $Rm, $shift #$amount",
+    ],
   },
   {
     arm: true,
@@ -1040,7 +1080,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, $Rm, $shift $Rs"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, $Rm, $shift $Rs",
+      "$oper$cond$s $Rd, $Rn, $Rm, $shift $Rs",
+    ],
   },
   {
     arm: true,
@@ -1078,7 +1121,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["$oper$cond$s $Rd, $Rn, #$expression"],
+    syntax: [
+      "$oper$s$cond $Rd, $Rn, #$expression",
+      "$oper$cond$s $Rd, $Rn, #$expression",
+    ],
   },
 
   //
@@ -1176,7 +1222,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 6, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["mul$cond$s $Rd, $Rm, $Rs"],
+    syntax: [
+      "mul$s$cond $Rd, $Rm, $Rs",
+      "mul$cond$s $Rd, $Rm, $Rs",
+    ],
   },
   {
     arm: true,
@@ -1193,7 +1242,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 6, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["mla$cond$s $Rd, $Rm, $Rs, $Rn"],
+    syntax: [
+      "mla$s$cond $Rd, $Rm, $Rs, $Rn",
+      "mla$cond$s $Rd, $Rm, $Rs, $Rn",
+    ],
   },
 
   //
@@ -1216,7 +1268,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 5, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$u$oper$cond$s $RdLo, $RdHi, $Rm, $Rs"],
+    syntax: [
+      "$u$oper$s$cond $RdLo, $RdHi, $Rm, $Rs",
+      "$u$oper$cond$s $RdLo, $RdHi, $Rm, $Rs",
+    ],
   },
 
   //
@@ -1240,7 +1295,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b $Rd, [$Rn]"],
+    syntax: [
+      "$oper$b$cond $Rd, [$Rn]",
+      "$oper$cond$b $Rd, [$Rn]",
+    ],
   },
   {
     arm: true,
@@ -1259,7 +1317,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b $Rd, [$Rn, #$u$offset]$w"],
+    syntax: [
+      "$oper$b$cond $Rd, [$Rn, #$u$offset]$w",
+      "$oper$cond$b $Rd, [$Rn, #$u$offset]$w",
+    ],
   },
   {
     arm: true,
@@ -1279,7 +1340,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b $Rd, [$Rn, $u$Rm]$w"],
+    syntax: [
+      "$oper$b$cond $Rd, [$Rn, $u$Rm]$w",
+      "$oper$cond$b $Rd, [$Rn, $u$Rm]$w",
+    ],
   },
   {
     arm: true,
@@ -1299,7 +1363,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b $Rd, [$Rn, $u$Rm, $shift]$w"],
+    syntax: [
+      "$oper$b$cond $Rd, [$Rn, $u$Rm, $shift]$w",
+      "$oper$cond$b $Rd, [$Rn, $u$Rm, $shift]$w",
+    ],
   },
   {
     arm: true,
@@ -1318,7 +1385,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b$w $Rd, [$Rn], #$u$offset"],
+    syntax: [
+      "$oper$b$w$cond $Rd, [$Rn], #$u$offset",
+      "$oper$cond$b$w $Rd, [$Rn], #$u$offset",
+    ],
   },
   {
     arm: true,
@@ -1338,7 +1408,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b$w $Rd, [$Rn], #$u$Rm"],
+    syntax: [
+      "$oper$b$w$cond $Rd, [$Rn], #$u$Rm",
+      "$oper$cond$b$w $Rd, [$Rn], #$u$Rm",
+    ],
   },
   {
     arm: true,
@@ -1358,7 +1431,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 2, k: "value", v: 1 },
       condition,
     ],
-    syntax: ["$oper$cond$b$w $Rd, [$Rn], #$u$Rm, $shift"],
+    syntax: [
+      "$oper$b$w$cond $Rd, [$Rn], #$u$Rm, $shift",
+      "$oper$cond$b$w $Rd, [$Rn], #$u$Rm, $shift",
+    ],
   },
 
   //
@@ -1385,7 +1461,10 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 3, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["str$cond$sh $Rd, [$Rn]"],
+    syntax: [
+      "str$sh$cond $Rd, [$Rn]",
+      "str$cond$sh $Rd, [$Rn]",
+    ],
   },
   {
     arm: true,
@@ -1407,16 +1486,215 @@ export const ops: readonly IOp[] = Object.freeze([
       { s: 3, k: "value", v: 0 },
       condition,
     ],
-    syntax: ["str$cond$sh $Rd, [$Rn, #$u$offset]$w"],
+    syntax: [
+      "str$sh$cond $Rd, [$Rn, #$u$offset]$w",
+      "str$cond$sh $Rd, [$Rn, #$u$offset]$w",
+    ],
   },
-  // TODO:
+  {
+    arm: true,
+    ref: "4.10,4.10.8.2.3",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "register", sym: "Rm" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "value", v: 0 },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 0 }, // store
+      { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+      { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "str$sh$cond $Rd, [$Rn, $u$Rm]$w",
+      "str$cond$sh $Rd, [$Rn, $u$Rm]$w"
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.3.1",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "offsetlow", sym: "offset" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "offsethigh", sym: "offset" },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 0 }, // store
+      { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
+      { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "str$sh$cond $Rd, [$Rn], #$u$offset",
+      "str$cond$sh $Rd, [$Rn], #$u$offset",
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.3.2",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "register", sym: "Rm" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "value", v: 0 },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 0 }, // store
+      { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
+      { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "str$sh$cond $Rd, [$Rn], $u$Rm",
+      "str$cond$sh $Rd, [$Rn], $u$Rm"
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.2.1",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "value", sym: "offset", v: 0 }, // offset = 0
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "value", sym: "offset", v: 0 }, // offset = 0
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 1 }, // load
+      { s: 1, k: "ignored", sym: "w", v: 0 }, // write back doesn't matter because offset is 0
+      { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+      { s: 1, k: "ignored", sym: "u", v: 0 }, // up/down doesn't matter because offset is 0
+      { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "ldr$sh$cond $Rd, [$Rn]",
+      "ldr$cond$sh $Rd, [$Rn]"
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.2.2",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "offsetlow", sym: "offset" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "offsethigh", sym: "offset" },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 1 }, // load
+      { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+      { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "ldr$sh$cond $Rd, [$Rn, #$u$offset]$w",
+      "ldr$cond$sh $Rd, [$Rn, #$u$offset]$w"
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.2.3",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "register", sym: "Rm" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "value", v: 0 },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 1 }, // load
+      { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+      { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "ldr$sh$cond $Rd, [$Rn, $u$Rm]$w",
+      "ldr$cond$sh $Rd, [$Rn, $u$Rm]$w"
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.3.1",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "offsetlow", sym: "offset" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "offsethigh", sym: "offset" },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 1 }, // load
+      { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
+      { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "ldr$sh$cond $Rd, [$Rn], #$u$offset",
+      "ldr$cond$sh $Rd, [$Rn], #$u$offset",
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.10,4.10.8.3.2",
+    category: "Halfword and Signed Data Transfer",
+    codeParts: [
+      { s: 4, k: "register", sym: "Rm" },
+      { s: 1, k: "value", v: 1 },
+      { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+      { s: 1, k: "value", v: 1 },
+      { s: 4, k: "value", v: 0 },
+      { s: 4, k: "register", sym: "Rd" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", sym: "l", v: 1 }, // load
+      { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
+      { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+      { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+      { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+      { s: 3, k: "value", v: 0 },
+      condition,
+    ],
+    syntax: [
+      "ldr$sh$cond $Rd, [$Rn], $u$Rm",
+      "ldr$cond$sh $Rd, [$Rn], $u$Rm"
+    ]
+  }
+
   //
-  // 4.10,4.10.8.2.3  strh Rd,[Rn,{+-}Rm]{!}                      P=1,L=0,SH=01,immediate=0
-  // 4.10,4.10.8.3.1  strh Rd,[Rn],<#{+-}expression>              P=0,W=0,L=0,SH=01,immediate=1
-  // 4.10,4.10.8.3.2  strh Rd,{+-}Rm                              P=0,W=0,L=0,SH=01,immediate=0
-  // 4.10,4.10.8.2.1  ldr{h/sb/sh} Rd,[Rn]                        P=1,W=?,L=1,immediate=1,offset=0
-  // 4.10,4.10.8.2.2  ldr{h/sb/sh} Rd,[Rn,<#{+-}expression}>]{!}  P=1,L=1,immediate=1
-  // 4.10,4.10.8.2.3  ldr{h/sb/sh} Rd,[Rn,{+-}Rm]{!}              P=1,L=1,immediate=0
-  // 4.10,4.10.8.3.1  ldr{h/sb/sh} Rd,[Rn],<#{+-}expression>      P=0,W=0,L=1,immediate=1
-  // 4.10,4.10.8.3.2  ldr{h/sb/sh} Rd,[Rn],{+-}Rm                 P=0,W=0,L=1,immediate=0
+  // BLOCK DATA TRANSFER
+  //
+
+  // TODO: all of this
 ]);

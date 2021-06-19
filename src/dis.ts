@@ -112,7 +112,7 @@ export async function dis(
 
     // TODO: if format is gba, then parse the GBA header
 
-    for (let i = 0; i < 100; i += 4) {
+    for (let i = 0; i < 200; i += 4) {
       const opcode = view.getUint32(i, true);
       const res = parseArm(opcode);
       if (res) {
@@ -135,10 +135,14 @@ export async function dis(
                 return `r${v}`;
               case "enum":
                 return (part.enum[v] || "").split("/")[0];
+              case "rotimm": {
+                const rot = (v >> 8) * 2;
+                const imm = v & 0xff;
+                return `0x${((imm >> rot) | (imm << (32 - rot))).toString(16)}`;
+              }
               case "value":
               case "ignored":
               case "immediate":
-              case "rotimm":
               case "offset12":
               case "offset24":
               case "offsetlow":

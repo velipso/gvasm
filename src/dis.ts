@@ -6,7 +6,7 @@
 //
 
 import { ICodePart, IOp, ops } from "./ops.ts";
-import { assertNever } from "./util.ts";
+import { assertNever, ranges } from "./util.ts";
 
 export interface IDisArgs {
   input: string;
@@ -58,12 +58,13 @@ function parseArm(opcode: number): { op: IOp; syms: ISyms } | false {
         case "offset12":
         case "offset24":
         case "offsetlow":
+        case "reglist":
           if (part.sym) {
             syms[part.sym] = { v, part };
           }
           break;
         case "offsethigh":
-          if (syms[part.sym]) {
+          if (syms[part.sym] && syms[part.sym].part.k === "offsetlow") {
             syms[part.sym].v |= v << 4;
           } else {
             throw new Error(
@@ -100,6 +101,13 @@ function pad(amount: number, code: string): string {
   return code;
 }
 
+function registerToString(v: number): string {
+  if (v === 13) return "sp";
+  if (v === 14) return "lr";
+  if (v === 15) return "pc";
+  return `r${v}`;
+}
+
 export async function dis(
   { input, output, format }: IDisArgs,
 ): Promise<number> {
@@ -129,16 +137,28 @@ export async function dis(
             const { v, part } = syms[sym];
             switch (part.k) {
               case "register":
-                if (v === 13) return "sp";
-                if (v === 14) return "lr";
-                if (v === 15) return "pc";
-                return `r${v}`;
+                return registerToString(v);
               case "enum":
                 return (part.enum[v] || "").split("/")[0];
               case "rotimm": {
                 const rot = (v >> 8) * 2;
                 const imm = v & 0xff;
                 return `0x${((imm >> rot) | (imm << (32 - rot))).toString(16)}`;
+              }
+              case "reglist": {
+                const regs = [];
+                for (let bpos = 0; bpos < 16; bpos++) {
+                  if (v & (1 << bpos)) {
+                    regs.push(bpos);
+                  }
+                }
+
+                return `{${ranges(regs).map(
+                  (r) =>
+                    r.low === r.high
+                      ? registerToString(r.low)
+                      : `r${r.low}-r${r.high}`
+                ).join(', ')}}`;
               }
               case "value":
               case "ignored":

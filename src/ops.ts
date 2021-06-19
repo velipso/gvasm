@@ -108,6 +108,12 @@ interface ICodePartOffsetHigh {
   sym: string;
 }
 
+interface ICodePartRegList {
+  s: 16;
+  k: "reglist";
+  sym: string;
+}
+
 export type ICodePart =
   | ICodePartArmRegister
   | ICodePartValue
@@ -121,7 +127,8 @@ export type ICodePart =
   | ICodePartOffset12
   | ICodePartOffset24
   | ICodePartOffsetLow
-  | ICodePartOffsetHigh;
+  | ICodePartOffsetHigh
+  | ICodePartRegList;
 
 export interface IOp {
   arm: boolean;
@@ -1690,11 +1697,86 @@ export const ops: readonly IOp[] = Object.freeze([
       "ldr$sh$cond $Rd, [$Rn], $u$Rm",
       "ldr$cond$sh $Rd, [$Rn], $u$Rm"
     ]
-  }
+  },
 
   //
   // BLOCK DATA TRANSFER
   //
 
-  // TODO: all of this
+  {
+    arm: true,
+    ref: "4.11,4.11.9",
+    category: "Block Data Transfer",
+    codeParts: [
+      { s: 16, k: "reglist", sym: "Rlist" },
+      { s: 4, k: "value", sym: "Rn", v: 13 }, // stack pointer
+      { s: 1, k: "value", v: 0 }, // store
+      { s: 1, k: "value", sym: "w", v: 1 }, // write back
+      { s: 1, k: "enum", sym: "s", enum: ["", "^"] },
+      { s: 2, k: "value", sym: "pu", v: 2 }, // stmfd
+      { s: 3, k: "value", v: 4 },
+      condition
+    ],
+    syntax: ["push$cond $Rlist$s"]
+  },
+  {
+    arm: true,
+    ref: "4.11,4.11.9",
+    category: "Block Data Transfer",
+    codeParts: [
+      { s: 16, k: "reglist", sym: "Rlist" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", v: 0 }, // store
+      { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+      { s: 1, k: "enum", sym: "s", enum: ["", "^"] },
+      { s: 2, k: "enum", sym: "pu", enum: ["ed/da", "ea/ia", "fd/db", "fa/ib"] },
+      { s: 3, k: "value", v: 4 },
+      condition
+    ],
+    syntax: [
+      "stm$pu$cond $Rn$w, $Rlist$s",
+      "stm$cond$pu $Rn$w, $Rlist$s",
+    ]
+  },
+  {
+    arm: true,
+    ref: "4.11,4.11.9",
+    category: "Block Data Transfer",
+    codeParts: [
+      { s: 16, k: "reglist", sym: "Rlist" },
+      { s: 4, k: "value", sym: "Rn", v: 13 }, // stack pointer
+      { s: 1, k: "value", v: 1 }, // load
+      { s: 1, k: "value", sym: "w", v: 1 }, // write back
+      { s: 1, k: "enum", sym: "s", enum: ["", "^"] },
+      { s: 2, k: "value", sym: "pu", v: 1 }, // ldmfd
+      { s: 3, k: "value", v: 4 },
+      condition
+    ],
+    syntax: ["pop$cond $Rlist$s"]
+  },
+  {
+    arm: true,
+    ref: "4.11,4.11.9",
+    category: "Block Data Transfer",
+    codeParts: [
+      { s: 16, k: "reglist", sym: "Rlist" },
+      { s: 4, k: "register", sym: "Rn" },
+      { s: 1, k: "value", v: 1 }, // load
+      { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+      { s: 1, k: "enum", sym: "s", enum: ["", "^"] },
+      { s: 2, k: "enum", sym: "pu", enum: ["fa/da", "fd/ia", "ea/db", "ed/ib"] },
+      { s: 3, k: "value", v: 4 },
+      condition
+    ],
+    syntax: [
+      "ldm$pu$cond $Rn$w, $Rlist$s",
+      "ldm$cond$pu $Rn$w, $Rlist$s",
+    ]
+  },
+
+  //
+  // SINGLE DATA SWAP
+  //
+
+  // TODO: this
 ]);

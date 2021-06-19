@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import { ICodePart, IOp, ops } from "./ops.ts";
+import { Arm, Thumb } from "./ops.ts";
 import { assertNever, ranges } from "./util.ts";
 
 export interface IDisArgs {
@@ -14,22 +14,18 @@ export interface IDisArgs {
   output: string;
 }
 
-interface ISyms {
+interface IArmSyms {
   [sym: string]: {
     v: number;
-    part: ICodePart;
+    part: Arm.ICodePart;
   };
 }
 
-function parseArm(opcode: number): { op: IOp; syms: ISyms } | false {
-  for (const op of ops) {
-    if (!op.arm) {
-      continue;
-    }
-
+function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
+  for (const op of Arm.ops) {
     let error: string | undefined;
     let bpos = 0;
-    const syms: ISyms = {};
+    const syms: IArmSyms = {};
     for (const part of op.codeParts) {
       const v = (opcode >> bpos) & ((1 << part.s) - 1);
       switch (part.k) {
@@ -56,12 +52,14 @@ function parseArm(opcode: number): { op: IOp; syms: ISyms } | false {
         case "immediate":
         case "rotimm":
         case "offset12":
-        case "offset24":
         case "offsetlow":
         case "reglist":
           if (part.sym) {
             syms[part.sym] = { v, part };
           }
+          break;
+        case "word":
+          syms[part.sym] = { v: v << 2, part };
           break;
         case "offsethigh":
           if (syms[part.sym] && syms[part.sym].part.k === "offsetlow") {
@@ -152,19 +150,18 @@ export async function dis(
                     regs.push(bpos);
                   }
                 }
-
-                return `{${ranges(regs).map(
+                return ranges(regs).map(
                   (r) =>
                     r.low === r.high
                       ? registerToString(r.low)
-                      : `r${r.low}-r${r.high}`
-                ).join(', ')}}`;
+                      : `r${r.low}-r${r.high}`,
+                ).join(", ");
               }
               case "value":
               case "ignored":
               case "immediate":
               case "offset12":
-              case "offset24":
+              case "word":
               case "offsetlow":
               case "offsethigh":
                 break;

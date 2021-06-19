@@ -1,16 +1,13 @@
-Gameboy Advance Notes and Scripts
-=================================
+gbasm
+=====
 
-These are my personal notes and scripts I'm collecting while learning about developing games for the
-Gameboy Advance.  Maybe they'll be useful to the homebrew community eventually.
+Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 
 Note that the entire repo is a **work in progress**.  Feel free to poke around but certainly don't
 rely on anything!
 
-* [Assembler](https://github.com/velipso/gba/tree/main/assembler)
-
-Sources
-=======
+Technical Docs
+==============
 
 * [ARM7TDMI Tech Spec](https://developer.arm.com/documentation/ddi0210/c) ([mirror](https://github.com/velipso/gba/blob/main/mirror/arm7tdmi-tech.pdf))
 * [ARM7TDMI Data Sheet](https://www.dwedit.org/files/ARM7TDMI.pdf) ([mirror](https://github.com/velipso/gba/blob/main/mirror/arm7tdmi-data.pdf))

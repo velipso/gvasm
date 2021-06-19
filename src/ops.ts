@@ -144,6 +144,7 @@ export namespace Arm {
       | "Block Data Transfer"
       | "Single Data Swap"
       | "Software Interrupt";
+    doubleInstruction?: true;
     codeParts: ICodePart[];
     syntax: [string, ...string[]];
   }
@@ -1848,6 +1849,18 @@ export namespace Thumb {
     sym: string;
   }
 
+  interface ICodePartOffsetHigh {
+    s: 11;
+    k: "offsethigh";
+    sym: string;
+  }
+
+  interface ICodePartOffsetLow {
+    s: 11;
+    k: "offsetlow";
+    sym: string;
+  }
+
   export type ICodePart =
     | ICodePartEnum1
     | ICodePartEnum2
@@ -1862,7 +1875,9 @@ export namespace Thumb {
     | ICodePartSignedWord
     | ICodePartHalfword
     | ICodePartSignedHalfword
-    | ICodePartRegList;
+    | ICodePartRegList
+    | ICodePartOffsetHigh
+    | ICodePartOffsetLow;
 
   export interface IOp {
     ref: string;
@@ -1884,7 +1899,8 @@ export namespace Thumb {
       | "Format 15: Multiple Load/Store"
       | "Format 16: Conditional Branch"
       | "Format 17: Software Interrupt"
-      | "Format 18: Unconditional Branch";
+      | "Format 18: Unconditional Branch"
+      | "Format 19: Long Branch With Link";
     codeParts: ICodePart[];
     syntax: [string, ...string[]];
   }
@@ -2338,9 +2354,9 @@ export namespace Thumb {
       category: "Format 17: Software Interrupt",
       codeParts: [
         { s: 8, k: "immediate", sym: "comment" },
-        { s: 8, k: "value", v: 223 }
+        { s: 8, k: "value", v: 223 },
       ],
-      syntax: ["swi $comment"]
+      syntax: ["swi $comment"],
     },
 
     //
@@ -2352,9 +2368,28 @@ export namespace Thumb {
       category: "Format 18: Unconditional Branch",
       codeParts: [
         { s: 11, k: "halfword", sym: "offset" },
-        { s: 5, k: "value", v: 28 }
+        { s: 5, k: "value", v: 28 },
       ],
-      syntax: ["b $offset"]
-    }
+      syntax: ["b $offset"],
+    },
+
+    //
+    // FORMAT 19: LONG BRANCH WITH LINK
+    //
+
+    {
+      ref: "5.19",
+      category: "Format 19: Long Branch With Link",
+      doubleInstruction: true, // this is a 32-bit instruction embedded into two 16-bit instructions
+      codeParts: [
+        { s: 11, k: "offsethigh", sym: "offset" },
+        { s: 1, k: "value", sym: "h1", v: 0 },
+        { s: 4, k: "value", v: 15 },
+        { s: 11, k: "offsetlow", sym: "offset" },
+        { s: 1, k: "value", sym: "h2", v: 1 },
+        { s: 4, k: "value", v: 15 },
+      ],
+      syntax: ["bl $offset"],
+    },
   ]);
 }

@@ -24,47 +24,58 @@ interface IParseState {
 }
 
 function parseLine(state: IParseState) {
-  const nextLine = state.tks.findIndex((tk, i) => i >= state.pos && tk.kind === TokEnum.NEWLINE);
+  const nextLine = state.tks.findIndex((tk, i) =>
+    i >= state.pos && tk.kind === TokEnum.NEWLINE
+  );
   if (nextLine === state.pos) {
     state.pos++;
     return;
   }
 
-  const line = nextLine < 0 ? state.tks.slice(state.pos) : state.tks.slice(state.pos, nextLine);
+  const line = nextLine < 0
+    ? state.tks.slice(state.pos)
+    : state.tks.slice(state.pos, nextLine);
   state.pos = nextLine < 0 ? state.tks.length : nextLine + 1;
 
   // check for dot commands
-  if (line[0].kind === TokEnum.LITERAL && line[0].literal === "." && line.length >= 2) {
+  if (
+    line[0].kind === TokEnum.LITERAL && line[0].literal === "." &&
+    line.length >= 2
+  ) {
     if (line[1].kind === TokEnum.LITERAL) {
       if (line[1].literal === "arm") {
         if (line.length > 2) {
           throw "Invalid .arm command";
         }
-        while ((state.output.length % 4) !== 0) // align 4
+        while ((state.output.length % 4) !== 0) { // align 4
           state.output.push(0);
+        }
         state.arm = true;
         return;
       } else if (line[1].literal === "thumb") {
         if (line.length > 2) {
           throw "Invalid .thumb command";
         }
-        while ((state.output.length % 2) !== 0) // align 2
+        while ((state.output.length % 2) !== 0) { // align 2
           state.output.push(0);
+        }
         state.arm = false;
         return;
       } else if (line[1].literal === "align2") {
         if (line.length > 2) {
           throw "Invalid .align2 command";
         }
-        while ((state.output.length % 2) !== 0)
+        while ((state.output.length % 2) !== 0) {
           state.output.push(0);
+        }
         return;
       } else if (line[1].literal === "align4") {
         if (line.length > 2) {
           throw "Invalid .align4 command";
         }
-        while ((state.output.length % 4) !== 0)
+        while ((state.output.length % 4) !== 0) {
           state.output.push(0);
+        }
         return;
       } else if (line[1].literal === "u8") {
         for (let i = 2; i < line.length; i++) {
@@ -110,12 +121,13 @@ function parseLine(state: IParseState) {
 
   if (state.arm) {
     // align arm ops to 4 bytes
-    while ((state.output.length % 4) !== 0)
+    while ((state.output.length % 4) !== 0) {
       state.output.push(0);
+    }
 
     for (const parsedOp of Arm.parsedOps) {
       // attempt to parse line as parsedOp
-      const syms: {[sym: string]: number} = {};
+      const syms: { [sym: string]: number } = {};
       let i = 0;
       let found = true;
       for (const part of parsedOp.parts) {
@@ -182,7 +194,10 @@ function parseLine(state: IParseState) {
                         case "reglist":
                         case "word":
                         case "offsetsplit":
-                          console.error("1 Don't know how to interpret", codePart.k);
+                          console.error(
+                            "1 Don't know how to interpret",
+                            codePart.k,
+                          );
                           found = false;
                           break;
                         default:
@@ -323,7 +338,9 @@ function parseLine(state: IParseState) {
                 r++;
               }
               if (v > 255) {
-                throw new Error(`Can't generate rotimm from ${syms[codePart.sym]}`);
+                throw new Error(
+                  `Can't generate rotimm from ${syms[codePart.sym]}`,
+                );
               }
               push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
               break;
@@ -344,10 +361,9 @@ function parseLine(state: IParseState) {
     throw "todo";
   } else {
     // align thumb ops to 2 bytes
-    while ((state.output.length % 2) !== 0)
+    while ((state.output.length % 2) !== 0) {
       state.output.push(0);
-
-
+    }
   }
 }
 

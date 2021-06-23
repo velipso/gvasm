@@ -2508,7 +2508,7 @@ function parseOps<
             if (joins.length === 1) {
               return joins[0];
             }
-            return {kind: "join", joins};
+            return { kind: "join", joins };
           } else if (typeof part === "number") {
             return { kind: "num", num: part };
           } else {

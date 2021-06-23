@@ -5,6 +5,8 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
+import { isAlpha, isNum, isSpace } from "./util.ts";
+
 type IEnum = string | false;
 
 interface ICodePartEnum1 {
@@ -72,6 +74,49 @@ interface ICodePartIgnored {
   sym: string;
 }
 
+interface ICodePartWord {
+  s: number;
+  k: "word";
+  sym: "offset";
+}
+
+interface IParsedOpPartStr {
+  kind: "str";
+  str: string;
+}
+
+interface IParsedOpPartSym<U> {
+  kind: "sym";
+  sym: string;
+  codeParts: U[];
+}
+
+interface IParsedOpPartNum {
+  kind: "num";
+  num: number;
+}
+
+type IJoin<U> =
+  | IParsedOpPartStr
+  | IParsedOpPartSym<U>;
+
+interface IParsedOpPartJoin<U> {
+  kind: "join";
+  joins: IJoin<U>[];
+}
+
+type IParsedOpPart<U> =
+  | IParsedOpPartSym<U>
+  | IParsedOpPartStr
+  | IParsedOpPartNum
+  | IParsedOpPartJoin<U>;
+
+export interface IParsedOpGeneric<T, U> {
+  parts: IParsedOpPart<U>[];
+  syntaxIndex: number;
+  op: T;
+}
+
 export namespace Arm {
   interface ICodePartRegister {
     s: 4;
@@ -82,37 +127,26 @@ export namespace Arm {
   interface ICodePartRotimm {
     s: 12;
     k: "rotimm";
-    sym: string;
-  }
-
-  interface ICodePartWord {
-    s: number;
-    k: "word";
-    sym: string;
+    sym: "expression";
   }
 
   interface ICodePartOffset12 {
     s: 12;
     k: "offset12";
-    sym: string;
+    sym: "offset";
   }
 
-  interface ICodePartOffsetLow {
+  interface ICodePartOffsetSplit {
     s: 4;
-    k: "offsetlow";
-    sym: string;
-  }
-
-  interface ICodePartOffsetHigh {
-    s: 4;
-    k: "offsethigh";
-    sym: string;
+    k: "offsetsplit";
+    sym: "offset";
+    low: boolean;
   }
 
   interface ICodePartRegList {
     s: 16;
     k: "reglist";
-    sym: string;
+    sym: "Rlist";
   }
 
   export type ICodePart =
@@ -127,8 +161,7 @@ export namespace Arm {
     | ICodePartRotimm
     | ICodePartWord
     | ICodePartOffset12
-    | ICodePartOffsetLow
-    | ICodePartOffsetHigh
+    | ICodePartOffsetSplit
     | ICodePartRegList;
 
   export interface IOp {
@@ -1472,11 +1505,11 @@ export namespace Arm {
       ref: "4.10,4.10.8.2.2",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetlow", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsethigh", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
@@ -1520,11 +1553,11 @@ export namespace Arm {
       ref: "4.10,4.10.8.3.1",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetlow", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsethigh", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
@@ -1592,11 +1625,11 @@ export namespace Arm {
       ref: "4.10,4.10.8.2.2",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetlow", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsethigh", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 1 }, // load
@@ -1640,11 +1673,11 @@ export namespace Arm {
       ref: "4.10,4.10.8.3.1",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetlow", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsethigh", sym: "offset" },
+        { s: 4, k: "offsetsplit", sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 1 }, // load
@@ -1804,6 +1837,9 @@ export namespace Arm {
       syntax: ["swi$cond $comment"],
     },
   ]);
+
+  export type IParsedOp = IParsedOpGeneric<IOp, ICodePart>;
+  export const parsedOps: IParsedOp[] = parseOps<IOp, ICodePart>(ops);
 }
 
 export namespace Thumb {
@@ -1819,46 +1855,35 @@ export namespace Thumb {
     sym: string;
   }
 
-  interface ICodePartWord {
-    s: number;
-    k: "word";
-    sym: string;
-  }
-
   interface ICodePartSignedWord {
     s: number;
     k: "sword";
-    sym: string;
+    sym: "offset";
   }
 
   interface ICodePartHalfword {
     s: number;
     k: "halfword";
-    sym: string;
+    sym: "offset";
   }
 
   interface ICodePartSignedHalfword {
     s: number;
     k: "shalfword";
-    sym: string;
+    sym: "offset";
   }
 
   interface ICodePartRegList {
     s: 8;
     k: "reglist";
-    sym: string;
+    sym: "Rlist";
   }
 
-  interface ICodePartOffsetHigh {
+  interface ICodePartOffsetSplit {
     s: 11;
-    k: "offsethigh";
-    sym: string;
-  }
-
-  interface ICodePartOffsetLow {
-    s: 11;
-    k: "offsetlow";
-    sym: string;
+    k: "offsetsplit";
+    sym: "offset";
+    low: boolean;
   }
 
   export type ICodePart =
@@ -1876,8 +1901,7 @@ export namespace Thumb {
     | ICodePartHalfword
     | ICodePartSignedHalfword
     | ICodePartRegList
-    | ICodePartOffsetHigh
-    | ICodePartOffsetLow;
+    | ICodePartOffsetSplit;
 
   export interface IOp {
     ref: string;
@@ -1916,11 +1940,11 @@ export namespace Thumb {
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rs" },
-        { s: 5, k: "immediate", sym: "offset" },
+        { s: 5, k: "immediate", sym: "shift" },
         { s: 2, k: "enum", sym: "oper", enum: ["lsl", "lsr", "asr", false] },
         { s: 3, k: "value", v: 0 },
       ],
-      syntax: ["$oper $Rd, $Rs, #$offset"],
+      syntax: ["$oper $Rd, $Rs, #$shift"],
     },
 
     //
@@ -1946,12 +1970,12 @@ export namespace Thumb {
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rs" },
-        { s: 3, k: "immediate", sym: "offset" },
+        { s: 3, k: "immediate", sym: "amount" },
         { s: 1, k: "enum", sym: "oper", enum: ["add", "sub"] },
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
         { s: 5, k: "value", v: 3 },
       ],
-      syntax: ["$oper $Rd, $Rs, #$offset"],
+      syntax: ["$oper $Rd, $Rs, #$amount"],
     },
 
     //
@@ -1962,12 +1986,12 @@ export namespace Thumb {
       ref: "5.3",
       category: "Format 3: Move/Compare/Add/Subtract Immediate",
       codeParts: [
-        { s: 8, k: "immediate", sym: "offset" },
+        { s: 8, k: "immediate", sym: "amount" },
         { s: 3, k: "register", sym: "Rd" },
         { s: 2, k: "enum", sym: "oper", enum: ["mov", "cmp", "add", "sub"] },
         { s: 3, k: "value", v: 1 },
       ],
-      syntax: ["$oper $Rd, #$offset"],
+      syntax: ["$oper $Rd, #$amount"],
     },
 
     //
@@ -2382,14 +2406,118 @@ export namespace Thumb {
       category: "Format 19: Long Branch With Link",
       doubleInstruction: true, // this is a 32-bit instruction embedded into two 16-bit instructions
       codeParts: [
-        { s: 11, k: "offsethigh", sym: "offset" },
+        { s: 11, k: "offsetsplit", sym: "offset", low: false },
         { s: 1, k: "value", sym: "h1", v: 0 },
         { s: 4, k: "value", v: 15 },
-        { s: 11, k: "offsetlow", sym: "offset" },
+        { s: 11, k: "offsetsplit", sym: "offset", low: true },
         { s: 1, k: "value", sym: "h2", v: 1 },
         { s: 4, k: "value", v: 15 },
       ],
       syntax: ["bl $offset"],
     },
   ]);
+
+  export type IParsedOp = IParsedOpGeneric<IOp, ICodePart>;
+  export const parsedOps: IParsedOp[] = parseOps<IOp, ICodePart>(ops);
+}
+
+function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
+  const split = (str: string) => str.split(/(?=\$)/g);
+  const parts: (string[] | number)[] = [];
+  let str = "";
+  let num = 0;
+  type State =
+    | "start"
+    | "str"
+    | "num";
+  let state: State = "start";
+  for (let i = 0; i < syntax.length; i++) {
+    const ch = syntax.charAt(i);
+    switch (state) {
+      case "start":
+        if (isAlpha(ch) || ch === "$") {
+          str = ch;
+          state = "str";
+        } else if (",[]{}#!^".indexOf(ch) >= 0) {
+          parts.push([ch]);
+        } else if (isNum(ch)) {
+          num = parseInt(ch, 10);
+          state = "num";
+        } else if (!isSpace(ch)) {
+          throw new Error(`Invalid char: ${ch}`);
+        }
+        break;
+      case "str":
+        if (isAlpha(ch) || ch === "$") {
+          str += ch;
+        } else {
+          parts.push(split(str));
+          i--;
+          state = "start";
+        }
+        break;
+      case "num":
+        if (isNum(ch)) {
+          num = (num * 10) + parseInt(ch, 10);
+        } else {
+          parts.push(num);
+          i--;
+          state = "start";
+        }
+        break;
+    }
+  }
+  switch (state) {
+    case "start":
+      break;
+    case "str":
+      parts.push(split(str));
+      break;
+    case "num":
+      parts.push(num);
+      break;
+  }
+  return parts;
+}
+
+function parseOps<
+  T extends Arm.IOp | Thumb.IOp,
+  U extends Arm.ICodePart | Thumb.ICodePart,
+>(ops: readonly T[]): IParsedOpGeneric<T, U>[] {
+  const result: IParsedOpGeneric<T, U>[] = [];
+  ops.forEach((op) => {
+    op.syntax.forEach((syntax, syntaxIndex) => {
+      const parts = parseSyntaxIntoParts(syntax).map(
+        (part): IParsedOpPart<U> => {
+          if (Array.isArray(part)) {
+            const joins = part.map((j): IJoin<U> => {
+              if (j.charAt(0) === "$") {
+                const sym = j.substr(1);
+                const codeParts = (op.codeParts as U[]).filter((cp) =>
+                  "sym" in cp && cp.sym === sym
+                );
+                if (codeParts.length > 0) {
+                  return { kind: "sym", sym, codeParts };
+                } else {
+                  throw new Error(`Missing symbol in code parts: ${sym}`);
+                }
+              } else {
+                return { kind: "str", str: j };
+              }
+            });
+            if (joins.length === 1) {
+              return joins[0];
+            }
+            return {kind: "join", joins};
+          } else if (typeof part === "number") {
+            return { kind: "num", num: part };
+          } else {
+            throw new Error(`Invalid part: ${part}`);
+          }
+        },
+      );
+      result.push({ parts, syntaxIndex, op });
+    });
+  });
+  return result;
 }

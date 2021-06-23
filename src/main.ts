@@ -6,7 +6,7 @@
 //
 
 import { init } from "./init.ts";
-import { make } from "./make.ts";
+import { IMakeArgs, make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
 import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
 
@@ -30,6 +30,59 @@ For more help, try:
   gbasm <command> --help`);
 }
 
+function printMakeHelp() {
+  console.log(`gbasm make <input> [-o <output>]
+
+<input>      The input .gbasm file
+-o <output>  The output file (default: input with .gba extension)`);
+}
+
+function parseMakeArgs(args: string[]): number | IMakeArgs {
+  if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
+    printMakeHelp();
+    return 0;
+  }
+
+  let input: string | undefined;
+  let output: string | undefined;
+  for (let i = 0; i < args.length; i++) {
+    let arg = args[i];
+    if (arg === "-o" || arg === "--output") {
+      if (i + 1 >= args.length) {
+        console.error("Missing output file");
+        return 1;
+      }
+      if (output !== undefined) {
+        console.error("Cannot specify output file more than once");
+        return 1;
+      }
+      i++;
+      output = args[i];
+    } else {
+      if (arg === "--" && i + 1 < args.length) {
+        i++;
+        arg = args[i];
+      }
+      if (input !== undefined) {
+        console.error("Cannot specify input file more than once");
+        return 1;
+      }
+      input = arg;
+    }
+  }
+
+  if (input === undefined) {
+    console.error("Missing input file");
+    return 1;
+  }
+
+  return {
+    input,
+    output: output ??
+      path.format({ ...path.parse(input), base: undefined, ext: ".gba" }),
+  };
+}
+
 function printDisHelp() {
   console.log(`gbasm dis <input> [-o <output>] [-f <format>]
 
@@ -42,7 +95,7 @@ Formats:
 -f bin       Input is a .bin file (typically for BIOS)`);
 }
 
-export function parseDisArgs(args: string[]): number | IDisArgs {
+function parseDisArgs(args: string[]): number | IDisArgs {
   if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
     printDisHelp();
     return 0;
@@ -121,7 +174,11 @@ export async function main(args: string[]): Promise<number> {
   } else if (args[0] === "init") {
     return await init(args.slice(1));
   } else if (args[0] === "make") {
-    return await make(args.slice(1));
+    const makeArgs = parseMakeArgs(args.slice(1));
+    if (typeof makeArgs === "number") {
+      return makeArgs;
+    }
+    return await make(makeArgs);
   } else if (args[0] === "dis") {
     const disArgs = parseDisArgs(args.slice(1));
     if (typeof disArgs === "number") {

@@ -52,7 +52,6 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
         case "immediate":
         case "rotimm":
         case "offset12":
-        case "offsetlow":
         case "reglist":
           if (part.sym) {
             syms[part.sym] = { v, part };
@@ -61,12 +60,18 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
         case "word":
           syms[part.sym] = { v: v << 2, part };
           break;
-        case "offsethigh":
-          if (syms[part.sym] && syms[part.sym].part.k === "offsetlow") {
-            syms[part.sym].v |= v << 4;
+        case "offsetsplit":
+          if (!(part.sym in syms)) {
+            syms[part.sym] = { v, part };
+          } else if (syms[part.sym].part.k === "offsetsplit") {
+            if (part.low) {
+              syms[part.sym].v = (syms[part.sym].v << 4) | v;
+            } else {
+              syms[part.sym].v = (v << 4) | syms[part.sym].v;
+            }
           } else {
             throw new Error(
-              "Invalid op data, offsethigh must appear after offsetlow",
+              "Invalid op data, offsetsplit cannot reference any other code part",
             );
           }
           break;
@@ -162,8 +167,7 @@ export async function dis(
               case "immediate":
               case "offset12":
               case "word":
-              case "offsetlow":
-              case "offsethigh":
+              case "offsetsplit":
                 break;
               default:
                 assertNever(part);

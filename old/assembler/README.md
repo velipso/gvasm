@@ -23,7 +23,7 @@ Syntax
 // Comments
 /* more */
 
-set {base = 0x80000000}
+set {base = 0x08000000}
 
 gba {
 	title = "Foo"

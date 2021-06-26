@@ -101,7 +101,7 @@ type IBody<U> =
   | IBodySym<U>
   | IBodyNum;
 
-interface IParsedBodyGeneric<T, U>{
+interface IParsedBodyGeneric<T, U> {
   body: IBody<U>[];
   syntaxIndex: number;
   syms: { [sym: string]: number };

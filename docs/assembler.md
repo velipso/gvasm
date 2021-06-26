@@ -7,14 +7,14 @@ Assembler
 /* block comment */
 // GBA header
 b @main          // branch to main method
-.gbalogo
-.u8 "Gbasm Game" // game title, up to 12 characters
+.logo
+.title "Game"    // game title, up to 12 characters
 .u8 "CAA"        // game code
 .u8 "E"          // (D)eutsch (E)nglish (F)rench (I)talian (J)apanese Euro(P)ean (S)panish
 .u8 "99"         // maker code
-.u16 0x96 0 0
+.u16 150 0 0 0 0
 .u8 0            // software version
-.gbacrc
+.crc
 .u16 0
 
 .include "./file.gbasm" // copy/paste text file as code

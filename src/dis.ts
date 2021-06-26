@@ -64,10 +64,16 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
           if (!(part.sym in syms)) {
             syms[part.sym] = { v, part };
           } else if (syms[part.sym].part.k === "offsetsplit") {
-            if (part.low) {
-              syms[part.sym].v = (syms[part.sym].v << 4) | v;
+            if (part.sign) {
+              if (v === 0) {
+                syms[part.sym].v = -syms[part.sym].v;
+              }
             } else {
-              syms[part.sym].v = (v << 4) | syms[part.sym].v;
+              if (part.low) {
+                syms[part.sym].v = (syms[part.sym].v << 4) | v;
+              } else {
+                syms[part.sym].v = (v << 4) | syms[part.sym].v;
+              }
             }
           } else {
             throw new Error(

@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import { isAlpha, isNum, isSpace } from "./util.ts";
+import { assertNever, isAlpha, isNum, isSpace } from "./util.ts";
 
 type IEnum = string | false;
 
@@ -80,41 +80,36 @@ interface ICodePartWord {
   sym: "offset";
 }
 
-interface IParsedOpPartStr {
+interface IBodyStr {
   kind: "str";
   str: string;
 }
 
-interface IParsedOpPartSym<U> {
+interface IBodySym<U> {
   kind: "sym";
   sym: string;
   codeParts: U[];
 }
 
-interface IParsedOpPartNum {
+interface IBodyNum {
   kind: "num";
   num: number;
 }
 
-type IJoin<U> =
-  | IParsedOpPartStr
-  | IParsedOpPartSym<U>;
+type IBody<U> =
+  | IBodyStr
+  | IBodySym<U>
+  | IBodyNum;
 
-interface IParsedOpPartJoin<U> {
-  kind: "join";
-  joins: IJoin<U>[];
+interface IParsedBodyGeneric<T, U>{
+  body: IBody<U>[];
+  syntaxIndex: number;
+  syms: { [sym: string]: number };
+  op: T;
 }
 
-type IParsedOpPart<U> =
-  | IParsedOpPartSym<U>
-  | IParsedOpPartStr
-  | IParsedOpPartNum
-  | IParsedOpPartJoin<U>;
-
-export interface IParsedOpGeneric<T, U> {
-  parts: IParsedOpPart<U>[];
-  syntaxIndex: number;
-  op: T;
+export interface IParsedOpsGeneric<T, U> {
+  [cmd: string]: IParsedBodyGeneric<T, U>[];
 }
 
 export namespace Arm {
@@ -130,17 +125,33 @@ export namespace Arm {
     sym: "expression";
   }
 
-  interface ICodePartOffset12 {
+  interface ICodePartOffset12Body {
     s: 12;
     k: "offset12";
+    sign: false;
     sym: "offset";
   }
 
-  interface ICodePartOffsetSplit {
+  interface ICodePartOffset12Sign {
+    s: 1;
+    k: "offset12";
+    sign: true;
+    sym: "offset";
+  }
+
+  interface ICodePartOffsetSplitBody {
     s: 4;
     k: "offsetsplit";
+    sign: false;
     sym: "offset";
     low: boolean;
+  }
+
+  interface ICodePartOffsetSplitSign {
+    s: 1;
+    k: "offsetsplit";
+    sign: true;
+    sym: "offset";
   }
 
   interface ICodePartRegList {
@@ -160,8 +171,10 @@ export namespace Arm {
     | ICodePartRegister
     | ICodePartRotimm
     | ICodePartWord
-    | ICodePartOffset12
-    | ICodePartOffsetSplit
+    | ICodePartOffset12Body
+    | ICodePartOffset12Sign
+    | ICodePartOffsetSplitBody
+    | ICodePartOffsetSplitSign
     | ICodePartRegList;
 
   export interface IOp {
@@ -1346,21 +1359,21 @@ export namespace Arm {
       ref: "4.9,4.9.8.2.2",
       category: "Single Data Transfer",
       codeParts: [
-        { s: 12, k: "offset12", sym: "offset" },
+        { s: 12, k: "offset12", sign: false, sym: "offset" },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
         { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
         { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offset12", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
         { s: 2, k: "value", v: 1 },
         condition,
       ],
       syntax: [
-        "$oper$b$cond $Rd, [$Rn, #$u$offset]$w",
-        "$oper$cond$b $Rd, [$Rn, #$u$offset]$w",
+        "$oper$b$cond $Rd, [$Rn, #$offset]$w",
+        "$oper$cond$b $Rd, [$Rn, #$offset]$w",
       ],
     },
     {
@@ -1411,21 +1424,21 @@ export namespace Arm {
       ref: "4.9,4.9.8.3.1",
       category: "Single Data Transfer",
       codeParts: [
-        { s: 12, k: "offset12", sym: "offset" },
+        { s: 12, k: "offset12", sign: false, sym: "offset" },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
         { s: 1, k: "enum", sym: "w", enum: ["", "t"] },
         { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offset12", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
         { s: 2, k: "value", v: 1 },
         condition,
       ],
       syntax: [
-        "$oper$b$w$cond $Rd, [$Rn], #$u$offset",
-        "$oper$cond$b$w $Rd, [$Rn], #$u$offset",
+        "$oper$b$w$cond $Rd, [$Rn], #$offset",
+        "$oper$cond$b$w $Rd, [$Rn], #$offset",
       ],
     },
     {
@@ -1446,8 +1459,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "$oper$b$w$cond $Rd, [$Rn], #$u$Rm",
-        "$oper$cond$b$w $Rd, [$Rn], #$u$Rm",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm",
       ],
     },
     {
@@ -1468,8 +1481,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "$oper$b$w$cond $Rd, [$Rn], #$u$Rm, $shift",
-        "$oper$cond$b$w $Rd, [$Rn], #$u$Rm, $shift",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, $shift",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, $shift",
       ],
     },
 
@@ -1505,24 +1518,24 @@ export namespace Arm {
       ref: "4.10,4.10.8.2.2",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetsplit", sym: "offset", low: true },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsetsplit", sym: "offset", low: false },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
         { s: 3, k: "value", v: 0 },
         condition,
       ],
       syntax: [
-        "str$sh$cond $Rd, [$Rn, #$u$offset]$w",
-        "str$cond$sh $Rd, [$Rn, #$u$offset]$w",
+        "str$sh$cond $Rd, [$Rn, #$offset]$w",
+        "str$cond$sh $Rd, [$Rn, #$offset]$w",
       ],
     },
     {
@@ -1553,24 +1566,24 @@ export namespace Arm {
       ref: "4.10,4.10.8.3.1",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetsplit", sym: "offset", low: true },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsetsplit", sym: "offset", low: false },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
         { s: 3, k: "value", v: 0 },
         condition,
       ],
       syntax: [
-        "str$sh$cond $Rd, [$Rn], #$u$offset",
-        "str$cond$sh $Rd, [$Rn], #$u$offset",
+        "str$sh$cond $Rd, [$Rn], #$offset",
+        "str$cond$sh $Rd, [$Rn], #$offset",
       ],
     },
     {
@@ -1625,24 +1638,24 @@ export namespace Arm {
       ref: "4.10,4.10.8.2.2",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetsplit", sym: "offset", low: true },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsetsplit", sym: "offset", low: false },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
         { s: 3, k: "value", v: 0 },
         condition,
       ],
       syntax: [
-        "ldr$sh$cond $Rd, [$Rn, #$u$offset]$w",
-        "ldr$cond$sh $Rd, [$Rn, #$u$offset]$w",
+        "ldr$sh$cond $Rd, [$Rn, #$offset]$w",
+        "ldr$cond$sh $Rd, [$Rn, #$offset]$w",
       ],
     },
     {
@@ -1673,24 +1686,24 @@ export namespace Arm {
       ref: "4.10,4.10.8.3.1",
       category: "Halfword and Signed Data Transfer",
       codeParts: [
-        { s: 4, k: "offsetsplit", sym: "offset", low: true },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: true },
         { s: 1, k: "value", v: 1 },
         { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
         { s: 1, k: "value", v: 1 },
-        { s: 4, k: "offsetsplit", sym: "offset", low: false },
+        { s: 4, k: "offsetsplit", sign: false, sym: "offset", low: false },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 1, k: "value", sym: "w", v: 0 }, // write back must be zero for post-indexing
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
-        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "offsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
         { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
         { s: 3, k: "value", v: 0 },
         condition,
       ],
       syntax: [
-        "ldr$sh$cond $Rd, [$Rn], #$u$offset",
-        "ldr$cond$sh $Rd, [$Rn], #$u$offset",
+        "ldr$sh$cond $Rd, [$Rn], #$offset",
+        "ldr$cond$sh $Rd, [$Rn], #$offset",
       ],
     },
     {
@@ -1756,8 +1769,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "stm$pu$cond $Rn$w, {$Rlist}$s",
-        "stm$cond$pu $Rn$w, {$Rlist}$s",
+        "stm$pu$cond $Rn $w, {$Rlist}$s",
+        "stm$cond$pu $Rn $w, {$Rlist}$s",
       ],
     },
     {
@@ -1794,8 +1807,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "ldm$pu$cond $Rn$w, {$Rlist}$s",
-        "ldm$cond$pu $Rn$w, {$Rlist}$s",
+        "ldm$pu$cond $Rn $w, {$Rlist}$s",
+        "ldm$cond$pu $Rn $w, {$Rlist}$s",
       ],
     },
 
@@ -1838,8 +1851,9 @@ export namespace Arm {
     },
   ]);
 
-  export type IParsedOp = IParsedOpGeneric<IOp, ICodePart>;
-  export const parsedOps: IParsedOp[] = parseOps<IOp, ICodePart>(ops);
+  export type IParsedOps = IParsedOpsGeneric<IOp, ICodePart>;
+  export type IParsedBody = IParsedBodyGeneric<IOp, ICodePart>;
+  export const parsedOps = parseOps<IOp, ICodePart>(ops);
 }
 
 export namespace Thumb {
@@ -2417,8 +2431,9 @@ export namespace Thumb {
     },
   ]);
 
-  export type IParsedOp = IParsedOpGeneric<IOp, ICodePart>;
-  export const parsedOps: IParsedOp[] = parseOps<IOp, ICodePart>(ops);
+  export type IParsedOps = IParsedOpsGeneric<IOp, ICodePart>;
+  export type IParsedBody = IParsedBodyGeneric<IOp, ICodePart>;
+  export const parsedOps: IParsedOps = parseOps<IOp, ICodePart>(ops);
 }
 
 function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
@@ -2483,40 +2498,94 @@ function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
 function parseOps<
   T extends Arm.IOp | Thumb.IOp,
   U extends Arm.ICodePart | Thumb.ICodePart,
->(ops: readonly T[]): IParsedOpGeneric<T, U>[] {
-  const result: IParsedOpGeneric<T, U>[] = [];
+>(ops: readonly T[]): IParsedOpsGeneric<T, U> {
+  const result: IParsedOpsGeneric<T, U> = {};
   ops.forEach((op) => {
+    // looks up "$foo" in the code parts
+    const stringToSymbol = (str: string): IBodyStr | IBodySym<U> => {
+      if (str.charAt(0) === "$") {
+        const sym = str.substr(1);
+        const codeParts = (op.codeParts as U[]).filter((cp) =>
+          "sym" in cp && cp.sym === sym
+        );
+        if (codeParts.length > 0) {
+          return { kind: "sym", sym, codeParts };
+        } else {
+          throw new Error(`Missing symbol in code parts: ${sym}`);
+        }
+      } else {
+        return { kind: "str", str };
+      }
+    };
+
     op.syntax.forEach((syntax, syntaxIndex) => {
-      const parts = parseSyntaxIntoParts(syntax).map(
-        (part): IParsedOpPart<U> => {
-          if (Array.isArray(part)) {
-            const joins = part.map((j): IJoin<U> => {
-              if (j.charAt(0) === "$") {
-                const sym = j.substr(1);
-                const codeParts = (op.codeParts as U[]).filter((cp) =>
-                  "sym" in cp && cp.sym === sym
-                );
-                if (codeParts.length > 0) {
-                  return { kind: "sym", sym, codeParts };
-                } else {
-                  throw new Error(`Missing symbol in code parts: ${sym}`);
-                }
-              } else {
-                return { kind: "str", str: j };
-              }
-            });
-            if (joins.length === 1) {
-              return joins[0];
-            }
-            return { kind: "join", joins };
-          } else if (typeof part === "number") {
-            return { kind: "num", num: part };
+      const bodyParsed = parseSyntaxIntoParts(syntax);
+      if (bodyParsed.length <= 0) {
+        throw new Error(`Invalid syntax: ${syntax}`);
+      }
+
+      const cmdStrings = bodyParsed.shift();
+      if (!Array.isArray(cmdStrings)) {
+        throw new Error(`Invalid command: ${syntax}`);
+      }
+
+      const cmdSymbols = cmdStrings.map(stringToSymbol);
+
+      const body: IBody<U>[] = [];
+      bodyParsed.forEach((part) => {
+        if (Array.isArray(part)) {
+          part.map(stringToSymbol).forEach((j) => body.push(j));
+        } else {
+          body.push({ kind: "num", num: part });
+        }
+      });
+
+      // for every syntax, we iterate through all possible enums, so that we can build a fully
+      // constituted command (i.e., "b$cond" becomes entries for "b", "beq", "bne", etc)
+      const add = (
+        cmd: string,
+        syms: { [sym: string]: number },
+        ci: number,
+      ) => {
+        if (ci >= cmdSymbols.length) {
+          const info = { body, syntaxIndex, syms, op };
+          if (cmd in result) {
+            result[cmd].push(info);
           } else {
-            throw new Error(`Invalid part: ${part}`);
+            result[cmd] = [info];
           }
-        },
-      );
-      result.push({ parts, syntaxIndex, op });
+          return;
+        }
+        const cs = cmdSymbols[ci];
+        switch (cs.kind) {
+          case "str":
+            add(cmd + cs.str, syms, ci + 1);
+            break;
+          case "sym":
+            if (cs.codeParts.length !== 1) {
+              throw new Error(`Invalid command symbol: ${cs}`);
+            }
+            const cp = cs.codeParts[0];
+            if (cp.k !== "enum") {
+              throw new Error(
+                `Invalid command symbol, expecting enum got ${cp.k}: ${cs}`,
+              );
+            }
+            for (let ei = 0; ei < cp.enum.length; ei++) {
+              const estrs = cp.enum[ei];
+              if (estrs === false) {
+                continue;
+              }
+              estrs.split("/").forEach((estr) => {
+                add(cmd + estr, { ...syms, [cp.sym]: ei }, ci + 1);
+              });
+            }
+            break;
+          default:
+            assertNever(cs);
+        }
+      };
+      add("", {}, 0);
     });
   });
   return result;

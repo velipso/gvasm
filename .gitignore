@@ -1,6 +1,7 @@
 bin2/*
 test/*.gba
 test/*.sav
+mgba/*
 
 # random crap that tends to appear over time
 Thumbs.db

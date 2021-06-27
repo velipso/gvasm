@@ -5,9 +5,18 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import { ITok, lex, logError, TokEnum } from "./lexer.ts";
+import {
+  errorString,
+  isIdentStart,
+  ITok,
+  lex,
+  logError,
+  TokEnum,
+} from "./lexer.ts";
 import { assertNever } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
+import { Expression } from "./expr.ts";
+import { Bytes } from "./bytes.ts";
 
 export interface IMakeArgs {
   input: string;
@@ -16,76 +25,140 @@ export interface IMakeArgs {
 
 interface IParseState {
   arm: boolean;
+  base: number;
   tks: ITok[];
-  output: number[];
+  bytes: Bytes;
+}
+
+function decodeRegister(id: string): number {
+  if (id === "sp") {
+    return 13;
+  } else if (id === "lr") {
+    return 14;
+  } else if (id === "pc") {
+    return 15;
+  } else if (/^r([0-9]|(1[0-5]))$/.test(id)) {
+    return parseInt(id.substr(1), 10);
+  }
+  return -1;
 }
 
 function parseNum(line: ITok[]): number {
-  // TODO: const expression parsing
-  const n = line.shift();
-  if (!n || n.kind !== TokEnum.NUM) {
-    throw "Expecting number";
+  const expr = Expression.parse(line);
+  if (expr === false) {
+    throw "Expecting constant number";
   }
-  return n.num;
+  const v = expr.value();
+  if (v === false) {
+    throw "Expecting constant number";
+  }
+  return v;
 }
 
-function align(state: IParseState, amount: number) {
-  while ((state.output.length % amount) !== 0) {
-    state.output.push(0);
+function parseExpr(line: ITok[]): Expression {
+  const expr = Expression.parse(line);
+  if (expr === false) {
+    throw "Expecting constant expression";
   }
+  return expr;
 }
 
 function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
   switch (cmd) {
+    case "base": {
+      const amount = parseNum(line);
+      if (line.length > 0) {
+        throw "Invalid .base statement";
+      }
+      if (state.bytes.size() > 0) {
+        throw "Cannot use .base after other statements";
+      }
+      state.base = amount;
+      return;
+    }
     case "arm":
       if (line.length > 0) {
         throw "Invalid .arm statement";
       }
-      align(state, 4);
+      state.bytes.align(4);
       state.arm = true;
       return;
     case "thumb":
       if (line.length > 0) {
         throw "Invalid .thumb statement";
       }
-      align(state, 2);
+      state.bytes.align(2);
       state.arm = false;
       return;
-    case "align":
+    case "align": {
       const amount = parseNum(line);
-      if (line.length > 0 || amount < 2 || amount > 256) {
+      let fill = 0;
+      if (
+        line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === ","
+      ) {
+        line.shift();
+        fill = parseNum(line);
+      }
+      if (line.length > 0 || amount < 2 || amount > 0x02000000) {
         throw "Invalid .align statement";
       }
-      align(state, amount);
+      state.bytes.align(amount, fill & 0xff);
       return;
+    }
     case "u8":
       while (line.length > 0) {
         const t = line[0];
         if (t.kind === TokEnum.STR) {
           line.shift();
           new TextEncoder().encode(t.str).forEach((n) => {
-            state.output.push(n);
+            state.bytes.write8(n);
           });
         } else {
-          const n = parseNum(line);
-          state.output.push(n & 0xff);
+          state.bytes.expr8(
+            errorString(t.flp, "Invalid .u8 statement"),
+            { v: parseExpr(line) },
+            ({ v }) => v,
+          );
+          if (line.length > 0) {
+            if (line[0].kind === TokEnum.ID && line[0].id === ",") {
+              line.shift();
+            } else {
+              throw "Invalid .u8 statement";
+            }
+          }
         }
       }
       return;
     case "u16":
       while (line.length > 0) {
-        const n = parseNum(line);
-        state.output.push(n & 0xff);
-        state.output.push((n >> 8) & 0xff);
+        state.bytes.expr16(
+          errorString(line[0].flp, "Invalid .u16 statement"),
+          { v: parseExpr(line) },
+          ({ v }) => v,
+        );
+        if (line.length > 0) {
+          if (line[0].kind === TokEnum.ID && line[0].id === ",") {
+            line.shift();
+          } else {
+            throw "Invalid .u16 statement";
+          }
+        }
       }
       return;
     case "u32":
       while (line.length > 0) {
-        const n = parseNum(line);
-        state.output.push(n & 0xff);
-        state.output.push((n >> 8) & 0xff);
-        state.output.push((n >> 16) & 0xff);
-        state.output.push((n >> 24) & 0xff);
+        state.bytes.expr32(
+          errorString(line[0].flp, "Invalid .u32 statement"),
+          { v: parseExpr(line) },
+          ({ v }) => v,
+        );
+        if (line.length > 0) {
+          if (line[0].kind === TokEnum.ID && line[0].id === ",") {
+            line.shift();
+          } else {
+            throw "Invalid .u32 statement";
+          }
+        }
       }
       return;
     case "include":
@@ -98,20 +171,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       if (line.length > 0) {
         throw "Invalid .logo statement";
       }
-      // deno-fmt-ignore
-      state.output.push(
-        0x24, 0xff, 0xae, 0x51, 0x69, 0x9a, 0xa2, 0x21, 0x3d, 0x84, 0x82, 0x0a, 0x84, 0xe4, 0x09,
-        0xad, 0x11, 0x24, 0x8b, 0x98, 0xc0, 0x81, 0x7f, 0x21, 0xa3, 0x52, 0xbe, 0x19, 0x93, 0x09,
-        0xce, 0x20, 0x10, 0x46, 0x4a, 0x4a, 0xf8, 0x27, 0x31, 0xec, 0x58, 0xc7, 0xe8, 0x33, 0x82,
-        0xe3, 0xce, 0xbf, 0x85, 0xf4, 0xdf, 0x94, 0xce, 0x4b, 0x09, 0xc1, 0x94, 0x56, 0x8a, 0xc0,
-        0x13, 0x72, 0xa7, 0xfc, 0x9f, 0x84, 0x4d, 0x73, 0xa3, 0xca, 0x9a, 0x61, 0x58, 0x97, 0xa3,
-        0x27, 0xfc, 0x03, 0x98, 0x76, 0x23, 0x1d, 0xc7, 0x61, 0x03, 0x04, 0xae, 0x56, 0xbf, 0x38,
-        0x84, 0x00, 0x40, 0xa7, 0x0e, 0xfd, 0xff, 0x52, 0xfe, 0x03, 0x6f, 0x95, 0x30, 0xf1, 0x97,
-        0xfb, 0xc0, 0x85, 0x60, 0xd6, 0x80, 0x25, 0xa9, 0x63, 0xbe, 0x03, 0x01, 0x4e, 0x38, 0xe2,
-        0xf9, 0xa2, 0x34, 0xff, 0xbb, 0x3e, 0x03, 0x44, 0x78, 0x00, 0x90, 0xcb, 0x88, 0x11, 0x3a,
-        0x94, 0x65, 0xc0, 0x7c, 0x63, 0x87, 0xf0, 0x3c, 0xaf, 0xd6, 0x25, 0xe4, 0x8b, 0x38, 0x0a,
-        0xac, 0x72, 0x21, 0xd4, 0xf8, 0x07,
-      );
+      state.bytes.writeLogo();
       break;
     case "title": {
       const t = line.shift();
@@ -123,7 +183,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
         throw "Invalid .title statement: title can't exceed 12 bytes";
       }
       for (let i = 0; i < 12; i++) {
-        state.output.push(i < data.length ? data[i] : 0);
+        state.bytes.write8(i < data.length ? data[i] : 0);
       }
       break;
     }
@@ -131,14 +191,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       if (line.length > 0) {
         throw "Invalid .crc statement";
       }
-      if (state.output.length < 0xbd) {
-        throw "Invalid .crc statement: header too small";
-      }
-      let crc = -0x19;
-      for (let i = 0xa0; i < 0xbd; i++) {
-        crc = crc - state.output[i];
-      }
-      state.output.push(crc & 0xff);
+      state.bytes.writeCRC();
       break;
     }
     case "macro":
@@ -146,14 +199,22 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
     case "endm":
       throw "TODO: endm";
     case "end":
-      throw "TODO: end";
+      state.bytes.removeLocalLabels();
+      // TODO: delete local macros
+      // TODO: delete local constants
+      break;
     default:
       throw `Unknown dot statement: .${cmd}`;
   }
 }
 
-function parseArmStatement(pb: Arm.IParsedBody, line: ITok[]): number | false {
-  const syms: { [sym: string]: number } = { ...pb.syms };
+function parseArmStatement(
+  state: IParseState,
+  pb: Arm.IParsedBody,
+  line: ITok[],
+) {
+  const flp = line[0].flp;
+  const syms: { [sym: string]: Expression | number } = { ...pb.syms };
 
   for (const part of pb.body) {
     switch (part.kind) {
@@ -181,30 +242,22 @@ function parseArmStatement(pb: Arm.IParsedBody, line: ITok[]): number | false {
       case "sym": {
         const codePart = part.codeParts[0];
         switch (codePart.k) {
+          case "word":
           case "immediate":
-          case "rotimm":
-            try {
-              syms[part.sym] = parseNum(line);
-            } catch (e) {
+          case "rotimm": {
+            const expr = Expression.parse(line);
+            if (expr === false) {
               return false;
             }
+            syms[part.sym] = expr;
             break;
+          }
           case "register": {
             const t = line.shift();
             if (!t || t.kind !== TokEnum.ID) {
               return false;
             }
-            const id = t.id.toLowerCase();
-            let reg = -1;
-            if (id === "sp") {
-              reg = 13;
-            } else if (id === "lr") {
-              reg = 14;
-            } else if (id === "pc") {
-              reg = 15;
-            } else if (/^r([0-9]|(1[0-5]))$/.test(id)) {
-              reg = parseInt(id.substr(1), 10);
-            }
+            const reg = decodeRegister(t.id.toLowerCase());
             if (reg >= 0 && reg <= 15) {
               syms[part.sym] = reg;
             } else {
@@ -212,15 +265,15 @@ function parseArmStatement(pb: Arm.IParsedBody, line: ITok[]): number | false {
             }
             break;
           }
-          case "enum":
-          case "value":
-          case "ignored":
           case "offset12":
           case "reglist":
-          case "word":
           case "offsetsplit":
-            throw new Error("TODO: don't know how to interpret ${codePart}");
-
+          case "enum":
+            console.error(`TODO: don't know how to interpret ${codePart.k}`);
+            throw new Error("TODO");
+          case "value":
+          case "ignored":
+            throw new Error("Invalid syntax for parsed body");
           default:
             assertNever(codePart);
         }
@@ -237,60 +290,109 @@ function parseArmStatement(pb: Arm.IParsedBody, line: ITok[]): number | false {
   }
 
   // great! now constitute the opcode using the symbols
-  let opcode = 0;
-  let bpos = 0;
-  const push = (size: number, v: number) => {
-    opcode |= v << bpos;
-    bpos += size;
-  };
-  for (const codePart of pb.op.codeParts) {
-    switch (codePart.k) {
-      case "immediate":
-      case "enum":
-      case "register":
-        push(codePart.s, syms[codePart.sym]);
-        break;
-      case "value":
-      case "ignored":
-        push(codePart.s, codePart.v);
-        break;
-      case "rotimm": {
-        // calculate rotate immediate form of v
-        let v = syms[codePart.sym];
-        let r = 0;
-        while (v > 0 && (v & 3) === 0) {
-          v >>= 2;
-          r++;
+  state.bytes.expr32(
+    errorString(flp, "Invalid statement"),
+    syms,
+    (syms, thisIndex) => {
+      let opcode = 0;
+      let bpos = 0;
+      const push = (size: number, v: number) => {
+        opcode |= (v & ((1 << size) - 1)) << bpos;
+        bpos += size;
+      };
+      for (const codePart of pb.op.codeParts) {
+        switch (codePart.k) {
+          case "immediate":
+          case "enum":
+          case "register": {
+            push(codePart.s, syms[codePart.sym]);
+            break;
+          }
+          case "value":
+          case "ignored":
+            push(codePart.s, codePart.v);
+            break;
+          case "rotimm": {
+            // calculate rotate immediate form of v
+            let v = syms[codePart.sym];
+            let r = 0;
+            while (v > 0 && (v & 3) === 0) {
+              v >>= 2;
+              r++;
+            }
+            if (v > 255) {
+              throw `Can't generate rotimm from ${syms[codePart.sym]}`;
+            }
+            push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
+            break;
+          }
+          case "word":
+            push(codePart.s, (syms[codePart.sym] - thisIndex - 8) >> 2);
+            break;
+          case "offset12":
+          case "reglist":
+          case "offsetsplit":
+            throw new Error(`TODO: push with ${codePart.k}`);
+          default:
+            assertNever(codePart);
         }
-        if (v > 255) {
-          throw `Can't generate rotimm from ${syms[codePart.sym]}`;
-        }
-        push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
-        break;
       }
-      case "offset12":
-      case "reglist":
-      case "word":
-      case "offsetsplit":
-        throw new Error(`TODO: push with ${codePart.k}`);
-      default:
-        assertNever(codePart);
-    }
-  }
-  if (bpos !== 32) {
-    throw new Error("Opcode length isn't 32 bits");
-  }
-  return opcode;
+      if (bpos !== 32) {
+        throw new Error("Opcode length isn't 32 bits");
+      }
+      return opcode;
+    },
+  );
+  return true;
 }
 
 function parseThumbStatement(
+  state: IParseState,
   pb: Thumb.IParsedBody,
   line: ITok[],
-): number | false {
+) {
   throw "TODO: parseThumbStatement";
 }
 
+function parseLabel(line: ITok[]): string | false {
+  if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === "@") {
+    let label = "@";
+    line.shift();
+    if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === "@") {
+      label += "@";
+      line.shift();
+    }
+    if (
+      line.length > 0 && line[0].kind === TokEnum.ID &&
+      isIdentStart(line[0].id.charAt(0))
+    ) {
+      label += line[0].id;
+      line.shift();
+      return label;
+    }
+    throw "Missing label name";
+  }
+  return false;
+}
+
 function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
+  // TODO: check for constants
+  // TODO: check for macros
+
+  // check for labels
+  const label = parseLabel(line);
+  if (label !== false) {
+    if (line.length < 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":") {
+      throw "Missing colon after label";
+    }
+    line.shift();
+    state.bytes.addLabel(label);
+  }
+
+  if (line.length <= 0) {
+    return;
+  }
+
   // check for dot commands
   let dot = false;
   if (line[0].kind === TokEnum.ID && line[0].id === ".") {
@@ -311,19 +413,7 @@ function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
     if (!ops) {
       throw `Unknown arm statement: ${cmd}`;
     }
-    if (
-      !ops.some((op) => {
-        const v = parseArmStatement(op, [...line]);
-        if (v !== false) {
-          state.output.push(v & 0xff);
-          state.output.push((v >> 8) & 0xff);
-          state.output.push((v >> 16) & 0xff);
-          state.output.push((v >> 24) & 0xff);
-          return true;
-        }
-        return false;
-      })
-    ) {
+    if (!ops.some((op) => parseArmStatement(state, op, [...line]))) {
       throw "Failed to parse arm statement";
     }
   } else {
@@ -331,21 +421,7 @@ function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
     if (!ops) {
       throw `Unknown thumb statement: ${cmd}`;
     }
-    if (
-      !ops.some((op) => {
-        const v = parseThumbStatement(op, [...line]);
-        if (v !== false) {
-          state.output.push(v & 0xff);
-          state.output.push((v >> 8) & 0xff);
-          if (v < 0 || v > 0xffff) { // some thumb instructions are 32 bits wide
-            state.output.push((v >> 16) & 0xff);
-            state.output.push((v >> 24) & 0xff);
-          }
-          return true;
-        }
-        return false;
-      })
-    ) {
+    if (!ops.some((op) => parseThumbStatement(state, op, [...line]))) {
       throw "Failed to parse thumb statement";
     }
   }
@@ -373,8 +449,9 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
 
     const state: IParseState = {
       arm: true,
+      base: 0x08000000,
       tks: tokens,
-      output: [],
+      bytes: new Bytes(),
     };
 
     if (state.tks.length > 0) {
@@ -399,7 +476,7 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
       }
     }
 
-    await Deno.writeFile(output, new Uint8Array(state.output));
+    await Deno.writeFile(output, new Uint8Array(state.bytes.get()));
 
     return 0;
   } catch (e) {

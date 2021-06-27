@@ -5,6 +5,10 @@ Assembler
 
 ```
 /* block comment */
+
+//.base 0 // for bios
+//.base 0x08000000 // for gba (default)
+
 // GBA header
 b @main          // branch to main method
 .logo
@@ -12,7 +16,7 @@ b @main          // branch to main method
 .u8 "CAA"        // game code
 .u8 "E"          // (D)eutsch (E)nglish (F)rench (I)talian (J)apanese Euro(P)ean (S)panish
 .u8 "99"         // maker code
-.u16 150 0 0 0 0
+.u16 150, 0, 0, 0, 0
 .u8 0            // software version
 .crc
 .u16 0
@@ -31,9 +35,9 @@ $$foo = 1 // local define (disappears after .end)
 .end
 
 // global macro
-.macro %foo ?param1, ?param2
+.macro %foo \param1, \param2
 .endm
 // local macro (disappears after .end)
-.marco %%foo ?param1, ?param2
+.marco %%foo \param1, \param2
 .endm
 ```

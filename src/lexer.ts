@@ -96,7 +96,7 @@ function tokId(flp: IFilePos, id: string): ITokId {
 }
 
 function tokNum(flp: IFilePos, num: number): ITokNum {
-  return { kind: TokEnum.NUM, flp, num };
+  return { kind: TokEnum.NUM, flp, num: num | 0 };
 }
 
 function tokStr(flp: IFilePos, str: string): ITokStr {
@@ -107,7 +107,7 @@ function tokError(flp: IFilePos, msg: string): ITokError {
   return { kind: TokEnum.ERROR, flp, msg };
 }
 
-function isIdentStart(c: string) {
+export function isIdentStart(c: string) {
   return isAlpha(c) || c === "_";
 }
 
@@ -134,8 +134,12 @@ const FILEPOS_NULL: IFilePos = Object.freeze({
   chr: -1,
 });
 
+export function errorString(flp: IFilePos, msg: string) {
+  return `${flp.filename}:${flp.line}:${flp.chr}: ${msg}`;
+}
+
 export function logError(flp: IFilePos, msg: string) {
-  console.error(`${flp.filename}:${flp.line}:${flp.chr}: ${msg}`);
+  console.error(errorString(flp, msg));
 }
 
 function lexNew(): ILex {
@@ -169,7 +173,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
   switch (lx.state) {
     case LexEnum.START:
       lx.flpS = flp;
-      if ("~!@#$%^&*()-+={[}]|:<,>.?/".indexOf(ch1) >= 0) {
+      if ("~!@#$%^&*()-+={[}]|\\:<,>.?/".indexOf(ch1) >= 0) {
         lx.state = LexEnum.SPECIAL;
       } else if (isIdentStart(ch1)) {
         lx.str = ch1;

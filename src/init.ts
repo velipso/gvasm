@@ -83,9 +83,9 @@ mov r0, #0x04000000
 mov r1, #0x0
 str r1, [r0]
 
-// set color 0 to red
+// set color 0 to green
 mov r0, #0x05000000
-mov r1, #0x1f
+mov r1, #0x3e0
 str r1, [r0]
 
 // infinite loop

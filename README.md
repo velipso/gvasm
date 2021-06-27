@@ -6,8 +6,8 @@ Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 Note that the entire repo is a **work in progress**.  Feel free to poke around but certainly don't
 rely on anything!
 
-Usage
-=====
+Install
+=======
 
 You'll need to install [deno](https://deno.land) on your operating system.
 
@@ -18,14 +18,36 @@ deno install --allow-read --allow-write -f -r \
   https://raw.githubusercontent.com/velipso/gbasm/master/gbasm.ts
 ```
 
+If this is your first time running `deno install`, you will need to add the deno binary directory to
+your path.
+
+Usage
+=====
+
 Commands to get you started:
 
 ```
 gbasm init MyGame.gbasm
-gbasm make MyGame.gbasm
-# now you will have MyGame.gba inside your folder
-# run it in an emulator, and it will show a red screen
 ```
+
+This will create `MyGame.gbasm` in your current directory with a small example program.
+
+You can build this file via:
+
+```
+gbasm make MyGame.gbasm
+```
+
+This will output `MyGame.gba`, which can be ran inside emulators.  The example program just sets the
+background color to green.
+
+Then, you can try disassembling the .gba file:
+
+```
+gbasm dis MyGame.gba
+```
+
+The disassembler doesn't work very well yet, as you'll see :-).
 
 Technical Docs
 ==============

@@ -17,6 +17,8 @@ b @main
 .crc
 .u16 0
 
+.u32 ~1
+
 @main:
 
 // set REG_DISPCNT to 0

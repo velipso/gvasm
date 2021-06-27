@@ -5,10 +5,11 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import { init } from "./init.ts";
+import { IInitArgs, init } from "./init.ts";
 import { IMakeArgs, make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
 import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
+import { parse as argParse } from "https://deno.land/std@0.99.0/flags/mod.ts";
 
 function printVersion() {
   console.log(`gbasm - Assembler and disassembler for Game Boy Advance homebrew
@@ -30,6 +31,120 @@ For more help, try:
   gbasm <command> --help`);
 }
 
+function printInitHelp() {
+  console.log(
+    `gbasm init <output> [-t title] [-i initials] [-m maker] [-v version]
+                     [-r region] [-c code]
+
+<output>     The output .gbasm file
+-t title     Game title (max of 12 characters, default "Game")
+-i initials  Game initials (must be 2 characters, default "AA")
+-m maker     Game maker (must be 2 characters, default "77")
+-v version   Game version (must be number from 0..255, default 0)
+-r region    Game region (must be 1 character, default "E"):
+               D  German       E  English       F  French
+               I  Italian      J  Japanese      P  European
+               S  Spanish
+-c code      Game code (must be 1 character, default "C"):
+               A  Normal game (titles released pre-2003)
+               B  Normal game (titles released 2003+)
+               C  Normal game (newer titles)
+               F  Famicom/Classic NES
+               K  Yoshi and Koro Koro Puzzle (acceleration sensor)
+               P  e-Reader (dot-code scanner)
+               R  Warioware Twisted (rumble and z-axis gyro sensor)
+               U  Baktai 1 and 2 (real-time clock and solar sensor)
+               V  Drill Dozer (rumble)`,
+  );
+}
+
+function parseInitArgs(args: string[]): number | IInitArgs {
+  let badArgs = false;
+  const a = argParse(args, {
+    string: ["title", "initials", "maker", "version", "region", "code"],
+    boolean: ["help"],
+    alias: {
+      h: "help",
+      t: "title",
+      i: "initials",
+      m: "maker",
+      v: "version",
+      r: "region",
+      c: "code",
+    },
+    unknown: (arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
+    printInitHelp();
+    return 0;
+  }
+  if (a._.length <= 0) {
+    console.error("Missing output file");
+    return 1;
+  }
+  if (a._.length > 1) {
+    console.error("Can only have one output file");
+    return 1;
+  }
+  const output = a._[0] as string;
+  const title = a.title ?? "Game";
+  if (title.length > 12) {
+    console.error(
+      `Invalid title, must be at most 12 characters, but got: "${title}"`,
+    );
+    return 1;
+  }
+  const initials = a.initials ?? "AA";
+  if (initials.length !== 2) {
+    console.error(
+      `Invalid initials, must be 2 characters, but got: "${initials}"`,
+    );
+    return 1;
+  }
+  const maker = a.maker ?? "77";
+  if (maker.length !== 2) {
+    console.error(`Invalid maker, must be 2 characters, but got: "${maker}"`);
+    return 1;
+  }
+  const version = parseInt(a.version ?? "0", 10);
+  if (
+    isNaN(version) || Math.floor(version) !== version || version < 0 ||
+    version > 255
+  ) {
+    console.error(`Invalid version, must be 0..255, but got: ${version}`);
+    return 1;
+  }
+  const region = a.region ?? "E";
+  if (region.length !== 1) {
+    console.error(`Invalid region, must be 1 character, but got: "${region}"`);
+    return 1;
+  }
+  const code = a.code ?? "C";
+  if (code.length !== 1) {
+    console.error(`Invalid code, must be 1 character, but got: "${code}"`);
+    return 1;
+  }
+  return {
+    output,
+    title,
+    initials,
+    maker,
+    version,
+    region,
+    code,
+  };
+}
+
 function printMakeHelp() {
   console.log(`gbasm make <input> [-o <output>]
 
@@ -38,44 +153,37 @@ function printMakeHelp() {
 }
 
 function parseMakeArgs(args: string[]): number | IMakeArgs {
-  if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
+  let badArgs = false;
+  const a = argParse(args, {
+    string: ["output"],
+    boolean: ["help"],
+    alias: { o: "output" },
+    unknown: (arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
     printMakeHelp();
     return 0;
   }
-
-  let input: string | undefined;
-  let output: string | undefined;
-  for (let i = 0; i < args.length; i++) {
-    let arg = args[i];
-    if (arg === "-o" || arg === "--output") {
-      if (i + 1 >= args.length) {
-        console.error("Missing output file");
-        return 1;
-      }
-      if (output !== undefined) {
-        console.error("Cannot specify output file more than once");
-        return 1;
-      }
-      i++;
-      output = args[i];
-    } else {
-      if (arg === "--" && i + 1 < args.length) {
-        i++;
-        arg = args[i];
-      }
-      if (input !== undefined) {
-        console.error("Cannot specify input file more than once");
-        return 1;
-      }
-      input = arg;
-    }
-  }
-
-  if (input === undefined) {
+  if (a._.length <= 0) {
     console.error("Missing input file");
     return 1;
   }
-
+  if (a._.length > 1) {
+    console.error("Can only have one input file");
+    return 1;
+  }
+  const input = a._[0] as string;
+  const output = a.output;
   return {
     input,
     output: output ??
@@ -89,74 +197,50 @@ function printDisHelp() {
 <input>      The input .gba or .bin file
 -o <output>  The output file (default: input with .gbasm extension)
 -f <format>  The input format (default: gba)
-
-Formats:
--f gba       Input is a .gba file
--f bin       Input is a .bin file (typically for BIOS)`);
+               gba  Input is a .gba file
+               bin  Input is a .bin file (typically for BIOS)`);
 }
 
 function parseDisArgs(args: string[]): number | IDisArgs {
-  if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
+  let badArgs = false;
+  const a = argParse(args, {
+    string: ["output", "format"],
+    boolean: ["help"],
+    alias: { o: "output", f: "format" },
+    unknown: (arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
     printDisHelp();
     return 0;
   }
-
-  let input: string | undefined;
-  let output: string | undefined;
-  let format: "gba" | "bin" | undefined;
-  for (let i = 0; i < args.length; i++) {
-    let arg = args[i];
-    if (arg === "-o" || arg === "--output") {
-      if (i + 1 >= args.length) {
-        console.error("Missing output file");
-        return 1;
-      }
-      if (output !== undefined) {
-        console.error("Cannot specify output file more than once");
-        return 1;
-      }
-      i++;
-      output = args[i];
-    } else if (arg === "-f" || arg === "--format") {
-      if (i + 1 >= args.length) {
-        console.error("Missing file format");
-        return 1;
-      }
-      if (format !== undefined) {
-        console.error("Cannot specify file format more than once");
-        return 1;
-      }
-      i++;
-      const arg2 = args[i];
-      if (arg2 === "gba" || arg2 === "bin") {
-        format = arg2;
-      } else {
-        console.error(
-          `Invalid file format. Expecting 'gba' or 'bin', but got: ${arg2}`,
-        );
-        return 1;
-      }
-    } else {
-      if (arg === "--" && i + 1 < args.length) {
-        i++;
-        arg = args[i];
-      }
-      if (input !== undefined) {
-        console.error("Cannot specify input file more than once");
-        return 1;
-      }
-      input = arg;
-    }
-  }
-
-  if (input === undefined) {
+  if (a._.length <= 0) {
     console.error("Missing input file");
     return 1;
   }
-
+  if (a._.length > 1) {
+    console.error("Can only have one input file");
+    return 1;
+  }
+  const input = a._[0] as string;
+  const format = a.format ?? "gba";
+  if (format !== "gba" && format !== "bin") {
+    console.error(`Invalid format, must be 'gba' or 'bin', but got: ${format}`);
+    return 1;
+  }
+  const output = a.output;
   return {
     input,
-    format: format ?? "gba",
+    format,
     output: output ??
       path.format({ ...path.parse(input), base: undefined, ext: ".gbasm" }),
   };
@@ -172,7 +256,11 @@ export async function main(args: string[]): Promise<number> {
     printVersion();
     return 0;
   } else if (args[0] === "init") {
-    return await init(args.slice(1));
+    const initArgs = parseInitArgs(args.slice(1));
+    if (typeof initArgs === "number") {
+      return initArgs;
+    }
+    return await init(initArgs);
   } else if (args[0] === "make") {
     const makeArgs = parseMakeArgs(args.slice(1));
     if (typeof makeArgs === "number") {

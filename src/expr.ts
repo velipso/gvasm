@@ -22,6 +22,7 @@ interface IExprUnary {
   kind:
     | "neg"
     | "~"
+    | "!"
     | "(";
   value: IExpr;
 }
@@ -41,6 +42,22 @@ interface IExprBinary {
     | "^";
   left: IExpr;
   right: IExpr;
+}
+
+function isBinary(ex: IExpr): ex is IExprBinary {
+  return (
+    ex.kind === "+" ||
+    ex.kind === "-" ||
+    ex.kind === "*" ||
+    ex.kind === "/" ||
+    ex.kind === "%" ||
+    ex.kind === "<<" ||
+    ex.kind === ">>" ||
+    ex.kind === ">>>" ||
+    ex.kind === "&" ||
+    ex.kind === "|" ||
+    ex.kind === "^"
+  );
 }
 
 interface IExprTernary {
@@ -68,6 +85,10 @@ export class Expression {
     this.labelsHave = {};
   }
 
+  public getLabelsNeed(): readonly string[] {
+    return this.labelsNeed;
+  }
+
   public static parse(
     line: ITok[],
     labels: { [label: string]: number } = {},
@@ -82,28 +103,51 @@ export class Expression {
             line[0].id === "+" ||
             line[0].id === "~" ||
             line[0].id === "@" ||
-            line[0].id === "$"
+            line[0].id === "$" ||
+            line[0].id === "!"
           )
         ) ||
         line[0].kind === TokEnum.NUM
       )
     ) {
       const term = (): IExpr => {
+        // collect all unary operators
+        const unary: ("neg" | "~" | "!")[] = [];
+        while (line.length > 0 && line[0].kind === TokEnum.ID) {
+          if (line[0].id === "+") {
+            line.shift();
+          } else if (line[0].id === "-") {
+            unary.push("neg");
+            line.shift();
+          } else if (line[0].id === "~") {
+            unary.push("~");
+            line.shift();
+          } else if (line[0].id === "!") {
+            unary.push("!");
+            line.shift();
+          } else {
+            break;
+          }
+        }
+
+        // get the terminal
         const t = line.shift();
         if (!t) {
           throw "Invalid expression";
         }
+        let result: IExpr | undefined;
         if (t.kind === TokEnum.NUM) {
-          return { kind: "num", value: t.num };
+          result = { kind: "num", value: t.num };
         } else if (t.kind === TokEnum.ID) {
           if (t.id === "(") {
-            throw "TODO: paren";
-          } else if (t.id === "-") {
-            throw "TODO: unary -";
-          } else if (t.id === "+") {
-            throw "TODO: unary +";
-          } else if (t.id === "~") {
-            throw "TODO: unary ~";
+            result = { kind: "(", value: term() };
+            if (
+              line.length <= 0 || line[0].kind !== TokEnum.ID ||
+              line[0].id !== ")"
+            ) {
+              throw "Expecting close parenthesis";
+            }
+            line.shift();
           } else if (t.id === "@") {
             let label = "@";
             if (
@@ -120,7 +164,7 @@ export class Expression {
               label += line[0].id;
               line.shift();
               labelsNeed.push(label);
-              return { kind: "label", label };
+              result = { kind: "label", label };
             } else {
               throw "Invalid label in expression";
             }
@@ -128,7 +172,90 @@ export class Expression {
             throw "TODO: $ constant";
           }
         }
-        throw "Invalid expression";
+        if (!result) {
+          throw "Invalid expression";
+        }
+
+        // apply unary operators to the terminal
+        while (true) {
+          const kind = unary.pop();
+          if (kind) {
+            result = { kind, value: result };
+          } else {
+            break;
+          }
+        }
+
+        const precedence = (op: IExprBinary["kind"]): number => {
+          switch (op) {
+            case "+":
+            case "-":
+              return 1;
+            case "*":
+            case "/":
+            case "%":
+              return 0;
+            case "<<":
+            case ">>":
+            case ">>>":
+              return 2;
+            case "&":
+              return 3;
+            case "|":
+              return 5;
+            case "^":
+              return 4;
+            default:
+              assertNever(op);
+          }
+          return 6;
+        };
+
+        // look for binary operators
+        if (line.length > 0 && line[0].kind === TokEnum.ID) {
+          const id = line[0].id;
+          if (
+            id === "+" ||
+            id === "-" ||
+            id === "*" ||
+            id === "/" ||
+            id === "%" ||
+            id === "<<" ||
+            id === ">>" ||
+            id === ">>>" ||
+            id === "&" ||
+            id === "|" ||
+            id === "^"
+          ) {
+            line.shift();
+            const right = term();
+            if (isBinary(right) && precedence(id) <= precedence(right.kind)) {
+              // (result id right.left) right.kind right.right
+              result = {
+                kind: right.kind,
+                left: { kind: id, left: result, right: right.left },
+                right: right.right,
+              };
+            } else {
+              // result id (right.left right.kind right.right)
+              result = { kind: id, left: result, right };
+            }
+          } else if (id === "?") {
+            line.shift();
+            const iftrue = term();
+            if (
+              line.length <= 0 || line[0].kind !== TokEnum.ID ||
+              line[0].id !== ":"
+            ) {
+              throw "Invalid operator, missing ':'";
+            }
+            line.shift();
+            const iffalse = term();
+            result = { kind: "?:", condition: result, iftrue, iffalse };
+          }
+        }
+
+        return result;
       };
 
       return new Expression(term(), labelsNeed);
@@ -162,6 +289,8 @@ export class Expression {
           return -get(ex.value);
         case "~":
           return ~get(ex.value);
+        case "!":
+          return get(ex.value) === 0 ? 1 : 0;
         case "(":
           return get(ex.value);
         case "+":

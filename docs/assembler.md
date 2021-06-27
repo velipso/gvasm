@@ -24,9 +24,15 @@ b @main          // branch to main method
 .include "./file.gbasm" // copy/paste text file as code
 .embed "./file.bmp"     // copy/paste binary file as u8
 .stdlib                 // include the standard library
+.extlib                 // include the extended library
 
 .thumb
 .arm
+
+.if $foo
+.elseif $bar
+.else
+.endif
 
 @main:    // global label
 @@foo:    // local label (disappears after .end)

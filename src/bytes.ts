@@ -9,28 +9,43 @@ import { Expression } from "./expr.ts";
 
 interface IPendingExpr {
   hint: string;
-  thisIndex: number;
+  address: number;
   exprs: { [name: string]: Expression | number };
-  build(values: { [name: string]: number }, thisIndex: number): number;
+  build(values: { [name: string]: number }, address: number): number;
   rewrite(v: number): void;
 }
 
 export class Bytes {
+  public base = 0x08000000;
   private array: number[] = [];
-  private pendingRewrites: (string | false)[] = [];
   private pendingExprs: IPendingExpr[] = [];
   private labels: { [name: string]: number } = {};
 
   public get(): readonly number[] {
-    const prw = this.pendingRewrites.filter((p) => p !== false);
-    if (prw.length > 0) {
-      throw prw.join("\n");
+    for (const pex of this.pendingExprs) {
+      for (const expr of Object.values(pex.exprs)) {
+        if (expr instanceof Expression) {
+          const need = expr.getLabelsNeed();
+          if (need.length > 0) {
+            throw `${pex.hint}, label${
+              need.length === 1 ? "" : "s"
+            } not defined: ${need.join(", ")}`;
+          }
+        }
+      }
     }
     return this.array;
   }
 
-  public size(): number {
-    return this.array.length;
+  public setBase(base: number) {
+    if (this.array.length > 0) {
+      throw "Cannot use .base after other statements";
+    }
+    this.base = base;
+  }
+
+  public nextAddress() {
+    return this.base + this.array.length;
   }
 
   public write8(v: number) {
@@ -50,41 +65,32 @@ export class Bytes {
   }
 
   public align(amount: number, fill: number = 0) {
-    while ((this.array.length % amount) !== 0) {
+    while ((this.nextAddress() % amount) !== 0) {
       this.array.push(fill & 0xff);
     }
   }
 
-  private rewrite8(hint: string): (v: number) => void {
+  private rewrite8(): (v: number) => void {
     const i = this.array.length;
-    const pending = this.pendingRewrites.length;
-    this.pendingRewrites.push(hint);
     this.write8(0);
     return (v: number) => {
-      this.pendingRewrites[pending] = false;
       this.array[i] = v & 0xff;
     };
   }
 
-  private rewrite16(hint: string): (v: number) => void {
+  private rewrite16(): (v: number) => void {
     const i = this.array.length;
-    const pending = this.pendingRewrites.length;
-    this.pendingRewrites.push(hint);
     this.write16(0);
     return (v: number) => {
-      this.pendingRewrites[pending] = false;
       this.array[i] = v & 0xff;
       this.array[i + 1] = (v >> 8) & 0xff;
     };
   }
 
-  private rewrite32(hint: string): (v: number) => void {
+  private rewrite32(): (v: number) => void {
     const i = this.array.length;
-    const pending = this.pendingRewrites.length;
-    this.pendingRewrites.push(hint);
     this.write32(0);
     return (v: number) => {
-      this.pendingRewrites[pending] = false;
       this.array[i] = v & 0xff;
       this.array[i + 1] = (v >> 8) & 0xff;
       this.array[i + 2] = (v >> 16) & 0xff;
@@ -95,45 +101,45 @@ export class Bytes {
   public expr8(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (values: { [name: string]: number }, thisIndex: number) => number,
+    build: (values: { [name: string]: number }, address: number) => number,
   ) {
-    const thisIndex = this.array.length;
+    const address = this.nextAddress();
     this.pushPendingExpr({
       hint,
-      thisIndex,
+      address,
       exprs,
       build,
-      rewrite: this.rewrite8(hint),
+      rewrite: this.rewrite8(),
     });
   }
 
   public expr16(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (values: { [name: string]: number }, thisIndex: number) => number,
+    build: (values: { [name: string]: number }, address: number) => number,
   ) {
-    const thisIndex = this.array.length;
+    const address = this.nextAddress();
     this.pushPendingExpr({
       hint,
-      thisIndex,
+      address,
       exprs,
       build,
-      rewrite: this.rewrite16(hint),
+      rewrite: this.rewrite16(),
     });
   }
 
   public expr32(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (values: { [name: string]: number }, thisIndex: number) => number,
+    build: (values: { [name: string]: number }, address: number) => number,
   ) {
-    const thisIndex = this.array.length;
+    const address = this.nextAddress();
     this.pushPendingExpr({
       hint,
-      thisIndex,
+      address,
       exprs,
       build,
-      rewrite: this.rewrite32(hint),
+      rewrite: this.rewrite32(),
     });
   }
 
@@ -167,7 +173,7 @@ export class Bytes {
         values[name] = exv;
       }
     }
-    pex.rewrite(pex.build(values, pex.thisIndex));
+    pex.rewrite(pex.build(values, pex.address));
     return true;
   }
 
@@ -177,7 +183,7 @@ export class Bytes {
     }
 
     // add label knowledge
-    const v = this.array.length;
+    const v = this.nextAddress();
     this.labels[label] = v;
     for (const pex of this.pendingExprs) {
       for (const expr of Object.values(pex.exprs)) {

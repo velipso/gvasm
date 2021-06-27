@@ -25,7 +25,6 @@ export interface IMakeArgs {
 
 interface IParseState {
   arm: boolean;
-  base: number;
   tks: ITok[];
   bytes: Bytes;
 }
@@ -70,10 +69,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       if (line.length > 0) {
         throw "Invalid .base statement";
       }
-      if (state.bytes.size() > 0) {
-        throw "Cannot use .base after other statements";
-      }
-      state.base = amount;
+      state.bytes.setBase(amount);
       return;
     }
     case "arm":
@@ -167,6 +163,8 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       throw "TODO: embed";
     case "stdlib":
       throw "TODO: stdlib";
+    case "extlib":
+      throw "TODO: extlib";
     case "logo":
       if (line.length > 0) {
         throw "Invalid .logo statement";
@@ -203,6 +201,11 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       // TODO: delete local macros
       // TODO: delete local constants
       break;
+    case "if":
+    case "elseif":
+    case "else":
+    case "endif":
+      throw "TODO: if/elseif/else/endif";
     default:
       throw `Unknown dot statement: .${cmd}`;
   }
@@ -293,7 +296,7 @@ function parseArmStatement(
   state.bytes.expr32(
     errorString(flp, "Invalid statement"),
     syms,
-    (syms, thisIndex) => {
+    (syms, address) => {
       let opcode = 0;
       let bpos = 0;
       const push = (size: number, v: number) => {
@@ -327,7 +330,7 @@ function parseArmStatement(
             break;
           }
           case "word":
-            push(codePart.s, (syms[codePart.sym] - thisIndex - 8) >> 2);
+            push(codePart.s, (syms[codePart.sym] - address - 8) >> 2);
             break;
           case "offset12":
           case "reglist":
@@ -449,7 +452,6 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
 
     const state: IParseState = {
       arm: true,
-      base: 0x08000000,
       tks: tokens,
       bytes: new Bytes(),
     };
@@ -476,7 +478,12 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
       }
     }
 
-    await Deno.writeFile(output, new Uint8Array(state.bytes.get()));
+    try {
+      await Deno.writeFile(output, new Uint8Array(state.bytes.get()));
+    } catch (e) {
+      console.error(e);
+      throw false;
+    }
 
     return 0;
   } catch (e) {

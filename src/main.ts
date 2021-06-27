@@ -16,7 +16,7 @@ function printVersion() {
 by Sean Connelly (@velipso), https://sean.cm
 The Unlicense License
 Project Home: https://github.com/velipso/gbasm
-Version: 0.1`);
+Version: 0.2`);
 }
 
 function printHelp() {

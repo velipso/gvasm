@@ -72,7 +72,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
       r: "region",
       c: "code",
     },
-    unknown: (arg: string, key?: string) => {
+    unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
         badArgs = true;
@@ -158,7 +158,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
     string: ["output"],
     boolean: ["help"],
     alias: { o: "output" },
-    unknown: (arg: string, key?: string) => {
+    unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
         badArgs = true;
@@ -207,7 +207,7 @@ function parseDisArgs(args: string[]): number | IDisArgs {
     string: ["output", "format"],
     boolean: ["help"],
     alias: { o: "output", f: "format" },
-    unknown: (arg: string, key?: string) => {
+    unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
         badArgs = true;

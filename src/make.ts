@@ -70,7 +70,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
         throw "Invalid .base statement";
       }
       state.bytes.setBase(amount);
-      return;
+      break;
     }
     case "arm":
       if (line.length > 0) {
@@ -78,14 +78,14 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       }
       state.bytes.align(4);
       state.arm = true;
-      return;
+      break;
     case "thumb":
       if (line.length > 0) {
         throw "Invalid .thumb statement";
       }
       state.bytes.align(2);
       state.arm = false;
-      return;
+      break;
     case "align": {
       const amount = parseNum(line);
       let fill = 0;
@@ -99,7 +99,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
         throw "Invalid .align statement";
       }
       state.bytes.align(amount, fill & 0xff);
-      return;
+      break;
     }
     case "u8":
       while (line.length > 0) {
@@ -124,7 +124,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
           }
         }
       }
-      return;
+      break;
     case "u16":
       while (line.length > 0) {
         state.bytes.expr16(
@@ -140,7 +140,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
           }
         }
       }
-      return;
+      break;
     case "u32":
       while (line.length > 0) {
         state.bytes.expr32(
@@ -156,7 +156,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
           }
         }
       }
-      return;
+      break;
     case "include":
       throw "TODO: include";
     case "embed":
@@ -224,7 +224,7 @@ function parseArmStatement(
 
   for (const part of pb.body) {
     switch (part.kind) {
-      case "str":
+      case "str": {
         if (part.str === "") {
           continue;
         }
@@ -236,12 +236,13 @@ function parseArmStatement(
           return false;
         }
         break;
+      }
       case "num":
         try {
           if (parseNum(line) !== part.num) {
             return false;
           }
-        } catch (e) {
+        } catch (_) {
           return false;
         }
         break;
@@ -251,11 +252,15 @@ function parseArmStatement(
           case "word":
           case "immediate":
           case "rotimm": {
-            const expr = Expression.parse(line);
-            if (expr === false) {
+            try {
+              const expr = Expression.parse(line);
+              if (expr === false) {
+                return false;
+              }
+              syms[part.sym] = expr;
+            } catch (_) {
               return false;
             }
-            syms[part.sym] = expr;
             break;
           }
           case "register": {

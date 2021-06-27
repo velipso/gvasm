@@ -299,7 +299,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
 
     case LexEnum.NUM_BODY:
       if (isHex(ch1)) {
-        let v = toHex(ch1);
+        const v = toHex(ch1);
         if (v >= lx.numBase) {
           tks.push(tokError(flpS, "Invalid number"));
         } else {
@@ -392,7 +392,7 @@ export function lex(filename: string, data: string): ITok[] {
   let wascr = false;
   const flp = { filename, line: 1, chr: 1 };
   for (let i = 0; i < data.length; i++) {
-    let b = data.charAt(i);
+    const b = data.charAt(i);
     lexAdd(lx, { ...flp }, b, tks);
     if (b === "\n") {
       if (!wascr) {

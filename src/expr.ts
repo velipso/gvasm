@@ -89,10 +89,7 @@ export class Expression {
     return this.labelsNeed;
   }
 
-  public static parse(
-    line: ITok[],
-    labels: { [label: string]: number } = {},
-  ): Expression | false {
+  public static parse(line: ITok[]): Expression | false {
     const labelsNeed: string[] = [];
     if (
       line.length > 0 && (

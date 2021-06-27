@@ -112,6 +112,7 @@ export interface IParsedOpsGeneric<T, U> {
   [cmd: string]: IParsedBodyGeneric<T, U>[];
 }
 
+// deno-lint-ignore no-namespace
 export namespace Arm {
   interface ICodePartRegister {
     s: 4;
@@ -1856,6 +1857,7 @@ export namespace Arm {
   export const parsedOps = parseOps<IOp, ICodePart>(ops);
 }
 
+// deno-lint-ignore no-namespace
 export namespace Thumb {
   interface ICodePartRegister {
     s: 3;
@@ -2561,7 +2563,7 @@ function parseOps<
           case "str":
             add(cmd + cs.str, syms, ci + 1);
             break;
-          case "sym":
+          case "sym": {
             if (cs.codeParts.length !== 1) {
               throw new Error(`Invalid command symbol: ${cs}`);
             }
@@ -2581,6 +2583,7 @@ function parseOps<
               });
             }
             break;
+          }
           default:
             assertNever(cs);
         }

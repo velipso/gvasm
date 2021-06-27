@@ -71,7 +71,7 @@ export class Bytes {
     this.push(v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff);
   }
 
-  public align(amount: number, fill: number = 0) {
+  public align(amount: number, fill = 0) {
     while ((this.nextAddress() % amount) !== 0) {
       this.push(fill & 0xff);
     }

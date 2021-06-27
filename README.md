@@ -9,14 +9,13 @@ rely on anything!
 Usage
 =====
 
-The `gbasm` script in the main directory is the entry point.
-
 You'll need to install [deno](https://deno.land) on your operating system.
 
-Then, to install:
+Then run:
 
 ```
-deno install --allow-read --allow-write -rf https://raw.githubusercontent.com/velipso/gbasm/master/gbasm.ts
+deno install --allow-read --allow-write -f -r \
+  https://raw.githubusercontent.com/velipso/gbasm/master/gbasm.ts
 ```
 
 Commands to get you started:
@@ -24,7 +23,7 @@ Commands to get you started:
 ```
 gbasm init MyGame.gbasm
 gbasm make MyGame.gbasm
-# now you will have MyGame.gba inside the main folder
+# now you will have MyGame.gba inside your folder
 # run it in an emulator, and it will show a red screen
 ```
 

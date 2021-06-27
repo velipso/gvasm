@@ -7,6 +7,8 @@
 
 import { Expression } from "./expr.ts";
 
+const MAX_LENGTH = 0x02000000;
+
 interface IPendingExpr {
   hint: string;
   address: number;
@@ -48,25 +50,30 @@ export class Bytes {
     return this.base + this.array.length;
   }
 
+  private push(...v: number[]) {
+    if (this.array.length + v.length > MAX_LENGTH) {
+      throw `Program too large, exceeds maximum length of 0x${
+        MAX_LENGTH.toString(16)
+      } bytes`;
+    }
+    this.array.push(...v);
+  }
+
   public write8(v: number) {
-    this.array.push(v & 0xff);
+    this.push(v & 0xff);
   }
 
   public write16(v: number) {
-    this.array.push(v & 0xff);
-    this.array.push((v >> 8) & 0xff);
+    this.push(v & 0xff, (v >> 8) & 0xff);
   }
 
   public write32(v: number) {
-    this.array.push(v & 0xff);
-    this.array.push((v >> 8) & 0xff);
-    this.array.push((v >> 16) & 0xff);
-    this.array.push((v >> 24) & 0xff);
+    this.push(v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff);
   }
 
   public align(amount: number, fill: number = 0) {
     while ((this.nextAddress() % amount) !== 0) {
-      this.array.push(fill & 0xff);
+      this.push(fill & 0xff);
     }
   }
 
@@ -213,7 +220,7 @@ export class Bytes {
 
   public writeLogo() {
     // deno-fmt-ignore
-    this.array.push(
+    this.push(
       0x24, 0xff, 0xae, 0x51, 0x69, 0x9a, 0xa2, 0x21, 0x3d, 0x84, 0x82, 0x0a, 0x84, 0xe4, 0x09,
       0xad, 0x11, 0x24, 0x8b, 0x98, 0xc0, 0x81, 0x7f, 0x21, 0xa3, 0x52, 0xbe, 0x19, 0x93, 0x09,
       0xce, 0x20, 0x10, 0x46, 0x4a, 0x4a, 0xf8, 0x27, 0x31, 0xec, 0x58, 0xc7, 0xe8, 0x33, 0x82,
@@ -236,6 +243,6 @@ export class Bytes {
     for (let i = 0xa0; i < 0xbd; i++) {
       crc = crc - this.array[i];
     }
-    this.array.push(crc & 0xff);
+    this.push(crc & 0xff);
   }
 }

@@ -197,6 +197,9 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
     case "endm":
       throw "TODO: endm";
     case "end":
+      if (line.length > 0) {
+        throw "Invalid .end statement";
+      }
       state.bytes.removeLocalLabels();
       // TODO: delete local macros
       // TODO: delete local constants
@@ -383,13 +386,19 @@ function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
   // TODO: check for macros
 
   // check for labels
-  const label = parseLabel(line);
-  if (label !== false) {
-    if (line.length < 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":") {
-      throw "Missing colon after label";
+  while (true) {
+    const label = parseLabel(line);
+    if (label !== false) {
+      if (
+        line.length < 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":"
+      ) {
+        throw "Missing colon after label";
+      }
+      line.shift();
+      state.bytes.addLabel(label);
+    } else {
+      break;
     }
-    line.shift();
-    state.bytes.addLabel(label);
   }
 
   if (line.length <= 0) {

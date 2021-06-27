@@ -61,4 +61,3 @@ Technical Docs
   * Error on PDF page 18 (labeled "Page 16"), it gives the incorrect encoding for CMN instruction
 * [CowBite Hardware Spec](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) ([mirror](https://cdn.githubraw.com/velipso/gbasm/main/mirror/cowbite.html))
 * [GBATEK No$GBA](http://problemkaputt.de/gbatek.htm) ([mirror](https://cdn.githubraw.com/velipso/gbasm/main/mirror/gbatek.html))
-* [Linear scan register allocation](http://web.cs.ucla.edu/~palsberg/course/cs132/linearscan.pdf) ([mirror](https://cdn.githubraw.com/velipso/gbasm/main/mirror/linearscan.pdf))

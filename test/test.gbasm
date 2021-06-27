@@ -8,12 +8,10 @@
 // GBA header
 b @main
 .logo
-.title "Game"    // game title, up to 12 characters
-.u8 "CAA"        // game code
-.u8 "E"          // (D)eutsch (E)nglish (F)rench (I)talian (J)apanese Euro(P)ean (S)panish
-.u8 "99"         // maker code
+.title "Test"
+.u8 "CAAE99"
 .u16 150, 0, 0, 0, 0
-.u8 0            // software version
+.u8 0
 .crc
 .u16 0
 

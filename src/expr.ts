@@ -185,23 +185,23 @@ export class Expression {
 
         const precedence = (op: IExprBinary["kind"]): number => {
           switch (op) {
-            case "+":
-            case "-":
-              return 1;
             case "*":
             case "/":
             case "%":
               return 0;
+            case "+":
+            case "-":
+              return 1;
             case "<<":
             case ">>":
             case ">>>":
               return 2;
             case "&":
               return 3;
-            case "|":
-              return 5;
             case "^":
               return 4;
+            case "|":
+              return 5;
             default:
               assertNever(op);
           }

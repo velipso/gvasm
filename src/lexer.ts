@@ -138,10 +138,6 @@ export function errorString(flp: IFilePos, msg: string) {
   return `${flp.filename}:${flp.line}:${flp.chr}: ${msg}`;
 }
 
-export function logError(flp: IFilePos, msg: string) {
-  console.error(errorString(flp, msg));
-}
-
 function lexNew(): ILex {
   return {
     state: LexEnum.START,

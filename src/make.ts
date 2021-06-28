@@ -5,14 +5,7 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import {
-  errorString,
-  isIdentStart,
-  ITok,
-  lex,
-  logError,
-  TokEnum,
-} from "./lexer.ts";
+import { errorString, isIdentStart, ITok, lex, TokEnum } from "./lexer.ts";
 import { assertNever } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression } from "./expr.ts";
@@ -25,7 +18,6 @@ export interface IMakeArgs {
 
 interface IParseState {
   arm: boolean;
-  tks: ITok[];
   bytes: Bytes;
 }
 
@@ -386,7 +378,7 @@ function parseLabel(line: ITok[]): string | false {
   return false;
 }
 
-function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
+function parseLine(state: IParseState, line: ITok[]) {
   // TODO: check for constants
   // TODO: check for macros
 
@@ -444,60 +436,71 @@ function parseLine(state: IParseState, line: [ITok, ...ITok[]]) {
   }
 }
 
+export async function makeFromFile(
+  filename: string,
+  readFile: (filename: string) => Promise<string>,
+): Promise<{ result: readonly number[] } | { errors: string[] }> {
+  let data;
+  try {
+    data = await readFile(filename);
+  } catch (e) {
+    return { errors: [`Failed to read file: ${filename}`] };
+  }
+
+  const tokens = lex(filename, data);
+
+  const errors: string[] = [];
+  if (
+    tokens.filter((t) => {
+      if (t.kind === TokEnum.ERROR) {
+        errors.push(errorString(t.flp, t.msg));
+        return true;
+      }
+    }).length > 0
+  ) {
+    return { errors };
+  }
+
+  const state: IParseState = {
+    arm: true,
+    bytes: new Bytes(),
+  };
+
+  if (tokens.length > 0) {
+    let flp = tokens[0].flp;
+    try {
+      while (tokens.length > 0) {
+        flp = tokens[0].flp;
+        const nextLine = tokens.findIndex((t) => t.kind === TokEnum.NEWLINE);
+        const line = nextLine < 0
+          ? tokens.splice(0)
+          : tokens.splice(0, nextLine + 1);
+        if (line.length > 0 && line[line.length - 1].kind === TokEnum.NEWLINE) {
+          line.pop(); // remove newline
+        }
+        parseLine(state, line);
+      }
+    } catch (e) {
+      return { errors: [errorString(flp, e.toString())] };
+    }
+  }
+
+  return { result: state.bytes.get() };
+}
+
 export async function make({ input, output }: IMakeArgs): Promise<number> {
   try {
-    const data = await Deno.readTextFile(input).catch((e) => {
-      console.error(`${e}\nFailed to read input file: ${input}`);
-      throw false;
-    });
+    const result = await makeFromFile(
+      input,
+      (filename) => Deno.readTextFile(filename),
+    );
 
-    const tokens = lex(input, data);
-
-    if (
-      tokens.filter((t) => {
-        if (t.kind === TokEnum.ERROR) {
-          logError(t.flp, t.msg);
-          return true;
-        }
-      }).length > 0
-    ) {
+    if ("errors" in result) {
+      result.errors.forEach((e) => console.error(e));
       throw false;
     }
 
-    const state: IParseState = {
-      arm: true,
-      tks: tokens,
-      bytes: new Bytes(),
-    };
-
-    if (state.tks.length > 0) {
-      let flp = state.tks[0].flp;
-      try {
-        while (state.tks.length > 0) {
-          flp = state.tks[0].flp;
-          const nextLine = state.tks.findIndex((tk) =>
-            tk.kind === TokEnum.NEWLINE
-          );
-          const line = nextLine < 0
-            ? state.tks.splice(0)
-            : state.tks.splice(0, nextLine + 1);
-          line.pop(); // remove newline
-          if (line.length > 0) {
-            parseLine(state, line as [ITok, ...ITok[]]);
-          }
-        }
-      } catch (e) {
-        logError(flp, e.toString());
-        throw false;
-      }
-    }
-
-    try {
-      await Deno.writeFile(output, new Uint8Array(state.bytes.get()));
-    } catch (e) {
-      console.error(e);
-      throw false;
-    }
+    await Deno.writeFile(output, new Uint8Array(result.result));
 
     return 0;
   } catch (e) {

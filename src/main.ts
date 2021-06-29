@@ -8,6 +8,7 @@
 import { IInitArgs, init } from "./init.ts";
 import { IMakeArgs, make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
+import { IItestArgs, itest } from "./itest.ts";
 import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
 import { parse as argParse } from "https://deno.land/std@0.99.0/flags/mod.ts";
 
@@ -16,7 +17,7 @@ function printVersion() {
 by Sean Connelly (@velipso), https://sean.cm
 The Unlicense License
 Project Home: https://github.com/velipso/gbasm
-Version: 0.2`);
+Version: 0.3`);
 }
 
 function printHelp() {
@@ -26,6 +27,7 @@ Command Summary:
   init      Create a skeleton project
   make      Compile a project into a .gba file
   dis       Disassemble a .gba file into a source
+  itest     Run internal tests to verify correct behavior
 
 For more help, try:
   gbasm <command> --help`);
@@ -157,7 +159,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   const a = argParse(args, {
     string: ["output"],
     boolean: ["help"],
-    alias: { o: "output" },
+    alias: { h: "help", o: "output" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -206,7 +208,7 @@ function parseDisArgs(args: string[]): number | IDisArgs {
   const a = argParse(args, {
     string: ["output", "format"],
     boolean: ["help"],
-    alias: { o: "output", f: "format" },
+    alias: { h: "help", o: "output", f: "format" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -246,6 +248,37 @@ function parseDisArgs(args: string[]): number | IDisArgs {
   };
 }
 
+function printItestHelp() {
+  console.log(`gbasm itest [<filters...>]
+
+<filters>  Only run internal tests that match the filters (glob)`);
+}
+
+function parseItestArgs(args: string[]): number | IItestArgs {
+  let badArgs = false;
+  const a = argParse(args, {
+    stopEarly: true,
+    boolean: ["help"],
+    alias: { h: "help" },
+    unknown: (_arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
+    printMakeHelp();
+    return 0;
+  }
+  return { filters: a._.map((a) => a.toString()) };
+}
+
 export async function main(args: string[]): Promise<number> {
   if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
     printVersion();
@@ -273,6 +306,12 @@ export async function main(args: string[]): Promise<number> {
       return disArgs;
     }
     return await dis(disArgs);
+  } else if (args[0] === "itest") {
+    const itestArgs = parseItestArgs(args.slice(1));
+    if (typeof itestArgs === "number") {
+      return itestArgs;
+    }
+    return await itest(itestArgs);
   }
   console.error(`Unknown command: ${args[0]}`);
   return 1;

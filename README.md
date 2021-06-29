@@ -14,6 +14,10 @@ You'll need to install [deno](https://deno.land) on your operating system.
 Then run:
 
 ```
+# install the latest release of deno
+deno upgrade
+
+# install the latest release of gbasm
 deno install --allow-read --allow-write -f -r \
   https://raw.githubusercontent.com/velipso/gbasm/master/gbasm.ts
 ```

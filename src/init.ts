@@ -66,11 +66,11 @@ export async function init(
 b @main
 .logo
 .title "${title}"
-.u8 "${code}${initials}${region}${maker}"
-.u16 150, 0, 0, 0, 0
-.u8 ${version} // version
+.i8 "${code}${initials}${region}${maker}"
+.i16 150, 0, 0, 0, 0
+.i8 ${version} // version
 .crc
-.u16 0
+.i16 0
 
 @main:
 

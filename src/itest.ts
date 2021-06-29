@@ -7,6 +7,7 @@
 
 import { load as basicLoad } from "./itests/basic.ts";
 import { load as exprLoad } from "./itests/expr.ts";
+import { load as armLoad } from "./itests/arm.ts";
 import { makeFromFile } from "./make.ts";
 
 export interface IItestArgs {
@@ -34,7 +35,12 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     }
   });
   if ("errors" in res) {
-    return test.error ? true : false;
+    if (test.error) {
+      return true;
+    }
+    console.error("");
+    res.errors.forEach((err) => console.error(err));
+    return false;
   }
   const expected: number[] = data
     .join("\n")
@@ -63,14 +69,18 @@ async function itestMake(test: ITestMake): Promise<boolean> {
       console.error(`\nResult doesn't match expected:`);
       for (
         let s = Math.max(0, i - 5);
-        s <= Math.min(expected.length, i + 5);
+        s < Math.min(expected.length, i + 6);
         s++
       ) {
-        console.error(
-          ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${
-            hex(expected[s])
-          }`,
-        );
+        if (res.result[s] === expected[s]) {
+          console.error(` result[${s}] = ${hex(res.result[s])} // match`);
+        } else {
+          console.error(
+            ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${
+              hex(expected[s])
+            }`,
+          );
+        }
       }
       return false;
     }
@@ -90,6 +100,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   // load the tests
   basicLoad(def);
   exprLoad(def);
+  armLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

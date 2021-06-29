@@ -56,6 +56,12 @@ function parseExpr(line: ITok[]): Expression {
 
 function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
   switch (cmd) {
+    case "error":
+      if (line.length === 1 && line[0].kind === TokEnum.STR) {
+        throw line[0].str;
+      } else {
+        throw "Invalid .error statement";
+      }
     case "base": {
       const amount = parseNum(line);
       if (line.length > 0) {
@@ -93,7 +99,8 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
       state.bytes.align(amount, fill & 0xff);
       break;
     }
-    case "u8":
+    case "i8":
+    case "b8":
       while (line.length > 0) {
         const t = line[0];
         if (t.kind === TokEnum.STR) {
@@ -103,7 +110,7 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
           });
         } else {
           state.bytes.expr8(
-            errorString(t.flp, "Invalid .u8 statement"),
+            errorString(t.flp, `Invalid .${cmd} statement`),
             { v: parseExpr(line) },
             ({ v }) => v,
           );
@@ -111,40 +118,60 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
             if (line[0].kind === TokEnum.ID && line[0].id === ",") {
               line.shift();
             } else {
-              throw "Invalid .u8 statement";
+              throw `Invalid .${cmd} statement`;
             }
           }
         }
       }
       break;
-    case "u16":
+    case "i16":
+    case "b16":
       while (line.length > 0) {
         state.bytes.expr16(
-          errorString(line[0].flp, "Invalid .u16 statement"),
+          errorString(line[0].flp, `Invalid .${cmd} statement`),
           { v: parseExpr(line) },
-          ({ v }) => v,
+          ({ v }) => {
+            if (cmd === "b16") {
+              // reverse byte order
+              const b1 = v & 0xff;
+              const b2 = (v >> 8) & 0xff;
+              return (b1 << 8) | b2;
+            }
+            return v;
+          },
         );
         if (line.length > 0) {
           if (line[0].kind === TokEnum.ID && line[0].id === ",") {
             line.shift();
           } else {
-            throw "Invalid .u16 statement";
+            throw `Invalid .${cmd} statement`;
           }
         }
       }
       break;
-    case "u32":
+    case "i32":
+    case "b32":
       while (line.length > 0) {
         state.bytes.expr32(
-          errorString(line[0].flp, "Invalid .u32 statement"),
+          errorString(line[0].flp, `Invalid .${cmd} statement`),
           { v: parseExpr(line) },
-          ({ v }) => v,
+          ({ v }) => {
+            if (cmd === "b32") {
+              // reverse byte order
+              const b1 = v & 0xff;
+              const b2 = (v >> 8) & 0xff;
+              const b3 = (v >> 16) & 0xff;
+              const b4 = (v >> 24) & 0xff;
+              return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+            }
+            return v;
+          },
         );
         if (line.length > 0) {
           if (line[0].kind === TokEnum.ID && line[0].id === ",") {
             line.shift();
           } else {
-            throw "Invalid .u32 statement";
+            throw `Invalid .${cmd} statement`;
           }
         }
       }
@@ -329,9 +356,14 @@ function parseArmStatement(
             push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
             break;
           }
-          case "word":
-            push(codePart.s, (syms[codePart.sym] - address - 8) >> 2);
+          case "word": {
+            const offset = syms[codePart.sym] - address - 8;
+            if (offset & 3) {
+              throw `Can't branch to misaligned memory address`;
+            }
+            push(codePart.s, offset >> 2);
             break;
+          }
           case "offset12":
           case "reglist":
           case "offsetsplit":
@@ -443,7 +475,7 @@ export async function makeFromFile(
   let data;
   try {
     data = await readFile(filename);
-  } catch (e) {
+  } catch (_) {
     return { errors: [`Failed to read file: ${filename}`] };
   }
 

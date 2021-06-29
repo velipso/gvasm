@@ -217,15 +217,24 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.SPECIAL: {
-      if (lx.ch2 === "/" && ch1 === "*") {
+      const comb = lx.ch2 + ch1;
+      if (comb === "/*") {
         lx.state = LexEnum.COMMENT_BLOCK;
-      } else if (lx.ch2 === "/" && ch1 === "/") {
+      } else if (comb === "//") {
         lx.state = LexEnum.COMMENT_LINE;
         tks.push(tokNewline(flp));
-      } else if (lx.ch2 === ">" && ch1 === ">") {
+      } else if (comb === ">>") {
         lx.state = LexEnum.RSHIFT;
-      } else if (lx.ch2 === "<" && ch1 === "<") {
-        tks.push(tokId(flpS, "<<"));
+      } else if (
+        comb === "<<" ||
+        comb === "==" ||
+        comb === "!=" ||
+        comb === "<=" ||
+        comb === ">=" ||
+        comb === "&&" ||
+        comb === "||"
+      ) {
+        tks.push(tokId(flpS, comb));
         lx.state = LexEnum.START;
       } else {
         tks.push(tokId(flpS, lx.ch2));
@@ -301,11 +310,13 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         } else {
           lx.num = lx.num * lx.numBase + v;
         }
+      } else if (ch1 === "_") {
+        // do nothing
       } else if (!isAlpha(ch1)) {
         tks.push(tokNum(flpS, lx.num));
         lx.state = LexEnum.START;
         lexProcess(lx, tks);
-      } else if (ch1 !== "_") {
+      } else {
         tks.push(tokError(flpS, "Invalid number"));
       }
       break;

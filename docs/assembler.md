@@ -13,16 +13,16 @@ Assembler
 b @main          // branch to main method
 .logo
 .title "Game"    // game title, up to 12 characters
-.u8 "CAA"        // game code
-.u8 "E"          // (D)eutsch (E)nglish (F)rench (I)talian (J)apanese Euro(P)ean (S)panish
-.u8 "99"         // maker code
-.u16 150, 0, 0, 0, 0
-.u8 0            // software version
+.i8 "CAA"        // game code
+.i8 "E"          // (D)eutsch (E)nglish (F)rench (I)talian (J)apanese Euro(P)ean (S)panish
+.i8 "99"         // maker code
+.i16 150, 0, 0, 0, 0
+.i8 0            // software version
 .crc
-.u16 0
+.i16 0
 
 .include "./file.gbasm" // copy/paste text file as code
-.embed "./file.bmp"     // copy/paste binary file as u8
+.embed "./file.bmp"     // copy/paste binary file as i8
 .stdlib                 // include the standard library
 .extlib                 // include the extended library
 
@@ -30,9 +30,14 @@ b @main          // branch to main method
 .arm
 
 .if $foo
+.error "message"
 .elseif $bar
 .else
 .endif
+
+.b8 1
+.b16 1
+.b32 1
 
 @main:    // global label
 @@foo:    // local label (disappears after .end)

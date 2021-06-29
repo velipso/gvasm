@@ -27,37 +27,59 @@ interface IExprUnary {
   value: IExpr;
 }
 
+type BinaryOp =
+  | "+"
+  | "-"
+  | "*"
+  | "/"
+  | "%"
+  | "<<"
+  | ">>"
+  | ">>>"
+  | "&"
+  | "|"
+  | "^"
+  | "<"
+  | "<="
+  | ">"
+  | ">="
+  | "=="
+  | "!="
+  | "&&"
+  | "||";
+
 interface IExprBinary {
-  kind:
-    | "+"
-    | "-"
-    | "*"
-    | "/"
-    | "%"
-    | "<<"
-    | ">>"
-    | ">>>"
-    | "&"
-    | "|"
-    | "^";
+  kind: BinaryOp;
   left: IExpr;
   right: IExpr;
 }
 
-function isBinary(ex: IExpr): ex is IExprBinary {
+function isBinaryOp(op: string): op is BinaryOp {
   return (
-    ex.kind === "+" ||
-    ex.kind === "-" ||
-    ex.kind === "*" ||
-    ex.kind === "/" ||
-    ex.kind === "%" ||
-    ex.kind === "<<" ||
-    ex.kind === ">>" ||
-    ex.kind === ">>>" ||
-    ex.kind === "&" ||
-    ex.kind === "|" ||
-    ex.kind === "^"
+    op === "+" ||
+    op === "-" ||
+    op === "*" ||
+    op === "/" ||
+    op === "%" ||
+    op === "<<" ||
+    op === ">>" ||
+    op === ">>>" ||
+    op === "&" ||
+    op === "|" ||
+    op === "^" ||
+    op === "<" ||
+    op === "<=" ||
+    op === ">" ||
+    op === ">=" ||
+    op === "==" ||
+    op === "!=" ||
+    op === "&&" ||
+    op === "||"
   );
+}
+
+function isBinary(ex: IExpr): ex is IExprBinary {
+  return isBinaryOp(ex.kind);
 }
 
 interface IExprTernary {
@@ -202,28 +224,28 @@ export class Expression {
               return 4;
             case "|":
               return 5;
+            case "<=":
+            case "<":
+            case ">=":
+            case ">":
+              return 6;
+            case "==":
+            case "!=":
+              return 7;
+            case "&&":
+              return 8;
+            case "||":
+              return 9;
             default:
               assertNever(op);
           }
-          return 6;
+          return 10;
         };
 
         // look for binary operators
         if (line.length > 0 && line[0].kind === TokEnum.ID) {
           const id = line[0].id;
-          if (
-            id === "+" ||
-            id === "-" ||
-            id === "*" ||
-            id === "/" ||
-            id === "%" ||
-            id === "<<" ||
-            id === ">>" ||
-            id === ">>>" ||
-            id === "&" ||
-            id === "|" ||
-            id === "^"
-          ) {
+          if (isBinaryOp(id)) {
             line.shift();
             const right = term();
             if (isBinary(right) && precedence(id) <= precedence(right.kind)) {
@@ -312,6 +334,22 @@ export class Expression {
           return (get(ex.left) | get(ex.right)) | 0;
         case "^":
           return (get(ex.left) ^ get(ex.right)) | 0;
+        case "<":
+          return get(ex.left) < get(ex.right) ? 1 : 0;
+        case "<=":
+          return get(ex.left) <= get(ex.right) ? 1 : 0;
+        case ">":
+          return get(ex.left) > get(ex.right) ? 1 : 0;
+        case ">=":
+          return get(ex.left) >= get(ex.right) ? 1 : 0;
+        case "==":
+          return get(ex.left) == get(ex.right) ? 1 : 0;
+        case "!=":
+          return get(ex.left) != get(ex.right) ? 1 : 0;
+        case "&&":
+          return get(ex.left) !== 0 && get(ex.right) !== 0 ? 1 : 0;
+        case "||":
+          return get(ex.left) !== 0 || get(ex.right) !== 0 ? 1 : 0;
         case "?:": {
           const condition = get(ex.condition);
           const iftrue = get(ex.iftrue);

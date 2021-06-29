@@ -182,7 +182,7 @@ export async function dis(
           }),
         ));
       } else {
-        console.log(pad(8, `.u32 0x${opcode.toString(16)}`));
+        console.log(pad(8, `.i32 0x${opcode.toString(16)}`));
       }
     }
 

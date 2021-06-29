@@ -27,11 +27,11 @@ b @main /// 2e 00 00 ea
 /// bb 3e 03 44 78 00 90 cb 88 11 3a 94 65 c0 7c 63
 /// 87 f0 3c af d6 25 e4 8b 38 0a ac 72 21 d4 f8 07
 .title "Game"          /// 47 61 6d 65 00 00 00 00 00 00 00 00
-.u8 "CAAE77"           /// 43 41 41 45 37 37
-.u16 150, 0, 0, 0, 0   /// 96 00 00 00 00 00 00 00 00 00
-.u8 0                  /// 00
+.i8 "CAAE77"           /// 43 41 41 45 37 37
+.i16 150, 0, 0, 0, 0   /// 96 00 00 00 00 00 00 00 00 00
+.i8 0                  /// 00
 .crc                   /// 5f
-.u16 0                 /// 00 00
+.i16 0                 /// 00 00
 
 @main:
 
@@ -49,69 +49,192 @@ str r1, [r0]           /// 00 10 00 e5
   });
 
   def({
-    name: "basic.u8",
-    desc: "Use .u8 command",
+    name: "basic.i8",
+    desc: "Use .i8 command",
     kind: "make",
     files: {
       "/root/main": `
-.u8 0           /// 00
-.u8 1, 2, 3     /// 01 02 03
-.u8 -1, -2, -3  /// ff fe fd
-.u8 0x12345678  /// 78
-.u8 0x87654321  /// 21
+.i8 0           /// 00
+.i8 1, 2, 3     /// 01 02 03
+.i8 -1, -2, -3  /// ff fe fd
+.i8 0x12345678  /// 78
+.i8 0x87654321  /// 21
+.i8 "hello"     /// 68 65 6c 6c 6f
 `,
     },
   });
 
   def({
-    name: "basic.u16",
-    desc: "Use .u16 command",
+    name: "basic.b8",
+    desc: "Use .b8 command",
     kind: "make",
     files: {
       "/root/main": `
-.u16 0           /// 00 00
-.u16 1, 2, 3     /// 01 00 02 00 03 00
-.u16 -1, -2, -3  /// ff ff fe ff fd ff
-.u16 0x12345678  /// 78 56
-.u16 0x87654321  /// 21 43
+.b8 0           /// 00
+.b8 1, 2, 3     /// 01 02 03
+.b8 -1, -2, -3  /// ff fe fd
+.b8 0x12345678  /// 78
+.b8 0x87654321  /// 21
+.b8 "hello"     /// 68 65 6c 6c 6f
 `,
     },
   });
 
   def({
-    name: "basic.u32",
-    desc: "Use .u32 command",
+    name: "basic.i16",
+    desc: "Use .i16 command",
     kind: "make",
     files: {
       "/root/main": `
-.u32 0           /// 00 00 00 00
-.u32 1, 2, 3     /// 01 00 00 00 02 00 00 00 03 00 00 00
-.u32 -1, -2, -3  /// ff ff ff ff fe ff ff ff fd ff ff ff
-.u32 0x12345678  /// 78 56 34 12
-.u32 0x87654321  /// 21 43 65 87
+.i16 0           /// 00 00
+.i16 1, 2, 3     /// 01 00 02 00 03 00
+.i16 -1, -2, -3  /// ff ff fe ff fd ff
+.i16 0x12345678  /// 78 56
+.i16 0x87654321  /// 21 43
 `,
     },
+  });
+
+  def({
+    name: "basic.b16",
+    desc: "Use .b16 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.b16 0           /// 00 00
+.b16 1, 2, 3     /// 00 01 00 02 00 03
+.b16 -1, -2, -3  /// ff ff ff fe ff fd
+.b16 0x12345678  /// 56 78
+.b16 0x87654321  /// 43 21
+`,
+    },
+  });
+
+  def({
+    name: "basic.i32",
+    desc: "Use .i32 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i32 0           /// 00 00 00 00
+.i32 1, 2, 3     /// 01 00 00 00 02 00 00 00 03 00 00 00
+.i32 -1, -2, -3  /// ff ff ff ff fe ff ff ff fd ff ff ff
+.i32 0x12345678  /// 78 56 34 12
+.i32 0x87654321  /// 21 43 65 87
+`,
+    },
+  });
+
+  def({
+    name: "basic.b32",
+    desc: "Use .b32 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.b32 0           /// 00 00 00 00
+.b32 1, 2, 3     /// 00 00 00 01 00 00 00 02 00 00 00 03
+.b32 -1, -2, -3  /// ff ff ff ff ff ff ff fe ff ff ff fd
+.b32 0x12345678  /// 12 34 56 78
+.b32 0x87654321  /// 87 65 43 21
+`,
+    },
+  });
+
+  def({
+    name: "basic.hex",
+    desc: "Represent number as hexidecimal",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8 0x45             /// 45
+.i16 0x12_34         /// 34 12
+.i32 -0xff_ff_ff_ff  /// 01 00 00 00
+`,
+    },
+  });
+
+  def({
+    name: "basic.dec",
+    desc: "Represent number as decimal",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8 12__7    /// 7f
+.i16 -5_1_2  /// 00 fe
+.i32 4_096   /// 00 10 00 00
+`,
+    },
+  });
+
+  def({
+    name: "basic.dec-invalid",
+    desc: "Invalid decimal number",
+    kind: "make",
+    error: true,
+    files: { "/root/main": `.i32 123abc` },
+  });
+
+  def({
+    name: "basic.oct",
+    desc: "Represent number as octal",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8 0c7_7          /// 3f
+.i16 0c55_55       /// 6d 0b
+.i32 -0c1234_5670  /// 48 34 d6 ff
+`,
+    },
+  });
+
+  def({
+    name: "basic.oct-invalid",
+    desc: "Invalid octal number",
+    kind: "make",
+    error: true,
+    files: { "/root/main": `.i32 0c56781` },
+  });
+
+  def({
+    name: "basic.bin",
+    desc: "Represent number as binary",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8  0b1000_1111                                /// 8f
+.i16 0b1010_0101_1111_0000                      /// f0 a5
+.i32 0b1100_1101_1110_1111_0001_0010_0011_0100  /// 34 12 ef cd
+`,
+    },
+  });
+
+  def({
+    name: "basic.bin-invalid",
+    desc: "Invalid binary number",
+    kind: "make",
+    error: true,
+    files: { "/root/main": `.i32 0b1011210` },
   });
 
   def({
     name: "basic.base-zero",
-    desc: "Use .u32 command with base zero",
+    desc: "Use .i32 command with base zero",
     kind: "make",
     files: {
       "/root/main": `
 .base 0
-@zero: .u32 @zero /// 00 00 00 00
+@zero: .i32 @zero /// 00 00 00 00
 `,
     },
   });
 
   def({
     name: "basic.base-default",
-    desc: "Use .u32 command with default base",
+    desc: "Use .i32 command with default base",
     kind: "make",
     files: {
       "/root/main": `
-@main: .u32 @main /// 00 00 00 08
+@main: .i32 @main /// 00 00 00 08
 `,
     },
   });
@@ -122,9 +245,9 @@ str r1, [r0]           /// 00 10 00 e5
     kind: "make",
     files: {
       "/root/main": `
-.u8 7     /// 07
+.i8 7     /// 07
 .align 4  /// 00 00 00
-.u8 9     /// 09
+.i8 9     /// 09
 `,
     },
   });
@@ -137,9 +260,9 @@ str r1, [r0]           /// 00 10 00 e5
       "/root/main": `
 .base 1
 .align 4        /// 00 00 00
-.u8 9           /// 09
+.i8 9           /// 09
 .align 9, 0xcc  /// cc cc cc cc
-.u8 5           /// 05
+.i8 5           /// 05
 `,
     },
   });
@@ -166,6 +289,16 @@ str r1, [r0]           /// 00 10 00 e5
       "/root/main": `
 .title "AAAAAAAAAAAAZ"
 `,
+    },
+  });
+
+  def({
+    name: "basic.error",
+    desc: "Use .error command",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `.error "This is an error"`,
     },
   });
 }

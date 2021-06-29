@@ -47,4 +47,125 @@ str r1, [r0]           /// 00 10 00 e5
 `,
     },
   });
+
+  def({
+    name: "basic.u8",
+    desc: "Use .u8 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.u8 0           /// 00
+.u8 1, 2, 3     /// 01 02 03
+.u8 -1, -2, -3  /// ff fe fd
+.u8 0x12345678  /// 78
+.u8 0x87654321  /// 21
+`,
+    },
+  });
+
+  def({
+    name: "basic.u16",
+    desc: "Use .u16 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.u16 0           /// 00 00
+.u16 1, 2, 3     /// 01 00 02 00 03 00
+.u16 -1, -2, -3  /// ff ff fe ff fd ff
+.u16 0x12345678  /// 78 56
+.u16 0x87654321  /// 21 43
+`,
+    },
+  });
+
+  def({
+    name: "basic.u32",
+    desc: "Use .u32 command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.u32 0           /// 00 00 00 00
+.u32 1, 2, 3     /// 01 00 00 00 02 00 00 00 03 00 00 00
+.u32 -1, -2, -3  /// ff ff ff ff fe ff ff ff fd ff ff ff
+.u32 0x12345678  /// 78 56 34 12
+.u32 0x87654321  /// 21 43 65 87
+`,
+    },
+  });
+
+  def({
+    name: "basic.base-zero",
+    desc: "Use .u32 command with base zero",
+    kind: "make",
+    files: {
+      "/root/main": `
+.base 0
+@zero: .u32 @zero /// 00 00 00 00
+`,
+    },
+  });
+
+  def({
+    name: "basic.base-default",
+    desc: "Use .u32 command with default base",
+    kind: "make",
+    files: {
+      "/root/main": `
+@main: .u32 @main /// 00 00 00 08
+`,
+    },
+  });
+
+  def({
+    name: "basic.align",
+    desc: "Use .align command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.u8 7     /// 07
+.align 4  /// 00 00 00
+.u8 9     /// 09
+`,
+    },
+  });
+
+  def({
+    name: "basic.align-base",
+    desc: "Make sure .align takes .base into account",
+    kind: "make",
+    files: {
+      "/root/main": `
+.base 1
+.align 4        /// 00 00 00
+.u8 9           /// 09
+.align 9, 0xcc  /// cc cc cc cc
+.u8 5           /// 05
+`,
+    },
+  });
+
+  def({
+    name: "basic.title",
+    desc: "Use .title command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.title ""              /// 00 00 00 00 00 00 00 00 00 00 00 00
+.title "A"             /// 41 00 00 00 00 00 00 00 00 00 00 00
+.title "AAAAAAAAAAAA"  /// 41 41 41 41 41 41 41 41 41 41 41 41
+`,
+    },
+  });
+
+  def({
+    name: "basic.title-overflow",
+    desc: "Error when a .title is too long",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `
+.title "AAAAAAAAAAAAZ"
+`,
+    },
+  });
 }

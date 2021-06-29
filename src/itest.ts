@@ -25,10 +25,10 @@ export type ITest = ITestMake;
 
 async function itestMake(test: ITestMake): Promise<boolean> {
   const data: string[] = [];
-  const res = await makeFromFile("/root/main", async (filename: string) => {
+  const res = await makeFromFile("/root/main", (filename: string) => {
     if (filename in test.files) {
       data.push(test.files[filename]);
-      return test.files[filename];
+      return Promise.resolve(test.files[filename]);
     } else {
       throw new Error(`Not found: ${filename}`);
     }
@@ -52,10 +52,26 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     .split(" ")
     .map((n) => parseInt(n, 16));
   if (expected.length !== res.result.length) {
+    console.error(
+      `\nExpected length is ${expected.length} bytes, but got ${res.result.length} bytes`,
+    );
     return false;
   }
+  const hex = (n: number) => `${n < 16 ? "0" : ""}${n.toString(16)}`;
   for (let i = 0; i < expected.length; i++) {
     if (expected[i] !== res.result[i]) {
+      console.error(`\nResult doesn't match expected:`);
+      for (
+        let s = Math.max(0, i - 5);
+        s <= Math.min(expected.length, i + 5);
+        s++
+      ) {
+        console.error(
+          ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${
+            hex(expected[s])
+          }`,
+        );
+      }
       return false;
     }
   }
@@ -99,21 +115,19 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
     }
 
     try {
-      let pass;
-
       // TODO: switch on different test types
-      pass = await itestMake(test.test);
+      const pass = await itestMake(test.test);
 
       if (pass) {
         console.log(`pass     [${indexStr}] ${name}`);
         passed++;
       } else {
-        console.log(`FAIL     [${indexStr}] ${name}`);
+        console.log(`FAIL     [${indexStr}] ${name}\n`);
         failed++;
       }
     } catch (e) {
       console.error(e);
-      console.log(`ERR      [${indexStr}] ${name}`);
+      console.log(`ERR      [${indexStr}] ${name}\n`);
       failed++;
     }
   }

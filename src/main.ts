@@ -273,7 +273,7 @@ function parseItestArgs(args: string[]): number | IItestArgs {
     return 1;
   }
   if (a.help) {
-    printMakeHelp();
+    printItestHelp();
     return 0;
   }
   return { filters: a._.map((a) => a.toString()) };

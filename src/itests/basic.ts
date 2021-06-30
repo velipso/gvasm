@@ -15,7 +15,7 @@ export function load(def: (test: ITest) => void) {
     files: {
       "/root/main": `
 b @main /// 2e 00 00 ea
-.logo
+.Logo
 /// 24 ff ae 51 69 9a a2 21 3d 84 82 0a
 /// 84 e4 09 ad 11 24 8b 98 c0 81 7f 21 a3 52 be 19
 /// 93 09 ce 20 10 46 4a 4a f8 27 31 ec 58 c7 e8 33
@@ -29,13 +29,13 @@ b @main /// 2e 00 00 ea
 .title "Game"          /// 47 61 6d 65 00 00 00 00 00 00 00 00
 .i8 "CAAE77"           /// 43 41 41 45 37 37
 .i16 150, 0, 0, 0, 0   /// 96 00 00 00 00 00 00 00 00 00
-.i8 0                  /// 00
+.I8 0                  /// 00
 .crc                   /// 5f
 .i16 0                 /// 00 00
 
 @main:
 
-mov r0, #0x04000000    /// 01 03 a0 e3
+MOV r0, #0x04000000    /// 01 03 a0 e3
 mov r1, #0x0           /// 00 10 a0 e3
 str r1, [r0]           /// 00 10 00 e5
 
@@ -43,7 +43,7 @@ mov r0, #0x05000000    /// 05 04 a0 e3
 mov r1, #0x3e0         /// 3e 1e a0 e3
 str r1, [r0]           /// 00 10 00 e5
 
-@loop: b @loop         /// fe ff ff ea
+@LOOP: b @loop         /// fe ff ff ea
 `,
     },
   });

@@ -287,7 +287,7 @@ function parseArmStatement(
             if (!t || t.kind !== TokEnum.ID) {
               return false;
             }
-            const reg = decodeRegister(t.id.toLowerCase());
+            const reg = decodeRegister(t.id);
             if (reg >= 0 && reg <= 15) {
               syms[part.sym] = reg;
             } else {
@@ -308,9 +308,9 @@ function parseArmStatement(
             }
             if (
               line.length > 0 && line[0].kind === TokEnum.ID &&
-              line[0].id.toLowerCase() in valid
+              line[0].id in valid
             ) {
-              syms[part.sym] = valid[line[0].id.toLowerCase()];
+              syms[part.sym] = valid[line[0].id];
               line.shift();
             } else if ("" in valid) {
               syms[part.sym] = valid[""];

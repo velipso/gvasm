@@ -60,6 +60,7 @@ interface ITokId {
   kind: TokEnum.ID;
   flp: IFilePos;
   id: string;
+  idCase: string;
 }
 
 interface ITokNum {
@@ -92,7 +93,7 @@ function tokNewline(flp: IFilePos): ITokNewline {
 }
 
 function tokId(flp: IFilePos, id: string): ITokId {
-  return { kind: TokEnum.ID, flp, id };
+  return { kind: TokEnum.ID, flp, id: id.toLowerCase(), idCase: id };
 }
 
 function tokNum(flp: IFilePos, num: number): ITokNum {

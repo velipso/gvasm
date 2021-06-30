@@ -2502,7 +2502,7 @@ function parseOps<
   U extends Arm.ICodePart | Thumb.ICodePart,
 >(ops: readonly T[]): IParsedOpsGeneric<T, U> {
   const result: IParsedOpsGeneric<T, U> = {};
-  ops.forEach((op) => {
+  for (const op of ops) {
     // looks up "$foo" in the code parts
     const stringToSymbol = (str: string): IBodyStr | IBodySym<U> => {
       if (str.charAt(0) === "$") {
@@ -2520,7 +2520,8 @@ function parseOps<
       }
     };
 
-    op.syntax.forEach((syntax, syntaxIndex) => {
+    for (let syntaxIndex = 0; syntaxIndex < op.syntax.length; syntaxIndex++) {
+      const syntax = op.syntax[syntaxIndex];
       const bodyParsed = parseSyntaxIntoParts(syntax);
       if (bodyParsed.length <= 0) {
         throw new Error(`Invalid syntax: ${syntax}`);
@@ -2534,13 +2535,15 @@ function parseOps<
       const cmdSymbols = cmdStrings.map(stringToSymbol);
 
       const body: IBody<U>[] = [];
-      bodyParsed.forEach((part) => {
+      for (const part of bodyParsed) {
         if (Array.isArray(part)) {
-          part.map(stringToSymbol).forEach((j) => body.push(j));
+          for (const j of part.map(stringToSymbol)) {
+            body.push(j);
+          }
         } else {
           body.push({ kind: "num", num: part });
         }
-      });
+      }
 
       // for every syntax, we iterate through all possible enums, so that we can build a fully
       // constituted command (i.e., "b$cond" becomes entries for "b", "beq", "bne", etc)
@@ -2578,9 +2581,9 @@ function parseOps<
               if (estrs === false) {
                 continue;
               }
-              estrs.split("/").forEach((estr) => {
+              for (const estr of estrs.split("/")) {
                 add(cmd + estr, { ...syms, [cp.sym]: ei }, ci + 1);
-              });
+              }
             }
             break;
           }
@@ -2589,7 +2592,7 @@ function parseOps<
         }
       };
       add("", {}, 0);
-    });
-  });
+    }
+  }
   return result;
 }

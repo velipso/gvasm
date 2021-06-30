@@ -39,7 +39,9 @@ async function itestMake(test: ITestMake): Promise<boolean> {
       return true;
     }
     console.error("");
-    res.errors.forEach((err) => console.error(err));
+    for (const err of res.errors) {
+      console.error(err);
+    }
     return false;
   }
   const expected: number[] = data

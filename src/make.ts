@@ -105,9 +105,9 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
         const t = line[0];
         if (t.kind === TokEnum.STR) {
           line.shift();
-          new TextEncoder().encode(t.str).forEach((n) => {
+          for (const n of new TextEncoder().encode(t.str)) {
             state.bytes.write8(n);
-          });
+          }
         } else {
           state.bytes.expr8(
             errorString(t.flp, `Invalid .${cmd} statement`),
@@ -295,10 +295,33 @@ function parseArmStatement(
             }
             break;
           }
+          case "enum": {
+            const valid: { [str: string]: number } = {};
+            for (let i = 0; i < codePart.enum.length; i++) {
+              const en = codePart.enum[i];
+              if (en === false) {
+                continue;
+              }
+              for (const es of en.split("/")) {
+                valid[es] = i;
+              }
+            }
+            if (
+              line.length > 0 && line[0].kind === TokEnum.ID &&
+              line[0].id.toLowerCase() in valid
+            ) {
+              syms[part.sym] = valid[line[0].id.toLowerCase()];
+              line.shift();
+            } else if ("" in valid) {
+              syms[part.sym] = valid[""];
+            } else {
+              return false;
+            }
+            break;
+          }
           case "offset12":
           case "reglist":
           case "offsetsplit":
-          case "enum":
             console.error(`TODO: don't know how to interpret ${codePart.k}`);
             throw new Error("TODO");
           case "value":
@@ -528,7 +551,9 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
     );
 
     if ("errors" in result) {
-      result.errors.forEach((e) => console.error(e));
+      for (const e of result.errors) {
+        console.error(e);
+      }
       throw false;
     }
 

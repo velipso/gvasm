@@ -56,24 +56,30 @@ export class Bytes {
         MAX_LENGTH.toString(16)
       } bytes`;
     }
-    this.array.push(...v);
+    for (const n of v) {
+      this.array.push(n & 0xff);
+    }
   }
 
   public write8(v: number) {
-    this.push(v & 0xff);
+    this.push(v);
   }
 
   public write16(v: number) {
-    this.push(v & 0xff, (v >> 8) & 0xff);
+    this.push(v, v >> 8);
   }
 
   public write32(v: number) {
-    this.push(v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff);
+    this.push(v, v >> 8, v >> 16, v >> 24);
+  }
+
+  public writeArray(v: number[] | Uint8Array) {
+    this.push(...v);
   }
 
   public align(amount: number, fill = 0) {
     while ((this.nextAddress() % amount) !== 0) {
-      this.push(fill & 0xff);
+      this.push(fill);
     }
   }
 

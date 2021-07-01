@@ -5,11 +5,19 @@
 // Project Home: https://github.com/velipso/gbasm
 //
 
-import { errorString, isIdentStart, ITok, lex, TokEnum } from "./lexer.ts";
+import {
+  errorString,
+  flpString,
+  isIdentStart,
+  ITok,
+  lex,
+  TokEnum,
+} from "./lexer.ts";
 import { assertNever } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
+import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
 
 export interface IMakeArgs {
   input: string;
@@ -54,7 +62,11 @@ function parseExpr(line: ITok[]): Expression {
   return expr;
 }
 
-function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
+function parseDotStatement(
+  state: IParseState,
+  cmd: string,
+  line: ITok[],
+): { include: string } | { embed: string } | undefined {
   switch (cmd) {
     case "error":
       if (line.length === 1 && line[0].kind === TokEnum.STR) {
@@ -176,10 +188,20 @@ function parseDotStatement(state: IParseState, cmd: string, line: ITok[]) {
         }
       }
       break;
-    case "include":
-      throw "TODO: include";
-    case "embed":
-      throw "TODO: embed";
+    case "include": {
+      const t = line.shift();
+      if (!t || t.kind !== TokEnum.STR || line.length > 0) {
+        throw "Invalid .include statement";
+      }
+      return { include: t.str };
+    }
+    case "embed": {
+      const t = line.shift();
+      if (!t || t.kind !== TokEnum.STR || line.length > 0) {
+        throw "Invalid .include statement";
+      }
+      return { embed: t.str };
+    }
     case "stdlib":
       throw "TODO: stdlib";
     case "extlib":
@@ -433,7 +455,10 @@ function parseLabel(line: ITok[]): string | false {
   return false;
 }
 
-function parseLine(state: IParseState, line: ITok[]) {
+function parseLine(
+  state: IParseState,
+  line: ITok[],
+): { include: string } | { embed: string } | undefined {
   // TODO: check for constants
   // TODO: check for macros
 
@@ -471,7 +496,7 @@ function parseLine(state: IParseState, line: ITok[]) {
   const cmd = cmdTok.id;
 
   if (dot) {
-    parseDotStatement(state, cmd, line);
+    return parseDotStatement(state, cmd, line);
   } else if (state.arm) {
     const ops = Arm.parsedOps[cmd];
     if (!ops) {
@@ -493,11 +518,13 @@ function parseLine(state: IParseState, line: ITok[]) {
 
 export async function makeFromFile(
   filename: string,
-  readFile: (filename: string) => Promise<string>,
+  isAbsolute: (filename: string) => boolean,
+  readTextFile: (filename: string) => Promise<string>,
+  readBinaryFile: (filename: string) => Promise<number[] | Uint8Array>,
 ): Promise<{ result: readonly number[] } | { errors: string[] }> {
   let data;
   try {
-    data = await readFile(filename);
+    data = await readTextFile(filename);
   } catch (_) {
     return { errors: [`Failed to read file: ${filename}`] };
   }
@@ -522,6 +549,7 @@ export async function makeFromFile(
   };
 
   if (tokens.length > 0) {
+    const alreadyIncluded = new Set<string>();
     let flp = tokens[0].flp;
     try {
       while (tokens.length > 0) {
@@ -533,7 +561,63 @@ export async function makeFromFile(
         if (line.length > 0 && line[line.length - 1].kind === TokEnum.NEWLINE) {
           line.pop(); // remove newline
         }
-        parseLine(state, line);
+
+        const includeEmbed = parseLine(state, line);
+
+        if (includeEmbed && "include" in includeEmbed) {
+          const { include } = includeEmbed;
+          const full = isAbsolute(include)
+            ? include
+            : path.join(path.dirname(flp.filename), include);
+
+          const includeKey = `${flpString(flp)}:${full}`;
+          if (alreadyIncluded.has(includeKey)) {
+            return {
+              errors: [errorString(flp, `Circular include of: ${full}`)],
+            };
+          }
+          alreadyIncluded.add(includeKey);
+
+          let data2;
+          try {
+            data2 = await readTextFile(full);
+          } catch (_) {
+            return {
+              errors: [errorString(flp, `Failed to include file: ${full}`)],
+            };
+          }
+
+          const tokens2 = lex(full, data2);
+          const errors2: string[] = [];
+          if (
+            tokens2.filter((t) => {
+              if (t.kind === TokEnum.ERROR) {
+                errors2.push(errorString(t.flp, t.msg));
+                return true;
+              }
+            }).length > 0
+          ) {
+            return { errors: errors2 };
+          }
+
+          tokens.splice(0, 0, ...tokens2);
+        } else if (includeEmbed && "embed" in includeEmbed) {
+          const { embed } = includeEmbed;
+          const full = isAbsolute(embed)
+            ? embed
+            : path.join(path.dirname(flp.filename), embed);
+
+          let data2;
+          try {
+            data2 = await readBinaryFile(full);
+          } catch (_) {
+            return {
+              errors: [errorString(flp, `Failed to embed file: ${full}`)],
+            };
+          }
+
+          state.bytes.writeArray(data2);
+        }
       }
     } catch (e) {
       return { errors: [errorString(flp, e.toString())] };
@@ -547,7 +631,9 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
   try {
     const result = await makeFromFile(
       input,
-      (filename) => Deno.readTextFile(filename),
+      path.isAbsolute,
+      Deno.readTextFile,
+      Deno.readFile,
     );
 
     if ("errors" in result) {

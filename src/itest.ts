@@ -7,6 +7,7 @@
 
 import { load as basicLoad } from "./itests/basic.ts";
 import { load as exprLoad } from "./itests/expr.ts";
+import { load as filesLoad } from "./itests/files.ts";
 import { load as armLoad } from "./itests/arm.ts";
 import { makeFromFile } from "./make.ts";
 
@@ -24,28 +25,8 @@ interface ITestMake {
 
 export type ITest = ITestMake;
 
-async function itestMake(test: ITestMake): Promise<boolean> {
-  const data: string[] = [];
-  const res = await makeFromFile("/root/main", (filename: string) => {
-    if (filename in test.files) {
-      data.push(test.files[filename]);
-      return Promise.resolve(test.files[filename]);
-    } else {
-      throw new Error(`Not found: ${filename}`);
-    }
-  });
-  if ("errors" in res) {
-    if (test.error) {
-      return true;
-    }
-    console.error("");
-    for (const err of res.errors) {
-      console.error(err);
-    }
-    return false;
-  }
-  const expected: number[] = data
-    .join("\n")
+function extractBytes(data: string): number[] {
+  return data
     .split("\n")
     .map((line) => {
       const c = line.indexOf("///");
@@ -59,6 +40,39 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     .trim()
     .split(" ")
     .map((n) => parseInt(n, 16));
+}
+
+async function itestMake(test: ITestMake): Promise<boolean> {
+  const res = await makeFromFile(
+    "/root/main",
+    (filename) => filename.startsWith("/"),
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(test.files[filename]);
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(extractBytes(test.files[filename]));
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+  );
+  if ("errors" in res) {
+    if (test.error) {
+      return true;
+    }
+    console.error("");
+    for (const err of res.errors) {
+      console.error(err);
+    }
+    return false;
+  }
+
+  const expected = extractBytes(test.files["/root/main"]);
   if (expected.length !== res.result.length) {
     console.error(
       `\nExpected length is ${expected.length} bytes, but got ${res.result.length} bytes`,
@@ -102,6 +116,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   // load the tests
   basicLoad(def);
   exprLoad(def);
+  filesLoad(def);
   armLoad(def);
 
   // execute the tests that match any filter

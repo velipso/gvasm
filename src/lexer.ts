@@ -135,8 +135,12 @@ const FILEPOS_NULL: IFilePos = Object.freeze({
   chr: -1,
 });
 
+export function flpString(flp: IFilePos) {
+  return `${flp.filename}:${flp.line}:${flp.chr}`;
+}
+
 export function errorString(flp: IFilePos, msg: string) {
-  return `${flp.filename}:${flp.line}:${flp.chr}: ${msg}`;
+  return `${flpString(flp)}: ${msg}`;
 }
 
 function lexNew(): ILex {
@@ -417,5 +421,6 @@ export function lex(filename: string, data: string): ITok[] {
       wascr = false;
     }
   }
+  lexAdd(lx, flp, "\n", tks);
   return tks;
 }

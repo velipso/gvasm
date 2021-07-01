@@ -19,6 +19,7 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [ ] Macros
 - [ ] Standard library
 - [ ] Extended library
+- [ ] Disassembler
 - [ ] Examples and documentation
 
 Install
@@ -42,6 +43,14 @@ your path.
 
 In order to upgrade, simply run the above command again -- it will redownload the latest version and
 install it.
+
+You can verify everything installed correctly by running the internal test suite:
+
+```
+gbasm itest
+```
+
+Every test should pass!
 
 Usage
 =====

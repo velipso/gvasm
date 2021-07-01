@@ -9,8 +9,7 @@ import { IInitArgs, init } from "./init.ts";
 import { IMakeArgs, make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
 import { IItestArgs, itest } from "./itest.ts";
-import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
-import { parse as argParse } from "https://deno.land/std@0.99.0/flags/mod.ts";
+import { argParse, path } from "./external.ts";
 
 function printVersion() {
   console.log(`gbasm - Assembler and disassembler for Game Boy Advance homebrew

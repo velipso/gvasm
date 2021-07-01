@@ -17,7 +17,7 @@ import { assertNever } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
-import * as path from "https://deno.land/std@0.99.0/path/mod.ts";
+import { path } from "./external.ts";
 
 export interface IMakeArgs {
   input: string;

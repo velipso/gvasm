@@ -68,6 +68,144 @@ blcc @L4            /// 01 00 00 3b
 
   for (
     const { op, desc, code } of [
+      { op: "mov", desc: "Move", code: 13 },
+      { op: "mvn", desc: "Move negative", code: 15 },
+    ]
+  ) {
+    const b = (code & 7) << 1;
+    const b0 = b.toString(16);
+    const b1 = (b | 1).toString(16);
+    def({
+      name: `arm.${op}`,
+      desc,
+      kind: "make",
+      files: {
+        "/root/main": `
+${op} r3, r14              /// 0e 30 ${b0}0 e1
+${op}s r3, r14             /// 0e 30 ${b1}0 e1
+${op}mi r3, r14            /// 0e 30 ${b0}0 41
+${op}smi r3, r14           /// 0e 30 ${b1}0 41
+${op}mis r3, r14           /// 0e 30 ${b1}0 41
+
+${op} r3, r14, lsl #0      /// 0e 30 ${b0}0 e1
+${op}s r3, r14, lsl #0     /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, lsl #0    /// 0e 30 ${b0}0 41
+${op}smi r3, r14, lsl #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, lsl #0   /// 0e 30 ${b1}0 41
+
+${op} r3, r14, lsr #0      /// 0e 30 ${b0}0 e1
+${op}s r3, r14, lsr #0     /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, lsr #0    /// 0e 30 ${b0}0 41
+${op}smi r3, r14, lsr #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, lsr #0   /// 0e 30 ${b1}0 41
+
+${op} r3, r14, asr #0      /// 0e 30 ${b0}0 e1
+${op}s r3, r14, asr #0     /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, asr #0    /// 0e 30 ${b0}0 41
+${op}smi r3, r14, asr #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, asr #0   /// 0e 30 ${b1}0 41
+
+${op} r3, r14, ror #0      /// 0e 30 ${b0}0 e1
+${op}s r3, r14, ror #0     /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, ror #0    /// 0e 30 ${b0}0 41
+${op}smi r3, r14, ror #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, ror #0   /// 0e 30 ${b1}0 41
+
+${op} r3, r14, lsr #32     /// 2e 30 ${b0}0 e1
+${op}s r3, r14, lsr #32    /// 2e 30 ${b1}0 e1
+${op}mi r3, r14, lsr #32   /// 2e 30 ${b0}0 41
+${op}smi r3, r14, lsr #32  /// 2e 30 ${b1}0 41
+${op}mis r3, r14, lsr #32  /// 2e 30 ${b1}0 41
+
+${op} r3, r14, asr #32     /// 4e 30 ${b0}0 e1
+${op}s r3, r14, asr #32    /// 4e 30 ${b1}0 e1
+${op}mi r3, r14, asr #32   /// 4e 30 ${b0}0 41
+${op}smi r3, r14, asr #32  /// 4e 30 ${b1}0 41
+${op}mis r3, r14, asr #32  /// 4e 30 ${b1}0 41
+
+${op} r3, r14, rrx         /// 6e 30 ${b0}0 e1
+${op}s r3, r14, rrx        /// 6e 30 ${b1}0 e1
+${op}mi r3, r14, rrx       /// 6e 30 ${b0}0 41
+${op}smi r3, r14, rrx      /// 6e 30 ${b1}0 41
+${op}mis r3, r14, rrx      /// 6e 30 ${b1}0 41
+
+${op} r3, r14, lsl #5      /// 8e 32 ${b0}0 e1
+${op}s r3, r14, lsr #10    /// 2e 35 ${b1}0 e1
+${op}mi r3, r14, asr #15   /// ce 37 ${b0}0 41
+${op}smi r3, r14, ror #20  /// 6e 3a ${b1}0 41
+${op}mis r3, r14, lsl #25  /// 8e 3c ${b1}0 41
+
+${op} r3, r14, lsl r10     /// 1e 3a ${b0}0 e1
+${op}s r3, r14, lsr r10    /// 3e 3a ${b1}0 e1
+${op}mi r3, r14, asr r10   /// 5e 3a ${b0}0 41
+${op}smi r3, r14, ror r10  /// 7e 3a ${b1}0 41
+${op}mis r3, r14, lsl r10  /// 1e 3a ${b1}0 41
+
+${op} r3, #0x34000000      /// 0d 33 ${b0}0 e3
+${op}s r3, #0x560000       /// 56 38 ${b1}0 e3
+${op}mi r3, #0x7800        /// 1e 3b ${b0}0 43
+${op}smi r3, #0x91         /// 91 30 ${b1}0 43
+${op}mis r3, #0x50         /// 05 3e ${b1}0 43
+`,
+      },
+    });
+  }
+
+  for (
+    const { op, desc, code } of [
+      { op: "tst", desc: "Bitwise and test", code: 8 },
+      { op: "teq", desc: "Bitwise exclusive or test", code: 9 },
+      { op: "cmp", desc: "Compare", code: 10 },
+      { op: "cmn", desc: "Compare negative", code: 11 },
+    ]
+  ) {
+    const b = (code & 7) << 1;
+    const b1 = (b | 1).toString(16);
+    def({
+      name: `arm.${op}`,
+      desc,
+      kind: "make",
+      files: {
+        "/root/main": `
+${op} r9, r14              /// 0e 00 ${b1}9 e1
+${op}pl r9, r14            /// 0e 00 ${b1}9 51
+
+${op} r9, r14, lsl #0      /// 0e 00 ${b1}9 e1
+${op}pl r9, r14, lsl #0    /// 0e 00 ${b1}9 51
+
+${op} r9, r14, lsr #0      /// 0e 00 ${b1}9 e1
+${op}pl r9, r14, lsr #0    /// 0e 00 ${b1}9 51
+
+${op} r9, r14, asr #0      /// 0e 00 ${b1}9 e1
+${op}pl r9, r14, asr #0    /// 0e 00 ${b1}9 51
+
+${op} r9, r14, ror #0      /// 0e 00 ${b1}9 e1
+${op}pl r9, r14, ror #0    /// 0e 00 ${b1}9 51
+
+${op} r9, r14, lsr #32     /// 2e 00 ${b1}9 e1
+${op}pl r9, r14, lsr #32   /// 2e 00 ${b1}9 51
+
+${op} r9, r14, asr #32     /// 4e 00 ${b1}9 e1
+${op}pl r9, r14, asr #32   /// 4e 00 ${b1}9 51
+
+${op} r9, r14, rrx         /// 6e 00 ${b1}9 e1
+${op}pl r9, r14, rrx       /// 6e 00 ${b1}9 51
+
+${op} r9, r14, lsl #5      /// 8e 02 ${b1}9 e1
+${op}pl r9, r14, asr #15   /// ce 07 ${b1}9 51
+
+${op} r9, r14, lsl r10     /// 1e 0a ${b1}9 e1
+${op}pl r9, r14, asr r10   /// 5e 0a ${b1}9 51
+
+${op} r9, #0x34000000      /// 0d 03 ${b1}9 e3
+${op}pl r9, #0x7800        /// 1e 0b ${b1}9 53
+`,
+      },
+    });
+  }
+
+  for (
+    const { op, desc, code } of [
       { op: "and", desc: "Bitwise and", code: 0 },
       { op: "eor", desc: "Bitwise exclusive or", code: 1 },
       { op: "sub", desc: "Subtraction", code: 2 },
@@ -97,6 +235,12 @@ ${op}s r3, r9, r14             /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14            /// 0e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14           /// 0e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14           /// 0e 30 ${b1}9 3${a0}
+
+${op} r3, r9, r14, lsl #0      /// 0e 30 ${b0}9 e${a0}
+${op}s r3, r9, r14, lsl #0     /// 0e 30 ${b1}9 e${a0}
+${op}lo r3, r9, r14, lsl #0    /// 0e 30 ${b0}9 3${a0}
+${op}slo r3, r9, r14, lsl #0   /// 0e 30 ${b1}9 3${a0}
+${op}los r3, r9, r14, lsl #0   /// 0e 30 ${b1}9 3${a0}
 
 ${op} r3, r9, r14, lsr #0      /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr #0     /// 0e 30 ${b1}9 e${a0}
@@ -155,4 +299,6 @@ ${op}los r3, r9, #0x50         /// 05 3e ${b1}9 3${a2}
       },
     });
   }
+
+  // TODO: PSR Transfer
 }

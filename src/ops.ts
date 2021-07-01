@@ -1749,7 +1749,7 @@ export namespace Arm {
         { s: 3, k: "value", v: 4 },
         condition,
       ],
-      syntax: ["push$cond {$Rlist}$s"],
+      syntax: ["push$cond $Rlist$s"],
     },
     {
       ref: "4.11,4.11.9",
@@ -1770,8 +1770,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "stm$pu$cond $Rn $w, {$Rlist}$s",
-        "stm$cond$pu $Rn $w, {$Rlist}$s",
+        "stm$pu$cond $Rn $w, $Rlist$s",
+        "stm$cond$pu $Rn $w, $Rlist$s",
       ],
     },
     {
@@ -1787,7 +1787,7 @@ export namespace Arm {
         { s: 3, k: "value", v: 4 },
         condition,
       ],
-      syntax: ["pop$cond {$Rlist}$s"],
+      syntax: ["pop$cond $Rlist$s"],
     },
     {
       ref: "4.11,4.11.9",
@@ -1808,8 +1808,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "ldm$pu$cond $Rn $w, {$Rlist}$s",
-        "ldm$cond$pu $Rn $w, {$Rlist}$s",
+        "ldm$pu$cond $Rn $w, $Rlist$s",
+        "ldm$cond$pu $Rn $w, $Rlist$s",
       ],
     },
 
@@ -1893,6 +1893,7 @@ export namespace Thumb {
     s: 8;
     k: "reglist";
     sym: "Rlist";
+    extra?: string;
   }
 
   interface ICodePartOffsetSplit {
@@ -2293,19 +2294,19 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["push {$Rlist}"],
+      syntax: ["push $Rlist"],
     },
     {
       ref: "5.14",
       category: "Format 14: Push/Pop Registers",
       codeParts: [
-        { s: 8, k: "reglist", sym: "Rlist" },
+        { s: 8, k: "reglist", sym: "Rlist", extra: "lr" },
         { s: 1, k: "value", sym: "r", v: 1 }, // store LR
         { s: 2, k: "value", v: 2 },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["push {$Rlist, lr}"],
+      syntax: ["push $Rlist"],
     },
     {
       ref: "5.14",
@@ -2317,19 +2318,19 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["pop {$Rlist}"],
+      syntax: ["pop $Rlist"],
     },
     {
       ref: "5.14",
       category: "Format 14: Push/Pop Registers",
       codeParts: [
-        { s: 8, k: "reglist", sym: "Rlist" },
+        { s: 8, k: "reglist", sym: "Rlist", extra: "pc" },
         { s: 1, k: "value", sym: "r", v: 1 }, // load PC
         { s: 2, k: "value", v: 2 },
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["pop {$Rlist, pc}"],
+      syntax: ["pop $Rlist"],
     },
 
     //
@@ -2345,7 +2346,7 @@ export namespace Thumb {
         { s: 1, k: "enum", sym: "oper", enum: ["stmia", "ldmia"] },
         { s: 4, k: "value", v: 12 },
       ],
-      syntax: ["$oper $Rb!, {$Rlist}"],
+      syntax: ["$oper $Rb!, $Rlist"],
     },
 
     //

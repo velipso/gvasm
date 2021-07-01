@@ -3,8 +3,23 @@ gbasm
 
 Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 
-Note that the entire repo is a **work in progress**.  Feel free to poke around but certainly don't
-rely on anything!
+This is a work in progress -- as features are completed, they should be mostly stable:
+
+- [x] ARM opcode descriptions
+- [x] THUMB opcode descriptions
+- [x] Byte, halfword, word commands
+- [x] GBA header commands
+- [x] Include and embed
+- [x] Labels
+- [x] Constant expressions
+- [ ] ARM opcode assembly (in progress)
+- [ ] Test suite (in progress)
+- [ ] THUMB opcode assembly
+- [ ] Conditional compilation
+- [ ] Macros
+- [ ] Standard library
+- [ ] Extended library
+- [ ] Examples and documentation
 
 Install
 =======

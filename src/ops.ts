@@ -1345,7 +1345,7 @@ export namespace Arm {
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
         { s: 1, k: "ignored", sym: "w", v: 0 }, // write back doesn't matter because offset is 0
         { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
-        { s: 1, k: "ignored", sym: "u", v: 0 }, // up/down doesn't matter because offset is 0
+        { s: 1, k: "ignored", sym: "u", v: 1 }, // up/down doesn't matter because offset is 0
         { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
         { s: 2, k: "value", v: 1 },
@@ -1396,7 +1396,15 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, $u$Rm]$w",
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, lsl #0]$w",
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, lsr #0]$w",
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, asr #0]$w",
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, ror #0]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, lsl #0]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, lsr #0]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, asr #0]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, ror #0]$w",
       ],
     },
     {
@@ -1404,7 +1412,9 @@ export namespace Arm {
       category: "Single Data Transfer",
       codeParts: [
         { s: 4, k: "register", sym: "Rm" },
-        { s: 8, k: "immediate", sym: "shift" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 1 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
@@ -1417,8 +1427,85 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "$oper$b$cond $Rd, [$Rn, $u$Rm, $shift]$w",
-        "$oper$cond$b $Rd, [$Rn, $u$Rm, $shift]$w",
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, lsr #32]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, lsr #32]$w",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.2.3",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 2 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, asr #32]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, asr #32]$w",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.2.3",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 3 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, rrx]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, rrx]$w",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.2.3",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        {
+          s: 2,
+          k: "enum",
+          sym: "shift",
+          enum: ["lsl/asl", "lsr", "asr", "ror"],
+        },
+        { s: 5, k: "immediate", sym: "amount" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$cond $Rd, [$Rn, $u$Rm, $shift #$amount]$w",
+        "$oper$cond$b $Rd, [$Rn, $u$Rm, $shift #$amount]$w",
       ],
     },
     {
@@ -1461,7 +1548,15 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, lsl #0",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, lsr #0",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, asr #0",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, ror #0",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsl #0",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsr #0",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, asr #0",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, ror #0",
       ],
     },
     {
@@ -1469,7 +1564,9 @@ export namespace Arm {
       category: "Single Data Transfer",
       codeParts: [
         { s: 4, k: "register", sym: "Rm" },
-        { s: 8, k: "immediate", sym: "shift" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 1 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
         { s: 4, k: "register", sym: "Rd" },
         { s: 4, k: "register", sym: "Rn" },
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
@@ -1482,8 +1579,85 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, $shift",
-        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, $shift",
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, lsr #32",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsr #32",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.3.2",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 2 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "t"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, asr #32",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, asr #32",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.3.2",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        { s: 2, k: "value", sym: "shift", v: 3 },
+        { s: 5, k: "value", sym: "amount", v: 0 },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "t"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, rrx",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, rrx",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.3.2",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 },
+        {
+          s: 2,
+          k: "enum",
+          sym: "shift",
+          enum: ["lsl/asl", "lsr", "asr", "ror"],
+        },
+        { s: 5, k: "immediate", sym: "amount" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "t"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "enum", sym: "u", enum: ["-", "/+"] },
+        { s: 1, k: "value", sym: "p", v: 0 }, // post-indexing
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$w$cond $Rd, [$Rn], $u$Rm, $shift #$amount",
+        "$oper$cond$b$w $Rd, [$Rn], $u$Rm, $shift #$amount",
       ],
     },
 

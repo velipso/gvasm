@@ -26,7 +26,7 @@ interface ITestMake {
 export type ITest = ITestMake;
 
 function extractBytes(data: string): number[] {
-  return data
+  const bytes = data
     .split("\n")
     .map((line) => {
       const c = line.indexOf("///");
@@ -37,9 +37,8 @@ function extractBytes(data: string): number[] {
       }
     })
     .join("")
-    .trim()
-    .split(" ")
-    .map((n) => parseInt(n, 16));
+    .trim();
+  return bytes === "" ? [] : bytes.split(" ").map((n) => parseInt(n, 16));
 }
 
 async function itestMake(test: ITestMake): Promise<boolean> {

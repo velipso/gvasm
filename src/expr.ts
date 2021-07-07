@@ -346,10 +346,16 @@ export class Expression {
           return get(ex.left) == get(ex.right) ? 1 : 0;
         case "!=":
           return get(ex.left) != get(ex.right) ? 1 : 0;
-        case "&&":
-          return get(ex.left) !== 0 && get(ex.right) !== 0 ? 1 : 0;
-        case "||":
-          return get(ex.left) !== 0 || get(ex.right) !== 0 ? 1 : 0;
+        case "&&": {
+          const left = get(ex.left);
+          const right = get(ex.right);
+          return left === 0 ? left : right;
+        }
+        case "||": {
+          const left = get(ex.left);
+          const right = get(ex.right);
+          return left !== 0 ? left : right;
+        }
         case "?:": {
           const condition = get(ex.condition);
           const iftrue = get(ex.iftrue);

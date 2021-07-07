@@ -250,6 +250,8 @@ function parseDotStatement(
     case "else":
     case "endif":
       throw "TODO: if/elseif/else/endif";
+    case "mov":
+      throw "TODO: generic mov";
     default:
       throw `Unknown dot statement: .${cmd}`;
   }
@@ -292,6 +294,7 @@ function parseArmStatement(
         switch (codePart.k) {
           case "word":
           case "immediate":
+          case "offset12":
           case "rotimm": {
             try {
               const expr = Expression.parse(line);
@@ -341,7 +344,6 @@ function parseArmStatement(
             }
             break;
           }
-          case "offset12":
           case "reglist":
           case "offsetsplit":
             console.error(`TODO: don't know how to interpret ${codePart.k}`);
@@ -391,8 +393,8 @@ function parseArmStatement(
             // calculate rotate immediate form of v
             let v = syms[codePart.sym];
             let r = 0;
-            while (v > 0 && (v & 3) === 0) {
-              v >>= 2;
+            while (v !== 0 && (v & 3) === 0) {
+              v >>>= 2;
               r++;
             }
             if (v > 255) {
@@ -410,6 +412,12 @@ function parseArmStatement(
             break;
           }
           case "offset12":
+            if (codePart.sign) {
+              push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+            } else {
+              push(codePart.s, Math.abs(syms[codePart.sym]));
+            }
+            break;
           case "reglist":
           case "offsetsplit":
             throw new Error(`TODO: push with ${codePart.k}`);

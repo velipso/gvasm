@@ -153,7 +153,7 @@ export function load(def: (test: ITest) => void) {
     desc: "Logical and",
     kind: "make",
     files: {
-      "/root/main": `.i8 0 && 0, 4 && 0, 0 && 2, 6 && 8  /// 00 00 00 01`,
+      "/root/main": `.i8 0 && 0, 4 && 0, 0 && 2, 6 && 8  /// 00 00 00 08`,
     },
   });
 
@@ -162,7 +162,7 @@ export function load(def: (test: ITest) => void) {
     desc: "Logical or",
     kind: "make",
     files: {
-      "/root/main": `.i8 0 || 0, 4 || 0, 0 || 2, 6 || 8  /// 00 01 01 01`,
+      "/root/main": `.i8 0 || 0, 4 || 0, 0 || 2, 6 || 8  /// 00 04 02 06`,
     },
   });
 

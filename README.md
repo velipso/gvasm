@@ -15,6 +15,7 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [ ] ARM opcode assembly (in progress)
 - [ ] Test suite (in progress)
 - [ ] THUMB opcode assembly
+- [ ] Named constants
 - [ ] Conditional compilation
 - [ ] Macros
 - [ ] Standard library

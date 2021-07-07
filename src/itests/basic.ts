@@ -37,11 +37,11 @@ b @main /// 2e 00 00 ea
 
 MOV r0, #0x04000000    /// 01 03 a0 e3
 mov r1, #0x0           /// 00 10 a0 e3
-str r1, [r0]           /// 00 10 00 e5
+str r1, [r0]           /// 00 10 80 e5
 
 mov r0, #0x05000000    /// 05 04 a0 e3
 mov r1, #0x3e0         /// 3e 1e a0 e3
-str r1, [r0]           /// 00 10 00 e5
+str r1, [r0]           /// 00 10 80 e5
 
 @LOOP: b @loop         /// fe ff ff ea
 `,

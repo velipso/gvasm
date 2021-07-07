@@ -1212,4 +1212,303 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
       }
     });
   }
+
+  def({
+    name: "arm.str-overflow-immediate",
+    desc: "Store with overflow immediate",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `str r2, [r9], r10, lsl #32`
+    }
+  });
+
+  def({
+    name: "arm.str-overflow-offset",
+    desc: "Store with overflow offset",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `str r2, [r9, #4096]`
+    }
+  });
+
+  def({
+    name: "arm.strh",
+    desc: "Store half word",
+    kind: "make",
+    files: {
+      "/root/main": `
+strh r11, [r4]                /// b0 b0 44 e1
+strhlt r11, [r4]              /// b0 b0 44 b1
+strlth r11, [r4]              /// b0 b0 44 b1
+
+strh r11, [r4, #100]          /// b4 b6 c4 e1
+strhlt r11, [r4, #100]        /// b4 b6 c4 b1
+strlth r11, [r4, #100]        /// b4 b6 c4 b1
+strh r11, [r4, #100]!         /// b4 b6 e4 e1
+strhlt r11, [r4, #100]!       /// b4 b6 e4 b1
+strlth r11, [r4, #100]!       /// b4 b6 e4 b1
+
+strh r11, [r4, #-100]         /// b4 b6 44 e1
+strhlt r11, [r4, #-100]       /// b4 b6 44 b1
+strlth r11, [r4, #-100]       /// b4 b6 44 b1
+strh r11, [r4, #-100]!        /// b4 b6 64 e1
+strhlt r11, [r4, #-100]!      /// b4 b6 64 b1
+strlth r11, [r4, #-100]!      /// b4 b6 64 b1
+
+strh r11, [r4, r13]           /// bd b0 84 e1
+strhlt r11, [r4, r13]         /// bd b0 84 b1
+strlth r11, [r4, r13]         /// bd b0 84 b1
+strh r11, [r4, r13]!          /// bd b0 a4 e1
+strhlt r11, [r4, r13]!        /// bd b0 a4 b1
+strlth r11, [r4, r13]!        /// bd b0 a4 b1
+
+strh r11, [r4, +r13]          /// bd b0 84 e1
+strhlt r11, [r4, +r13]        /// bd b0 84 b1
+strlth r11, [r4, +r13]        /// bd b0 84 b1
+strh r11, [r4, +r13]!         /// bd b0 a4 e1
+strhlt r11, [r4, +r13]!       /// bd b0 a4 b1
+strlth r11, [r4, +r13]!       /// bd b0 a4 b1
+
+strh r11, [r4, -r13]          /// bd b0 04 e1
+strhlt r11, [r4, -r13]        /// bd b0 04 b1
+strlth r11, [r4, -r13]        /// bd b0 04 b1
+strh r11, [r4, -r13]!         /// bd b0 24 e1
+strhlt r11, [r4, -r13]!       /// bd b0 24 b1
+strlth r11, [r4, -r13]!       /// bd b0 24 b1
+
+strh r11, [r4], #100          /// b4 b6 c4 e0
+strhlt r11, [r4], #100        /// b4 b6 c4 b0
+strlth r11, [r4], #100        /// b4 b6 c4 b0
+
+strh r11, [r4], #-100         /// b4 b6 44 e0
+strhlt r11, [r4], #-100       /// b4 b6 44 b0
+strlth r11, [r4], #-100       /// b4 b6 44 b0
+
+strh r11, [r4], r13           /// bd b0 84 e0
+strhlt r11, [r4], r13         /// bd b0 84 b0
+strlth r11, [r4], r13         /// bd b0 84 b0
+
+strh r11, [r4], +r13          /// bd b0 84 e0
+strhlt r11, [r4], +r13        /// bd b0 84 b0
+strlth r11, [r4], +r13        /// bd b0 84 b0
+
+strh r11, [r4], -r13          /// bd b0 04 e0
+strhlt r11, [r4], -r13        /// bd b0 04 b0
+strlth r11, [r4], -r13        /// bd b0 04 b0
+`
+    }
+  });
+
+  def({
+    name: "arm.strh-overflow",
+    desc: "Store half word with overflow offset",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `strh r2, [r9, #256]`
+    }
+  });
+
+  def({
+    name: "arm.ldrh",
+    desc: "Load half word",
+    kind: "make",
+    files: {
+      "/root/main": `
+ldrh r11, [r4]                /// b0 b0 54 e1
+ldrhgt r11, [r4]              /// b0 b0 54 c1
+ldrgth r11, [r4]              /// b0 b0 54 c1
+
+ldrsb r11, [r4]               /// d0 b0 54 e1
+ldrsbgt r11, [r4]             /// d0 b0 54 c1
+ldrgtsb r11, [r4]             /// d0 b0 54 c1
+
+ldrsh r11, [r4]               /// f0 b0 54 e1
+ldrshgt r11, [r4]             /// f0 b0 54 c1
+ldrgtsh r11, [r4]             /// f0 b0 54 c1
+
+ldrh r11, [r4, #100]          /// b4 b6 d4 e1
+ldrhgt r11, [r4, #100]        /// b4 b6 d4 c1
+ldrgth r11, [r4, #100]        /// b4 b6 d4 c1
+
+ldrsb r11, [r4, #100]         /// d4 b6 d4 e1
+ldrsbgt r11, [r4, #100]       /// d4 b6 d4 c1
+ldrgtsb r11, [r4, #100]       /// d4 b6 d4 c1
+
+ldrsh r11, [r4, #100]         /// f4 b6 d4 e1
+ldrshgt r11, [r4, #100]       /// f4 b6 d4 c1
+ldrgtsh r11, [r4, #100]       /// f4 b6 d4 c1
+
+ldrh r11, [r4, #100]!         /// b4 b6 f4 e1
+ldrhgt r11, [r4, #100]!       /// b4 b6 f4 c1
+ldrgth r11, [r4, #100]!       /// b4 b6 f4 c1
+
+ldrsb r11, [r4, #100]!        /// d4 b6 f4 e1
+ldrsbgt r11, [r4, #100]!      /// d4 b6 f4 c1
+ldrgtsb r11, [r4, #100]!      /// d4 b6 f4 c1
+
+ldrsh r11, [r4, #100]!        /// f4 b6 f4 e1
+ldrshgt r11, [r4, #100]!      /// f4 b6 f4 c1
+ldrgtsh r11, [r4, #100]!      /// f4 b6 f4 c1
+
+ldrh r11, [r4, #-100]         /// b4 b6 54 e1
+ldrhgt r11, [r4, #-100]       /// b4 b6 54 c1
+ldrgth r11, [r4, #-100]       /// b4 b6 54 c1
+
+ldrsb r11, [r4, #-100]        /// d4 b6 54 e1
+ldrsbgt r11, [r4, #-100]      /// d4 b6 54 c1
+ldrgtsb r11, [r4, #-100]      /// d4 b6 54 c1
+
+ldrsh r11, [r4, #-100]        /// f4 b6 54 e1
+ldrshgt r11, [r4, #-100]      /// f4 b6 54 c1
+ldrgtsh r11, [r4, #-100]      /// f4 b6 54 c1
+
+ldrh r11, [r4, #-100]!        /// b4 b6 74 e1
+ldrhgt r11, [r4, #-100]!      /// b4 b6 74 c1
+ldrgth r11, [r4, #-100]!      /// b4 b6 74 c1
+
+ldrsb r11, [r4, #-100]!       /// d4 b6 74 e1
+ldrsbgt r11, [r4, #-100]!     /// d4 b6 74 c1
+ldrgtsb r11, [r4, #-100]!     /// d4 b6 74 c1
+
+ldrsh r11, [r4, #-100]!       /// f4 b6 74 e1
+ldrshgt r11, [r4, #-100]!     /// f4 b6 74 c1
+ldrgtsh r11, [r4, #-100]!     /// f4 b6 74 c1
+
+ldrh r11, [r4, r13]           /// bd b0 94 e1
+ldrhgt r11, [r4, r13]         /// bd b0 94 c1
+ldrgth r11, [r4, r13]         /// bd b0 94 c1
+
+ldrsb r11, [r4, r13]          /// dd b0 94 e1
+ldrsbgt r11, [r4, r13]        /// dd b0 94 c1
+ldrgtsb r11, [r4, r13]        /// dd b0 94 c1
+
+ldrsh r11, [r4, r13]          /// fd b0 94 e1
+ldrshgt r11, [r4, r13]        /// fd b0 94 c1
+ldrgtsh r11, [r4, r13]        /// fd b0 94 c1
+
+ldrh r11, [r4, r13]!          /// bd b0 b4 e1
+ldrhgt r11, [r4, r13]!        /// bd b0 b4 c1
+ldrgth r11, [r4, r13]!        /// bd b0 b4 c1
+
+ldrsb r11, [r4, r13]!         /// dd b0 b4 e1
+ldrsbgt r11, [r4, r13]!       /// dd b0 b4 c1
+ldrgtsb r11, [r4, r13]!       /// dd b0 b4 c1
+
+ldrsh r11, [r4, r13]!         /// fd b0 b4 e1
+ldrshgt r11, [r4, r13]!       /// fd b0 b4 c1
+ldrgtsh r11, [r4, r13]!       /// fd b0 b4 c1
+
+ldrh r11, [r4, +r13]          /// bd b0 94 e1
+ldrhgt r11, [r4, +r13]        /// bd b0 94 c1
+ldrgth r11, [r4, +r13]        /// bd b0 94 c1
+
+ldrsb r11, [r4, +r13]         /// dd b0 94 e1
+ldrsbgt r11, [r4, +r13]       /// dd b0 94 c1
+ldrgtsb r11, [r4, +r13]       /// dd b0 94 c1
+
+ldrsh r11, [r4, +r13]         /// fd b0 94 e1
+ldrshgt r11, [r4, +r13]       /// fd b0 94 c1
+ldrgtsh r11, [r4, +r13]       /// fd b0 94 c1
+
+ldrh r11, [r4, +r13]!         /// bd b0 b4 e1
+ldrhgt r11, [r4, +r13]!       /// bd b0 b4 c1
+ldrgth r11, [r4, +r13]!       /// bd b0 b4 c1
+
+ldrsb r11, [r4, +r13]!        /// dd b0 b4 e1
+ldrsbgt r11, [r4, +r13]!      /// dd b0 b4 c1
+ldrgtsb r11, [r4, +r13]!      /// dd b0 b4 c1
+
+ldrsh r11, [r4, +r13]!        /// fd b0 b4 e1
+ldrshgt r11, [r4, +r13]!      /// fd b0 b4 c1
+ldrgtsh r11, [r4, +r13]!      /// fd b0 b4 c1
+
+ldrh r11, [r4, -r13]          /// bd b0 14 e1
+ldrhgt r11, [r4, -r13]        /// bd b0 14 c1
+ldrgth r11, [r4, -r13]        /// bd b0 14 c1
+
+ldrsb r11, [r4, -r13]         /// dd b0 14 e1
+ldrsbgt r11, [r4, -r13]       /// dd b0 14 c1
+ldrgtsb r11, [r4, -r13]       /// dd b0 14 c1
+
+ldrsh r11, [r4, -r13]         /// fd b0 14 e1
+ldrshgt r11, [r4, -r13]       /// fd b0 14 c1
+ldrgtsh r11, [r4, -r13]       /// fd b0 14 c1
+
+ldrh r11, [r4, -r13]!         /// bd b0 34 e1
+ldrhgt r11, [r4, -r13]!       /// bd b0 34 c1
+ldrgth r11, [r4, -r13]!       /// bd b0 34 c1
+
+ldrsb r11, [r4, -r13]!        /// dd b0 34 e1
+ldrsbgt r11, [r4, -r13]!      /// dd b0 34 c1
+ldrgtsb r11, [r4, -r13]!      /// dd b0 34 c1
+
+ldrsh r11, [r4, -r13]!        /// fd b0 34 e1
+ldrshgt r11, [r4, -r13]!      /// fd b0 34 c1
+ldrgtsh r11, [r4, -r13]!      /// fd b0 34 c1
+
+ldrh r11, [r4], #100          /// b4 b6 d4 e0
+ldrhgt r11, [r4], #100        /// b4 b6 d4 c0
+ldrgth r11, [r4], #100        /// b4 b6 d4 c0
+
+ldrsb r11, [r4], #100         /// d4 b6 d4 e0
+ldrsbgt r11, [r4], #100       /// d4 b6 d4 c0
+ldrgtsb r11, [r4], #100       /// d4 b6 d4 c0
+
+ldrsh r11, [r4], #100         /// f4 b6 d4 e0
+ldrshgt r11, [r4], #100       /// f4 b6 d4 c0
+ldrgtsh r11, [r4], #100       /// f4 b6 d4 c0
+
+ldrh r11, [r4], #-100         /// b4 b6 54 e0
+ldrhgt r11, [r4], #-100       /// b4 b6 54 c0
+ldrgth r11, [r4], #-100       /// b4 b6 54 c0
+
+ldrsb r11, [r4], #-100        /// d4 b6 54 e0
+ldrsbgt r11, [r4], #-100      /// d4 b6 54 c0
+ldrgtsb r11, [r4], #-100      /// d4 b6 54 c0
+
+ldrsh r11, [r4], #-100        /// f4 b6 54 e0
+ldrshgt r11, [r4], #-100      /// f4 b6 54 c0
+ldrgtsh r11, [r4], #-100      /// f4 b6 54 c0
+
+ldrh r11, [r4], r13           /// bd b0 94 e0
+ldrhgt r11, [r4], r13         /// bd b0 94 c0
+ldrgth r11, [r4], r13         /// bd b0 94 c0
+
+ldrsb r11, [r4], r13          /// dd b0 94 e0
+ldrsbgt r11, [r4], r13        /// dd b0 94 c0
+ldrgtsb r11, [r4], r13        /// dd b0 94 c0
+
+ldrsh r11, [r4], r13          /// fd b0 94 e0
+ldrshgt r11, [r4], r13        /// fd b0 94 c0
+ldrgtsh r11, [r4], r13        /// fd b0 94 c0
+
+ldrh r11, [r4], +r13          /// bd b0 94 e0
+ldrhgt r11, [r4], +r13        /// bd b0 94 c0
+ldrgth r11, [r4], +r13        /// bd b0 94 c0
+
+ldrsb r11, [r4], +r13         /// dd b0 94 e0
+ldrsbgt r11, [r4], +r13       /// dd b0 94 c0
+ldrgtsb r11, [r4], +r13       /// dd b0 94 c0
+
+ldrsh r11, [r4], +r13         /// fd b0 94 e0
+ldrshgt r11, [r4], +r13       /// fd b0 94 c0
+ldrgtsh r11, [r4], +r13       /// fd b0 94 c0
+
+ldrh r11, [r4], -r13          /// bd b0 14 e0
+ldrhgt r11, [r4], -r13        /// bd b0 14 c0
+ldrgth r11, [r4], -r13        /// bd b0 14 c0
+
+ldrsb r11, [r4], -r13         /// dd b0 14 e0
+ldrsbgt r11, [r4], -r13       /// dd b0 14 c0
+ldrgtsb r11, [r4], -r13       /// dd b0 14 c0
+
+ldrsh r11, [r4], -r13         /// fd b0 14 e0
+ldrshgt r11, [r4], -r13       /// fd b0 14 c0
+ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
+`
+    }
+  });
 }

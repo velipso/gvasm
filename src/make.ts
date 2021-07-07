@@ -294,8 +294,9 @@ function parseArmStatement(
         switch (codePart.k) {
           case "word":
           case "immediate":
+          case "rotimm":
           case "offset12":
-          case "rotimm": {
+          case "offsetsplit": {
             try {
               const expr = Expression.parse(line);
               if (expr === false) {
@@ -345,7 +346,6 @@ function parseArmStatement(
             break;
           }
           case "reglist":
-          case "offsetsplit":
             console.error(`TODO: don't know how to interpret ${codePart.k}`);
             throw new Error("TODO");
           case "value":
@@ -379,12 +379,18 @@ function parseArmStatement(
       };
       for (const codePart of pb.op.codeParts) {
         switch (codePart.k) {
-          case "immediate":
-          case "enum":
-          case "register": {
-            push(codePart.s, syms[codePart.sym]);
+          case "immediate": {
+            const v = syms[codePart.sym];
+            if (v < 0 || v >= (1 << codePart.s)) {
+              throw `Immedate value out of range 0..${(1 << codePart.s) - 1}: ${v}`;
+            }
+            push(codePart.s, v);
             break;
           }
+          case "enum":
+          case "register":
+            push(codePart.s, syms[codePart.sym]);
+            break;
           case "value":
           case "ignored":
             push(codePart.s, codePart.v);
@@ -398,7 +404,7 @@ function parseArmStatement(
               r++;
             }
             if (v > 255) {
-              throw `Can't generate rotimm from ${syms[codePart.sym]}`;
+              throw `Can't generate rotated immediate from ${syms[codePart.sym]}`;
             }
             push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
             break;
@@ -406,7 +412,7 @@ function parseArmStatement(
           case "word": {
             const offset = syms[codePart.sym] - address - 8;
             if (offset & 3) {
-              throw `Can't branch to misaligned memory address`;
+              throw "Can't branch to misaligned memory address";
             }
             push(codePart.s, offset >> 2);
             break;
@@ -415,11 +421,25 @@ function parseArmStatement(
             if (codePart.sign) {
               push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
             } else {
-              push(codePart.s, Math.abs(syms[codePart.sym]));
+              const v = Math.abs(syms[codePart.sym]);
+              if (v >= (1 << codePart.s)) {
+                throw `Offset too large: ${v}`;
+              }
+              push(codePart.s, v);
+            }
+            break;
+          case "offsetsplit":
+            if (codePart.sign) {
+              push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+            } else {
+              const v = Math.abs(syms[codePart.sym]);
+              if (v >= 256) {
+                throw `Offset too large: ${v}`;
+              }
+              push(codePart.s, codePart.low ? v & 0xF : ((v >> 4) & 0xF));
             }
             break;
           case "reglist":
-          case "offsetsplit":
             throw new Error(`TODO: push with ${codePart.k}`);
           default:
             assertNever(codePart);

@@ -1511,4 +1511,156 @@ ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
 `
     }
   });
+
+  def({
+    name: "arm.push",
+    desc: "Push registers to stack",
+    kind: "make",
+    files: {
+      "/root/main": `
+push {r0-r4, r8, lr}           /// 1f 41 2d e9
+pushle {r3, r5-r9, r13-r15}    /// e8 e3 2d d9
+
+push {r0-r4, r8, lr}^          /// 1f 41 6d e9
+pushle {r3, r5-r9, r13-r15}^   /// e8 e3 6d d9
+`
+    }
+  });
+
+  def({
+    name: "arm.stm",
+    desc: "Store multiple registers",
+    kind: "make",
+    files: {
+      "/root/main": `
+stmed r5, {r1-lr}             /// fe 7f 05 e8
+stmdale r5, {r1-lr}           /// fe 7f 05 d8
+stmleda r5, {r1-lr}           /// fe 7f 05 d8
+stmed r5!, {r1-lr}            /// fe 7f 25 e8
+stmdale r5!, {r1-lr}          /// fe 7f 25 d8
+stmleda r5!, {r1-lr}          /// fe 7f 25 d8
+stmed r5, {r1-lr}^            /// fe 7f 45 e8
+stmdale r5, {r1-lr}^          /// fe 7f 45 d8
+stmleda r5, {r1-lr}^          /// fe 7f 45 d8
+stmda r5!, {r1-lr}^           /// fe 7f 65 e8
+stmedle r5!, {r1-lr}^         /// fe 7f 65 d8
+stmleed r5!, {r1-lr}^         /// fe 7f 65 d8
+
+stmea r5, {r1-lr}             /// fe 7f 85 e8
+stmiale r5, {r1-lr}           /// fe 7f 85 d8
+stmleia r5, {r1-lr}           /// fe 7f 85 d8
+stmea r5!, {r1-lr}            /// fe 7f a5 e8
+stmiale r5!, {r1-lr}          /// fe 7f a5 d8
+stmleia r5!, {r1-lr}          /// fe 7f a5 d8
+stmea r5, {r1-lr}^            /// fe 7f c5 e8
+stmiale r5, {r1-lr}^          /// fe 7f c5 d8
+stmleia r5, {r1-lr}^          /// fe 7f c5 d8
+stmia r5!, {r1-lr}^           /// fe 7f e5 e8
+stmeale r5!, {r1-lr}^         /// fe 7f e5 d8
+stmleea r5!, {r1-lr}^         /// fe 7f e5 d8
+
+stmfd r5, {r1-lr}             /// fe 7f 05 e9
+stmdble r5, {r1-lr}           /// fe 7f 05 d9
+stmledb r5, {r1-lr}           /// fe 7f 05 d9
+stmfd r5!, {r1-lr}            /// fe 7f 25 e9
+stmdble r5!, {r1-lr}          /// fe 7f 25 d9
+stmledb r5!, {r1-lr}          /// fe 7f 25 d9
+stmfd r5, {r1-lr}^            /// fe 7f 45 e9
+stmdble r5, {r1-lr}^          /// fe 7f 45 d9
+stmledb r5, {r1-lr}^          /// fe 7f 45 d9
+stmdb r5!, {r1-lr}^           /// fe 7f 65 e9
+stmfdle r5!, {r1-lr}^         /// fe 7f 65 d9
+stmlefd r5!, {r1-lr}^         /// fe 7f 65 d9
+
+stmfa r5, {r1-lr}             /// fe 7f 85 e9
+stmible r5, {r1-lr}           /// fe 7f 85 d9
+stmleib r5, {r1-lr}           /// fe 7f 85 d9
+stmfa r5!, {r1-lr}            /// fe 7f a5 e9
+stmible r5!, {r1-lr}          /// fe 7f a5 d9
+stmleib r5!, {r1-lr}          /// fe 7f a5 d9
+stmfa r5, {r1-lr}^            /// fe 7f c5 e9
+stmible r5, {r1-lr}^          /// fe 7f c5 d9
+stmleib r5, {r1-lr}^          /// fe 7f c5 d9
+stmib r5!, {r1-lr}^           /// fe 7f e5 e9
+stmfale r5!, {r1-lr}^         /// fe 7f e5 d9
+stmlefa r5!, {r1-lr}^         /// fe 7f e5 d9
+`
+    }
+  });
+
+  def({
+    name: "arm.pop",
+    desc: "Pop registers from stack",
+    kind: "make",
+    files: {
+      "/root/main": `
+pop {r0-r4, r8, lr}           /// 1f 41 bd e8
+pople {r3, r5-r9, r13-r15}    /// e8 e3 bd d8
+
+pop {r0-r4, r8, lr}^          /// 1f 41 fd e8
+pople {r3, r5-r9, r13-r15}^   /// e8 e3 fd d8
+`
+    }
+  });
+
+  def({
+    name: "arm.ldm",
+    desc: "Store multiple registers",
+    kind: "make",
+    files: {
+      "/root/main": `
+ldmfa r5, {r1-lr}             /// fe 7f 15 e8
+ldmdale r5, {r1-lr}           /// fe 7f 15 d8
+ldmleda r5, {r1-lr}           /// fe 7f 15 d8
+ldmfa r5!, {r1-lr}            /// fe 7f 35 e8
+ldmdale r5!, {r1-lr}          /// fe 7f 35 d8
+ldmleda r5!, {r1-lr}          /// fe 7f 35 d8
+ldmfa r5, {r1-lr}^            /// fe 7f 55 e8
+ldmdale r5, {r1-lr}^          /// fe 7f 55 d8
+ldmleda r5, {r1-lr}^          /// fe 7f 55 d8
+ldmda r5!, {r1-lr}^           /// fe 7f 75 e8
+ldmfale r5!, {r1-lr}^         /// fe 7f 75 d8
+ldmlefa r5!, {r1-lr}^         /// fe 7f 75 d8
+
+ldmfd r5, {r1-lr}             /// fe 7f 95 e8
+ldmiale r5, {r1-lr}           /// fe 7f 95 d8
+ldmleia r5, {r1-lr}           /// fe 7f 95 d8
+ldmfd r5!, {r1-lr}            /// fe 7f b5 e8
+ldmiale r5!, {r1-lr}          /// fe 7f b5 d8
+ldmleia r5!, {r1-lr}          /// fe 7f b5 d8
+ldmfd r5, {r1-lr}^            /// fe 7f d5 e8
+ldmiale r5, {r1-lr}^          /// fe 7f d5 d8
+ldmleia r5, {r1-lr}^          /// fe 7f d5 d8
+ldmia r5!, {r1-lr}^           /// fe 7f f5 e8
+ldmfdle r5!, {r1-lr}^         /// fe 7f f5 d8
+ldmlefd r5!, {r1-lr}^         /// fe 7f f5 d8
+
+ldmea r5, {r1-lr}             /// fe 7f 15 e9
+ldmdble r5, {r1-lr}           /// fe 7f 15 d9
+ldmledb r5, {r1-lr}           /// fe 7f 15 d9
+ldmea r5!, {r1-lr}            /// fe 7f 35 e9
+ldmdble r5!, {r1-lr}          /// fe 7f 35 d9
+ldmledb r5!, {r1-lr}          /// fe 7f 35 d9
+ldmea r5, {r1-lr}^            /// fe 7f 55 e9
+ldmdble r5, {r1-lr}^          /// fe 7f 55 d9
+ldmledb r5, {r1-lr}^          /// fe 7f 55 d9
+ldmdb r5!, {r1-lr}^           /// fe 7f 75 e9
+ldmeale r5!, {r1-lr}^         /// fe 7f 75 d9
+ldmleea r5!, {r1-lr}^         /// fe 7f 75 d9
+
+ldmed r5, {r1-lr}             /// fe 7f 95 e9
+ldmible r5, {r1-lr}           /// fe 7f 95 d9
+ldmleib r5, {r1-lr}           /// fe 7f 95 d9
+ldmed r5!, {r1-lr}            /// fe 7f b5 e9
+ldmible r5!, {r1-lr}          /// fe 7f b5 d9
+ldmleib r5!, {r1-lr}          /// fe 7f b5 d9
+ldmed r5, {r1-lr}^            /// fe 7f d5 e9
+ldmible r5, {r1-lr}^          /// fe 7f d5 d9
+ldmleib r5, {r1-lr}^          /// fe 7f d5 d9
+ldmib r5!, {r1-lr}^           /// fe 7f f5 e9
+ldmedle r5!, {r1-lr}^         /// fe 7f f5 d9
+ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
+`
+    }
+  });
 }

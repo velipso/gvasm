@@ -1944,8 +1944,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "stm$pu$cond $Rn $w, $Rlist$s",
-        "stm$cond$pu $Rn $w, $Rlist$s",
+        "stm$pu$cond $Rn$w, $Rlist$s",
+        "stm$cond$pu $Rn$w, $Rlist$s",
       ],
     },
     {
@@ -1982,8 +1982,8 @@ export namespace Arm {
         condition,
       ],
       syntax: [
-        "ldm$pu$cond $Rn $w, $Rlist$s",
-        "ldm$cond$pu $Rn $w, $Rlist$s",
+        "ldm$pu$cond $Rn$w, $Rlist$s",
+        "ldm$cond$pu $Rn$w, $Rlist$s",
       ],
     },
 
@@ -2067,7 +2067,7 @@ export namespace Thumb {
     s: 8;
     k: "reglist";
     sym: "Rlist";
-    extra?: string;
+    extra?: number;
   }
 
   interface ICodePartOffsetSplit {
@@ -2474,7 +2474,7 @@ export namespace Thumb {
       ref: "5.14",
       category: "Format 14: Push/Pop Registers",
       codeParts: [
-        { s: 8, k: "reglist", sym: "Rlist", extra: "lr" },
+        { s: 8, k: "reglist", sym: "Rlist", extra: 14 }, // extra is r14 (lr)
         { s: 1, k: "value", sym: "r", v: 1 }, // store LR
         { s: 2, k: "value", v: 2 },
         { s: 1, k: "value", sym: "l", v: 0 }, // store
@@ -2498,7 +2498,7 @@ export namespace Thumb {
       ref: "5.14",
       category: "Format 14: Push/Pop Registers",
       codeParts: [
-        { s: 8, k: "reglist", sym: "Rlist", extra: "pc" },
+        { s: 8, k: "reglist", sym: "Rlist", extra: 15 }, // extra is r15 (pc)
         { s: 1, k: "value", sym: "r", v: 1 }, // load PC
         { s: 2, k: "value", v: 2 },
         { s: 1, k: "value", sym: "l", v: 1 }, // load

@@ -62,6 +62,81 @@ function parseExpr(line: ITok[]): Expression {
   return expr;
 }
 
+function parseReglist(line: ITok[], width: 8 | 16): number | false {
+  let state = 0;
+  let result = 0;
+  let lastRegister = -1;
+  for (let i = 0; i < line.length; i++) {
+    const t = line[i];
+    switch (state) {
+      case 0: // read open brace
+        if (t.kind === TokEnum.ID && t.id === '{') {
+          state = 1;
+        } else {
+          return false;
+        }
+        break;
+      case 1: // read register
+        if (t.kind === TokEnum.ID && t.id === '}') {
+          line.splice(0, i + 1); // remove tokens
+          return result;
+        } else if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
+          lastRegister = decodeRegister(t.id);
+          // allow LR and PC despite width
+          if (lastRegister >= width && lastRegister !== 14 && lastRegister !== 15) {
+            return false;
+          }
+          if (result & (1 << lastRegister)) {
+            return false;
+          }
+          state = 2;
+        } else {
+          return false;
+        }
+        break;
+      case 2: // after register
+        if (t.kind === TokEnum.ID && t.id === '}') {
+          result |= 1 << lastRegister;
+          line.splice(0, i + 1); // remove tokens
+          return result;
+        } else if (t.kind === TokEnum.ID && t.id === ',') {
+          result |= 1 << lastRegister;
+          state = 1;
+        } else if (t.kind === TokEnum.ID && t.id === '-') {
+          state = 3;
+        } else {
+          return false;
+        }
+        break;
+      case 3: // reading end of range
+        if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
+          const end = decodeRegister(t.id);
+          for (let b = lastRegister; b <= end; b++) {
+            // allow LR and PC despite width
+            if (b < width || b === 14 || b === 15) {
+              result |= 1 << b;
+            }
+          }
+          state = 4;
+        } else {
+          return false;
+        }
+        break;
+      case 4: // after range
+        if (t.kind === TokEnum.ID && t.id === '}') {
+          line.splice(0, i + 1); // remove tokens
+          return result;
+        } else if (t.kind === TokEnum.ID && t.id === ',') {
+          state = 1;
+        } else {
+          return false;
+        }
+        break;
+    }
+  }
+  return false;
+}
+
 function parseDotStatement(
   state: IParseState,
   cmd: string,
@@ -345,9 +420,14 @@ function parseArmStatement(
             }
             break;
           }
-          case "reglist":
-            console.error(`TODO: don't know how to interpret ${codePart.k}`);
-            throw new Error("TODO");
+          case "reglist": {
+            const v = parseReglist(line, 16);
+            if (v === false) {
+              return false;
+            }
+            syms[part.sym] = v;
+            break;
+          }
           case "value":
           case "ignored":
             throw new Error("Invalid syntax for parsed body");
@@ -389,6 +469,7 @@ function parseArmStatement(
           }
           case "enum":
           case "register":
+          case "reglist":
             push(codePart.s, syms[codePart.sym]);
             break;
           case "value":
@@ -439,8 +520,6 @@ function parseArmStatement(
               push(codePart.s, codePart.low ? v & 0xF : ((v >> 4) & 0xF));
             }
             break;
-          case "reglist":
-            throw new Error(`TODO: push with ${codePart.k}`);
           default:
             assertNever(codePart);
         }

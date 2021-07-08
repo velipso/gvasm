@@ -70,20 +70,22 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
     const t = line[i];
     switch (state) {
       case 0: // read open brace
-        if (t.kind === TokEnum.ID && t.id === '{') {
+        if (t.kind === TokEnum.ID && t.id === "{") {
           state = 1;
         } else {
           return false;
         }
         break;
       case 1: // read register
-        if (t.kind === TokEnum.ID && t.id === '}') {
+        if (t.kind === TokEnum.ID && t.id === "}") {
           line.splice(0, i + 1); // remove tokens
           return result;
         } else if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
           lastRegister = decodeRegister(t.id);
           // allow LR and PC despite width
-          if (lastRegister >= width && lastRegister !== 14 && lastRegister !== 15) {
+          if (
+            lastRegister >= width && lastRegister !== 14 && lastRegister !== 15
+          ) {
             return false;
           }
           if (result & (1 << lastRegister)) {
@@ -95,14 +97,14 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
         }
         break;
       case 2: // after register
-        if (t.kind === TokEnum.ID && t.id === '}') {
+        if (t.kind === TokEnum.ID && t.id === "}") {
           result |= 1 << lastRegister;
           line.splice(0, i + 1); // remove tokens
           return result;
-        } else if (t.kind === TokEnum.ID && t.id === ',') {
+        } else if (t.kind === TokEnum.ID && t.id === ",") {
           result |= 1 << lastRegister;
           state = 1;
-        } else if (t.kind === TokEnum.ID && t.id === '-') {
+        } else if (t.kind === TokEnum.ID && t.id === "-") {
           state = 3;
         } else {
           return false;
@@ -123,10 +125,10 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
         }
         break;
       case 4: // after range
-        if (t.kind === TokEnum.ID && t.id === '}') {
+        if (t.kind === TokEnum.ID && t.id === "}") {
           line.splice(0, i + 1); // remove tokens
           return result;
-        } else if (t.kind === TokEnum.ID && t.id === ',') {
+        } else if (t.kind === TokEnum.ID && t.id === ",") {
           state = 1;
         } else {
           return false;
@@ -462,7 +464,8 @@ function parseArmStatement(
           case "immediate": {
             const v = syms[codePart.sym];
             if (v < 0 || v >= (1 << codePart.s)) {
-              throw `Immedate value out of range 0..${(1 << codePart.s) - 1}: ${v}`;
+              throw `Immedate value out of range 0..${(1 << codePart.s) -
+                1}: ${v}`;
             }
             push(codePart.s, v);
             break;
@@ -485,7 +488,9 @@ function parseArmStatement(
               r++;
             }
             if (v > 255) {
-              throw `Can't generate rotated immediate from ${syms[codePart.sym]}`;
+              throw `Can't generate rotated immediate from ${
+                syms[codePart.sym]
+              }`;
             }
             push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
             break;

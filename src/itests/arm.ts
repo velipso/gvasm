@@ -314,8 +314,8 @@ mrs r12, cpsr     /// 00 c0 0f e1
 mrs r12, spsr     /// 00 c0 4f e1
 mrsvs r12, cpsr   /// 00 c0 0f 61
 mrsvs r12, spsr   /// 00 c0 4f 61
-`
-    }
+`,
+    },
   });
 
   def({
@@ -350,8 +350,8 @@ msr cpsr_flg, #0xf0000000    /// 0f f2 28 e3
 msr spsr_flg, #0xf0000000    /// 0f f2 68 e3
 msrvc cpsr_flg, #0x50000000  /// 05 f2 28 73
 msrvc spsr_flg, #0xf0000000  /// 0f f2 68 73
-`
-    }
+`,
+    },
   });
 
   def({
@@ -365,8 +365,8 @@ muls r1, r9, r4    /// 99 04 11 e0
 mulhi r1, r9, r4   /// 99 04 01 80
 mulshi r1, r9, r4  /// 99 04 11 80
 mulhis r1, r9, r4  /// 99 04 11 80
-`
-    }
+`,
+    },
   });
 
   def({
@@ -380,8 +380,8 @@ mlas r1, r9, r4, r12    /// 99 c4 31 e0
 mlahi r1, r9, r4, r12   /// 99 c4 21 80
 mlashi r1, r9, r4, r12  /// 99 c4 31 80
 mlahis r1, r9, r4, r12  /// 99 c4 31 80
-`
-    }
+`,
+    },
   });
 
   def({
@@ -400,8 +400,8 @@ smulls r5, r3, r13, r11    /// 9d 5b d3 e0
 smullls r5, r3, r13, r11   /// 9d 5b c3 90
 smullsls r5, r3, r13, r11  /// 9d 5b d3 90
 smulllss r5, r3, r13, r11  /// 9d 5b d3 90
-`
-    }
+`,
+    },
   });
 
   def({
@@ -420,8 +420,8 @@ smlals r5, r3, r13, r11    /// 9d 5b f3 e0
 smlalls r5, r3, r13, r11   /// 9d 5b e3 90
 smlalsls r5, r3, r13, r11  /// 9d 5b f3 90
 smlallss r5, r3, r13, r11  /// 9d 5b f3 90
-`
-    }
+`,
+    },
   });
 
   for (
@@ -1208,8 +1208,8 @@ ${op}tge r2, [r9], +r10, asr #13      /// ca 26 ${ca}9 a6
 ${op}get r2, [r9], +r10, asr #13      /// ca 26 ${ca}9 a6
 ${op}btge r2, [r9], r10, ror #13      /// ea 26 ${ce}9 a6
 ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
-`
-      }
+`,
+      },
     });
   }
 
@@ -1219,8 +1219,8 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
     kind: "make",
     error: true,
     files: {
-      "/root/main": `str r2, [r9], r10, lsl #32`
-    }
+      "/root/main": `str r2, [r9], r10, lsl #32`,
+    },
   });
 
   def({
@@ -1229,8 +1229,8 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
     kind: "make",
     error: true,
     files: {
-      "/root/main": `str r2, [r9, #4096]`
-    }
+      "/root/main": `str r2, [r9, #4096]`,
+    },
   });
 
   def({
@@ -1297,8 +1297,8 @@ strlth r11, [r4], +r13        /// bd b0 84 b0
 strh r11, [r4], -r13          /// bd b0 04 e0
 strhlt r11, [r4], -r13        /// bd b0 04 b0
 strlth r11, [r4], -r13        /// bd b0 04 b0
-`
-    }
+`,
+    },
   });
 
   def({
@@ -1307,8 +1307,8 @@ strlth r11, [r4], -r13        /// bd b0 04 b0
     kind: "make",
     error: true,
     files: {
-      "/root/main": `strh r2, [r9, #256]`
-    }
+      "/root/main": `strh r2, [r9, #256]`,
+    },
   });
 
   def({
@@ -1508,8 +1508,8 @@ ldrgtsb r11, [r4], -r13       /// dd b0 14 c0
 ldrsh r11, [r4], -r13         /// fd b0 14 e0
 ldrshgt r11, [r4], -r13       /// fd b0 14 c0
 ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
-`
-    }
+`,
+    },
   });
 
   def({
@@ -1523,8 +1523,8 @@ pushle {r3, r5-r9, r13-r15}    /// e8 e3 2d d9
 
 push {r0-r4, r8, lr}^          /// 1f 41 6d e9
 pushle {r3, r5-r9, r13-r15}^   /// e8 e3 6d d9
-`
-    }
+`,
+    },
   });
 
   def({
@@ -1584,8 +1584,8 @@ stmleib r5, {r1-lr}^          /// fe 7f c5 d9
 stmib r5!, {r1-lr}^           /// fe 7f e5 e9
 stmfale r5!, {r1-lr}^         /// fe 7f e5 d9
 stmlefa r5!, {r1-lr}^         /// fe 7f e5 d9
-`
-    }
+`,
+    },
   });
 
   def({
@@ -1599,8 +1599,8 @@ pople {r3, r5-r9, r13-r15}    /// e8 e3 bd d8
 
 pop {r0-r4, r8, lr}^          /// 1f 41 fd e8
 pople {r3, r5-r9, r13-r15}^   /// e8 e3 fd d8
-`
-    }
+`,
+    },
   });
 
   def({
@@ -1660,7 +1660,7 @@ ldmleib r5, {r1-lr}^          /// fe 7f d5 d9
 ldmib r5!, {r1-lr}^           /// fe 7f f5 e9
 ldmedle r5!, {r1-lr}^         /// fe 7f f5 d9
 ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
-`
-    }
+`,
+    },
   });
 }

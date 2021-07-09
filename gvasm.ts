@@ -1,9 +1,9 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 //
-// gbasm - Assembler and disassembler for Game Boy Advance homebrew
+// gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gbasm
+// Project Home: https://github.com/velipso/gvasm
 //
 
 import { main } from "./src/main.ts";

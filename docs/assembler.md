@@ -21,7 +21,7 @@ b @main          // branch to main method
 .crc
 .i16 0
 
-.include "./file.gbasm" // copy/paste text file as code
+.include "./file.gvasm" // copy/paste text file as code
 .embed "./file.bmp"     // copy/paste binary file as i8
 .stdlib                 // include the standard library
 .extlib                 // include the extended library

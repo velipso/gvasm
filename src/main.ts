@@ -1,8 +1,8 @@
 //
-// gbasm - Assembler and disassembler for Game Boy Advance homebrew
+// gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gbasm
+// Project Home: https://github.com/velipso/gvasm
 //
 
 import { IInitArgs, init } from "./init.ts";
@@ -12,15 +12,15 @@ import { IItestArgs, itest } from "./itest.ts";
 import { argParse, path } from "./external.ts";
 
 function printVersion() {
-  console.log(`gbasm - Assembler and disassembler for Game Boy Advance homebrew
+  console.log(`gvasm - Assembler and disassembler for Game Boy Advance homebrew
 by Sean Connelly (@velipso), https://sean.cm
 The Unlicense License
-Project Home: https://github.com/velipso/gbasm
-Version: 0.3`);
+Project Home: https://github.com/velipso/gvasm
+Version: 0.4`);
 }
 
 function printHelp() {
-  console.log(`gbasm <command> [...args]
+  console.log(`gvasm <command> [...args]
 
 Command Summary:
   init      Create a skeleton project
@@ -29,15 +29,15 @@ Command Summary:
   itest     Run internal tests to verify correct behavior
 
 For more help, try:
-  gbasm <command> --help`);
+  gvasm <command> --help`);
 }
 
 function printInitHelp() {
   console.log(
-    `gbasm init <output> [-t title] [-i initials] [-m maker] [-v version]
+    `gvasm init <output> [-t title] [-i initials] [-m maker] [-v version]
                      [-r region] [-c code]
 
-<output>     The output .gbasm file
+<output>     The output .gvasm file
 -t title     Game title (max of 12 characters, default "Game")
 -i initials  Game initials (must be 2 characters, default "AA")
 -m maker     Game maker (must be 2 characters, default "77")
@@ -147,9 +147,9 @@ function parseInitArgs(args: string[]): number | IInitArgs {
 }
 
 function printMakeHelp() {
-  console.log(`gbasm make <input> [-o <output>]
+  console.log(`gvasm make <input> [-o <output>]
 
-<input>      The input .gbasm file
+<input>      The input .gvasm file
 -o <output>  The output file (default: input with .gba extension)`);
 }
 
@@ -193,10 +193,10 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
 }
 
 function printDisHelp() {
-  console.log(`gbasm dis <input> [-o <output>] [-f <format>]
+  console.log(`gvasm dis <input> [-o <output>] [-f <format>]
 
 <input>      The input .gba or .bin file
--o <output>  The output file (default: input with .gbasm extension)
+-o <output>  The output file (default: input with .gvasm extension)
 -f <format>  The input format (default: gba)
                gba  Input is a .gba file
                bin  Input is a .bin file (typically for BIOS)`);
@@ -243,12 +243,12 @@ function parseDisArgs(args: string[]): number | IDisArgs {
     input,
     format,
     output: output ??
-      path.format({ ...path.parse(input), base: undefined, ext: ".gbasm" }),
+      path.format({ ...path.parse(input), base: undefined, ext: ".gvasm" }),
   };
 }
 
 function printItestHelp() {
-  console.log(`gbasm itest [<filters...>]
+  console.log(`gvasm itest [<filters...>]
 
 <filters>  Only run internal tests that match the filters (glob)`);
 }

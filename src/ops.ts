@@ -1,8 +1,8 @@
 //
-// gbasm - Assembler and disassembler for Game Boy Advance homebrew
+// gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gbasm
+// Project Home: https://github.com/velipso/gvasm
 //
 
 import { assertNever, isAlpha, isNum, isSpace } from "./util.ts";

@@ -1,8 +1,8 @@
 //
-// gbasm - Assembler and disassembler for Game Boy Advance homebrew
+// gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gbasm
+// Project Home: https://github.com/velipso/gvasm
 //
 
 export interface IInitArgs {
@@ -76,7 +76,7 @@ b @main
 
 // Your game here!
 
-// For example, this will set the display red:
+// For example, this will set the display green:
 
 // set REG_DISPCNT to 0
 mov r0, #0x04000000

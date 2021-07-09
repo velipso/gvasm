@@ -1,9 +1,9 @@
 //
-// gbasm - Assembler and disassembler for Game Boy Advance homebrew
+// gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
 // The Unlicense License
-// Project Home: https://github.com/velipso/gbasm
+// Project Home: https://github.com/velipso/gvasm
 //
 
-export * as path from "https://deno.land/std@0.99.0/path/mod.ts";
-export { parse as argParse } from "https://deno.land/std@0.99.0/flags/mod.ts";
+export * as path from "https://deno.land/std@0.100.0/path/mod.ts";
+export { parse as argParse } from "https://deno.land/std@0.100.0/flags/mod.ts";

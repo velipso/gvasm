@@ -6,6 +6,7 @@
 //
 
 import { ITest } from "../itest.ts";
+import { generateInit } from "../init.ts";
 
 export function load(def: (test: ITest) => void) {
   def({
@@ -14,7 +15,7 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-b @main /// 2e 00 00 ea
+b @main.program.0      /// 2e 00 00 ea
 .Logo
 /// 24 ff ae 51 69 9a a2 21 3d 84 82 0a
 /// 84 e4 09 ad 11 24 8b 98 c0 81 7f 21 a3 52 be 19
@@ -33,7 +34,7 @@ b @main /// 2e 00 00 ea
 .crc                   /// 5f
 .i16 0                 /// 00 00
 
-@main:
+@main.program.0:
 
 MOV r0, #0x04000000    /// 01 03 a0 e3
 mov r1, #0x0           /// 00 10 a0 e3
@@ -43,8 +44,26 @@ mov r0, #0x05000000    /// 05 04 a0 e3
 mov r1, #0x3e0         /// 3e 1e a0 e3
 str r1, [r0]           /// 00 10 80 e5
 
-@LOOP: b @loop         /// fe ff ff ea
+@L.0cF: b @l.0cf       /// fe ff ff ea
 `,
+    },
+  });
+
+  def({
+    name: "basic.init",
+    desc: "Make sure init program compiles",
+    kind: "make",
+    skipBytes: true,
+    files: {
+      "/root/main": generateInit({
+        output: "",
+        title: "Game",
+        initials: "AA",
+        maker: "77",
+        version: 25,
+        region: "E",
+        code: "C",
+      }),
     },
   });
 

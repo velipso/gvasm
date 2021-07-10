@@ -140,6 +140,20 @@ export namespace Arm {
     sym: "offset";
   }
 
+  interface ICodePartPCOffset12Body {
+    s: 12;
+    k: "pcoffset12";
+    sign: false;
+    sym: "offset";
+  }
+
+  interface ICodePartPCOffset12Sign {
+    s: 1;
+    k: "pcoffset12";
+    sign: true;
+    sym: "offset";
+  }
+
   interface ICodePartOffsetSplitBody {
     s: 4;
     k: "offsetsplit";
@@ -151,6 +165,21 @@ export namespace Arm {
   interface ICodePartOffsetSplitSign {
     s: 1;
     k: "offsetsplit";
+    sign: true;
+    sym: "offset";
+  }
+
+  interface ICodePartPCOffsetSplitBody {
+    s: 4;
+    k: "pcoffsetsplit";
+    sign: false;
+    sym: "offset";
+    low: boolean;
+  }
+
+  interface ICodePartPCOffsetSplitSign {
+    s: 1;
+    k: "pcoffsetsplit";
     sign: true;
     sym: "offset";
   }
@@ -174,8 +203,12 @@ export namespace Arm {
     | ICodePartWord
     | ICodePartOffset12Body
     | ICodePartOffset12Sign
+    | ICodePartPCOffset12Body
+    | ICodePartPCOffset12Sign
     | ICodePartOffsetSplitBody
     | ICodePartOffsetSplitSign
+    | ICodePartPCOffsetSplitBody
+    | ICodePartPCOffsetSplitSign
     | ICodePartRegList;
 
   export interface IOp {
@@ -232,7 +265,10 @@ export namespace Arm {
         { s: 24, k: "value", v: 0x12fff1 },
         condition,
       ],
-      syntax: ["bx$cond $Rn"],
+      syntax: [
+        "bx$cond $Rn",
+        "bx.$cond $Rn",
+      ],
     },
     {
       ref: "4.4",
@@ -243,7 +279,10 @@ export namespace Arm {
         { s: 3, k: "value", v: 5 },
         condition,
       ],
-      syntax: ["b$link$cond $offset"],
+      syntax: [
+        "b$link$cond $offset",
+        "b$link.$cond $offset",
+      ],
     },
 
     //
@@ -307,6 +346,11 @@ export namespace Arm {
         "$oper$s$cond $Rd, $Rm, lsr #0",
         "$oper$s$cond $Rd, $Rm, asr #0",
         "$oper$s$cond $Rd, $Rm, ror #0",
+        "$oper$s.$cond $Rd, $Rm",
+        "$oper$s.$cond $Rd, $Rm, lsl #0",
+        "$oper$s.$cond $Rd, $Rm, lsr #0",
+        "$oper$s.$cond $Rd, $Rm, asr #0",
+        "$oper$s.$cond $Rd, $Rm, ror #0",
         "$oper$cond$s $Rd, $Rm",
         "$oper$cond$s $Rd, $Rm, lsl #0",
         "$oper$cond$s $Rd, $Rm, lsr #0",
@@ -354,6 +398,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rm, lsr #32",
+        "$oper$s.$cond $Rd, $Rm, lsr #32",
         "$oper$cond$s $Rd, $Rm, lsr #32",
       ],
     },
@@ -397,6 +442,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rm, asr #32",
+        "$oper$s.$cond $Rd, $Rm, asr #32",
         "$oper$cond$s $Rd, $Rm, asr #32",
       ],
     },
@@ -440,6 +486,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rm, rrx",
+        "$oper$s.$cond $Rd, $Rm, rrx",
         "$oper$cond$s $Rd, $Rm, rrx",
       ],
     },
@@ -488,6 +535,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rm, $shift #$amount",
+        "$oper$s.$cond $Rd, $Rm, $shift #$amount",
         "$oper$cond$s $Rd, $Rm, $shift #$amount",
       ],
     },
@@ -537,6 +585,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rm, $shift $Rs",
+        "$oper$s.$cond $Rd, $Rm, $shift $Rs",
         "$oper$cond$s $Rd, $Rm, $shift $Rs",
       ],
     },
@@ -577,6 +626,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, #$expression",
+        "$oper$s.$cond $Rd, #$expression",
         "$oper$cond$s $Rd, #$expression",
       ],
     },
@@ -624,6 +674,10 @@ export namespace Arm {
         "$oper$cond $Rn, $Rm, lsr #0",
         "$oper$cond $Rn, $Rm, asr #0",
         "$oper$cond $Rn, $Rm, ror #0",
+        "$oper.$cond $Rn, $Rm",
+        "$oper.$cond $Rn, $Rm, lsr #0",
+        "$oper.$cond $Rn, $Rm, asr #0",
+        "$oper.$cond $Rn, $Rm, ror #0",
       ],
     },
     {
@@ -664,7 +718,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, $Rm, lsr #32"],
+      syntax: [
+        "$oper$cond $Rn, $Rm, lsr #32",
+        "$oper.$cond $Rn, $Rm, lsr #32",
+      ],
     },
     {
       ref: "4.5,4.5.2,4.5.8.2",
@@ -704,7 +761,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, $Rm, asr #32"],
+      syntax: [
+        "$oper$cond $Rn, $Rm, asr #32",
+        "$oper.$cond $Rn, $Rm, asr #32",
+      ],
     },
     {
       ref: "4.5,4.5.2,4.5.8.2",
@@ -744,7 +804,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, $Rm, rrx"],
+      syntax: [
+        "$oper$cond $Rn, $Rm, rrx",
+        "$oper.$cond $Rn, $Rm, rrx",
+      ],
     },
     {
       ref: "4.5,4.5.2,4.5.8.2",
@@ -789,7 +852,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, $Rm, $shift #$amount"],
+      syntax: [
+        "$oper$cond $Rn, $Rm, $shift #$amount",
+        "$oper.$cond $Rn, $Rm, $shift #$amount",
+      ],
     },
     {
       ref: "4.5,4.5.2,4.5.8.2",
@@ -835,7 +901,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, $Rm, $shift $Rs"],
+      syntax: [
+        "$oper$cond $Rn, $Rm, $shift $Rs",
+        "$oper.$cond $Rn, $Rm, $shift $Rs",
+      ],
     },
     {
       ref: "4.5,4.5.3,4.5.8.2",
@@ -872,7 +941,10 @@ export namespace Arm {
         { s: 2, k: "value", v: 0 },
         condition,
       ],
-      syntax: ["$oper$cond $Rn, #$expression"],
+      syntax: [
+        "$oper$cond $Rn, #$expression",
+        "$oper.$cond $Rn, #$expression",
+      ],
     },
     // and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic
     {
@@ -918,6 +990,10 @@ export namespace Arm {
         "$oper$s$cond $Rd, $Rn, $Rm, lsr #0",
         "$oper$s$cond $Rd, $Rn, $Rm, asr #0",
         "$oper$s$cond $Rd, $Rn, $Rm, ror #0",
+        "$oper$s.$cond $Rd, $Rn, $Rm",
+        "$oper$s.$cond $Rd, $Rn, $Rm, lsr #0",
+        "$oper$s.$cond $Rd, $Rn, $Rm, asr #0",
+        "$oper$s.$cond $Rd, $Rn, $Rm, ror #0",
         "$oper$cond$s $Rd, $Rn, $Rm",
         "$oper$cond$s $Rd, $Rn, $Rm, lsr #0",
         "$oper$cond$s $Rd, $Rn, $Rm, asr #0",
@@ -964,6 +1040,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, $Rm, lsr #32",
+        "$oper$s.$cond $Rd, $Rn, $Rm, lsr #32",
         "$oper$cond$s $Rd, $Rn, $Rm, lsr #32",
       ],
     },
@@ -1007,6 +1084,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, $Rm, asr #32",
+        "$oper$s.$cond $Rd, $Rn, $Rm, asr #32",
         "$oper$cond$s $Rd, $Rn, $Rm, asr #32",
       ],
     },
@@ -1050,6 +1128,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, $Rm, rrx",
+        "$oper$s.$cond $Rd, $Rn, $Rm, rrx",
         "$oper$cond$s $Rd, $Rn, $Rm, rrx",
       ],
     },
@@ -1098,6 +1177,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, $Rm, $shift #$amount",
+        "$oper$s.$cond $Rd, $Rn, $Rm, $shift #$amount",
         "$oper$cond$s $Rd, $Rn, $Rm, $shift #$amount",
       ],
     },
@@ -1147,6 +1227,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, $Rm, $shift $Rs",
+        "$oper$s.$cond $Rd, $Rn, $Rm, $shift $Rs",
         "$oper$cond$s $Rd, $Rn, $Rm, $shift $Rs",
       ],
     },
@@ -1187,6 +1268,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$s$cond $Rd, $Rn, #$expression",
+        "$oper$s.$cond $Rd, $Rn, #$expression",
         "$oper$cond$s $Rd, $Rn, #$expression",
       ],
     },
@@ -1209,6 +1291,8 @@ export namespace Arm {
       syntax: [
         "mov$cond $Rd, $psr",
         "mrs$cond $Rd, $psr",
+        "mov.$cond $Rd, $psr",
+        "mrs.$cond $Rd, $psr",
       ],
     },
     {
@@ -1225,6 +1309,8 @@ export namespace Arm {
       syntax: [
         "mov$cond $psr, $Rm",
         "msr$cond $psr, $Rm",
+        "mov.$cond $psr, $Rm",
+        "msr.$cond $psr, $Rm",
       ],
     },
     {
@@ -1243,6 +1329,8 @@ export namespace Arm {
       syntax: [
         "mov$cond $psrf, $Rm",
         "msr$cond $psrf, $Rm",
+        "mov.$cond $psrf, $Rm",
+        "msr.$cond $psrf, $Rm",
       ],
     },
     {
@@ -1260,6 +1348,8 @@ export namespace Arm {
       syntax: [
         "mov$cond $psrf, #$expression",
         "msr$cond $psrf, #$expression",
+        "mov.$cond $psrf, #$expression",
+        "msr.$cond $psrf, #$expression",
       ],
     },
 
@@ -1283,6 +1373,7 @@ export namespace Arm {
       ],
       syntax: [
         "mul$s$cond $Rd, $Rm, $Rs",
+        "mul$s.$cond $Rd, $Rm, $Rs",
         "mul$cond$s $Rd, $Rm, $Rs",
       ],
     },
@@ -1302,6 +1393,7 @@ export namespace Arm {
       ],
       syntax: [
         "mla$s$cond $Rd, $Rm, $Rs, $Rn",
+        "mla$s.$cond $Rd, $Rm, $Rs, $Rn",
         "mla$cond$s $Rd, $Rm, $Rs, $Rn",
       ],
     },
@@ -1327,6 +1419,7 @@ export namespace Arm {
       ],
       syntax: [
         "$u$oper$s$cond $RdLo, $RdHi, $Rm, $Rs",
+        "$u$oper$s.$cond $RdLo, $RdHi, $Rm, $Rs",
         "$u$oper$cond$s $RdLo, $RdHi, $Rm, $Rs",
       ],
     },
@@ -1353,7 +1446,30 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn]",
+        "$oper$b.$cond $Rd, [$Rn]",
         "$oper$cond$b $Rd, [$Rn]",
+      ],
+    },
+    {
+      ref: "4.9,4.9.8.2.2",
+      category: "Single Data Transfer",
+      codeParts: [
+        { s: 12, k: "pcoffset12", sign: false, sym: "offset" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "value", sym: "Rn", v: 15 }, // Rn = PC
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "enum", sym: "b", enum: ["", "b"] },
+        { s: 1, k: "pcoffset12", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 1 },
+        condition,
+      ],
+      syntax: [
+        "$oper$b$cond $Rd, [#$offset]$w",
+        "$oper$b.$cond $Rd, [#$offset]$w",
+        "$oper$cond$b $Rd, [#$offset]$w",
       ],
     },
     {
@@ -1374,6 +1490,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, #$offset]$w",
+        "$oper$b.$cond $Rd, [$Rn, #$offset]$w",
         "$oper$cond$b $Rd, [$Rn, #$offset]$w",
       ],
     },
@@ -1400,6 +1517,11 @@ export namespace Arm {
         "$oper$b$cond $Rd, [$Rn, $u$Rm, lsr #0]$w",
         "$oper$b$cond $Rd, [$Rn, $u$Rm, asr #0]$w",
         "$oper$b$cond $Rd, [$Rn, $u$Rm, ror #0]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, lsl #0]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, lsr #0]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, asr #0]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, ror #0]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, lsl #0]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, lsr #0]$w",
@@ -1428,6 +1550,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, $u$Rm, lsr #32]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, lsr #32]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, lsr #32]$w",
       ],
     },
@@ -1452,6 +1575,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, $u$Rm, asr #32]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, asr #32]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, asr #32]$w",
       ],
     },
@@ -1476,6 +1600,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, $u$Rm, rrx]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, rrx]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, rrx]$w",
       ],
     },
@@ -1505,6 +1630,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$cond $Rd, [$Rn, $u$Rm, $shift #$amount]$w",
+        "$oper$b.$cond $Rd, [$Rn, $u$Rm, $shift #$amount]$w",
         "$oper$cond$b $Rd, [$Rn, $u$Rm, $shift #$amount]$w",
       ],
     },
@@ -1526,6 +1652,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], #$offset",
+        "$oper$b$w.$cond $Rd, [$Rn], #$offset",
         "$oper$cond$b$w $Rd, [$Rn], #$offset",
       ],
     },
@@ -1552,6 +1679,11 @@ export namespace Arm {
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, lsr #0",
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, asr #0",
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, ror #0",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, lsl #0",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, lsr #0",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, asr #0",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, ror #0",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsl #0",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsr #0",
@@ -1580,6 +1712,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, lsr #32",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, lsr #32",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, lsr #32",
       ],
     },
@@ -1604,6 +1737,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, asr #32",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, asr #32",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, asr #32",
       ],
     },
@@ -1628,6 +1762,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, rrx",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, rrx",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, rrx",
       ],
     },
@@ -1657,6 +1792,7 @@ export namespace Arm {
       ],
       syntax: [
         "$oper$b$w$cond $Rd, [$Rn], $u$Rm, $shift #$amount",
+        "$oper$b$w.$cond $Rd, [$Rn], $u$Rm, $shift #$amount",
         "$oper$cond$b$w $Rd, [$Rn], $u$Rm, $shift #$amount",
       ],
     },
@@ -1686,7 +1822,33 @@ export namespace Arm {
       ],
       syntax: [
         "str$sh$cond $Rd, [$Rn]",
+        "str$sh.$cond $Rd, [$Rn]",
         "str$cond$sh $Rd, [$Rn]",
+      ],
+    },
+    {
+      ref: "4.10,4.10.8.2.2",
+      category: "Halfword and Signed Data Transfer",
+      codeParts: [
+        { s: 4, k: "pcoffsetsplit", sign: false, sym: "offset", low: true },
+        { s: 1, k: "value", v: 1 },
+        { s: 2, k: "enum", sym: "sh", enum: [false, "h", false, false] },
+        { s: 1, k: "value", v: 1 },
+        { s: 4, k: "pcoffsetsplit", sign: false, sym: "offset", low: false },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "value", sym: "Rn", v: 15 }, // Rn = PC
+        { s: 1, k: "value", sym: "l", v: 0 }, // store
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 1, k: "pcoffsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 3, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "str$sh$cond $Rd, [#$offset]$w",
+        "str$sh.$cond $Rd, [#$offset]$w",
+        "str$cond$sh $Rd, [#$offset]$w",
       ],
     },
     {
@@ -1710,6 +1872,7 @@ export namespace Arm {
       ],
       syntax: [
         "str$sh$cond $Rd, [$Rn, #$offset]$w",
+        "str$sh.$cond $Rd, [$Rn, #$offset]$w",
         "str$cond$sh $Rd, [$Rn, #$offset]$w",
       ],
     },
@@ -1734,6 +1897,7 @@ export namespace Arm {
       ],
       syntax: [
         "str$sh$cond $Rd, [$Rn, $u$Rm]$w",
+        "str$sh.$cond $Rd, [$Rn, $u$Rm]$w",
         "str$cond$sh $Rd, [$Rn, $u$Rm]$w",
       ],
     },
@@ -1758,6 +1922,7 @@ export namespace Arm {
       ],
       syntax: [
         "str$sh$cond $Rd, [$Rn], #$offset",
+        "str$sh.$cond $Rd, [$Rn], #$offset",
         "str$cond$sh $Rd, [$Rn], #$offset",
       ],
     },
@@ -1782,6 +1947,7 @@ export namespace Arm {
       ],
       syntax: [
         "str$sh$cond $Rd, [$Rn], $u$Rm",
+        "str$sh.$cond $Rd, [$Rn], $u$Rm",
         "str$cond$sh $Rd, [$Rn], $u$Rm",
       ],
     },
@@ -1806,7 +1972,33 @@ export namespace Arm {
       ],
       syntax: [
         "ldr$sh$cond $Rd, [$Rn]",
+        "ldr$sh.$cond $Rd, [$Rn]",
         "ldr$cond$sh $Rd, [$Rn]",
+      ],
+    },
+    {
+      ref: "4.10,4.10.8.2.2",
+      category: "Halfword and Signed Data Transfer",
+      codeParts: [
+        { s: 4, k: "pcoffsetsplit", sign: false, sym: "offset", low: true },
+        { s: 1, k: "value", v: 1 },
+        { s: 2, k: "enum", sym: "sh", enum: [false, "h", "sb", "sh"] },
+        { s: 1, k: "value", v: 1 },
+        { s: 4, k: "pcoffsetsplit", sign: false, sym: "offset", low: false },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "value", sym: "Rn", v: 15 }, // Rn = PC
+        { s: 1, k: "value", sym: "l", v: 1 }, // load
+        { s: 1, k: "enum", sym: "w", enum: ["", "!"] },
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 1, k: "pcoffsetsplit", sign: true, sym: "offset" }, // 0 = negative, 1 = positive
+        { s: 1, k: "value", sym: "p", v: 1 }, // pre-indexing
+        { s: 3, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "ldr$sh$cond $Rd, [#$offset]$w",
+        "ldr$sh.$cond $Rd, [#$offset]$w",
+        "ldr$cond$sh $Rd, [#$offset]$w",
       ],
     },
     {
@@ -1830,6 +2022,7 @@ export namespace Arm {
       ],
       syntax: [
         "ldr$sh$cond $Rd, [$Rn, #$offset]$w",
+        "ldr$sh.$cond $Rd, [$Rn, #$offset]$w",
         "ldr$cond$sh $Rd, [$Rn, #$offset]$w",
       ],
     },
@@ -1854,6 +2047,7 @@ export namespace Arm {
       ],
       syntax: [
         "ldr$sh$cond $Rd, [$Rn, $u$Rm]$w",
+        "ldr$sh.$cond $Rd, [$Rn, $u$Rm]$w",
         "ldr$cond$sh $Rd, [$Rn, $u$Rm]$w",
       ],
     },
@@ -1878,6 +2072,7 @@ export namespace Arm {
       ],
       syntax: [
         "ldr$sh$cond $Rd, [$Rn], #$offset",
+        "ldr$sh.$cond $Rd, [$Rn], #$offset",
         "ldr$cond$sh $Rd, [$Rn], #$offset",
       ],
     },
@@ -1902,6 +2097,7 @@ export namespace Arm {
       ],
       syntax: [
         "ldr$sh$cond $Rd, [$Rn], $u$Rm",
+        "ldr$sh.$cond $Rd, [$Rn], $u$Rm",
         "ldr$cond$sh $Rd, [$Rn], $u$Rm",
       ],
     },
@@ -1923,7 +2119,10 @@ export namespace Arm {
         { s: 3, k: "value", v: 4 },
         condition,
       ],
-      syntax: ["push$cond $Rlist$s"],
+      syntax: [
+        "push$cond $Rlist$s",
+        "push.$cond $Rlist$s",
+      ],
     },
     {
       ref: "4.11,4.11.9",
@@ -1945,6 +2144,7 @@ export namespace Arm {
       ],
       syntax: [
         "stm$pu$cond $Rn$w, $Rlist$s",
+        "stm$pu.$cond $Rn$w, $Rlist$s",
         "stm$cond$pu $Rn$w, $Rlist$s",
       ],
     },
@@ -1961,7 +2161,10 @@ export namespace Arm {
         { s: 3, k: "value", v: 4 },
         condition,
       ],
-      syntax: ["pop$cond $Rlist$s"],
+      syntax: [
+        "pop$cond $Rlist$s",
+        "pop.$cond $Rlist$s",
+      ],
     },
     {
       ref: "4.11,4.11.9",
@@ -1983,6 +2186,7 @@ export namespace Arm {
       ],
       syntax: [
         "ldm$pu$cond $Rn$w, $Rlist$s",
+        "ldm$pu.$cond $Rn$w, $Rlist$s",
         "ldm$cond$pu $Rn$w, $Rlist$s",
       ],
     },
@@ -2006,6 +2210,7 @@ export namespace Arm {
       ],
       syntax: [
         "swp$b$cond $Rd, $Rm, [$Rn]",
+        "swp$b.$cond $Rd, $Rm, [$Rn]",
         "swp$cond$b $Rd, $Rm, [$Rn]",
       ],
     },
@@ -2022,7 +2227,10 @@ export namespace Arm {
         { s: 4, k: "value", v: 15 },
         condition,
       ],
-      syntax: ["swi$cond $comment"],
+      syntax: [
+        "swi$cond $comment",
+        "swi.$cond $comment",
+      ],
     },
   ]);
 
@@ -2064,6 +2272,12 @@ export namespace Thumb {
     extra?: number;
   }
 
+  interface ICodePartPCOffset {
+    s: 8;
+    k: "pcoffset";
+    sym: "offset";
+  }
+
   interface ICodePartOffsetSplit {
     s: 11;
     k: "offsetsplit";
@@ -2085,6 +2299,7 @@ export namespace Thumb {
     | ICodePartHalfword
     | ICodePartSignedHalfword
     | ICodePartRegList
+    | ICodePartPCOffset
     | ICodePartOffsetSplit;
 
   export interface IOp {
@@ -2290,6 +2505,16 @@ export namespace Thumb {
     // FORMAT 6: PC-RELATIVE LOAD
     //
 
+    {
+      ref: "5.6",
+      category: "Format 6: PC-Relative Load",
+      codeParts: [
+        { s: 8, k: "pcoffset", sym: "offset" },
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 5, k: "value", v: 9 },
+      ],
+      syntax: ["ldr $Rd, [#$offset]"],
+    },
     {
       ref: "5.6",
       category: "Format 6: PC-Relative Load",
@@ -2618,7 +2843,7 @@ export namespace Thumb {
 }
 
 function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
-  const split = (str: string) => str.split(/(?=\$)/g);
+  const split = (str: string) => str.split(/(?=\$|\.)/g);
   const parts: (string[] | number)[] = [];
   let str = "";
   let num = 0;
@@ -2631,7 +2856,7 @@ function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
     const ch = syntax.charAt(i);
     switch (state) {
       case "start":
-        if (isAlpha(ch) || ch === "$") {
+        if (isAlpha(ch) || ch === "$" || ch === ".") {
           str = ch;
           state = "str";
         } else if (",[]{}#!^".indexOf(ch) >= 0) {
@@ -2644,7 +2869,7 @@ function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
         }
         break;
       case "str":
-        if (isAlpha(ch) || ch === "$") {
+        if (isAlpha(ch) || ch === "$" || ch === ".") {
           str += ch;
         } else {
           parts.push(split(str));

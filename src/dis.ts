@@ -52,6 +52,7 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
         case "immediate":
         case "rotimm":
         case "offset12":
+        case "pcoffset12":
         case "reglist":
           if (part.sym) {
             syms[part.sym] = { v, part };
@@ -61,6 +62,7 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
           syms[part.sym] = { v: v << 2, part };
           break;
         case "offsetsplit":
+        case "pcoffsetsplit":
           if (!(part.sym in syms)) {
             syms[part.sym] = { v, part };
           } else if (syms[part.sym].part.k === "offsetsplit") {
@@ -172,8 +174,10 @@ export async function dis(
               case "ignored":
               case "immediate":
               case "offset12":
+              case "pcoffset12":
               case "word":
               case "offsetsplit":
+              case "pcoffsetsplit":
                 break;
               default:
                 assertNever(part);

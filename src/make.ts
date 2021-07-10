@@ -8,6 +8,7 @@
 import {
   errorString,
   flpString,
+  IFilePos,
   isIdentStart,
   ITok,
   lex,
@@ -42,6 +43,14 @@ function decodeRegister(id: string): number {
     return parseInt(id.substr(1), 10);
   }
   return -1;
+}
+
+function parseComma(line: ITok[], error: string) {
+  if (line[0].kind === TokEnum.ID && line[0].id === ",") {
+    line.shift();
+  } else {
+    throw error;
+  }
 }
 
 function parseNum(line: ITok[]): number {
@@ -147,13 +156,13 @@ function parseDotStatement(
   line: ITok[],
 ): { include: string } | { embed: string } | undefined {
   switch (cmd) {
-    case "error":
+    case ".error":
       if (line.length === 1 && line[0].kind === TokEnum.STR) {
         throw line[0].str;
       } else {
         throw "Invalid .error statement";
       }
-    case "base": {
+    case ".base": {
       const amount = parseNum(line);
       if (line.length > 0) {
         throw "Invalid .base statement";
@@ -161,21 +170,21 @@ function parseDotStatement(
       state.bytes.setBase(amount);
       break;
     }
-    case "arm":
+    case ".arm":
       if (line.length > 0) {
         throw "Invalid .arm statement";
       }
       state.bytes.align(4);
       state.arm = true;
       break;
-    case "thumb":
+    case ".thumb":
       if (line.length > 0) {
         throw "Invalid .thumb statement";
       }
       state.bytes.align(2);
       state.arm = false;
       break;
-    case "align": {
+    case ".align": {
       const amount = parseNum(line);
       let fill = 0;
       if (
@@ -190,8 +199,8 @@ function parseDotStatement(
       state.bytes.align(amount, fill & 0xff);
       break;
     }
-    case "i8":
-    case "b8":
+    case ".i8":
+    case ".b8":
       while (line.length > 0) {
         const t = line[0];
         if (t.kind === TokEnum.STR) {
@@ -201,28 +210,24 @@ function parseDotStatement(
           }
         } else {
           state.bytes.expr8(
-            errorString(t.flp, `Invalid .${cmd} statement`),
+            errorString(t.flp, `Invalid ${cmd} statement`),
             { v: parseExpr(line) },
             ({ v }) => v,
           );
           if (line.length > 0) {
-            if (line[0].kind === TokEnum.ID && line[0].id === ",") {
-              line.shift();
-            } else {
-              throw `Invalid .${cmd} statement`;
-            }
+            parseComma(line, `Invalid ${cmd} statement`);
           }
         }
       }
       break;
-    case "i16":
-    case "b16":
+    case ".i16":
+    case ".b16":
       while (line.length > 0) {
         state.bytes.expr16(
-          errorString(line[0].flp, `Invalid .${cmd} statement`),
+          errorString(line[0].flp, `Invalid ${cmd} statement`),
           { v: parseExpr(line) },
           ({ v }) => {
-            if (cmd === "b16") {
+            if (cmd === ".b16") {
               // reverse byte order
               const b1 = v & 0xff;
               const b2 = (v >> 8) & 0xff;
@@ -232,22 +237,18 @@ function parseDotStatement(
           },
         );
         if (line.length > 0) {
-          if (line[0].kind === TokEnum.ID && line[0].id === ",") {
-            line.shift();
-          } else {
-            throw `Invalid .${cmd} statement`;
-          }
+          parseComma(line, `Invalid ${cmd} statement`);
         }
       }
       break;
-    case "i32":
-    case "b32":
+    case ".i32":
+    case ".b32":
       while (line.length > 0) {
         state.bytes.expr32(
-          errorString(line[0].flp, `Invalid .${cmd} statement`),
+          errorString(line[0].flp, `Invalid ${cmd} statement`),
           { v: parseExpr(line) },
           ({ v }) => {
-            if (cmd === "b32") {
+            if (cmd === ".b32") {
               // reverse byte order
               const b1 = v & 0xff;
               const b2 = (v >> 8) & 0xff;
@@ -259,39 +260,35 @@ function parseDotStatement(
           },
         );
         if (line.length > 0) {
-          if (line[0].kind === TokEnum.ID && line[0].id === ",") {
-            line.shift();
-          } else {
-            throw `Invalid .${cmd} statement`;
-          }
+          parseComma(line, `Invalid ${cmd} statement`);
         }
       }
       break;
-    case "include": {
+    case ".include": {
       const t = line.shift();
       if (!t || t.kind !== TokEnum.STR || line.length > 0) {
         throw "Invalid .include statement";
       }
       return { include: t.str };
     }
-    case "embed": {
+    case ".embed": {
       const t = line.shift();
       if (!t || t.kind !== TokEnum.STR || line.length > 0) {
         throw "Invalid .include statement";
       }
       return { embed: t.str };
     }
-    case "stdlib":
-      throw "TODO: stdlib";
-    case "extlib":
-      throw "TODO: extlib";
-    case "logo":
+    case ".stdlib":
+      throw "TODO: .stdlib";
+    case ".extlib":
+      throw "TODO: .extlib";
+    case ".logo":
       if (line.length > 0) {
         throw "Invalid .logo statement";
       }
       state.bytes.writeLogo();
       break;
-    case "title": {
+    case ".title": {
       const t = line.shift();
       if (!t || t.kind !== TokEnum.STR || line.length > 0) {
         throw "Invalid .title statement";
@@ -305,18 +302,18 @@ function parseDotStatement(
       }
       break;
     }
-    case "crc": {
+    case ".crc": {
       if (line.length > 0) {
         throw "Invalid .crc statement";
       }
       state.bytes.writeCRC();
       break;
     }
-    case "macro":
+    case ".macro":
       throw "TODO: marco";
-    case "endm":
+    case ".endm":
       throw "TODO: endm";
-    case "end":
+    case ".end":
       if (line.length > 0) {
         throw "Invalid .end statement";
       }
@@ -324,15 +321,33 @@ function parseDotStatement(
       // TODO: delete local macros
       // TODO: delete local constants
       break;
-    case "if":
-    case "elseif":
-    case "else":
-    case "endif":
-      throw "TODO: if/elseif/else/endif";
-    case "mov":
-      throw "TODO: generic mov";
+    case ".if":
+    case ".elseif":
+    case ".else":
+    case ".endif":
+      throw "TODO: .if/.elseif/.else/.endif";
+    case ".mov":
+      throw "TODO: generic .mov";
+    case ".printf":
+      throw "TODO: .printf";
+    case ".rgb": {
+      const r = parseNum(line);
+      parseComma(line, "Invalid .rgb statement");
+      const g = parseNum(line);
+      parseComma(line, "Invalid .rgb statement");
+      const b = parseNum(line);
+      if (line.length > 0) {
+        throw "Invalid .rgb statement";
+      }
+      state.bytes.write16(
+        ((b & 0x1f) << 10) |
+          ((g & 0x1f) << 5) |
+          (r & 0x1f),
+      );
+      break;
+    }
     default:
-      throw `Unknown dot statement: .${cmd}`;
+      throw `Unknown dot statement: ${cmd}`;
   }
 }
 
@@ -445,10 +460,10 @@ class BitNumber {
 
 function parseArmStatement(
   state: IParseState,
+  flp: IFilePos,
   pb: Arm.IParsedBody,
   line: ITok[],
 ) {
-  const flp = line[0].flp;
   const syms: ISyms = { ...pb.syms };
 
   for (const part of pb.body) {
@@ -470,7 +485,9 @@ function parseArmStatement(
           case "immediate":
           case "rotimm":
           case "offset12":
+          case "pcoffset12":
           case "offsetsplit":
+          case "pcoffsetsplit":
             if (!validateSymExpr(syms, part.sym, line)) {
               return false;
             }
@@ -562,21 +579,30 @@ function parseArmStatement(
             break;
           }
           case "offset12":
+          case "pcoffset12": {
+            const offset = codePart.k === "offset12"
+              ? syms[codePart.sym]
+              : syms[codePart.sym] - address - 8;
             if (codePart.sign) {
-              opcode.push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+              opcode.push(codePart.s, offset < 0 ? 0 : 1);
             } else {
-              const v = Math.abs(syms[codePart.sym]);
+              const v = Math.abs(offset);
               if (v >= (1 << codePart.s)) {
                 throw `Offset too large: ${v}`;
               }
               opcode.push(codePart.s, v);
             }
             break;
+          }
           case "offsetsplit":
+          case "pcoffsetsplit": {
+            const offset = codePart.k === "offsetsplit"
+              ? syms[codePart.sym]
+              : syms[codePart.sym] - address - 8;
             if (codePart.sign) {
-              opcode.push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+              opcode.push(codePart.s, offset < 0 ? 0 : 1);
             } else {
-              const v = Math.abs(syms[codePart.sym]);
+              const v = Math.abs(offset);
               if (v >= 256) {
                 throw `Offset too large: ${v}`;
               }
@@ -586,6 +612,7 @@ function parseArmStatement(
               );
             }
             break;
+          }
           default:
             assertNever(codePart);
         }
@@ -598,10 +625,10 @@ function parseArmStatement(
 
 function parseThumbStatement(
   state: IParseState,
+  flp: IFilePos,
   pb: Thumb.IParsedBody,
   line: ITok[],
 ) {
-  const flp = line[0].flp;
   const syms: ISyms = { ...pb.syms };
 
   for (const part of pb.body) {
@@ -623,6 +650,7 @@ function parseThumbStatement(
           case "halfword":
           case "shalfword":
           case "immediate":
+          case "pcoffset":
           case "offsetsplit":
             if (!validateSymExpr(syms, part.sym, line)) {
               return false;
@@ -711,9 +739,10 @@ function parseThumbStatement(
             break;
           case "shalfword":
             throw new Error("TODO: shalfword");
-            break;
+          case "pcoffset":
+            throw new Error("TODO: pcoffset");
           case "offsetsplit":
-            throw new Error(`TODO: ${codePart.k}`);
+            throw new Error(`TODO: offsetsplit`);
           default:
             assertNever(codePart);
         }
@@ -732,23 +761,33 @@ function parseThumbStatement(
   return true;
 }
 
+export function parseName(line: ITok[]): string | false {
+  if (
+    line.length > 0 && line[0].kind === TokEnum.ID &&
+    isIdentStart(line[0].id.charAt(0))
+  ) {
+    const t = line.shift();
+    if (!t || t.kind !== TokEnum.ID) {
+      return false;
+    }
+    return t.id;
+  }
+  return false;
+}
+
 function parseLabel(line: ITok[]): string | false {
   if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === "@") {
-    let label = "@";
+    let prefix = "@";
     line.shift();
     if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === "@") {
-      label += "@";
+      prefix += "@";
       line.shift();
     }
-    if (
-      line.length > 0 && line[0].kind === TokEnum.ID &&
-      isIdentStart(line[0].id.charAt(0))
-    ) {
-      label += line[0].id;
-      line.shift();
-      return label;
+    const name = parseName(line);
+    if (name === false) {
+      throw "Missing label name";
     }
-    throw "Missing label name";
+    return prefix + name;
   }
   return false;
 }
@@ -780,27 +819,22 @@ function parseLine(
     return;
   }
 
-  // check for dot commands
-  let dot = false;
-  if (line[0].kind === TokEnum.ID && line[0].id === ".") {
-    line.shift(); // remove "."
-    dot = true;
-  }
-
   const cmdTok = line.shift();
   if (!cmdTok || cmdTok.kind !== TokEnum.ID) {
     throw "Invalid command";
   }
   const cmd = cmdTok.id;
 
-  if (dot) {
+  if (cmd.startsWith(".")) {
     return parseDotStatement(state, cmd, line);
   } else if (state.arm) {
     const ops = Arm.parsedOps[cmd];
     if (!ops) {
       throw `Unknown arm statement: ${cmd}`;
     }
-    if (!ops.some((op) => parseArmStatement(state, op, [...line]))) {
+    if (
+      !ops.some((op) => parseArmStatement(state, cmdTok.flp, op, [...line]))
+    ) {
       throw "Failed to parse arm statement";
     }
   } else {
@@ -808,7 +842,9 @@ function parseLine(
     if (!ops) {
       throw `Unknown thumb statement: ${cmd}`;
     }
-    if (!ops.some((op) => parseThumbStatement(state, op, [...line]))) {
+    if (
+      !ops.some((op) => parseThumbStatement(state, cmdTok.flp, op, [...line]))
+    ) {
       throw "Failed to parse thumb statement";
     }
   }
@@ -922,7 +958,13 @@ export async function makeFromFile(
     }
   }
 
-  return { result: state.bytes.get() };
+  let result;
+  try {
+    result = state.bytes.get();
+  } catch (e) {
+    return { errors: [e] };
+  }
+  return { result };
 }
 
 export async function make({ input, output }: IMakeArgs): Promise<number> {

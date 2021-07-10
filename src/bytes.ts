@@ -18,7 +18,7 @@ interface IPendingExpr {
 }
 
 export class Bytes {
-  public base = 0x08000000;
+  private base = 0x08000000;
   private array: number[] = [];
   private pendingExprs: IPendingExpr[] = [];
   private labels: { [name: string]: number } = {};

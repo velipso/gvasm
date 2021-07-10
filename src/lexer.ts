@@ -7,7 +7,7 @@
 
 import { isAlpha, isNum, isSpace } from "./util.ts";
 
-interface IFilePos {
+export interface IFilePos {
   filename: string;
   line: number;
   chr: number;
@@ -112,7 +112,7 @@ export function isIdentStart(c: string) {
   return isAlpha(c) || c === "_";
 }
 
-function isIdentBody(c: string) {
+export function isIdentBody(c: string) {
   return isIdentStart(c) || isNum(c);
 }
 
@@ -174,9 +174,9 @@ function lexProcess(lx: ILex, tks: ITok[]) {
   switch (lx.state) {
     case LexEnum.START:
       lx.flpS = flp;
-      if ("~!@#$%^&*()-+={[}]|\\:<,>.?/".indexOf(ch1) >= 0) {
+      if ("~!@#$%^&*()-+={[}]|\\:<,>?/".indexOf(ch1) >= 0) {
         lx.state = LexEnum.SPECIAL;
-      } else if (isIdentStart(ch1)) {
+      } else if (isIdentStart(ch1) || ch1 === ".") {
         lx.str = ch1;
         lx.state = LexEnum.IDENT;
       } else if (isNum(ch1)) {
@@ -261,8 +261,14 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.IDENT:
-      if (!isIdentBody(ch1)) {
-        tks.push(tokId(flpS, lx.str));
+      if (ch1 === "." && !lx.str.endsWith(".")) {
+        lx.str += ".";
+      } else if (!isIdentBody(ch1)) {
+        if (lx.str.endsWith(".")) {
+          tks.push(tokError(flpS, "Identifier can't end with period"));
+        } else {
+          tks.push(tokId(flpS, lx.str));
+        }
         lx.state = LexEnum.START;
         lexProcess(lx, tks);
       } else {

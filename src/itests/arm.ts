@@ -14,9 +14,20 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-bx r9     /// 19 ff 2f e1
-bxeq r14  /// 1e ff 2f 01
+bx r9      /// 19 ff 2f e1
+bxeq r14   /// 1e ff 2f 01
+bx.eq r14  /// 1e ff 2f 01
 `,
+    },
+  });
+
+  def({
+    name: "arm.bx-period",
+    desc: "Branch and exchange can't end in period",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `bx. r9`,
     },
   });
 
@@ -29,7 +40,7 @@ bxeq r14  /// 1e ff 2f 01
 @L1: b 0x08000008  /// 00 00 00 ea
 @L2: b @L1         /// fd ff ff ea
 @L3: bne @L3       /// fe ff ff 1a
-bcs @L4            /// 01 00 00 2a
+b.cs @L4           /// 01 00 00 2a
 .i32 0, 0          /// 00 00 00 00 00 00 00 00
 @L4:
 `,
@@ -59,7 +70,7 @@ b @L1  /// 00 00 00 00
 @L1: bl 0x08000008  /// 00 00 00 eb
 @L2: bl @L1         /// fd ff ff eb
 @L3: blhs @L3       /// fe ff ff 2b
-blcc @L4            /// 01 00 00 3b
+bl.cc @L4           /// 01 00 00 3b
 .i32 0, 0           /// 00 00 00 00 00 00 00 00
 @L4:
 `,
@@ -81,71 +92,82 @@ blcc @L4            /// 01 00 00 3b
       kind: "make",
       files: {
         "/root/main": `
-${op} r3, r14              /// 0e 30 ${b0}0 e1
-${op}s r3, r14             /// 0e 30 ${b1}0 e1
-${op}mi r3, r14            /// 0e 30 ${b0}0 41
-${op}smi r3, r14           /// 0e 30 ${b1}0 41
-${op}mis r3, r14           /// 0e 30 ${b1}0 41
+${op} r3, r14               /// 0e 30 ${b0}0 e1
+${op}s r3, r14              /// 0e 30 ${b1}0 e1
+${op}mi r3, r14             /// 0e 30 ${b0}0 41
+${op}smi r3, r14            /// 0e 30 ${b1}0 41
+${op}s.mi r3, r14           /// 0e 30 ${b1}0 41
+${op}mis r3, r14            /// 0e 30 ${b1}0 41
 
-${op} r3, r14, lsl #0      /// 0e 30 ${b0}0 e1
-${op}s r3, r14, lsl #0     /// 0e 30 ${b1}0 e1
-${op}mi r3, r14, lsl #0    /// 0e 30 ${b0}0 41
-${op}smi r3, r14, lsl #0   /// 0e 30 ${b1}0 41
-${op}mis r3, r14, lsl #0   /// 0e 30 ${b1}0 41
+${op} r3, r14, lsl #0       /// 0e 30 ${b0}0 e1
+${op}s r3, r14, lsl #0      /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, lsl #0     /// 0e 30 ${b0}0 41
+${op}smi r3, r14, lsl #0    /// 0e 30 ${b1}0 41
+${op}s.mi r3, r14, lsl #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, lsl #0    /// 0e 30 ${b1}0 41
 
-${op} r3, r14, lsr #0      /// 0e 30 ${b0}0 e1
-${op}s r3, r14, lsr #0     /// 0e 30 ${b1}0 e1
-${op}mi r3, r14, lsr #0    /// 0e 30 ${b0}0 41
-${op}smi r3, r14, lsr #0   /// 0e 30 ${b1}0 41
-${op}mis r3, r14, lsr #0   /// 0e 30 ${b1}0 41
+${op} r3, r14, lsr #0       /// 0e 30 ${b0}0 e1
+${op}s r3, r14, lsr #0      /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, lsr #0     /// 0e 30 ${b0}0 41
+${op}smi r3, r14, lsr #0    /// 0e 30 ${b1}0 41
+${op}s.mi r3, r14, lsr #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, lsr #0    /// 0e 30 ${b1}0 41
 
-${op} r3, r14, asr #0      /// 0e 30 ${b0}0 e1
-${op}s r3, r14, asr #0     /// 0e 30 ${b1}0 e1
-${op}mi r3, r14, asr #0    /// 0e 30 ${b0}0 41
-${op}smi r3, r14, asr #0   /// 0e 30 ${b1}0 41
-${op}mis r3, r14, asr #0   /// 0e 30 ${b1}0 41
+${op} r3, r14, asr #0       /// 0e 30 ${b0}0 e1
+${op}s r3, r14, asr #0      /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, asr #0     /// 0e 30 ${b0}0 41
+${op}smi r3, r14, asr #0    /// 0e 30 ${b1}0 41
+${op}s.mi r3, r14, asr #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, asr #0    /// 0e 30 ${b1}0 41
 
-${op} r3, r14, ror #0      /// 0e 30 ${b0}0 e1
-${op}s r3, r14, ror #0     /// 0e 30 ${b1}0 e1
-${op}mi r3, r14, ror #0    /// 0e 30 ${b0}0 41
-${op}smi r3, r14, ror #0   /// 0e 30 ${b1}0 41
-${op}mis r3, r14, ror #0   /// 0e 30 ${b1}0 41
+${op} r3, r14, ror #0       /// 0e 30 ${b0}0 e1
+${op}s r3, r14, ror #0      /// 0e 30 ${b1}0 e1
+${op}mi r3, r14, ror #0     /// 0e 30 ${b0}0 41
+${op}smi r3, r14, ror #0    /// 0e 30 ${b1}0 41
+${op}s.mi r3, r14, ror #0   /// 0e 30 ${b1}0 41
+${op}mis r3, r14, ror #0    /// 0e 30 ${b1}0 41
 
-${op} r3, r14, lsr #32     /// 2e 30 ${b0}0 e1
-${op}s r3, r14, lsr #32    /// 2e 30 ${b1}0 e1
-${op}mi r3, r14, lsr #32   /// 2e 30 ${b0}0 41
-${op}smi r3, r14, lsr #32  /// 2e 30 ${b1}0 41
-${op}mis r3, r14, lsr #32  /// 2e 30 ${b1}0 41
+${op} r3, r14, lsr #32      /// 2e 30 ${b0}0 e1
+${op}s r3, r14, lsr #32     /// 2e 30 ${b1}0 e1
+${op}mi r3, r14, lsr #32    /// 2e 30 ${b0}0 41
+${op}smi r3, r14, lsr #32   /// 2e 30 ${b1}0 41
+${op}s.mi r3, r14, lsr #32  /// 2e 30 ${b1}0 41
+${op}mis r3, r14, lsr #32   /// 2e 30 ${b1}0 41
 
-${op} r3, r14, asr #32     /// 4e 30 ${b0}0 e1
-${op}s r3, r14, asr #32    /// 4e 30 ${b1}0 e1
-${op}mi r3, r14, asr #32   /// 4e 30 ${b0}0 41
-${op}smi r3, r14, asr #32  /// 4e 30 ${b1}0 41
-${op}mis r3, r14, asr #32  /// 4e 30 ${b1}0 41
+${op} r3, r14, asr #32      /// 4e 30 ${b0}0 e1
+${op}s r3, r14, asr #32     /// 4e 30 ${b1}0 e1
+${op}mi r3, r14, asr #32    /// 4e 30 ${b0}0 41
+${op}smi r3, r14, asr #32   /// 4e 30 ${b1}0 41
+${op}s.mi r3, r14, asr #32  /// 4e 30 ${b1}0 41
+${op}mis r3, r14, asr #32   /// 4e 30 ${b1}0 41
 
-${op} r3, r14, rrx         /// 6e 30 ${b0}0 e1
-${op}s r3, r14, rrx        /// 6e 30 ${b1}0 e1
-${op}mi r3, r14, rrx       /// 6e 30 ${b0}0 41
-${op}smi r3, r14, rrx      /// 6e 30 ${b1}0 41
-${op}mis r3, r14, rrx      /// 6e 30 ${b1}0 41
+${op} r3, r14, rrx          /// 6e 30 ${b0}0 e1
+${op}s r3, r14, rrx         /// 6e 30 ${b1}0 e1
+${op}mi r3, r14, rrx        /// 6e 30 ${b0}0 41
+${op}smi r3, r14, rrx       /// 6e 30 ${b1}0 41
+${op}s.mi r3, r14, rrx      /// 6e 30 ${b1}0 41
+${op}mis r3, r14, rrx       /// 6e 30 ${b1}0 41
 
-${op} r3, r14, lsl #5      /// 8e 32 ${b0}0 e1
-${op}s r3, r14, lsr #10    /// 2e 35 ${b1}0 e1
-${op}mi r3, r14, asr #15   /// ce 37 ${b0}0 41
-${op}smi r3, r14, ror #20  /// 6e 3a ${b1}0 41
-${op}mis r3, r14, lsl #25  /// 8e 3c ${b1}0 41
+${op} r3, r14, lsl #5       /// 8e 32 ${b0}0 e1
+${op}s r3, r14, lsr #10     /// 2e 35 ${b1}0 e1
+${op}mi r3, r14, asr #15    /// ce 37 ${b0}0 41
+${op}smi r3, r14, ror #20   /// 6e 3a ${b1}0 41
+${op}s.mi r3, r14, ror #20  /// 6e 3a ${b1}0 41
+${op}mis r3, r14, lsl #25   /// 8e 3c ${b1}0 41
 
-${op} r3, r14, lsl r10     /// 1e 3a ${b0}0 e1
-${op}s r3, r14, lsr r10    /// 3e 3a ${b1}0 e1
-${op}mi r3, r14, asr r10   /// 5e 3a ${b0}0 41
-${op}smi r3, r14, ror r10  /// 7e 3a ${b1}0 41
-${op}mis r3, r14, lsl r10  /// 1e 3a ${b1}0 41
+${op} r3, r14, lsl r10      /// 1e 3a ${b0}0 e1
+${op}s r3, r14, lsr r10     /// 3e 3a ${b1}0 e1
+${op}mi r3, r14, asr r10    /// 5e 3a ${b0}0 41
+${op}smi r3, r14, ror r10   /// 7e 3a ${b1}0 41
+${op}s.mi r3, r14, ror r10  /// 7e 3a ${b1}0 41
+${op}mis r3, r14, lsl r10   /// 1e 3a ${b1}0 41
 
-${op} r3, #0x34000000      /// 0d 33 ${b0}0 e3
-${op}s r3, #0x560000       /// 56 38 ${b1}0 e3
-${op}mi r3, #0x7800        /// 1e 3b ${b0}0 43
-${op}smi r3, #0x91         /// 91 30 ${b1}0 43
-${op}mis r3, #0x50         /// 05 3e ${b1}0 43
+${op} r3, #0x34000000       /// 0d 33 ${b0}0 e3
+${op}s r3, #0x560000        /// 56 38 ${b1}0 e3
+${op}mi r3, #0x7800         /// 1e 3b ${b0}0 43
+${op}smi r3, #0x91          /// 91 30 ${b1}0 43
+${op}s.mi r3, #0x91         /// 91 30 ${b1}0 43
+${op}mis r3, #0x50          /// 05 3e ${b1}0 43
 `,
       },
     });
@@ -169,36 +191,47 @@ ${op}mis r3, #0x50         /// 05 3e ${b1}0 43
         "/root/main": `
 ${op} r9, r14              /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14            /// 0e 00 ${b1}9 51
+${op}.pl r9, r14           /// 0e 00 ${b1}9 51
 
 ${op} r9, r14, lsl #0      /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14, lsl #0    /// 0e 00 ${b1}9 51
+${op}.pl r9, r14, lsl #0   /// 0e 00 ${b1}9 51
 
 ${op} r9, r14, lsr #0      /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14, lsr #0    /// 0e 00 ${b1}9 51
+${op}.pl r9, r14, lsr #0   /// 0e 00 ${b1}9 51
 
 ${op} r9, r14, asr #0      /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14, asr #0    /// 0e 00 ${b1}9 51
+${op}.pl r9, r14, asr #0   /// 0e 00 ${b1}9 51
 
 ${op} r9, r14, ror #0      /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14, ror #0    /// 0e 00 ${b1}9 51
+${op}.pl r9, r14, ror #0   /// 0e 00 ${b1}9 51
 
 ${op} r9, r14, lsr #32     /// 2e 00 ${b1}9 e1
 ${op}pl r9, r14, lsr #32   /// 2e 00 ${b1}9 51
+${op}.pl r9, r14, lsr #32  /// 2e 00 ${b1}9 51
 
 ${op} r9, r14, asr #32     /// 4e 00 ${b1}9 e1
 ${op}pl r9, r14, asr #32   /// 4e 00 ${b1}9 51
+${op}.pl r9, r14, asr #32  /// 4e 00 ${b1}9 51
 
 ${op} r9, r14, rrx         /// 6e 00 ${b1}9 e1
 ${op}pl r9, r14, rrx       /// 6e 00 ${b1}9 51
+${op}.pl r9, r14, rrx      /// 6e 00 ${b1}9 51
 
 ${op} r9, r14, lsl #5      /// 8e 02 ${b1}9 e1
 ${op}pl r9, r14, asr #15   /// ce 07 ${b1}9 51
+${op}.pl r9, r14, asr #15  /// ce 07 ${b1}9 51
 
 ${op} r9, r14, lsl r10     /// 1e 0a ${b1}9 e1
 ${op}pl r9, r14, asr r10   /// 5e 0a ${b1}9 51
+${op}.pl r9, r14, asr r10  /// 5e 0a ${b1}9 51
 
 ${op} r9, #0x34000000      /// 0d 03 ${b1}9 e3
 ${op}pl r9, #0x7800        /// 1e 0b ${b1}9 53
+${op}.pl r9, #0x7800       /// 1e 0b ${b1}9 53
 `,
       },
     });
@@ -1214,6 +1247,48 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
   }
 
   def({
+    name: "arm.str-pc-relative",
+    desc: "Store word relative to PC",
+    kind: "make",
+    files: {
+      "/root/main": `
+@L0: .i16 100, 200  /// 64 00 c8 00
+str r2, [#@L0]      /// 0c 20 0f e5
+strb r2, [#@L0]     /// 10 20 4f e5
+strbge r2, [#@L0]   /// 14 20 4f a5
+strgeb r2, [#@L0]   /// 18 20 4f a5
+
+str r2, [#@L1]!     /// 08 20 af e5
+strb r2, [#@L1]!    /// 04 20 ef e5
+strbge r2, [#@L1]!  /// 00 20 ef a5
+strgeb r2, [#@L1]!  /// 04 20 6f a5
+@L1: .i16 100, 200  /// 64 00 c8 00
+`,
+    },
+  });
+
+  def({
+    name: "arm.ldr-pc-relative",
+    desc: "Load word relative to PC",
+    kind: "make",
+    files: {
+      "/root/main": `
+@L0: .i16 100, 200  /// 64 00 c8 00
+ldr r2, [#@L0]      /// 0c 20 1f e5
+ldrb r2, [#@L0]     /// 10 20 5f e5
+ldrbge r2, [#@L0]   /// 14 20 5f a5
+ldrgeb r2, [#@L0]   /// 18 20 5f a5
+
+ldr r2, [#@L1]!     /// 08 20 bf e5
+ldrb r2, [#@L1]!    /// 04 20 ff e5
+ldrbge r2, [#@L1]!  /// 00 20 ff a5
+ldrgeb r2, [#@L1]!  /// 04 20 7f a5
+@L1: .i16 100, 200  /// 64 00 c8 00
+`,
+    },
+  });
+
+  def({
     name: "arm.str-overflow-immediate",
     desc: "Store with overflow immediate",
     kind: "make",
@@ -1297,6 +1372,23 @@ strlth r11, [r4], +r13        /// bd b0 84 b0
 strh r11, [r4], -r13          /// bd b0 04 e0
 strhlt r11, [r4], -r13        /// bd b0 04 b0
 strlth r11, [r4], -r13        /// bd b0 04 b0
+`,
+    },
+  });
+
+  def({
+    name: "arm.strh-pc-relative",
+    desc: "Store half word relative to PC",
+    kind: "make",
+    files: {
+      "/root/main": `
+@L0: .i16 100, 200  /// 64 00 c8 00
+strh r11, [#@L0]    /// bc b0 4f e1
+strh r11, [#@L0]!   /// b0 b1 6f e1
+
+strh r11, [#@L1]    /// b0 b0 cf e1
+strh r11, [#@L1]!   /// b4 b0 6f e1
+@L1: .i16 100, 200  /// 64 00 c8 00
 `,
     },
   });
@@ -1513,6 +1605,31 @@ ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
   });
 
   def({
+    name: "arm.ldrh-pc-relative",
+    desc: "Load half word relative to PC",
+    kind: "make",
+    files: {
+      "/root/main": `
+@L0: .i16 100, 200  /// 64 00 c8 00
+ldrh r11, [#@L0]    /// bc b0 5f e1
+ldrsh r11, [#@L0]   /// f0 b1 5f e1
+ldrsb r11, [#@L0]   /// d4 b1 5f e1
+ldrh r11, [#@L0]!   /// b8 b1 7f e1
+ldrsh r11, [#@L0]!  /// fc b1 7f e1
+ldrsb r11, [#@L0]!  /// d0 b2 7f e1
+
+ldrh r11, [#@L1]    /// b0 b1 df e1
+ldrsh r11, [#@L1]   /// fc b0 df e1
+ldrsb r11, [#@L1]   /// d8 b0 df e1
+ldrh r11, [#@L1]!   /// b4 b0 ff e1
+ldrsh r11, [#@L1]!  /// f0 b0 ff e1
+ldrsb r11, [#@L1]!  /// d4 b0 7f e1
+@L1: .i16 100, 200  /// 64 00 c8 00
+`,
+    },
+  });
+
+  def({
     name: "arm.push",
     desc: "Push registers to stack",
     kind: "make",
@@ -1670,11 +1787,13 @@ ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
     kind: "make",
     files: {
       "/root/main": `
-swp r8, r9, [r1]     /// 99 80 01 e1
-swpb r8, r9, [r1]    /// 99 80 41 e1
-swppl r8, r9, [r1]   /// 99 80 01 51
-swpbpl r8, r9, [r1]  /// 99 80 41 51
-swpplb r8, r9, [r1]  /// 99 80 41 51
+swp r8, r9, [r1]      /// 99 80 01 e1
+swpb r8, r9, [r1]     /// 99 80 41 e1
+swppl r8, r9, [r1]    /// 99 80 01 51
+swp.pl r8, r9, [r1]   /// 99 80 01 51
+swpbpl r8, r9, [r1]   /// 99 80 41 51
+swpb.pl r8, r9, [r1]  /// 99 80 41 51
+swpplb r8, r9, [r1]   /// 99 80 41 51
 `,
     },
   });
@@ -1685,12 +1804,13 @@ swpplb r8, r9, [r1]  /// 99 80 41 51
     kind: "make",
     files: {
       "/root/main": `
-swi 0           /// 00 00 00 ef
-swi 100         /// 64 00 00 ef
-swi 0xffffff    /// ff ff ff ef
-swimi 0         /// 00 00 00 4f
-swimi 100       /// 64 00 00 4f
-swimi 0xffffff  /// ff ff ff 4f
+swi 0            /// 00 00 00 ef
+swi 100          /// 64 00 00 ef
+swi 0xffffff     /// ff ff ff ef
+swimi 0          /// 00 00 00 4f
+swimi 100        /// 64 00 00 4f
+swimi 0xffffff   /// ff ff ff 4f
+swi.mi 0xffffff  /// ff ff ff 4f
 `,
     },
   });

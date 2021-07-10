@@ -9,8 +9,8 @@ import { ITest } from "../itest.ts";
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "thumb.lsl",
-    desc: "Logical left shift",
+    name: "thumb.lsl-move",
+    desc: "Logical shift left and move",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -26,7 +26,7 @@ lsl r7, r7       /// bf 40
 
   def({
     name: "thumb.lsl-overflow",
-    desc: "Logical left shift with overflow",
+    desc: "Logical shift left with overflow",
     kind: "make",
     error: true,
     files: {
@@ -35,8 +35,8 @@ lsl r7, r7       /// bf 40
   });
 
   def({
-    name: "thumb.lsr",
-    desc: "Logical right shift",
+    name: "thumb.lsr-move",
+    desc: "Logical shift right and move",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -51,8 +51,8 @@ lsr r7, r7       /// ff 40
   });
 
   def({
-    name: "thumb.asr",
-    desc: "Arithmetic right shift",
+    name: "thumb.asr-move",
+    desc: "Arithmetic shift right and move",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -105,6 +105,117 @@ sub r4, #255       /// ff 3c
 // subtract sp
 sub sp, #400       /// e4 b0
 sub sp, #404       /// e5 b0
+`,
+    },
+  });
+
+  def({
+    name: "thumb.mov",
+    desc: "Move",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+mov r4, #0       /// 00 24
+mov r4, #100     /// 64 24
+mov r4, #255     /// ff 24
+`,
+    },
+  });
+
+  def({
+    name: "thumb.cmp-immediate",
+    desc: "Compare",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+cmp r4, #0       /// 00 2c
+cmp r4, #100     /// 64 2c
+cmp r4, #255     /// ff 2c
+`,
+    },
+  });
+
+  for (
+    const { op, desc, code } of [
+      { op: "and", desc: "Bitwise and", code: 0 },
+      { op: "eor", desc: "Bitwise exclusive or", code: 1 },
+      { op: "lsl", desc: "Logical shift left", code: 2 },
+      { op: "lsr", desc: "Logical shift right", code: 3 },
+      { op: "asr", desc: "Arithmetic shift right", code: 4 },
+      { op: "adc", desc: "Add with carry", code: 5 },
+      { op: "sbc", desc: "Subtract with carry", code: 6 },
+      { op: "ror", desc: "Rotate right", code: 7 },
+      { op: "tst", desc: "Bit test", code: 8 },
+      { op: "neg", desc: "Negate", code: 9 },
+      { op: "cmp", desc: "Compare", code: 10 },
+      { op: "cmn", desc: "Compare negative", code: 11 },
+      { op: "orr", desc: "Bitwise or", code: 12 },
+      { op: "mul", desc: "Multiply", code: 13 },
+      { op: "bic", desc: "Bit clear", code: 14 },
+      { op: "mvn", desc: "Move negative", code: 15 },
+    ]
+  ) {
+    const a = code >> 2;
+    const b = (((code & 3) << 2) | 3).toString(16);
+    def({
+      name: `thumb.${op}`,
+      desc,
+      kind: "make",
+      files: {
+        "/root/main": `.thumb
+${op} r2, r7  /// ${b}a 4${a}
+`,
+      },
+    });
+  }
+
+  def({
+    name: "thumb.add-hi",
+    desc: "Hi register add",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+add r4, r13  /// 6c 44
+add r13, r4  /// a5 44
+add r9, r13  /// e9 44
+`,
+    },
+  });
+
+  def({
+    name: "thumb.cmp-hi",
+    desc: "Hi register compare",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+cmp r4, r13  /// 6c 45
+cmp r13, r4  /// a5 45
+cmp r9, r13  /// e9 45
+`,
+    },
+  });
+
+  def({
+    name: "thumb.mov-hi",
+    desc: "Hi register move",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+mov r4, r13  /// 6c 46
+mov r13, r4  /// a5 46
+mov r9, r13  /// e9 46
+`,
+    },
+  });
+
+  def({
+    name: "thumb.bx-hi",
+    desc: "Hi register branch and exchange",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+bx r13  /// 68 47
+bx r4   /// 20 47
 `,
     },
   });

@@ -21,6 +21,7 @@ interface ITestMake {
   desc: string;
   kind: "make";
   error?: true;
+  skipBytes?: true;
   files: { [filename: string]: string };
 }
 
@@ -70,6 +71,10 @@ async function itestMake(test: ITestMake): Promise<boolean> {
       console.error(err);
     }
     return false;
+  }
+
+  if (test.skipBytes) {
+    return true;
   }
 
   const expected = extractBytes(test.files["/root/main"]);

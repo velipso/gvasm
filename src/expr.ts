@@ -6,7 +6,8 @@
 //
 
 import { assertNever } from "./util.ts";
-import { isIdentStart, ITok, TokEnum } from "./lexer.ts";
+import { ITok, TokEnum } from "./lexer.ts";
+import { parseName } from "./make.ts";
 
 interface IExprNum {
   kind: "num";
@@ -168,25 +169,21 @@ export class Expression {
             }
             line.shift();
           } else if (t.id === "@") {
-            let label = "@";
+            let prefix = "@";
             if (
               line.length > 0 && line[0].kind === TokEnum.ID &&
               line[0].id === "@"
             ) {
-              label += "@";
+              prefix += "@";
               line.shift();
             }
-            if (
-              line.length > 0 && line[0].kind === TokEnum.ID &&
-              isIdentStart(line[0].id.charAt(0))
-            ) {
-              label += line[0].id;
-              line.shift();
-              labelsNeed.push(label);
-              result = { kind: "label", label };
-            } else {
+            const name = parseName(line);
+            if (name === false) {
               throw "Invalid label in expression";
             }
+            const label = prefix + name;
+            labelsNeed.push(label);
+            result = { kind: "label", label };
           } else if (t.id === "$") {
             throw "TODO: $ constant";
           }

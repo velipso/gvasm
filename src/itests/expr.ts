@@ -66,21 +66,21 @@ export function load(def: (test: ITest) => void) {
 
   def({
     name: "expr.lsl",
-    desc: "Logical left shift",
+    desc: "Logical shift left",
     kind: "make",
     files: { "/root/main": `.i8 1 << 3, 3 << 2  /// 08 0c` },
   });
 
   def({
     name: "expr.lsr",
-    desc: "Logical right shift",
+    desc: "Logical shift right",
     kind: "make",
     files: { "/root/main": `.i8 100 >>> 2, -1 >>> 30  /// 19 03` },
   });
 
   def({
     name: "expr.asr",
-    desc: "Sign-extended right shift",
+    desc: "Arithmetic shift right",
     kind: "make",
     files: { "/root/main": `.i8 100 >> 2, -1 >> 30  /// 19 ff` },
   });

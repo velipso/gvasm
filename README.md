@@ -12,12 +12,13 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] Include and embed
 - [x] Labels
 - [x] Constant expressions
-- [ ] ARM opcode assembly (in progress)
+- [x] ARM opcode assembly
+- [ ] THUMB opcode assembly (in progress)
 - [ ] Test suite (in progress)
-- [ ] THUMB opcode assembly
 - [ ] Named constants
 - [ ] Conditional compilation
 - [ ] Macros
+- [ ] Structs
 - [ ] Standard library
 - [ ] Extended library
 - [ ] Disassembler

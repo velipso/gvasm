@@ -29,6 +29,8 @@ interface IParseState {
   bytes: Bytes;
 }
 
+type ISyms = { [sym: string]: Expression | number };
+
 function decodeRegister(id: string): number {
   if (id === "sp") {
     return 13;
@@ -334,35 +336,130 @@ function parseDotStatement(
   }
 }
 
+function validateStr(partStr: string, line: ITok[]): boolean {
+  if (partStr === "") {
+    return true;
+  }
+  const t = line.shift();
+  if (!t || t.kind !== TokEnum.ID || t.id !== partStr) {
+    return false;
+  }
+  return true;
+}
+
+function validateNum(partNum: number, line: ITok[]): boolean {
+  try {
+    if (parseNum(line) !== partNum) {
+      return false;
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function validateSymExpr(syms: ISyms, partSym: string, line: ITok[]): boolean {
+  try {
+    const expr = Expression.parse(line);
+    if (expr === false) {
+      return false;
+    }
+    syms[partSym] = expr;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function validateSymRegister(
+  syms: ISyms,
+  partSym: string,
+  line: ITok[],
+  low: number,
+  high: number,
+): boolean {
+  const t = line.shift();
+  if (!t || t.kind !== TokEnum.ID) {
+    return false;
+  }
+  const reg = decodeRegister(t.id);
+  if (reg >= low && reg <= high) {
+    syms[partSym] = reg;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function validateSymEnum(
+  syms: ISyms,
+  partSym: string,
+  line: ITok[],
+  enums: (string | false)[],
+): boolean {
+  const valid: { [str: string]: number } = {};
+  for (let i = 0; i < enums.length; i++) {
+    const en = enums[i];
+    if (en === false) {
+      continue;
+    }
+    for (const es of en.split("/")) {
+      valid[es] = i;
+    }
+  }
+  if (
+    line.length > 0 && line[0].kind === TokEnum.ID &&
+    line[0].id in valid
+  ) {
+    syms[partSym] = valid[line[0].id];
+    line.shift();
+    return true;
+  } else if ("" in valid) {
+    syms[partSym] = valid[""];
+    return true;
+  }
+  return false;
+}
+
+class BitNumber {
+  private maxSize: number;
+  private bpos = 0;
+  private value = 0;
+
+  constructor(maxSize: number) {
+    this.maxSize = maxSize;
+  }
+
+  public push(size: number, v: number) {
+    this.value |= (v & ((1 << size) - 1)) << this.bpos;
+    this.bpos += size;
+  }
+
+  public get() {
+    if (this.bpos !== this.maxSize) {
+      throw new Error(`Opcode length isn't ${this.maxSize} bits`);
+    }
+    return this.value;
+  }
+}
+
 function parseArmStatement(
   state: IParseState,
   pb: Arm.IParsedBody,
   line: ITok[],
 ) {
   const flp = line[0].flp;
-  const syms: { [sym: string]: Expression | number } = { ...pb.syms };
+  const syms: ISyms = { ...pb.syms };
 
   for (const part of pb.body) {
     switch (part.kind) {
-      case "str": {
-        if (part.str === "") {
-          continue;
-        }
-        if (line.length <= 0) {
-          return false;
-        }
-        const t = line.shift();
-        if (!t || t.kind !== TokEnum.ID || t.id !== part.str) {
+      case "str":
+        if (!validateStr(part.str, line)) {
           return false;
         }
         break;
-      }
       case "num":
-        try {
-          if (parseNum(line) !== part.num) {
-            return false;
-          }
-        } catch (_) {
+        if (!validateNum(part.num, line)) {
           return false;
         }
         break;
@@ -373,55 +470,21 @@ function parseArmStatement(
           case "immediate":
           case "rotimm":
           case "offset12":
-          case "offsetsplit": {
-            try {
-              const expr = Expression.parse(line);
-              if (expr === false) {
-                return false;
-              }
-              syms[part.sym] = expr;
-            } catch (_) {
+          case "offsetsplit":
+            if (!validateSymExpr(syms, part.sym, line)) {
               return false;
             }
             break;
-          }
-          case "register": {
-            const t = line.shift();
-            if (!t || t.kind !== TokEnum.ID) {
-              return false;
-            }
-            const reg = decodeRegister(t.id);
-            if (reg >= 0 && reg <= 15) {
-              syms[part.sym] = reg;
-            } else {
+          case "register":
+            if (!validateSymRegister(syms, part.sym, line, 0, 15)) {
               return false;
             }
             break;
-          }
-          case "enum": {
-            const valid: { [str: string]: number } = {};
-            for (let i = 0; i < codePart.enum.length; i++) {
-              const en = codePart.enum[i];
-              if (en === false) {
-                continue;
-              }
-              for (const es of en.split("/")) {
-                valid[es] = i;
-              }
-            }
-            if (
-              line.length > 0 && line[0].kind === TokEnum.ID &&
-              line[0].id in valid
-            ) {
-              syms[part.sym] = valid[line[0].id];
-              line.shift();
-            } else if ("" in valid) {
-              syms[part.sym] = valid[""];
-            } else {
+          case "enum":
+            if (!validateSymEnum(syms, part.sym, line, codePart.enum)) {
               return false;
             }
             break;
-          }
           case "reglist": {
             const v = parseReglist(line, 16);
             if (v === false) {
@@ -453,31 +516,26 @@ function parseArmStatement(
     errorString(flp, "Invalid statement"),
     syms,
     (syms, address) => {
-      let opcode = 0;
-      let bpos = 0;
-      const push = (size: number, v: number) => {
-        opcode |= (v & ((1 << size) - 1)) << bpos;
-        bpos += size;
-      };
+      const opcode = new BitNumber(32);
       for (const codePart of pb.op.codeParts) {
         switch (codePart.k) {
           case "immediate": {
             const v = syms[codePart.sym];
             if (v < 0 || v >= (1 << codePart.s)) {
-              throw `Immedate value out of range 0..${(1 << codePart.s) -
+              throw `Immediate value out of range 0..${(1 << codePart.s) -
                 1}: ${v}`;
             }
-            push(codePart.s, v);
+            opcode.push(codePart.s, v);
             break;
           }
           case "enum":
           case "register":
           case "reglist":
-            push(codePart.s, syms[codePart.sym]);
+            opcode.push(codePart.s, syms[codePart.sym]);
             break;
           case "value":
           case "ignored":
-            push(codePart.s, codePart.v);
+            opcode.push(codePart.s, codePart.v);
             break;
           case "rotimm": {
             // calculate rotate immediate form of v
@@ -492,7 +550,7 @@ function parseArmStatement(
                 syms[codePart.sym]
               }`;
             }
-            push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
+            opcode.push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
             break;
           }
           case "word": {
@@ -500,39 +558,39 @@ function parseArmStatement(
             if (offset & 3) {
               throw "Can't branch to misaligned memory address";
             }
-            push(codePart.s, offset >> 2);
+            opcode.push(codePart.s, offset >> 2);
             break;
           }
           case "offset12":
             if (codePart.sign) {
-              push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+              opcode.push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
             } else {
               const v = Math.abs(syms[codePart.sym]);
               if (v >= (1 << codePart.s)) {
                 throw `Offset too large: ${v}`;
               }
-              push(codePart.s, v);
+              opcode.push(codePart.s, v);
             }
             break;
           case "offsetsplit":
             if (codePart.sign) {
-              push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
+              opcode.push(codePart.s, syms[codePart.sym] < 0 ? 0 : 1);
             } else {
               const v = Math.abs(syms[codePart.sym]);
               if (v >= 256) {
                 throw `Offset too large: ${v}`;
               }
-              push(codePart.s, codePart.low ? v & 0xF : ((v >> 4) & 0xF));
+              opcode.push(
+                codePart.s,
+                codePart.low ? v & 0xF : ((v >> 4) & 0xF),
+              );
             }
             break;
           default:
             assertNever(codePart);
         }
       }
-      if (bpos !== 32) {
-        throw new Error("Opcode length isn't 32 bits");
-      }
-      return opcode;
+      return opcode.get();
     },
   );
   return true;
@@ -543,7 +601,135 @@ function parseThumbStatement(
   pb: Thumb.IParsedBody,
   line: ITok[],
 ) {
-  throw "TODO: parseThumbStatement";
+  const flp = line[0].flp;
+  const syms: ISyms = { ...pb.syms };
+
+  for (const part of pb.body) {
+    switch (part.kind) {
+      case "str":
+        if (!validateStr(part.str, line)) {
+          return false;
+        }
+        break;
+      case "num":
+        if (!validateNum(part.num, line)) {
+          return false;
+        }
+        break;
+      case "sym": {
+        const codePart = part.codeParts[0];
+        switch (codePart.k) {
+          case "word":
+          case "halfword":
+          case "shalfword":
+          case "immediate":
+          case "offsetsplit":
+            if (!validateSymExpr(syms, part.sym, line)) {
+              return false;
+            }
+            break;
+          case "register":
+            if (!validateSymRegister(syms, part.sym, line, 0, 7)) {
+              return false;
+            }
+            break;
+          case "registerhigh":
+            if (!validateSymRegister(syms, part.sym, line, 8, 15)) {
+              return false;
+            }
+            break;
+          case "enum":
+            if (!validateSymEnum(syms, part.sym, line, codePart.enum)) {
+              return false;
+            }
+            break;
+          case "reglist": {
+            const v = parseReglist(line, 8);
+            if (v === false) {
+              return false;
+            }
+            // TODO: check for extra
+            syms[part.sym] = v;
+            break;
+          }
+          case "value":
+          case "ignored":
+            throw new Error("Invalid syntax for parsed body");
+          default:
+            assertNever(codePart);
+        }
+        break;
+      }
+      default:
+        assertNever(part);
+    }
+  }
+
+  // did we consume the entire line?
+  if (line.length > 0) {
+    return false;
+  }
+
+  // great! now constitute the opcode using the symbols
+  const writer = (maxSize: number) => (
+    (syms: { [name: string]: number }, address: number) => {
+      const opcode = new BitNumber(maxSize);
+      const pushAlign = (size: number, v: number, shift: number) => {
+        if (v < 0 || v >= (1 << (size + shift))) {
+          throw `Immediate value out of range 0..${((1 << size) - 1) <<
+            shift}: ${v}`;
+        }
+        if (v & ((1 << shift) - 1)) {
+          throw `Immediate value is not ${
+            shift === 2 ? "word" : "halfword"
+          } aligned: ${v}`;
+        }
+        opcode.push(size, v >> shift);
+      };
+      for (const codePart of pb.op.codeParts) {
+        switch (codePart.k) {
+          case "immediate":
+            pushAlign(codePart.s, syms[codePart.sym], 0);
+            break;
+          case "enum":
+          case "register":
+          case "reglist":
+            opcode.push(codePart.s, syms[codePart.sym]);
+            break;
+          case "registerhigh":
+            opcode.push(codePart.s, syms[codePart.sym] - 8);
+            break;
+          case "value":
+          case "ignored":
+            opcode.push(codePart.s, codePart.v);
+            break;
+          case "word":
+            pushAlign(codePart.s, syms[codePart.sym], 2);
+            break;
+          case "halfword":
+            pushAlign(codePart.s, syms[codePart.sym], 1);
+            break;
+          case "shalfword":
+            throw new Error("TODO: shalfword");
+            break;
+          case "offsetsplit":
+            throw new Error(`TODO: ${codePart.k}`);
+          default:
+            assertNever(codePart);
+        }
+      }
+      return opcode.get();
+    }
+  );
+
+  const es = errorString(flp, "Invalid statement");
+  if ("doubleInstruction" in pb.op) {
+    // double instructions are 32-bits instead of 16-bits
+    state.bytes.expr32(es, syms, writer(32));
+  } else {
+    state.bytes.expr16(es, syms, writer(16));
+  }
+  return true;
 }
 
 function parseLabel(line: ITok[]): string | false {

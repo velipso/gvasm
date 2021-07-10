@@ -2045,12 +2045,6 @@ export namespace Thumb {
     sym: string;
   }
 
-  interface ICodePartSignedWord {
-    s: number;
-    k: "sword";
-    sym: "offset";
-  }
-
   interface ICodePartHalfword {
     s: number;
     k: "halfword";
@@ -2058,7 +2052,7 @@ export namespace Thumb {
   }
 
   interface ICodePartSignedHalfword {
-    s: number;
+    s: 8;
     k: "shalfword";
     sym: "offset";
   }
@@ -2088,7 +2082,6 @@ export namespace Thumb {
     | ICodePartRegister
     | ICodePartRegisterHigh
     | ICodePartWord
-    | ICodePartSignedWord
     | ICodePartHalfword
     | ICodePartSignedHalfword
     | ICodePartRegList
@@ -2448,10 +2441,21 @@ export namespace Thumb {
       ref: "5.13",
       category: "Format 13: Add Offset To Stack Pointer",
       codeParts: [
-        { s: 8, k: "sword", sym: "offset" },
+        { s: 7, k: "word", sym: "offset", sign: false },
+        { s: 1, k: "value", v: 0 }, // offset is positive
         { s: 8, k: "value", v: 176 },
       ],
       syntax: ["add sp, #$offset"],
+    },
+    {
+      ref: "5.13",
+      category: "Format 13: Add Offset To Stack Pointer",
+      codeParts: [
+        { s: 7, k: "word", sym: "offset", sign: false },
+        { s: 1, k: "value", v: 1 }, // offset is negative
+        { s: 8, k: "value", v: 176 },
+      ],
+      syntax: ["sub sp, #$offset"],
     },
 
     //

@@ -1663,4 +1663,55 @@ ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
 `,
     },
   });
+
+  def({
+    name: "arm.swp",
+    desc: "Swap",
+    kind: "make",
+    files: {
+      "/root/main": `
+swp r8, r9, [r1]     /// 99 80 01 e1
+swpb r8, r9, [r1]    /// 99 80 41 e1
+swppl r8, r9, [r1]   /// 99 80 01 51
+swpbpl r8, r9, [r1]  /// 99 80 41 51
+swpplb r8, r9, [r1]  /// 99 80 41 51
+`,
+    },
+  });
+
+  def({
+    name: "arm.swi",
+    desc: "Software interrupt",
+    kind: "make",
+    files: {
+      "/root/main": `
+swi 0           /// 00 00 00 ef
+swi 100         /// 64 00 00 ef
+swi 0xffffff    /// ff ff ff ef
+swimi 0         /// 00 00 00 4f
+swimi 100       /// 64 00 00 4f
+swimi 0xffffff  /// ff ff ff 4f
+`,
+    },
+  });
+
+  def({
+    name: "arm.swi-overflow",
+    desc: "Software interrupt with overflowed comment",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `swi 16777216`,
+    },
+  });
+
+  def({
+    name: "arm.swi-underflow",
+    desc: "Software interrupt with underflowed comment",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `swi -1`,
+    },
+  });
 }

@@ -250,7 +250,7 @@ function parseDisArgs(args: string[]): number | IDisArgs {
 function printItestHelp() {
   console.log(`gvasm itest [<filters...>]
 
-<filters>  Only run internal tests that match the filters (glob)`);
+<filters>  Only run internal tests that include any filter`);
 }
 
 function parseItestArgs(args: string[]): number | IItestArgs {

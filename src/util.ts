@@ -41,3 +41,19 @@ export function isAlpha(c: string) {
 export function isNum(c: string) {
   return c >= "0" && c <= "9";
 }
+
+// reverse byte order
+export function b16(v: number) {
+  const b1 = v & 0xff;
+  const b2 = (v >> 8) & 0xff;
+  return (b1 << 8) | b2;
+}
+
+// reverse byte order
+export function b32(v: number) {
+  const b1 = v & 0xff;
+  const b2 = (v >> 8) & 0xff;
+  const b3 = (v >> 16) & 0xff;
+  const b4 = (v >> 24) & 0xff;
+  return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+}

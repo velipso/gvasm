@@ -84,6 +84,18 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
+    name: "basic.i8fill",
+    desc: "Use .i8fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8fill 10    /// 00 00 00 00 00 00 00 00 00 00
+.i8fill 9, 1  /// 01 01 01 01 01 01 01 01 01
+`,
+    },
+  });
+
+  def({
     name: "basic.b8",
     desc: "Use .b8 command",
     kind: "make",
@@ -95,6 +107,18 @@ str r1, [r0]           /// 00 10 80 e5
 .b8 0x12345678  /// 78
 .b8 0x87654321  /// 21
 .b8 "hello"     /// 68 65 6c 6c 6f
+`,
+    },
+  });
+
+  def({
+    name: "basic.b8fill",
+    desc: "Use .b8fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.b8fill 10    /// 00 00 00 00 00 00 00 00 00 00
+.b8fill 9, 1  /// 01 01 01 01 01 01 01 01 01
 `,
     },
   });
@@ -115,6 +139,18 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
+    name: "basic.i16fill",
+    desc: "Use .i16fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i16fill 5     /// 00 00 00 00 00 00 00 00 00 00
+.i16fill 4, 1  /// 01 00 01 00 01 00 01 00
+`,
+    },
+  });
+
+  def({
     name: "basic.b16",
     desc: "Use .b16 command",
     kind: "make",
@@ -125,6 +161,18 @@ str r1, [r0]           /// 00 10 80 e5
 .b16 -1, -2, -3  /// ff ff ff fe ff fd
 .b16 0x12345678  /// 56 78
 .b16 0x87654321  /// 43 21
+`,
+    },
+  });
+
+  def({
+    name: "basic.b16fill",
+    desc: "Use .b16fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.b16fill 5     /// 00 00 00 00 00 00 00 00 00 00
+.b16fill 4, 1  /// 00 01 00 01 00 01 00 01
 `,
     },
   });
@@ -145,6 +193,18 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
+    name: "basic.i32fill",
+    desc: "Use .i32fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i32fill 3     /// 00 00 00 00 00 00 00 00 00 00 00 00
+.i32fill 2, 1  /// 01 00 00 00 01 00 00 00
+`,
+    },
+  });
+
+  def({
     name: "basic.b32",
     desc: "Use .b32 command",
     kind: "make",
@@ -155,6 +215,18 @@ str r1, [r0]           /// 00 10 80 e5
 .b32 -1, -2, -3  /// ff ff ff ff ff ff ff fe ff ff ff fd
 .b32 0x12345678  /// 12 34 56 78
 .b32 0x87654321  /// 87 65 43 21
+`,
+    },
+  });
+
+  def({
+    name: "basic.b32fill",
+    desc: "Use .b32fill command",
+    kind: "make",
+    files: {
+      "/root/main": `
+.b32fill 3     /// 00 00 00 00 00 00 00 00 00 00 00 00
+.b32fill 2, 1  /// 00 00 00 01 00 00 00 01
 `,
     },
   });

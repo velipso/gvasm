@@ -13,9 +13,10 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] Labels
 - [x] Constant expressions
 - [x] ARM opcode assembly
-- [ ] THUMB opcode assembly (in progress)
+- [x] THUMB opcode assembly
+- [ ] Literal pools (in progress)
+- [ ] Named constants (in progress)
 - [ ] Test suite (in progress)
-- [ ] Named constants
 - [ ] Conditional compilation
 - [ ] Macros
 - [ ] Structs

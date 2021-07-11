@@ -2260,7 +2260,7 @@ export namespace Thumb {
   }
 
   interface ICodePartSignedHalfword {
-    s: 8;
+    s: number;
     k: "shalfword";
     sym: "offset";
   }
@@ -2542,7 +2542,7 @@ export namespace Thumb {
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
         { s: 4, k: "value", v: 5 },
       ],
-      syntax: ["$oper $Rd, [$Rb, $Ro]"],
+      syntax: ["$oper$b $Rd, [$Rb, $Ro]"],
     },
 
     //
@@ -2572,7 +2572,7 @@ export namespace Thumb {
         { s: 3, k: "register", sym: "Ro" },
         { s: 1, k: "value", v: 1 },
         { s: 1, k: "value", sym: "s", v: 1 }, // operand sign-extended
-        { s: 1, k: "enum", sym: "oper", enum: ["ldsb", "ldsh"] },
+        { s: 1, k: "enum", sym: "oper", enum: ["ldsb/ldrsb", "ldsh/ldrsh"] },
         { s: 4, k: "value", v: 5 },
       ],
       syntax: ["$oper $Rd, [$Rb, $Ro]"],
@@ -2811,7 +2811,7 @@ export namespace Thumb {
       ref: "5.18",
       category: "Format 18: Unconditional Branch",
       codeParts: [
-        { s: 11, k: "halfword", sym: "offset" },
+        { s: 11, k: "shalfword", sym: "offset" },
         { s: 5, k: "value", v: 28 },
       ],
       syntax: ["b $offset"],

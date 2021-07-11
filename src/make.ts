@@ -14,7 +14,7 @@ import {
   lex,
   TokEnum,
 } from "./lexer.ts";
-import { assertNever } from "./util.ts";
+import { assertNever, b16, b32 } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
@@ -73,7 +73,11 @@ function parseExpr(line: ITok[]): Expression {
   return expr;
 }
 
-function parseReglist(line: ITok[], width: 8 | 16): number | false {
+function parseReglist(
+  line: ITok[],
+  width: 8 | 16,
+  extra?: number,
+): number | false {
   let state = 0;
   let result = 0;
   let lastRegister = -1;
@@ -93,10 +97,7 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
           return result;
         } else if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
           lastRegister = decodeRegister(t.id);
-          // allow LR and PC despite width
-          if (
-            lastRegister >= width && lastRegister !== 14 && lastRegister !== 15
-          ) {
+          if (lastRegister >= width && lastRegister !== extra) {
             return false;
           }
           if (result & (1 << lastRegister)) {
@@ -109,13 +110,19 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
         break;
       case 2: // after register
         if (t.kind === TokEnum.ID && t.id === "}") {
-          result |= 1 << lastRegister;
+          if (lastRegister !== extra) {
+            result |= 1 << lastRegister;
+          }
           line.splice(0, i + 1); // remove tokens
           return result;
         } else if (t.kind === TokEnum.ID && t.id === ",") {
-          result |= 1 << lastRegister;
+          if (lastRegister !== extra) {
+            result |= 1 << lastRegister;
+          }
           state = 1;
-        } else if (t.kind === TokEnum.ID && t.id === "-") {
+        } else if (
+          t.kind === TokEnum.ID && t.id === "-" && lastRegister !== extra
+        ) {
           state = 3;
         } else {
           return false;
@@ -124,11 +131,11 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
       case 3: // reading end of range
         if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
           const end = decodeRegister(t.id);
+          if (end >= width) {
+            return false;
+          }
           for (let b = lastRegister; b <= end; b++) {
-            // allow LR and PC despite width
-            if (b < width || b === 14 || b === 15) {
-              result |= 1 << b;
-            }
+            result |= 1 << b;
           }
           state = 4;
         } else {
@@ -148,6 +155,30 @@ function parseReglist(line: ITok[], width: 8 | 16): number | false {
     }
   }
   return false;
+}
+
+function parseNumCommas(
+  line: ITok[],
+  defaults: (number | false)[],
+  error: string,
+): number[] {
+  const result: number[] = [];
+  for (const def of defaults) {
+    if (def === false || line.length > 0) {
+      result.push(parseNum(line));
+      if (
+        line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === ","
+      ) {
+        line.shift();
+      }
+    } else {
+      result.push(def);
+    }
+  }
+  if (line.length > 0) {
+    throw error;
+  }
+  return result;
 }
 
 function parseDotStatement(
@@ -185,15 +216,12 @@ function parseDotStatement(
       state.arm = false;
       break;
     case ".align": {
-      const amount = parseNum(line);
-      let fill = 0;
-      if (
-        line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === ","
-      ) {
-        line.shift();
-        fill = parseNum(line);
-      }
-      if (line.length > 0 || amount < 2 || amount > 0x02000000) {
+      const [amount, fill] = parseNumCommas(
+        line,
+        [false, 0],
+        "Invalid .align statement",
+      );
+      if (amount < 2 || amount > 0x02000000) {
         throw "Invalid .align statement";
       }
       state.bytes.align(amount, fill & 0xff);
@@ -220,6 +248,21 @@ function parseDotStatement(
         }
       }
       break;
+    case ".i8fill":
+    case ".b8fill": {
+      const [amount, fill] = parseNumCommas(
+        line,
+        [false, 0],
+        `Invalid ${cmd} statement`,
+      );
+      if (amount < 0) {
+        throw `Invalid ${cmd} statement`;
+      }
+      for (let i = 0; i < amount; i++) {
+        state.bytes.write8(fill);
+      }
+      break;
+    }
     case ".i16":
     case ".b16":
       while (line.length > 0) {
@@ -228,10 +271,7 @@ function parseDotStatement(
           { v: parseExpr(line) },
           ({ v }) => {
             if (cmd === ".b16") {
-              // reverse byte order
-              const b1 = v & 0xff;
-              const b2 = (v >> 8) & 0xff;
-              return (b1 << 8) | b2;
+              return b16(v);
             }
             return v;
           },
@@ -241,6 +281,21 @@ function parseDotStatement(
         }
       }
       break;
+    case ".i16fill":
+    case ".b16fill": {
+      const [amount, fill] = parseNumCommas(
+        line,
+        [false, 0],
+        `Invalid ${cmd} statement`,
+      );
+      if (amount < 0) {
+        throw `Invalid ${cmd} statement`;
+      }
+      for (let i = 0; i < amount; i++) {
+        state.bytes.write16(cmd === ".b16fill" ? b16(fill) : fill);
+      }
+      break;
+    }
     case ".i32":
     case ".b32":
       while (line.length > 0) {
@@ -249,12 +304,7 @@ function parseDotStatement(
           { v: parseExpr(line) },
           ({ v }) => {
             if (cmd === ".b32") {
-              // reverse byte order
-              const b1 = v & 0xff;
-              const b2 = (v >> 8) & 0xff;
-              const b3 = (v >> 16) & 0xff;
-              const b4 = (v >> 24) & 0xff;
-              return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+              return b32(v);
             }
             return v;
           },
@@ -264,6 +314,21 @@ function parseDotStatement(
         }
       }
       break;
+    case ".i32fill":
+    case ".b32fill": {
+      const [amount, fill] = parseNumCommas(
+        line,
+        [false, 0],
+        `Invalid ${cmd} statement`,
+      );
+      if (amount < 0) {
+        throw `Invalid ${cmd} statement`;
+      }
+      for (let i = 0; i < amount; i++) {
+        state.bytes.write32(cmd === ".b32fill" ? b32(fill) : fill);
+      }
+      break;
+    }
     case ".include": {
       const t = line.shift();
       if (!t || t.kind !== TokEnum.STR || line.length > 0) {
@@ -326,8 +391,6 @@ function parseDotStatement(
     case ".else":
     case ".endif":
       throw "TODO: .if/.elseif/.else/.endif";
-    case ".mov":
-      throw "TODO: generic .mov";
     case ".printf":
       throw "TODO: .printf";
     case ".rgb": {
@@ -672,11 +735,10 @@ function parseThumbStatement(
             }
             break;
           case "reglist": {
-            const v = parseReglist(line, 8);
+            const v = parseReglist(line, 8, codePart.extra);
             if (v === false) {
               return false;
             }
-            // TODO: check for extra
             syms[part.sym] = v;
             break;
           }
@@ -737,12 +799,42 @@ function parseThumbStatement(
           case "halfword":
             pushAlign(codePart.s, syms[codePart.sym], 1);
             break;
-          case "shalfword":
-            throw new Error("TODO: shalfword");
-          case "pcoffset":
-            throw new Error("TODO: pcoffset");
-          case "offsetsplit":
-            throw new Error(`TODO: offsetsplit`);
+          case "shalfword": {
+            const offset = syms[codePart.sym] - address - 4;
+            if (offset < -(1 << codePart.s) || offset >= (1 << codePart.s)) {
+              throw `Offset too large: ${offset}`;
+            }
+            if (offset & 1) {
+              throw "Can't branch to misaligned memory address";
+            }
+            opcode.push(codePart.s, offset >> 1);
+            break;
+          }
+          case "pcoffset": {
+            const offset = syms[codePart.sym] - (address & 0xfffffffd) - 4;
+            if (offset < 0) {
+              throw "Can't load from address before PC in thumb mode";
+            }
+            if (offset & 3) {
+              throw "Can't load from misaligned address";
+            }
+            pushAlign(codePart.s, offset, 2);
+            break;
+          }
+          case "offsetsplit": {
+            const offset = syms[codePart.sym] - address - 4;
+            if (offset < -4194304 || offset >= 4194304) {
+              throw `Offset too large: ${offset}`;
+            }
+            if (offset & 1) {
+              throw "Can't branch to misaligned memory address";
+            }
+            opcode.push(
+              codePart.s,
+              codePart.low ? (offset >> 1) & 0x7ff : (offset >> 12) & 0x7ff,
+            );
+            break;
+          }
           default:
             assertNever(codePart);
         }

@@ -80,7 +80,7 @@ bl.cc @L4           /// 01 00 00 3b
   for (
     const { op, desc, code } of [
       { op: "mov", desc: "Move", code: 13 },
-      { op: "mvn", desc: "Move negative", code: 15 },
+      { op: "mvn", desc: "Move not", code: 15 },
     ]
   ) {
     const b = (code & 7) << 1;

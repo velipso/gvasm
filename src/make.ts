@@ -367,13 +367,12 @@ function parseDotStatement(
       }
       break;
     }
-    case ".crc": {
+    case ".crc":
       if (line.length > 0) {
         throw "Invalid .crc statement";
       }
       state.bytes.writeCRC();
       break;
-    }
     case ".macro":
       throw "TODO: marco";
     case ".endm":
@@ -409,6 +408,14 @@ function parseDotStatement(
       );
       break;
     }
+    case ".pool":
+      if (line.length > 0) {
+        throw "Invalid .pool statement";
+      }
+      if (state.bytes.writePool()) {
+        state.bytes.align(state.arm ? 4 : 2);
+      }
+      break;
     default:
       throw `Unknown dot statement: ${cmd}`;
   }
@@ -521,6 +528,18 @@ class BitNumber {
   }
 }
 
+function calcRotImm(v: number): number | false {
+  let r = 0;
+  while (v !== 0 && (v & 3) === 0) {
+    v >>>= 2;
+    r++;
+  }
+  if ((v & 0xff) !== v) {
+    return false;
+  }
+  return (((16 - r) & 0xf) << 8) | (v & 0xff);
+}
+
 function parseArmStatement(
   state: IParseState,
   flp: IFilePos,
@@ -618,19 +637,13 @@ function parseArmStatement(
             opcode.push(codePart.s, codePart.v);
             break;
           case "rotimm": {
-            // calculate rotate immediate form of v
-            let v = syms[codePart.sym];
-            let r = 0;
-            while (v !== 0 && (v & 3) === 0) {
-              v >>>= 2;
-              r++;
-            }
-            if (v > 255) {
+            const rotimm = calcRotImm(syms[codePart.sym]);
+            if (rotimm === false) {
               throw `Can't generate rotated immediate from ${
                 syms[codePart.sym]
               }`;
             }
-            opcode.push(12, (((16 - r) & 0xf) << 8) | (v & 0xff));
+            opcode.push(12, rotimm);
             break;
           }
           case "word": {
@@ -666,12 +679,12 @@ function parseArmStatement(
               opcode.push(codePart.s, offset < 0 ? 0 : 1);
             } else {
               const v = Math.abs(offset);
-              if (v >= 256) {
+              if (v > 0xff) {
                 throw `Offset too large: ${v}`;
               }
               opcode.push(
                 codePart.s,
-                codePart.low ? v & 0xF : ((v >> 4) & 0xF),
+                codePart.low ? v & 0xf : ((v >> 4) & 0xf),
               );
             }
             break;
@@ -684,6 +697,170 @@ function parseArmStatement(
     },
   );
   return true;
+}
+
+interface IPool {
+  rd: number;
+  ex: Expression;
+}
+
+function parsePoolStatement(line: ITok[]): IPool | false {
+  // pool statements have a specific format:
+  //   op register, =constant
+  const trd = line.shift();
+  if (!trd || trd.kind !== TokEnum.ID) {
+    return false;
+  }
+  const rd = decodeRegister(trd.id);
+  if (rd < 0) {
+    return false;
+  }
+
+  const tc = line.shift();
+  if (!tc || tc.kind !== TokEnum.ID || tc.id !== ",") {
+    return false;
+  }
+  const te = line.shift();
+  if (!te || te.kind !== TokEnum.ID || te.id !== "=") {
+    return false;
+  }
+
+  try {
+    const ex = parseExpr(line);
+    return { rd, ex };
+  } catch (_) {
+    return false;
+  }
+}
+
+function parseArmPoolStatement(
+  state: IParseState,
+  flp: IFilePos,
+  cmd: string,
+  { rd, ex }: IPool,
+) {
+  let cmdSize = -1;
+  let cmdSigned = false;
+  let cond = -1;
+  for (let ci = 0; ci < Arm.conditionEnum.length && cond < 0; ci++) {
+    const ce = Arm.conditionEnum[ci];
+    if (ce !== false) {
+      for (const cs of ce.split("/")) {
+        if (cmd === `ldr${cs}` || (cs !== "" && cmd === `ldr.${cs}`)) {
+          cmdSize = 4;
+          cond = ci;
+        } else if (cmd === `ldrh${cs}` || (cs !== "" && cmd === `ldrh.${cs}`)) {
+          cmdSize = 2;
+          cond = ci;
+        } else if (
+          cmd === `ldrsh${cs}` || (cs !== "" && cmd === `ldrsh.${cs}`)
+        ) {
+          cmdSize = 2;
+          cmdSigned = true;
+          cond = ci;
+        } else if (
+          cmd === `ldrsb${cs}` || (cs !== "" && cmd === `ldrsb.${cs}`)
+        ) {
+          cmdSize = 1;
+          cond = ci;
+        } else {
+          continue;
+        }
+        break;
+      }
+    }
+  }
+  if (cond < 0) {
+    throw "Invalid arm pool statement";
+  }
+
+  if (cmdSize === 4) {
+    state.bytes.expr32(
+      errorString(flp, "Incomplete statement"),
+      { ex },
+      ({ ex }, address) => {
+        const mov = calcRotImm(ex);
+        if (mov !== false) {
+          // convert to: mov rd, #expression
+          // cond 0011 1010 0000 rd mov
+          return (
+            (cond << 28) |
+            0x03a00000 |
+            (rd << 12) |
+            mov
+          );
+        }
+        const mvn = calcRotImm(~ex);
+        if (mvn !== false) {
+          // convert to: mvn rd, #expression
+          // cond 0011 1110 0000 rd mvn
+          return (
+            (cond << 28) |
+            0x03e00000 |
+            (rd << 12) |
+            mvn
+          );
+        }
+        // otherwise, add constant value to pool, and reference it
+        return state.bytes.pool32(ex, 4, (address2) => {
+          // convert to: ldr rd, [pc, #offset]
+          // cond 0111 1001 1111 rd offset
+          const offset = address2 - address - 8;
+          if (offset < -4) {
+            throw new Error("Pool offset shouldn't be negative");
+          } else if (offset > 0xfff) {
+            throw "Next .pool too far away";
+          }
+          return offset < 0
+            ? ((cond << 28) | 0x051f0000 | (rd << 12) | Math.abs(offset))
+            : ((cond << 28) | 0x059f0000 | (rd << 12) | offset);
+        });
+      },
+    );
+  } else if (cmdSize === 2) {
+    state.bytes.expr32(
+      errorString(flp, "Incomplete statement"),
+      { ex },
+      ({ ex }, address) => {
+        // convert to: ldrh rd, [pc, #offset]
+        return state.bytes.pool16(ex, 2, (address2) => {
+          const offset = address2 - address - 8;
+          if (offset < -4) {
+            throw new Error("Pool offset shouldn't be negative");
+          } else if (offset > 0xff) {
+            throw "Next .pool too far away";
+          }
+          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
+            Math.abs(offset) & 0xf;
+          const s = cmdSigned ? 0xf0 : 0xb0;
+          return offset < 0
+            ? ((cond << 28) | 0x015f0000 | s | (rd << 12) | mask)
+            : ((cond << 28) | 0x01df0000 | s | (rd << 12) | mask);
+        });
+      },
+    );
+  } else { // cmdSize === 1
+    state.bytes.expr32(
+      errorString(flp, "Incomplete statement"),
+      { ex },
+      ({ ex }, address) => {
+        // convert to: ldrh rd, [pc, #offset]
+        return state.bytes.pool8(ex, 1, (address2) => {
+          const offset = address2 - address - 8;
+          if (offset < -4) {
+            throw new Error("Pool offset shouldn't be negative");
+          } else if (offset > 0xff) {
+            throw "Next .pool too far away";
+          }
+          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
+            Math.abs(offset) & 0xf;
+          return offset < 0
+            ? ((cond << 28) | 0x015f00d0 | (rd << 12) | mask)
+            : ((cond << 28) | 0x01df00d0 | (rd << 12) | mask);
+        });
+      },
+    );
+  }
 }
 
 function parseThumbStatement(
@@ -803,8 +980,7 @@ function parseThumbStatement(
             const offset = syms[codePart.sym] - address - 4;
             if (offset < -(1 << codePart.s) || offset >= (1 << codePart.s)) {
               throw `Offset too large: ${offset}`;
-            }
-            if (offset & 1) {
+            } else if (offset & 1) {
               throw "Can't branch to misaligned memory address";
             }
             opcode.push(codePart.s, offset >> 1);
@@ -814,8 +990,7 @@ function parseThumbStatement(
             const offset = syms[codePart.sym] - (address & 0xfffffffd) - 4;
             if (offset < 0) {
               throw "Can't load from address before PC in thumb mode";
-            }
-            if (offset & 3) {
+            } else if (offset & 3) {
               throw "Can't load from misaligned address";
             }
             pushAlign(codePart.s, offset, 2);
@@ -825,8 +1000,7 @@ function parseThumbStatement(
             const offset = syms[codePart.sym] - address - 4;
             if (offset < -4194304 || offset >= 4194304) {
               throw `Offset too large: ${offset}`;
-            }
-            if (offset & 1) {
+            } else if (offset & 1) {
               throw "Can't branch to misaligned memory address";
             }
             opcode.push(
@@ -851,6 +1025,35 @@ function parseThumbStatement(
     state.bytes.expr16(es, syms, writer(16));
   }
   return true;
+}
+
+function parseThumbPoolStatement(
+  state: IParseState,
+  flp: IFilePos,
+  cmd: string,
+  { rd, ex }: IPool,
+) {
+  if (cmd !== "ldr") {
+    throw "Invalid thumb pool statement";
+  }
+  state.bytes.expr16(
+    errorString(flp, "Incomplete statement"),
+    { ex },
+    ({ ex }, address) => {
+      // convert to: ldr rd, [pc, #offset]
+      return state.bytes.pool32(ex, 4, (address2) => {
+        const offset = address2 - (address & 0xfffffffd) - 4;
+        if (offset < 0) {
+          throw new Error("Pool offset shouldn't be negative");
+        } else if (offset & 3) {
+          throw "Can't load from misaligned address";
+        } else if (offset > 0x3fc) {
+          throw "Next .pool too far away";
+        }
+        return 0x4800 | (rd << 8) | (offset >> 2);
+      });
+    },
+  );
 }
 
 export function parseName(line: ITok[]): string | false {
@@ -920,24 +1123,56 @@ function parseLine(
   if (cmd.startsWith(".")) {
     return parseDotStatement(state, cmd, line);
   } else if (state.arm) {
-    const ops = Arm.parsedOps[cmd];
-    if (!ops) {
-      throw `Unknown arm statement: ${cmd}`;
-    }
-    if (
-      !ops.some((op) => parseArmStatement(state, cmdTok.flp, op, [...line]))
-    ) {
-      throw "Failed to parse arm statement";
+    const pool = parsePoolStatement([...line]);
+    if (pool) {
+      parseArmPoolStatement(state, cmdTok.flp, cmd, pool);
+    } else {
+      const ops = Arm.parsedOps[cmd];
+      if (!ops) {
+        throw `Unknown arm statement: ${cmd}`;
+      }
+      let lastError = "Failed to parse arm statement";
+      if (
+        !ops.some((op) => {
+          try {
+            return parseArmStatement(state, cmdTok.flp, op, [...line]);
+          } catch (e) {
+            if (typeof e === "string") {
+              lastError = e;
+              return false;
+            }
+            throw e;
+          }
+        })
+      ) {
+        throw lastError;
+      }
     }
   } else {
-    const ops = Thumb.parsedOps[cmd];
-    if (!ops) {
-      throw `Unknown thumb statement: ${cmd}`;
-    }
-    if (
-      !ops.some((op) => parseThumbStatement(state, cmdTok.flp, op, [...line]))
-    ) {
-      throw "Failed to parse thumb statement";
+    const pool = parsePoolStatement([...line]);
+    if (pool) {
+      parseThumbPoolStatement(state, cmdTok.flp, cmd, pool);
+    } else {
+      const ops = Thumb.parsedOps[cmd];
+      if (!ops) {
+        throw `Unknown thumb statement: ${cmd}`;
+      }
+      let lastError = "Failed to parse thumb statement";
+      if (
+        !ops.some((op) => {
+          try {
+            return parseThumbStatement(state, cmdTok.flp, op, [...line]);
+          } catch (e) {
+            if (typeof e === "string") {
+              lastError = e;
+              return false;
+            }
+            throw e;
+          }
+        })
+      ) {
+        throw lastError;
+      }
     }
   }
 }
@@ -1046,7 +1281,10 @@ export async function makeFromFile(
         }
       }
     } catch (e) {
-      return { errors: [errorString(flp, e.toString())] };
+      if (typeof e === "string") {
+        return { errors: [errorString(flp, e)] };
+      }
+      throw e;
     }
   }
 
@@ -1054,7 +1292,10 @@ export async function makeFromFile(
   try {
     result = state.bytes.get();
   } catch (e) {
-    return { errors: [e] };
+    if (typeof e === "string") {
+      return { errors: [e] };
+    }
+    throw e;
   }
   return { result };
 }

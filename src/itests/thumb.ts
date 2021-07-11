@@ -165,7 +165,7 @@ cmp r9, r13   /// e9 45
       { op: "orr", desc: "Bitwise or", code: 12 },
       { op: "mul", desc: "Multiply", code: 13 },
       { op: "bic", desc: "Bit clear", code: 14 },
-      { op: "mvn", desc: "Move negative", code: 15 },
+      { op: "mvn", desc: "Move not", code: 15 },
     ]
   ) {
     const a = code >> 2;

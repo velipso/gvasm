@@ -14,7 +14,7 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] Constant expressions
 - [x] ARM opcode assembly
 - [x] THUMB opcode assembly
-- [ ] Literal pools (in progress)
+- [x] Literal pools
 - [ ] Named constants (in progress)
 - [ ] Test suite (in progress)
 - [ ] Conditional compilation

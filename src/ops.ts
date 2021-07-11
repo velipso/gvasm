@@ -36,27 +36,29 @@ interface ICodePartImmediate {
   sym: string;
 }
 
+type Enum16 = [
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+  IEnum,
+];
+
 interface ICodePartEnum4 {
   s: 4;
   k: "enum";
-  enum: [
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-    IEnum,
-  ];
+  enum: Enum16;
   sym: string;
 }
 
@@ -229,28 +231,30 @@ export namespace Arm {
     syntax: [string, ...string[]];
   }
 
+  export const conditionEnum: Enum16 = [
+    "eq",
+    "ne",
+    "cs/hs",
+    "cc/lo",
+    "mi",
+    "pl",
+    "vs",
+    "vc",
+    "hi",
+    "ls",
+    "ge",
+    "lt",
+    "gt",
+    "le",
+    "/al",
+    "nv",
+  ];
+
   const condition: ICodePart = {
     s: 4,
     k: "enum",
     sym: "cond",
-    enum: [
-      "eq",
-      "ne",
-      "cs/hs",
-      "cc/lo",
-      "mi",
-      "pl",
-      "vs",
-      "vc",
-      "hi",
-      "ls",
-      "ge",
-      "lt",
-      "gt",
-      "le",
-      "/al",
-      "nv",
-    ],
+    enum: conditionEnum,
   };
 
   export const ops: readonly IOp[] = Object.freeze([

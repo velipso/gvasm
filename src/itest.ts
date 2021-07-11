@@ -10,6 +10,7 @@ import { load as exprLoad } from "./itests/expr.ts";
 import { load as filesLoad } from "./itests/files.ts";
 import { load as armLoad } from "./itests/arm.ts";
 import { load as thumbLoad } from "./itests/thumb.ts";
+import { load as poolLoad } from "./itests/pool.ts";
 import { makeFromFile } from "./make.ts";
 
 export interface IItestArgs {
@@ -124,6 +125,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   filesLoad(def);
   armLoad(def);
   thumbLoad(def);
+  poolLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

@@ -21,6 +21,7 @@ interface IPendingExpr {
   hint: string;
   address: number;
   exprs: { [name: string]: Expression | number };
+  scopeLevel: number;
   pool?: IPool;
   build(values: { [name: string]: number }, address: number): IPool | number;
   rewrite(v: number): void;
@@ -30,7 +31,8 @@ export class Bytes {
   private base = 0x08000000;
   private array: number[] = [];
   private pendingExprs: IPendingExpr[] = [];
-  private labels: { [name: string]: number } = {};
+  private globalLabels: { [name: string]: number } = {};
+  private localLabels: { [name: string]: number }[] = [{}];
   private nextPoolId = 0;
 
   public get(): readonly number[] {
@@ -133,10 +135,12 @@ export class Bytes {
     ) => IPool | number,
   ) {
     const address = this.nextAddress();
+    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
       address,
       exprs,
+      scopeLevel,
       build,
       rewrite: this.rewrite8(),
     });
@@ -151,10 +155,12 @@ export class Bytes {
     ) => IPool | number,
   ) {
     const address = this.nextAddress();
+    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
       address,
       exprs,
+      scopeLevel,
       build,
       rewrite: this.rewrite16(),
     });
@@ -169,10 +175,12 @@ export class Bytes {
     ) => IPool | number,
   ) {
     const address = this.nextAddress();
+    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
       address,
       exprs,
+      scopeLevel,
       build,
       rewrite: this.rewrite32(),
     });
@@ -206,8 +214,11 @@ export class Bytes {
     // inform the exprs of all known labels
     for (const expr of Object.values(pex.exprs)) {
       if (expr instanceof Expression) {
-        for (const label of Object.keys(this.labels)) {
-          expr.addLabel(label, this.labels[label]);
+        for (const [label, v] of Object.entries(this.globalLabels)) {
+          expr.addLabel(label, v);
+        }
+        for (const [label, v] of Object.entries(this.localLabels[0])) {
+          expr.addLabel(label, v);
         }
       }
     }
@@ -251,17 +262,22 @@ export class Bytes {
   }
 
   public addLabel(label: string) {
-    if (label in this.labels) {
+    const isLocal = label.startsWith("@@");
+    const scope = isLocal ? this.localLabels[0] : this.globalLabels;
+    if (label in scope) {
       throw `Cannot redefine label: ${label}`;
     }
 
     // add label knowledge
     const v = this.nextAddress();
-    this.labels[label] = v;
+    scope[label] = v;
     for (const pex of this.pendingExprs) {
-      for (const expr of Object.values(pex.exprs)) {
-        if (expr instanceof Expression) {
-          expr.addLabel(label, v);
+      // only add label to this expression if they're the same scope level
+      if (!isLocal || (pex.scopeLevel === this.localLabels.length)) {
+        for (const expr of Object.values(pex.exprs)) {
+          if (expr instanceof Expression) {
+            expr.addLabel(label, v);
+          }
         }
       }
     }
@@ -275,12 +291,15 @@ export class Bytes {
     }
   }
 
-  public removeLocalLabels() {
-    // TODO: search for rewrites that require local labels
-    for (const k of Object.keys(this.labels)) {
-      if (k.startsWith("@@")) {
-        delete this.labels[k];
-      }
+  public scopeBegin() {
+    this.localLabels.unshift({});
+  }
+
+  public scopeEnd() {
+    if (this.localLabels.length > 1) {
+      this.localLabels.shift();
+    } else {
+      throw `Statement .end is missing matching .begin`;
     }
   }
 

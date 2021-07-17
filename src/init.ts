@@ -5,6 +5,8 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
+import { fileExists } from "./deps.ts";
+
 export interface IInitArgs {
   output: string;
   title: string;
@@ -13,6 +15,7 @@ export interface IInitArgs {
   version: number;
   region: string;
   code: string;
+  overwrite: boolean;
 }
 
 export function generateInit(args: IInitArgs): string {
@@ -56,7 +59,7 @@ str r1, [r0]
 }
 
 export async function init(args: IInitArgs): Promise<number> {
-  const { output, title, initials, maker, version, region, code } = args;
+  const { output, title, initials, maker, version, region, code, overwrite } = args;
   try {
     const checkSize = (
       hint: string,
@@ -95,6 +98,12 @@ export async function init(args: IInitArgs): Promise<number> {
     }
     checkSize("region", region, 1, 1);
     checkSize("code", code, 1, 1);
+
+    if (!overwrite && await fileExists(output)) {
+      console.error(`Output file already exists, cannot overwrite: ${output}
+Pass --overwrite to stomp the file anyways`);
+      throw false;
+    }
 
     // TODO: use .stdlib and then use REG_DISPCNT instead of 0x04000000, etc
     await Deno.writeTextFile(

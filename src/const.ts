@@ -34,11 +34,32 @@ interface IMacroParamTable {
 export class ConstTable {
   private globals: IConstTable = {};
   private locals: IConstTable[] = [{}];
-  private macroParams: IMacroParamTable[] = [];
+  private macroParams: IMacroParamTable[] = [{}];
   private lookupNative: (cname: string) => number | false;
 
   constructor(lookupNative: (cname: string) => number | false) {
     this.lookupNative = lookupNative;
+  }
+
+  public scopeBegin() {
+    this.locals.unshift({});
+  }
+
+  public scopeEnd() {
+    if (this.locals.length > 1) {
+      this.locals.shift();
+    } else {
+      throw "Statement .end is missing matching .begin";
+    }
+  }
+
+  public verifyNoMissingEnd() {
+    if (this.locals.length > 1) {
+      if (this.locals.length === 2) {
+        throw "Missing .end statement at end of program";
+      }
+      throw `Missing ${this.locals.length - 1} .end statements at end of program`;
+    }
   }
 
   public defx(cname: string, paramNames: string[], expr: ExpressionBuilder) {
@@ -72,18 +93,12 @@ export class ConstTable {
         };
       }
     } else {
-      for (const mp of this.macroParams) {
-        if (cname in mp) {
-          return mp[cname];
-        }
+      if (cname in this.macroParams[0]) {
+        return this.macroParams[0][cname];
       }
-      for (const local of this.locals) {
-        if (cname in local) {
-          return local[cname];
-        }
-      }
-      if (cname in this.globals) {
-        return this.globals[cname];
+      const scope = cname.startsWith("$$") ? this.locals[0] : this.globals;
+      if (cname in scope) {
+        return scope[cname];
       }
     }
     throw `Unknown constant: ${cname}`;

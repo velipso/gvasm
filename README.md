@@ -16,9 +16,9 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] THUMB opcode assembly
 - [x] Literal pools
 - [x] Defined constant expressions
-- [ ] Scoped names (in progress)
+- [x] Scoped names and labels
+- [ ] Conditional compilation (in progress)
 - [ ] Test suite (in progress)
-- [ ] Conditional compilation
 - [ ] Defined constant macros
 - [ ] Structs
 - [ ] Standard library

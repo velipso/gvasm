@@ -9,7 +9,7 @@ import { IInitArgs, init } from "./init.ts";
 import { IMakeArgs, make } from "./make.ts";
 import { dis, IDisArgs } from "./dis.ts";
 import { IItestArgs, itest } from "./itest.ts";
-import { argParse, path } from "./external.ts";
+import { argParse, path } from "./deps.ts";
 
 export const version = 5;
 
@@ -40,7 +40,7 @@ For more help, try:
 function printInitHelp() {
   console.log(
     `gvasm init <output> [-t title] [-i initials] [-m maker] [-v version]
-                     [-r region] [-c code]
+                    [-r region] [-c code] [--overwrite]
 
 <output>     The output .gvasm file
 -t title     Game title (max of 12 characters, default "Game")
@@ -60,7 +60,8 @@ function printInitHelp() {
                P  e-Reader (dot-code scanner)
                R  Warioware Twisted (rumble and z-axis gyro sensor)
                U  Baktai 1 and 2 (real-time clock and solar sensor)
-               V  Drill Dozer (rumble)`,
+               V  Drill Dozer (rumble)
+--overwrite  Overwrite the output file if it exists`,
   );
 }
 
@@ -68,7 +69,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
   let badArgs = false;
   const a = argParse(args, {
     string: ["title", "initials", "maker", "version", "region", "code"],
-    boolean: ["help"],
+    boolean: ["help", "overwrite"],
     alias: {
       h: "help",
       t: "title",
@@ -148,6 +149,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
     version,
     region,
     code,
+    overwrite: a.overwrite
   };
 }
 

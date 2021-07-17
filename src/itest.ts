@@ -12,6 +12,7 @@ import { load as armLoad } from "./itests/arm.ts";
 import { load as thumbLoad } from "./itests/thumb.ts";
 import { load as poolLoad } from "./itests/pool.ts";
 import { load as constLoad } from "./itests/const.ts";
+import { load as scopeLoad } from "./itests/scope.ts";
 import { makeFromFile } from "./make.ts";
 
 export interface IItestArgs {
@@ -75,6 +76,11 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     return false;
   }
 
+  if (test.error) {
+    console.error(`\nExpecting error in test, but no error was reported`);
+    return false;
+  }
+
   if (test.skipBytes) {
     return true;
   }
@@ -128,6 +134,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   thumbLoad(def);
   poolLoad(def);
   constLoad(def);
+  scopeLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

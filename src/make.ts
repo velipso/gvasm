@@ -18,7 +18,7 @@ import { assertNever, b16, b32 } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression, ExpressionBuilder } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
-import { path } from "./external.ts";
+import { path } from "./deps.ts";
 import { ConstTable } from "./const.ts";
 import { version } from "./main.ts";
 
@@ -384,14 +384,18 @@ function parseDotStatement(
       state.bytes.writeCRC();
       break;
     case ".begin":
-      throw "TODO: .begin";
+      if (line.length > 0) {
+        throw "Invalid .begin statement";
+      }
+      state.ctable.scopeBegin();
+      state.bytes.scopeBegin();
+      break;
     case ".end":
       if (line.length > 0) {
         throw "Invalid .end statement";
       }
-      state.bytes.removeLocalLabels();
-      // TODO: delete local macros
-      // TODO: delete local constants
+      state.ctable.scopeEnd();
+      state.bytes.scopeEnd();
       break;
     case ".if":
     case ".elseif":
@@ -1373,6 +1377,9 @@ export async function makeFromFile(
           state.bytes.writeArray(data2);
         }
       }
+
+      // all done, verify that we aren't missing an .end statement
+      state.ctable.verifyNoMissingEnd();
     } catch (e) {
       if (typeof e === "string") {
         return { errors: [errorString(flp, e)] };

@@ -20,6 +20,7 @@ import { Expression, ExpressionBuilder } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
 import { path } from "./external.ts";
 import { ConstTable } from "./const.ts";
+import { version } from "./main.ts";
 
 export interface IMakeArgs {
   input: string;
@@ -1285,7 +1286,20 @@ export async function makeFromFile(
   const state: IParseState = {
     arm: true,
     bytes: new Bytes(),
-    ctable: new ConstTable(),
+    ctable: new ConstTable((cname) => {
+      if (cname === "$_version") {
+        return version;
+      } else if (cname === "$_arm") {
+        return state.arm ? 1 : 0;
+      } else if (cname === "$_thumb") {
+        return state.arm ? 0 : 1;
+      } else if (cname === "$_here") {
+        return state.bytes.nextAddress();
+      } else if (cname === "$_pc") {
+        return state.bytes.nextAddress() + (state.arm ? 8 : 4);
+      }
+      return false;
+    }),
   };
 
   if (tokens.length > 0) {

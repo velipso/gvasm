@@ -5,6 +5,7 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
+// deno-lint-ignore no-unused-vars
 import { Arm, Thumb } from "./ops.ts";
 import { assertNever, ranges } from "./util.ts";
 
@@ -120,6 +121,7 @@ function registerToString(v: number): string {
 }
 
 export async function dis(
+  // deno-lint-ignore no-unused-vars
   { input, output, format }: IDisArgs,
 ): Promise<number> {
   try {

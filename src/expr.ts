@@ -179,6 +179,10 @@ export class ExpressionBuilder {
     this.paramsLength = paramsLength;
   }
 
+  public static fromNum(num: number) {
+    return new ExpressionBuilder({ kind: "num", value: num }, new Set(), 0);
+  }
+
   public static parse(
     line: ITok[],
     paramNames: string[],

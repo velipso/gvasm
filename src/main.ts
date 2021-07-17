@@ -11,12 +11,17 @@ import { dis, IDisArgs } from "./dis.ts";
 import { IItestArgs, itest } from "./itest.ts";
 import { argParse, path } from "./external.ts";
 
+export const version = 5;
+
 function printVersion() {
+  const vmaj = Math.floor(version / 1000000) % 1000;
+  const vmin = Math.floor(version / 1000) % 1000;
+  const vpat = version % 1000;
   console.log(`gvasm - Assembler and disassembler for Game Boy Advance homebrew
 by Sean Connelly (@velipso), https://sean.cm
 The Unlicense License
 Project Home: https://github.com/velipso/gvasm
-Version: 0.4`);
+Version: ${vmaj}.${vmin}.${vpat}`);
 }
 
 function printHelp() {

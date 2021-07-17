@@ -35,12 +35,25 @@ export class ConstTable {
   private globals: IConstTable = {};
   private locals: IConstTable[] = [{}];
   private macroParams: IMacroParamTable[] = [];
+  private lookupNative: (cname: string) => number | false;
+
+  constructor(lookupNative: (cname: string) => number | false) {
+    this.lookupNative = lookupNative;
+  }
 
   public defx(cname: string, paramNames: string[], expr: ExpressionBuilder) {
+    paramNames.forEach(this.checkName);
     this.def(cname, { kind: "expr", paramNames, expr });
   }
 
+  private checkName(cname: string) {
+    if (cname.startsWith("$_")) {
+      throw `Cannot define name starting with "$_" (reserved): ${cname}`;
+    }
+  }
+
   private def(cname: string, con: IConstMacro | IConstExpr) {
+    this.checkName(cname);
     const scope = cname.startsWith("$$") ? this.locals[0] : this.globals;
     if (cname in scope) {
       throw `Cannot redefine: ${cname}`;
@@ -49,18 +62,29 @@ export class ConstTable {
   }
 
   public lookup(cname: string): IConstMacro | IConstExpr | IConstTokens {
-    for (const mp of this.macroParams) {
-      if (cname in mp) {
-        return mp[cname];
+    if (cname.startsWith("$_")) {
+      const num = this.lookupNative(cname.toLowerCase());
+      if (num !== false) {
+        return {
+          kind: "expr",
+          paramNames: [],
+          expr: ExpressionBuilder.fromNum(num),
+        };
       }
-    }
-    for (const local of this.locals) {
-      if (cname in local) {
-        return local[cname];
+    } else {
+      for (const mp of this.macroParams) {
+        if (cname in mp) {
+          return mp[cname];
+        }
       }
-    }
-    if (cname in this.globals) {
-      return this.globals[cname];
+      for (const local of this.locals) {
+        if (cname in local) {
+          return local[cname];
+        }
+      }
+      if (cname in this.globals) {
+        return this.globals[cname];
+      }
     }
     throw `Unknown constant: ${cname}`;
   }

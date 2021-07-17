@@ -6,7 +6,6 @@
 //
 
 import { ExpressionBuilder } from "./expr.ts";
-import { assertNever } from "./util.ts";
 
 interface IConstMacro {
   kind: "macro";

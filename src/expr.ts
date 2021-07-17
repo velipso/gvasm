@@ -6,8 +6,8 @@
 //
 
 import { assertNever } from "./util.ts";
-import { isIdentStart, ITok, TokEnum } from "./lexer.ts";
-import { parseName, isNextId } from "./make.ts";
+import { ITok, TokEnum } from "./lexer.ts";
+import { isNextId, parseName } from "./make.ts";
 import { ConstTable } from "./const.ts";
 
 interface IExprNum {
@@ -276,7 +276,7 @@ export class ExpressionBuilder {
             const cvalue = ctable.lookup(cname);
             if (cvalue.kind === "expr") {
               ExpressionBuilder.propagateLabels(cvalue.expr, labelsNeed);
-              result = {kind:"build", expr: cvalue.expr, params};
+              result = { kind: "build", expr: cvalue.expr, params };
             } else {
               throw `Constant cannot be called as an expression: ${cname}`;
             }
@@ -340,7 +340,9 @@ export class ExpressionBuilder {
         if (isBinaryOp(id)) {
           line.shift();
           const right = term();
-          if (right.kind === "binary" && precedence(id) <= precedence(right.op)) {
+          if (
+            right.kind === "binary" && precedence(id) <= precedence(right.op)
+          ) {
             // (result id right.left) right.kind right.right
             result = {
               kind: "binary",
@@ -399,7 +401,7 @@ export class ExpressionBuilder {
           // convert param to number
           return {
             kind: "num",
-            value: params[ex.index]
+            value: params[ex.index],
           };
         case "num":
         case "label":
@@ -408,20 +410,20 @@ export class ExpressionBuilder {
           return {
             kind: "build",
             expr: ex.expr,
-            params: ex.params.map(walk)
+            params: ex.params.map(walk),
           };
         case "unary":
           return {
             kind: "unary",
             op: ex.op,
-            value: walk(ex.value)
+            value: walk(ex.value),
           };
         case "binary":
           return {
             kind: "binary",
             op: ex.op,
             left: walk(ex.left),
-            right: walk(ex.right)
+            right: walk(ex.right),
           };
         case "?:":
           return {
@@ -482,7 +484,9 @@ export class Expression {
           }
           const v = ex2.value();
           if (v === false) {
-            throw new Error(`Missing labels: ${[...ex2.getLabelsNeed()].join(', ')}`);
+            throw new Error(
+              `Missing labels: ${[...ex2.getLabelsNeed()].join(", ")}`,
+            );
           }
           return v;
         }

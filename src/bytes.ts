@@ -6,7 +6,6 @@
 //
 
 import { Expression } from "./expr.ts";
-import { ConstTable } from "./const.ts";
 
 const MAX_LENGTH = 0x02000000;
 

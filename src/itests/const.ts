@@ -40,7 +40,7 @@ export function load(def: (test: ITest) => void) {
 .i8 $add($five, $neg($one))                     /// 04
 .i8 $add($neg($neg($five)), $neg($neg($five)))  /// 0a
 `,
-    }
+    },
   });
 
   def({
@@ -52,8 +52,8 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `
 .defx $add($a, $b) = $a + $b
 .i8 $add
-`
-    }
+`,
+    },
   });
 
   def({
@@ -65,8 +65,8 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `
 .defx $add($a, $b) = $a + $b
 .i8 $add(1)
-`
-    }
+`,
+    },
   });
 
   def({
@@ -78,8 +78,8 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `
 .defx $add($a, $b) = $a + $b
 .i8 $add(1, 2, 3)
-`
-    }
+`,
+    },
   });
 
   def({
@@ -136,7 +136,7 @@ export function load(def: (test: ITest) => void) {
       $b10(-8)      \\
     )               \\
   )                      /// 2a
-`
-    }
+`,
+    },
   });
 }

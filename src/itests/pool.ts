@@ -150,8 +150,22 @@ ldrsb.mi r0, =0x12   /// dc 00 df 41
   });
 
   def({
-    name: "pool.thumb.ldr",
-    desc: "THUMB pool ldr",
+    name: "pool.thumb.ldr-mov",
+    desc: "THUMB pool ldr converted to mov",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+mov r2, #100  /// 64 22
+ldr r2, =100  /// 64 22
+ldr r3, =100  /// 64 23
+ldr r3, =200  /// c8 23
+`,
+    },
+  });
+
+  def({
+    name: "pool.thumb.ldr-pool",
+    desc: "THUMB pool ldr stored in literal pool",
     kind: "make",
     files: {
       "/root/main": `.thumb

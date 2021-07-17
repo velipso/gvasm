@@ -392,4 +392,19 @@ str r1, [r0]           /// 00 10 80 e5
       "/root/main": `.error "This is an error"`,
     },
   });
+
+  def({
+    name: "basic.continue-line",
+    desc: "Use backslash to continue a line",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8   \\
+ 1    \\  // comment here
+ ,    \\  /* comment here */
+ 2    \\
+ , 3  /// 01 02 03
+`
+    },
+  });
 }

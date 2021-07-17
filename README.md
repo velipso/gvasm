@@ -15,10 +15,11 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] ARM opcode assembly
 - [x] THUMB opcode assembly
 - [x] Literal pools
-- [ ] Named constants (in progress)
+- [x] Defined constant expressions
+- [ ] Scoped names (in progress)
 - [ ] Test suite (in progress)
 - [ ] Conditional compilation
-- [ ] Macros
+- [ ] Defined constant macros
 - [ ] Structs
 - [ ] Standard library
 - [ ] Extended library

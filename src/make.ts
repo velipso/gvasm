@@ -16,9 +16,10 @@ import {
 } from "./lexer.ts";
 import { assertNever, b16, b32 } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
-import { Expression } from "./expr.ts";
+import { Expression, ExpressionBuilder } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
 import { path } from "./external.ts";
+import { ConstTable } from "./const.ts";
 
 export interface IMakeArgs {
   input: string;
@@ -28,6 +29,7 @@ export interface IMakeArgs {
 interface IParseState {
   arm: boolean;
   bytes: Bytes;
+  ctable: ConstTable;
 }
 
 type ISyms = { [sym: string]: Expression | number };
@@ -45,6 +47,10 @@ function decodeRegister(id: string): number {
   return -1;
 }
 
+export function isNextId(line: ITok[], id: string): boolean {
+  return line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === id;
+}
+
 function parseComma(line: ITok[], error: string) {
   if (line[0].kind === TokEnum.ID && line[0].id === ",") {
     line.shift();
@@ -53,24 +59,24 @@ function parseComma(line: ITok[], error: string) {
   }
 }
 
-function parseNum(line: ITok[]): number {
-  const expr = Expression.parse(line);
+function parseNum(line: ITok[], ctable: ConstTable): number {
+  const expr = ExpressionBuilder.parse(line, [], ctable);
   if (expr === false) {
     throw "Expecting constant number";
   }
-  const v = expr.value();
+  const v = expr.build([]).value();
   if (v === false) {
     throw "Expecting constant number";
   }
   return v;
 }
 
-function parseExpr(line: ITok[]): Expression {
-  const expr = Expression.parse(line);
+function parseExpr(line: ITok[], ctable: ConstTable): Expression {
+  const expr = ExpressionBuilder.parse(line, [], ctable);
   if (expr === false) {
     throw "Expecting constant expression";
   }
-  return expr;
+  return expr.build([]);
 }
 
 function parseReglist(
@@ -160,15 +166,14 @@ function parseReglist(
 function parseNumCommas(
   line: ITok[],
   defaults: (number | false)[],
+  ctable: ConstTable,
   error: string,
 ): number[] {
   const result: number[] = [];
   for (const def of defaults) {
     if (def === false || line.length > 0) {
-      result.push(parseNum(line));
-      if (
-        line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === ","
-      ) {
+      result.push(parseNum(line, ctable));
+      if (isNextId(line, ",")) {
         line.shift();
       }
     } else {
@@ -194,7 +199,7 @@ function parseDotStatement(
         throw "Invalid .error statement";
       }
     case ".base": {
-      const amount = parseNum(line);
+      const amount = parseNum(line, state.ctable);
       if (line.length > 0) {
         throw "Invalid .base statement";
       }
@@ -219,6 +224,7 @@ function parseDotStatement(
       const [amount, fill] = parseNumCommas(
         line,
         [false, 0],
+        state.ctable,
         "Invalid .align statement",
       );
       if (amount < 2 || amount > 0x02000000) {
@@ -239,7 +245,7 @@ function parseDotStatement(
         } else {
           state.bytes.expr8(
             errorString(t.flp, `Invalid ${cmd} statement`),
-            { v: parseExpr(line) },
+            { v: parseExpr(line, state.ctable) },
             ({ v }) => v,
           );
           if (line.length > 0) {
@@ -253,6 +259,7 @@ function parseDotStatement(
       const [amount, fill] = parseNumCommas(
         line,
         [false, 0],
+        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -268,7 +275,7 @@ function parseDotStatement(
       while (line.length > 0) {
         state.bytes.expr16(
           errorString(line[0].flp, `Invalid ${cmd} statement`),
-          { v: parseExpr(line) },
+          { v: parseExpr(line, state.ctable) },
           ({ v }) => {
             if (cmd === ".b16") {
               return b16(v);
@@ -286,6 +293,7 @@ function parseDotStatement(
       const [amount, fill] = parseNumCommas(
         line,
         [false, 0],
+        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -301,7 +309,7 @@ function parseDotStatement(
       while (line.length > 0) {
         state.bytes.expr32(
           errorString(line[0].flp, `Invalid ${cmd} statement`),
-          { v: parseExpr(line) },
+          { v: parseExpr(line, state.ctable) },
           ({ v }) => {
             if (cmd === ".b32") {
               return b32(v);
@@ -319,6 +327,7 @@ function parseDotStatement(
       const [amount, fill] = parseNumCommas(
         line,
         [false, 0],
+        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -373,10 +382,8 @@ function parseDotStatement(
       }
       state.bytes.writeCRC();
       break;
-    case ".macro":
-      throw "TODO: marco";
-    case ".endm":
-      throw "TODO: endm";
+    case ".begin":
+      throw "TODO: .begin";
     case ".end":
       if (line.length > 0) {
         throw "Invalid .end statement";
@@ -392,12 +399,12 @@ function parseDotStatement(
       throw "TODO: .if/.elseif/.else/.endif";
     case ".printf":
       throw "TODO: .printf";
-    case ".rgb": {
-      const r = parseNum(line);
+    case ".rgb": { // TODO: replace with $rgb(r, g, b)
+      const r = parseNum(line, state.ctable);
       parseComma(line, "Invalid .rgb statement");
-      const g = parseNum(line);
+      const g = parseNum(line, state.ctable);
       parseComma(line, "Invalid .rgb statement");
-      const b = parseNum(line);
+      const b = parseNum(line, state.ctable);
       if (line.length > 0) {
         throw "Invalid .rgb statement";
       }
@@ -416,6 +423,64 @@ function parseDotStatement(
         state.bytes.align(state.arm ? 4 : 2);
       }
       break;
+    case ".defx": {
+      if (!isNextId(line, "$")) {
+        throw "Expecting $const after .defx";
+      }
+      line.shift();
+      let prefix = "$";
+      if (isNextId(line, "$")) {
+        line.shift();
+        prefix += "$";
+      }
+      const name = parseName(line);
+      if (name === false) {
+        throw "Invalid constant name";
+      }
+      const paramNames: string[] = [];
+      if (isNextId(line, "(")) {
+        line.shift();
+        while (!isNextId(line, ")")) {
+          if (!isNextId(line, "$")) {
+            throw "Expecting $param inside .defx parameter list";
+          }
+          line.shift();
+          if (isNextId(line, "$")) {
+            throw "Use $param instead of $$param inside parameter list";
+          }
+          const pname = parseName(line);
+          if (pname === false) {
+            throw "Expecting $param inside .defx parameter list";
+          }
+          paramNames.push("$" + pname);
+          if (isNextId(line, ",")) {
+            line.shift();
+          } else {
+            break;
+          }
+        }
+        if (!isNextId(line, ")")) {
+          throw "Missing `)` at end of parameter list";
+        }
+        line.shift();
+      }
+      if (!isNextId(line, "=")) {
+        throw "Missing `=` in .defx statement";
+      }
+      line.shift();
+      const expr = ExpressionBuilder.parse(line, paramNames, state.ctable);
+      if (expr === false) {
+        throw "Invalid expression in .defx statement";
+      }
+      if (line.length > 0) {
+        throw "Invalid .defx statement";
+      }
+      state.ctable.defx(prefix + name, paramNames, expr);
+      break;
+    }
+    case ".defm":
+    case ".endm":
+      throw "TODO: .defm/.endm";
     default:
       throw `Unknown dot statement: ${cmd}`;
   }
@@ -432,9 +497,13 @@ function validateStr(partStr: string, line: ITok[]): boolean {
   return true;
 }
 
-function validateNum(partNum: number, line: ITok[]): boolean {
+function validateNum(
+  partNum: number,
+  line: ITok[],
+  ctable: ConstTable,
+): boolean {
   try {
-    if (parseNum(line) !== partNum) {
+    if (parseNum(line, ctable) !== partNum) {
       return false;
     }
     return true;
@@ -443,13 +512,18 @@ function validateNum(partNum: number, line: ITok[]): boolean {
   }
 }
 
-function validateSymExpr(syms: ISyms, partSym: string, line: ITok[]): boolean {
+function validateSymExpr(
+  syms: ISyms,
+  partSym: string,
+  line: ITok[],
+  ctable: ConstTable,
+): boolean {
   try {
-    const expr = Expression.parse(line);
+    const expr = ExpressionBuilder.parse(line, [], ctable);
     if (expr === false) {
       return false;
     }
-    syms[partSym] = expr;
+    syms[partSym] = expr.build([]);
     return true;
   } catch (_) {
     return false;
@@ -556,7 +630,7 @@ function parseArmStatement(
         }
         break;
       case "num":
-        if (!validateNum(part.num, line)) {
+        if (!validateNum(part.num, line, state.ctable)) {
           return false;
         }
         break;
@@ -570,7 +644,7 @@ function parseArmStatement(
           case "pcoffset12":
           case "offsetsplit":
           case "pcoffsetsplit":
-            if (!validateSymExpr(syms, part.sym, line)) {
+            if (!validateSymExpr(syms, part.sym, line, state.ctable)) {
               return false;
             }
             break;
@@ -704,7 +778,7 @@ interface IPool {
   ex: Expression;
 }
 
-function parsePoolStatement(line: ITok[]): IPool | false {
+function parsePoolStatement(line: ITok[], ctable: ConstTable): IPool | false {
   // pool statements have a specific format:
   //   op register, =constant
   const trd = line.shift();
@@ -726,7 +800,7 @@ function parsePoolStatement(line: ITok[]): IPool | false {
   }
 
   try {
-    const ex = parseExpr(line);
+    const ex = parseExpr(line, ctable);
     return { rd, ex };
   } catch (_) {
     return false;
@@ -879,7 +953,7 @@ function parseThumbStatement(
         }
         break;
       case "num":
-        if (!validateNum(part.num, line)) {
+        if (!validateNum(part.num, line, state.ctable)) {
           return false;
         }
         break;
@@ -892,7 +966,7 @@ function parseThumbStatement(
           case "immediate":
           case "pcoffset":
           case "offsetsplit":
-            if (!validateSymExpr(syms, part.sym, line)) {
+            if (!validateSymExpr(syms, part.sym, line, state.ctable)) {
               return false;
             }
             break;
@@ -1040,6 +1114,10 @@ function parseThumbPoolStatement(
     errorString(flp, "Incomplete statement"),
     { ex },
     ({ ex }, address) => {
+      if (ex >= 0 && ex < 256) {
+        // convert to: mov rd, #expression
+        return 0x2000 | (rd << 8) | ex;
+      }
       // convert to: ldr rd, [pc, #offset]
       return state.bytes.pool32(ex, 4, (address2) => {
         const offset = address2 - (address & 0xfffffffd) - 4;
@@ -1123,7 +1201,7 @@ function parseLine(
   if (cmd.startsWith(".")) {
     return parseDotStatement(state, cmd, line);
   } else if (state.arm) {
-    const pool = parsePoolStatement([...line]);
+    const pool = parsePoolStatement([...line], state.ctable);
     if (pool) {
       parseArmPoolStatement(state, cmdTok.flp, cmd, pool);
     } else {
@@ -1149,7 +1227,7 @@ function parseLine(
       }
     }
   } else {
-    const pool = parsePoolStatement([...line]);
+    const pool = parsePoolStatement([...line], state.ctable);
     if (pool) {
       parseThumbPoolStatement(state, cmdTok.flp, cmd, pool);
     } else {
@@ -1207,6 +1285,7 @@ export async function makeFromFile(
   const state: IParseState = {
     arm: true,
     bytes: new Bytes(),
+    ctable: new ConstTable(),
   };
 
   if (tokens.length > 0) {

@@ -35,20 +35,27 @@ b @main          // branch to main method
 .else
 .endif
 
+.printf "format", $a, $b
+
 .b8 1
 .b16 1
 .b32 1
 
 @main:    // global label
+.begin
 @@foo:    // local label (disappears after .end)
-$foo = 1  // global define
-$$foo = 1 // local define (disappears after .end)
 .end
 
 // global macro
-.macro %foo \param1, \param2
+.defm $foo $param1, $param2
 .endm
 // local macro (disappears after .end)
-.marco %%foo \param1, \param2
+.defm $$foo $param1, $param2
 .endm
+
+.defx $foo($a, $b) = $a + $b
+.defx $foo = 1
+
+.begin
+.end
 ```

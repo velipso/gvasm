@@ -38,12 +38,12 @@ b @main
 // For example, this will set the display to @color:
 
 // set REG_DISPCNT to 0
-mov r0, #0x04000000
-mov r1, #0x0
+ldr r0, =0x04000000
+ldr r1, =0x0
 str r1, [r0]
 
 // set color 0 to the value at @color
-mov r0, #0x05000000
+ldr r0, =0x05000000
 ldrh r1, [#@color]
 str r1, [r0]
 

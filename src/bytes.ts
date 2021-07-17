@@ -6,6 +6,7 @@
 //
 
 import { Expression } from "./expr.ts";
+import { ConstTable } from "./const.ts";
 
 const MAX_LENGTH = 0x02000000;
 
@@ -41,10 +42,10 @@ export class Bytes {
       for (const expr of Object.values(pex.exprs)) {
         if (expr instanceof Expression) {
           const need = expr.getLabelsNeed();
-          if (need.length > 0) {
+          if (need.size > 0) {
             throw `${pex.hint}, label${
-              need.length === 1 ? "" : "s"
-            } not defined: ${need.join(", ")}`;
+              need.size === 1 ? "" : "s"
+            } not defined: ${[...need].join(", ")}`;
           }
         }
       }

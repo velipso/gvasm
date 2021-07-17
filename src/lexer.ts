@@ -17,6 +17,9 @@ enum LexEnum {
   START,
   COMMENT_LINE,
   RETURN,
+  CONTINUE,
+  CONTINUE_SLASH,
+  CONTINUE_COMMENT_BLOCK,
   COMMENT_BLOCK,
   SPECIAL,
   RSHIFT,
@@ -174,7 +177,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
   switch (lx.state) {
     case LexEnum.START:
       lx.flpS = flp;
-      if ("~!@#$%^&*()-+={[}]|\\:<,>?/".indexOf(ch1) >= 0) {
+      if ("~!@#$%^&*()-+={[}]|:<,>?/".indexOf(ch1) >= 0) {
         lx.state = LexEnum.SPECIAL;
       } else if (isIdentStart(ch1) || ch1 === ".") {
         lx.str = ch1;
@@ -195,6 +198,8 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         tks.push(tokNewline(flp));
       } else if (ch1 === "\n") {
         tks.push(tokNewline(flp));
+      } else if (ch1 === "\\") {
+        lx.state = LexEnum.CONTINUE;
       } else if (!isSpace(ch1)) {
         tks.push(tokError(flp, `Unexpected character: ${ch1}`));
       }
@@ -212,6 +217,35 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       lx.state = LexEnum.START;
       if (ch1 !== "\n") {
         lexProcess(lx, tks);
+      }
+      break;
+
+    case LexEnum.CONTINUE:
+      if (ch1 === "\r") {
+        lx.state = LexEnum.RETURN;
+      } else if (ch1 === "\n") {
+        lx.state = LexEnum.START;
+      } else if (ch1 === "/") {
+        lx.state = LexEnum.CONTINUE_SLASH;
+      } else if (!isSpace(ch1)) {
+        lx.state = LexEnum.START;
+        tks.push(tokError(flp, `Unexpected character after backslash: ${ch1}`));
+      }
+      break;
+
+    case LexEnum.CONTINUE_SLASH:
+      if (ch1 === "/") {
+        lx.state = LexEnum.COMMENT_LINE;
+      } else if (ch1 === "*") {
+        lx.state = LexEnum.CONTINUE_COMMENT_BLOCK;
+      } else {
+        tks.push(tokError(lx.flp2, `Unexpected character after backslash: /`));
+      }
+      break;
+
+    case LexEnum.CONTINUE_COMMENT_BLOCK:
+      if (lx.ch2 === "*" && ch1 === "/") {
+        lx.state = LexEnum.CONTINUE;
       }
       break;
 

@@ -197,4 +197,48 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: "expr.functions",
+    desc: "Built-in functions (sqrt, etc)",
+    kind: "make",
+    files: {
+      "/root/main": `
+.i8 abs(5), abs(-5), abs(0)     /// 05 05 00
+.i8 clamp(-1, 3, 5)             /// 03
+.i8 CLAMP(-1, 5, 3)             /// 03
+.i8 clamp(10, 3, 5)             /// 05
+.i8 clamp(10, 5, 3)             /// 05
+.i8 clamp(4, 3, 5)              /// 04
+.i8 clamp(4, 5, 3)              /// 04
+.i8 log2(100)                   /// 06
+.i8 max(6, 3, 0, 10, 4)         /// 0a
+.i8 min(6, 3, 0, -3, 4)         /// fd
+.i8 nrt(100, 3)                 /// 04
+.i8 pow(3, 3)                   /// 1b
+.i8 sign(0), sign(5), sign(-5)  /// 00 01 ff
+.i8 sqrt(30)                    /// 05
+`,
+    },
+  });
+
+  def({
+    name: "expr.functions-missing-parameters",
+    desc: "Error when function call is missing parameters",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `.i8 pow(2)`,
+    },
+  });
+
+  def({
+    name: "expr.functions-extra-parameters",
+    desc: "Error when function call has extra parameters",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `.i8 pow(2, 3, 4)`,
+    },
+  });
 }

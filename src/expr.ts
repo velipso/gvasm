@@ -10,6 +10,29 @@ import { ITok, TokEnum } from "./lexer.ts";
 import { isNextId, parseName } from "./make.ts";
 import { ConstTable } from "./const.ts";
 
+interface IFunctions {
+  [name: string]: {
+    size: number;
+    f(p: number[]): number;
+  };
+}
+
+const functions: IFunctions = Object.freeze({
+  abs: { size: 1, f: ([a]) => Math.abs(a) },
+  clamp: {
+    size: 3,
+    f: ([a, b, c]) =>
+      b <= c ? (a < b ? b : a > c ? c : a) : (a < c ? c : a > b ? b : a),
+  },
+  log2: { size: 1, f: ([a]) => Math.log2(a) },
+  max: { size: -1, f: (p) => Math.max(...p) },
+  min: { size: -1, f: (p) => Math.min(...p) },
+  nrt: { size: 2, f: ([a, b]) => Math.pow(a, 1 / b) },
+  pow: { size: 2, f: ([a, b]) => Math.pow(a, b) },
+  sign: { size: 1, f: ([a]) => Math.sign(a) },
+  sqrt: { size: 1, f: ([a]) => Math.sqrt(Math.abs(a)) },
+});
+
 interface IExprNum {
   kind: "num";
   value: number;
@@ -34,6 +57,18 @@ interface IExprBuild {
 interface IExprBuildWithParam {
   kind: "build";
   expr: ExpressionBuilder;
+  params: IExprWithParam[];
+}
+
+interface IExprFunc {
+  kind: "func";
+  func: string;
+  params: IExpr[];
+}
+
+interface IExprFuncWithParam {
+  kind: "func";
+  func: string;
   params: IExprWithParam[];
 }
 
@@ -132,6 +167,7 @@ type IExpr =
   | IExprNum
   | IExprLabel
   | IExprBuild
+  | IExprFunc
   | IExprUnary
   | IExprBinary
   | IExprTernary;
@@ -141,6 +177,7 @@ type IExprWithParam =
   | IExprNum
   | IExprLabel
   | IExprBuildWithParam
+  | IExprFuncWithParam
   | IExprUnaryWithParam
   | IExprBinaryWithParam
   | IExprTernaryWithParam;
@@ -160,6 +197,19 @@ function parsePrefixName(
     throw error;
   }
   return p + name;
+}
+
+function checkParamSize(got: number, expect: number) {
+  if (got === expect) {
+    return;
+  }
+  const exp = `${expect} parameter${expect === 1 ? "" : "s"}`;
+  const err = `expecting ${exp}, but got ${got} instead`;
+  if (got < expect) {
+    throw `Too few parameters; ${err}`;
+  } else {
+    throw `Too many parameters; ${err}`;
+  }
 }
 
 export class ExpressionBuilder {
@@ -194,6 +244,7 @@ export class ExpressionBuilder {
         line.length > 0 && (
           (
             line[0].kind === TokEnum.ID && (
+              line[0].id in functions ||
               line[0].id === "(" ||
               line[0].id === "-" ||
               line[0].id === "+" ||
@@ -209,6 +260,24 @@ export class ExpressionBuilder {
     ) {
       return false;
     }
+    const readParams = (params: IExprWithParam[]) => {
+      if (!isNextId(line, "(")) {
+        throw "Expecting '(' at start of call";
+      }
+      line.shift();
+      while (!isNextId(line, ")")) {
+        params.push(term());
+        if (isNextId(line, ",")) {
+          line.shift();
+        } else {
+          break;
+        }
+      }
+      if (!isNextId(line, ")")) {
+        throw "Expecting ')' at end of call";
+      }
+      line.shift();
+    };
     const term = (): IExprWithParam => {
       // collect all unary operators
       const unary: ("neg" | "~" | "!")[] = [];
@@ -238,7 +307,14 @@ export class ExpressionBuilder {
       if (t.kind === TokEnum.NUM) {
         result = { kind: "num", value: t.num };
       } else if (t.kind === TokEnum.ID) {
-        if (t.id === "(") {
+        if (t.id in functions) {
+          const params: IExprWithParam[] = [];
+          readParams(params);
+          if (functions[t.id].size >= 0) {
+            checkParamSize(params.length, functions[t.id].size);
+          }
+          result = { kind: "func", func: t.id, params };
+        } else if (t.id === "(") {
           result = { kind: "unary", op: "(", value: term() };
           if (!isNextId(line, ")")) {
             throw "Expecting close parenthesis";
@@ -263,19 +339,7 @@ export class ExpressionBuilder {
           } else {
             const params: IExprWithParam[] = [];
             if (isNextId(line, "(")) {
-              line.shift();
-              while (!isNextId(line, ")")) {
-                params.push(term());
-                if (isNextId(line, ",")) {
-                  line.shift();
-                } else {
-                  break;
-                }
-              }
-              if (!isNextId(line, ")")) {
-                throw "Expecting ')' at end of call";
-              }
-              line.shift();
+              readParams(params);
             }
             const cvalue = ctable.lookup(cname);
             if (cvalue.kind === "expr") {
@@ -386,17 +450,7 @@ export class ExpressionBuilder {
   }
 
   public build(params: number[]): Expression {
-    if (params.length !== this.paramsLength) {
-      const exp = `${this.paramsLength} parameter${
-        params.length === 1 ? "" : "s"
-      }`;
-      const err = `expecting ${exp}, but got ${params.length} instead`;
-      if (params.length < this.paramsLength) {
-        throw `Too few parameters; ${err}`;
-      } else {
-        throw `Too many parameters; ${err}`;
-      }
-    }
+    checkParamSize(params.length, this.paramsLength);
 
     // walk the tree and convert IExprParam to the finalized number
     const walk = (ex: IExprWithParam): IExpr => {
@@ -414,6 +468,12 @@ export class ExpressionBuilder {
           return {
             kind: "build",
             expr: ex.expr,
+            params: ex.params.map(walk),
+          };
+        case "func":
+          return {
+            kind: "func",
+            func: ex.func,
             params: ex.params.map(walk),
           };
         case "unary":
@@ -493,6 +553,13 @@ export class Expression {
             );
           }
           return v;
+        }
+        case "func": {
+          const func = functions[ex.func];
+          if (!func) {
+            throw new Error(`Unknown function: ${func}`);
+          }
+          return func.f(ex.params.map(get)) | 0;
         }
         case "unary":
           switch (ex.op) {

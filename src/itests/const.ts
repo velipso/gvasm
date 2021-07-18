@@ -205,6 +205,18 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
+    name: "const.base",
+    desc: "Constant $_base is defined",
+    kind: "make",
+    files: {
+      "/root/main": `
+.base 0x04000000
+.i32 $_base  /// 00 00 00 04
+`
+    }
+  });
+
+  def({
     name: "const.reserved-name",
     desc: "Prevent users from defining names starting with $_",
     kind: "make",

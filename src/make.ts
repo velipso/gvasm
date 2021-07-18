@@ -1293,6 +1293,8 @@ export async function makeFromFile(
         return state.bytes.nextAddress();
       } else if (cname === "$_pc") {
         return state.bytes.nextAddress() + (state.arm ? 8 : 4);
+      } else if (cname === "$_base") {
+        return state.bytes.getBase();
       }
       return false;
     }),

@@ -1,6 +1,5 @@
 *.sav
 bin2/*
-test/*.gba
 mgba/*
 
 # random crap that tends to appear over time

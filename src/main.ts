@@ -25,7 +25,7 @@ Version: ${vmaj}.${vmin}.${vpat}`);
 }
 
 function printHelp() {
-  console.log(`gvasm <command> [...args]
+  console.log(`gvasm <command> [<args...>]
 
 Command Summary:
   init      Create a skeleton project
@@ -39,29 +39,29 @@ For more help, try:
 
 function printInitHelp() {
   console.log(
-    `gvasm init <output> [-t title] [-i initials] [-m maker] [-v version]
-                    [-r region] [-c code] [--overwrite]
+    `gvasm init <output> [-t <title>] [-i <initials>] [-m <maker>] [-v <version>]
+                    [-r <region>] [-c <code>] [--overwrite]
 
-<output>     The output .gvasm file
--t title     Game title (max of 12 characters, default "Game")
--i initials  Game initials (must be 2 characters, default "AA")
--m maker     Game maker (must be 2 characters, default "77")
--v version   Game version (must be number from 0..255, default 0)
--r region    Game region (must be 1 character, default "E"):
-               D  German       E  English       F  French
-               I  Italian      J  Japanese      P  European
-               S  Spanish
--c code      Game code (must be 1 character, default "C"):
-               A  Normal game (titles released pre-2003)
-               B  Normal game (titles released 2003+)
-               C  Normal game (newer titles)
-               F  Famicom/Classic NES
-               K  Yoshi and Koro Koro Puzzle (acceleration sensor)
-               P  e-Reader (dot-code scanner)
-               R  Warioware Twisted (rumble and z-axis gyro sensor)
-               U  Baktai 1 and 2 (real-time clock and solar sensor)
-               V  Drill Dozer (rumble)
---overwrite  Overwrite the output file if it exists`,
+<output>       The output .gvasm file
+-t <title>     Game title (max of 12 characters, default "Game")
+-i <initials>  Game initials (must be 2 characters, default "AA")
+-m <maker>     Game maker (must be 2 characters, default "77")
+-v <version>   Game version (must be number from 0..255, default 0)
+-r <region>    Game region (must be 1 character, default "E"):
+                 D  German       E  English       F  French
+                 I  Italian      J  Japanese      P  European
+                 S  Spanish
+-c <code>      Game code (must be 1 character, default "C"):
+                 A  Normal game (titles released pre-2003)
+                 B  Normal game (titles released 2003+)
+                 C  Normal game (newer titles)
+                 F  Famicom/Classic NES
+                 K  Yoshi and Koro Koro Puzzle (acceleration sensor)
+                 P  e-Reader (dot-code scanner)
+                 R  Warioware Twisted (rumble and z-axis gyro sensor)
+                 U  Baktai 1 and 2 (real-time clock and solar sensor)
+                 V  Drill Dozer (rumble)
+--overwrite    Overwrite the output file if it exists`,
   );
 }
 

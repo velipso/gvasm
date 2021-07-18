@@ -65,6 +65,10 @@ export class Bytes {
     return this.array;
   }
 
+  public getBase() {
+    return this.base;
+  }
+
   public setBase(base: number) {
     if (this.array.length > 0) {
       throw "Cannot use .base after other statements";

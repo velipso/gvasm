@@ -247,6 +247,7 @@ function parseDotStatement(
           state.bytes.expr8(
             errorString(t.flp, `Invalid ${cmd} statement`),
             { v: parseExpr(line, state.ctable) },
+            false,
             ({ v }) => v,
           );
           if (line.length > 0) {
@@ -277,6 +278,7 @@ function parseDotStatement(
         state.bytes.expr16(
           errorString(line[0].flp, `Invalid ${cmd} statement`),
           { v: parseExpr(line, state.ctable) },
+          false,
           ({ v }) => {
             if (cmd === ".b16") {
               return b16(v);
@@ -311,6 +313,7 @@ function parseDotStatement(
         state.bytes.expr32(
           errorString(line[0].flp, `Invalid ${cmd} statement`),
           { v: parseExpr(line, state.ctable) },
+          false,
           ({ v }) => {
             if (cmd === ".b32") {
               return b32(v);
@@ -693,6 +696,7 @@ function parseArmStatement(
   state.bytes.expr32(
     errorString(flp, "Invalid statement"),
     syms,
+    false,
     (syms, address) => {
       const opcode = new BitNumber(32);
       for (const codePart of pb.op.codeParts) {
@@ -857,7 +861,8 @@ function parseArmPoolStatement(
     state.bytes.expr32(
       errorString(flp, "Incomplete statement"),
       { ex },
-      ({ ex }, address) => {
+      { align: 4, bytes: 4, sym: "ex" },
+      ({ ex }, _) => {
         const mov = calcRotImm(ex);
         if (mov !== false) {
           // convert to: mov rd, #expression
@@ -880,63 +885,63 @@ function parseArmPoolStatement(
             mvn
           );
         }
-        // otherwise, add constant value to pool, and reference it
-        return state.bytes.pool32(ex, 4, (address2) => {
-          // convert to: ldr rd, [pc, #offset]
-          // cond 0111 1001 1111 rd offset
-          const offset = address2 - address - 8;
-          if (offset < -4) {
-            throw new Error("Pool offset shouldn't be negative");
-          } else if (offset > 0xfff) {
-            throw "Next .pool too far away";
-          }
-          return offset < 0
-            ? ((cond << 28) | 0x051f0000 | (rd << 12) | Math.abs(offset))
-            : ((cond << 28) | 0x059f0000 | (rd << 12) | offset);
-        });
+        return false;
+      },
+      (_, address, poolAddress) => {
+        // convert to: ldr rd, [pc, #offset]
+        // cond 0111 1001 1111 rd offset
+        const offset = poolAddress - address - 8;
+        if (offset < -4) {
+          throw new Error("Pool offset shouldn't be negative");
+        } else if (offset > 0xfff) {
+          throw "Next .pool too far away";
+        }
+        return offset < 0
+          ? ((cond << 28) | 0x051f0000 | (rd << 12) | Math.abs(offset))
+          : ((cond << 28) | 0x059f0000 | (rd << 12) | offset);
       },
     );
   } else if (cmdSize === 2) {
     state.bytes.expr32(
       errorString(flp, "Incomplete statement"),
       { ex },
-      ({ ex }, address) => {
+      { align: 2, bytes: 2, sym: "ex" },
+      () => false,
+      (_, address, poolAddress) => {
         // convert to: ldrh rd, [pc, #offset]
-        return state.bytes.pool16(ex, 2, (address2) => {
-          const offset = address2 - address - 8;
-          if (offset < -4) {
-            throw new Error("Pool offset shouldn't be negative");
-          } else if (offset > 0xff) {
-            throw "Next .pool too far away";
-          }
-          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-            Math.abs(offset) & 0xf;
-          const s = cmdSigned ? 0xf0 : 0xb0;
-          return offset < 0
-            ? ((cond << 28) | 0x015f0000 | s | (rd << 12) | mask)
-            : ((cond << 28) | 0x01df0000 | s | (rd << 12) | mask);
-        });
+        const offset = poolAddress - address - 8;
+        if (offset < -4) {
+          throw new Error("Pool offset shouldn't be negative");
+        } else if (offset > 0xff) {
+          throw "Next .pool too far away";
+        }
+        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
+          Math.abs(offset) & 0xf;
+        const s = cmdSigned ? 0xf0 : 0xb0;
+        return offset < 0
+          ? ((cond << 28) | 0x015f0000 | s | (rd << 12) | mask)
+          : ((cond << 28) | 0x01df0000 | s | (rd << 12) | mask);
       },
     );
   } else { // cmdSize === 1
     state.bytes.expr32(
       errorString(flp, "Incomplete statement"),
       { ex },
-      ({ ex }, address) => {
+      { align: 1, bytes: 1, sym: "ex" },
+      () => false,
+      (_, address, poolAddress) => {
         // convert to: ldrh rd, [pc, #offset]
-        return state.bytes.pool8(ex, 1, (address2) => {
-          const offset = address2 - address - 8;
-          if (offset < -4) {
-            throw new Error("Pool offset shouldn't be negative");
-          } else if (offset > 0xff) {
-            throw "Next .pool too far away";
-          }
-          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-            Math.abs(offset) & 0xf;
-          return offset < 0
-            ? ((cond << 28) | 0x015f00d0 | (rd << 12) | mask)
-            : ((cond << 28) | 0x01df00d0 | (rd << 12) | mask);
-        });
+        const offset = poolAddress - address - 8;
+        if (offset < -4) {
+          throw new Error("Pool offset shouldn't be negative");
+        } else if (offset > 0xff) {
+          throw "Next .pool too far away";
+        }
+        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
+          Math.abs(offset) & 0xf;
+        return offset < 0
+          ? ((cond << 28) | 0x015f00d0 | (rd << 12) | mask)
+          : ((cond << 28) | 0x01df00d0 | (rd << 12) | mask);
       },
     );
   }
@@ -1099,9 +1104,9 @@ function parseThumbStatement(
   const es = errorString(flp, "Invalid statement");
   if ("doubleInstruction" in pb.op) {
     // double instructions are 32-bits instead of 16-bits
-    state.bytes.expr32(es, syms, writer(32));
+    state.bytes.expr32(es, syms, false, writer(32));
   } else {
-    state.bytes.expr16(es, syms, writer(16));
+    state.bytes.expr16(es, syms, false, writer(16));
   }
   return true;
 }
@@ -1118,23 +1123,25 @@ function parseThumbPoolStatement(
   state.bytes.expr16(
     errorString(flp, "Incomplete statement"),
     { ex },
-    ({ ex }, address) => {
+    { align: 4, bytes: 4, sym: "ex" },
+    ({ ex }, _) => {
       if (ex >= 0 && ex < 256) {
         // convert to: mov rd, #expression
         return 0x2000 | (rd << 8) | ex;
       }
+      return false;
+    },
+    (_, address, poolAddress) => {
       // convert to: ldr rd, [pc, #offset]
-      return state.bytes.pool32(ex, 4, (address2) => {
-        const offset = address2 - (address & 0xfffffffd) - 4;
-        if (offset < 0) {
-          throw new Error("Pool offset shouldn't be negative");
-        } else if (offset & 3) {
-          throw "Can't load from misaligned address";
-        } else if (offset > 0x3fc) {
-          throw "Next .pool too far away";
-        }
-        return 0x4800 | (rd << 8) | (offset >> 2);
-      });
+      const offset = poolAddress - (address & 0xfffffffd) - 4;
+      if (offset < 0) {
+        throw new Error("Pool offset shouldn't be negative");
+      } else if (offset & 3) {
+        throw "Can't load from misaligned address";
+      } else if (offset > 0x3fc) {
+        throw "Next .pool too far away";
+      }
+      return 0x4800 | (rd << 8) | (offset >> 2);
     },
   );
 }

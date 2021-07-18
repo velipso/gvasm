@@ -56,8 +56,8 @@ export function load(def: (test: ITest) => void) {
   .i8 $$two
 .end
 .i8 $$two
-`
-    }
+`,
+    },
   });
 
   def({
@@ -76,8 +76,8 @@ export function load(def: (test: ITest) => void) {
   .end
 .end
 .end
-`
-    }
+`,
+    },
   });
 
   def({
@@ -94,8 +94,8 @@ export function load(def: (test: ITest) => void) {
     .begin
     .end
   .end
-`
-    }
+`,
+    },
   });
 
   def({
@@ -114,8 +114,8 @@ export function load(def: (test: ITest) => void) {
     @@L:
   .end
 .end
-`
-    }
+`,
+    },
   });
 
   def({
@@ -138,7 +138,7 @@ export function load(def: (test: ITest) => void) {
   .i32 3      /// 03 00 00 00
 .end
 .i32 @@L      /// 00 00 00 08
-`
-    }
+`,
+    },
   });
 }

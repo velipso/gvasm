@@ -149,7 +149,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
     version,
     region,
     code,
-    overwrite: a.overwrite
+    overwrite: a.overwrite,
   };
 }
 

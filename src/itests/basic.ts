@@ -63,7 +63,7 @@ str r1, [r0]           /// 00 10 80 e5
         version: 25,
         region: "E",
         code: "C",
-        overwrite: false
+        overwrite: false,
       }),
     },
   });

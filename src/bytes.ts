@@ -9,12 +9,21 @@ import { Expression } from "./expr.ts";
 
 const MAX_LENGTH = 0x02000000;
 
+type BuildWithoutPoolFunc = (
+  values: { [name: string]: number },
+  address: number,
+) => number | false;
+
+type BuildWithPoolFunc = (
+  values: { [name: string]: number },
+  address: number,
+  poolAddress: number,
+) => number;
+
 interface IPool {
-  poolId: number;
   bytes: 1 | 2 | 4;
-  v: number;
   align: 1 | 2 | 4;
-  build(address2: number): number;
+  sym: string;
 }
 
 interface IPendingExpr {
@@ -22,9 +31,12 @@ interface IPendingExpr {
   address: number;
   exprs: { [name: string]: Expression | number };
   scopeLevel: number;
-  pool?: IPool;
-  build(values: { [name: string]: number }, address: number): IPool | number;
-  rewrite(v: number): void;
+  pool: IPool | false;
+  poolAddress: number | false;
+  buildWithoutPool: BuildWithoutPoolFunc;
+  buildWithPool: BuildWithPoolFunc | undefined;
+  rewritePool?(v: number): void;
+  rewriteInst(v: number): void;
 }
 
 export class Bytes {
@@ -33,7 +45,6 @@ export class Bytes {
   private pendingExprs: IPendingExpr[] = [];
   private globalLabels: { [name: string]: number } = {};
   private localLabels: { [name: string]: number }[] = [{}];
-  private nextPoolId = 0;
 
   public get(): readonly number[] {
     for (const pex of this.pendingExprs) {
@@ -129,85 +140,61 @@ export class Bytes {
   public expr8(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (
-      values: { [name: string]: number },
-      address: number,
-    ) => IPool | number,
+    pool: IPool | false,
+    buildWithoutPool: BuildWithoutPoolFunc,
+    buildWithPool?: BuildWithPoolFunc,
   ) {
-    const address = this.nextAddress();
-    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
-      address,
+      address: this.nextAddress(),
       exprs,
-      scopeLevel,
-      build,
-      rewrite: this.rewrite8(),
+      scopeLevel: this.localLabels.length,
+      pool,
+      poolAddress: false,
+      buildWithoutPool,
+      buildWithPool,
+      rewriteInst: this.rewrite8(),
     });
   }
 
   public expr16(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (
-      values: { [name: string]: number },
-      address: number,
-    ) => IPool | number,
+    pool: IPool | false,
+    buildWithoutPool: BuildWithoutPoolFunc,
+    buildWithPool?: BuildWithPoolFunc,
   ) {
-    const address = this.nextAddress();
-    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
-      address,
+      address: this.nextAddress(),
       exprs,
-      scopeLevel,
-      build,
-      rewrite: this.rewrite16(),
+      scopeLevel: this.localLabels.length,
+      pool,
+      poolAddress: false,
+      buildWithoutPool,
+      buildWithPool,
+      rewriteInst: this.rewrite16(),
     });
   }
 
   public expr32(
     hint: string,
     exprs: { [name: string]: Expression | number },
-    build: (
-      values: { [name: string]: number },
-      address: number,
-    ) => IPool | number,
+    pool: IPool | false,
+    buildWithoutPool: BuildWithoutPoolFunc,
+    buildWithPool?: BuildWithPoolFunc,
   ) {
-    const address = this.nextAddress();
-    const scopeLevel = this.localLabels.length;
     this.pushPendingExpr({
       hint,
-      address,
+      address: this.nextAddress(),
       exprs,
-      scopeLevel,
-      build,
-      rewrite: this.rewrite32(),
+      scopeLevel: this.localLabels.length,
+      pool,
+      poolAddress: false,
+      buildWithoutPool,
+      buildWithPool,
+      rewriteInst: this.rewrite32(),
     });
-  }
-
-  public pool8(
-    v: number,
-    align: 1 | 2 | 4,
-    build: (address: number) => number,
-  ): IPool {
-    return { poolId: this.nextPoolId++, bytes: 1, v, align, build };
-  }
-
-  public pool16(
-    v: number,
-    align: 1 | 2 | 4,
-    build: (address: number) => number,
-  ): IPool {
-    return { poolId: this.nextPoolId++, bytes: 2, v, align, build };
-  }
-
-  public pool32(
-    v: number,
-    align: 1 | 2 | 4,
-    build: (address: number) => number,
-  ): IPool {
-    return { poolId: this.nextPoolId++, bytes: 4, v, align, build };
   }
 
   private pushPendingExpr(pex: IPendingExpr) {
@@ -230,11 +217,6 @@ export class Bytes {
   }
 
   private attemptExpr(pex: IPendingExpr): boolean {
-    if (pex.pool) {
-      // pex needs a pool, not an expression
-      return false;
-    }
-
     const values: { [name: string]: number } = {};
     for (const name of Object.keys(pex.exprs)) {
       const ex = pex.exprs[name];
@@ -249,16 +231,20 @@ export class Bytes {
       }
     }
 
-    // attempt to build the final value
-    const b = pex.build(values, pex.address);
-    if (typeof b === "number") {
-      pex.rewrite(b);
-      return true;
+    // build the final value
+    const b = pex.buildWithoutPool(values, pex.address);
+    if (b === false) {
+      if (pex.pool && pex.buildWithPool && pex.poolAddress !== false) {
+        pex.rewritePool?.(values[pex.pool.sym]);
+        pex.rewriteInst(
+          pex.buildWithPool(values, pex.address, pex.poolAddress),
+        );
+        return true;
+      }
+      return false;
     }
-
-    // can't build, because we are referencing a pool literal
-    pex.pool = b;
-    return false;
+    pex.rewriteInst(b);
+    return true;
   }
 
   public addLabel(label: string) {
@@ -282,7 +268,10 @@ export class Bytes {
       }
     }
 
-    // attempt rewrites
+    this.attemptRewrites();
+  }
+
+  private attemptRewrites() {
     for (let i = 0; i < this.pendingExprs.length; i++) {
       if (this.attemptExpr(this.pendingExprs[i])) {
         this.pendingExprs.splice(i, 1);
@@ -336,16 +325,25 @@ export class Bytes {
     const written: { v: number; addr: number }[] = [];
     for (let i = 0; i < this.pendingExprs.length; i++) {
       const pex = this.pendingExprs[i];
-      if (pex.pool) {
-        const writev = pex.pool.v;
+      if (pex.pool && pex.poolAddress === false) {
+        const pv = pex.exprs[pex.pool.sym];
+        let writev: number | false = false;
+        if (typeof pv === "number") {
+          writev = pv;
+        } else {
+          const px = pv.value();
+          if (px !== false) {
+            writev = px;
+          }
+        }
         result = true;
 
         // see if we already wrote it to the pool
         const w = written.find((w) => w.v === writev);
-        let address2;
+        let poolAddress;
         if (w) {
           // we already wrote this constant, so use it again
-          address2 = w.addr;
+          poolAddress = w.addr;
         } else {
           // we haven't written this constant, so write it
 
@@ -353,25 +351,39 @@ export class Bytes {
           this.align(pex.pool.align);
 
           // write the constant
-          address2 = this.nextAddress();
-          if (pex.pool.bytes === 1) {
-            this.write8(writev);
-          } else if (pex.pool.bytes === 2) {
-            this.write16(writev);
-          } else if (pex.pool.bytes === 4) {
-            this.write32(writev);
+          poolAddress = this.nextAddress();
+
+          if (typeof writev === "number") {
+            if (pex.pool.bytes === 1) {
+              this.write8(writev);
+            } else if (pex.pool.bytes === 2) {
+              this.write16(writev);
+            } else if (pex.pool.bytes === 4) {
+              this.write32(writev);
+            } else {
+              throw new Error("Invalid byte size for pool value");
+            }
+            written.push({ v: writev, addr: poolAddress });
           } else {
-            throw new Error("Invalid byte size for pool value");
+            // we don't know the constant yet, so rewrite it instead
+            if (pex.pool.bytes === 1) {
+              pex.rewritePool = this.rewrite8();
+            } else if (pex.pool.bytes === 2) {
+              pex.rewritePool = this.rewrite16();
+            } else if (pex.pool.bytes === 4) {
+              pex.rewritePool = this.rewrite32();
+            } else {
+              throw new Error("Invalid byte size for pool value");
+            }
           }
-          written.push({ v: writev, addr: address2 });
         }
 
         // rewrite the instruction with the pool address
-        pex.rewrite(pex.pool.build(address2));
-
-        // remove the pending expr
-        this.pendingExprs.splice(i, 1);
-        i--;
+        pex.poolAddress = poolAddress;
+        if (this.attemptExpr(pex)) {
+          this.pendingExprs.splice(i, 1);
+          i--;
+        }
       }
     }
     return result;

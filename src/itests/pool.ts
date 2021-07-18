@@ -204,4 +204,42 @@ ldr r4, =0x12345678  /// 00 4c
 `,
     },
   });
+
+  def({
+    name: "pool.early-rewrite",
+    desc: "Use a label to generate a mov statement",
+    kind: "make",
+    files: {
+      "/root/main": `
+@here:
+ldr r2, =@here  /// 02 23 a0 e3
+`,
+    },
+  });
+
+  def({
+    name: "pool.late-rewrite-pool",
+    desc: "Use a label after .pool to force a ldr",
+    kind: "make",
+    files: {
+      "/root/main": `
+ldr r0, =@here + 1  /// 04 00 1f e5
+.pool               /// 09 00 00 08
+@here:
+`,
+    },
+  });
+
+  def({
+    name: "pool.late-rewrite-mov",
+    desc: "Use a label after .pool but backtrack to mov",
+    kind: "make",
+    files: {
+      "/root/main": `
+ldr r2, =@here - 8  /// 02 23 a0 e3
+.pool               /// 00 00 00 00
+@here:
+`,
+    },
+  });
 }

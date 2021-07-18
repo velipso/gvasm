@@ -58,7 +58,8 @@ export class ConstTable {
       if (this.locals.length === 2) {
         throw "Missing .end statement at end of program";
       }
-      throw `Missing ${this.locals.length - 1} .end statements at end of program`;
+      throw `Missing ${this.locals.length -
+        1} .end statements at end of program`;
     }
   }
 

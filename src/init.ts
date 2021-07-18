@@ -59,7 +59,8 @@ str r1, [r0]
 }
 
 export async function init(args: IInitArgs): Promise<number> {
-  const { output, title, initials, maker, version, region, code, overwrite } = args;
+  const { output, title, initials, maker, version, region, code, overwrite } =
+    args;
   try {
     const checkSize = (
       hint: string,

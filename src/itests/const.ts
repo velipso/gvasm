@@ -212,8 +212,8 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `
 .base 0x04000000
 .i32 $_base  /// 00 00 00 04
-`
-    }
+`,
+    },
   });
 
   def({

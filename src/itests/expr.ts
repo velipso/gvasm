@@ -242,4 +242,33 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `.i8 pow(2, 3, 4)`,
     },
   });
+
+  def({
+    name: "expr.assert-pass",
+    desc: "Use assert() in an expression",
+    kind: "make",
+    files: {
+      "/root/main": `
+.defx $pos2neg($a) = \\
+  assert("must pass positive value to $pos2neg", $a > 0) * \\
+  -$a
+.i8 $pos2neg(5)  /// fb
+`
+    }
+  });
+
+  def({
+    name: "expr.assert-fail",
+    desc: "Fail an assertion",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `
+.defx $pos2neg($a) = \\
+  assert("must pass positive value to $pos2neg", $a > 0) * \\
+  -$a
+.i8 $pos2neg(-5)
+`
+    }
+  });
 }

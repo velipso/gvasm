@@ -55,6 +55,18 @@ interface IExprParam {
   index: number;
 }
 
+interface IExprAssert {
+  kind: "assert";
+  hint: string;
+  value: IExpr;
+}
+
+interface IExprAssertWithParam {
+  kind: "assert";
+  hint: string;
+  value: IExprWithParam;
+}
+
 interface IExprBuild {
   kind: "build";
   expr: ExpressionBuilder;
@@ -173,6 +185,7 @@ interface IExprTernaryWithParam {
 type IExpr =
   | IExprNum
   | IExprLabel
+  | IExprAssert
   | IExprBuild
   | IExprFunc
   | IExprUnary
@@ -183,6 +196,7 @@ type IExprWithParam =
   | IExprParam
   | IExprNum
   | IExprLabel
+  | IExprAssertWithParam
   | IExprBuildWithParam
   | IExprFuncWithParam
   | IExprUnaryWithParam
@@ -252,6 +266,7 @@ export class ExpressionBuilder {
           (
             line[0].kind === TokEnum.ID && (
               line[0].id in functions ||
+              line[0].id === "assert" ||
               line[0].id === "(" ||
               line[0].id === "-" ||
               line[0].id === "+" ||
@@ -321,6 +336,25 @@ export class ExpressionBuilder {
             checkParamSize(params.length, functions[t.id].size);
           }
           result = { kind: "func", func: t.id, params };
+        } else if (t.id === "assert") {
+          if (!isNextId(line, "(")) {
+            throw "Expecting '(' at start of call";
+          }
+          line.shift();
+          const hint = line.shift();
+          if (!hint || hint.kind !== TokEnum.STR) {
+            throw `Expecting string as first parameter to assert()`;
+          }
+          if (!isNextId(line, ",")) {
+            throw "Expecting two parameters to assert()";
+          }
+          line.shift();
+          const value = term();
+          if (!isNextId(line, ")")) {
+            throw "Expecting ')' at end of call";
+          }
+          line.shift();
+          result = { kind: "assert", hint: hint.str, value };
         } else if (t.id === "(") {
           result = { kind: "unary", op: "(", value: term() };
           if (!isNextId(line, ")")) {
@@ -471,6 +505,12 @@ export class ExpressionBuilder {
         case "num":
         case "label":
           return ex;
+        case "assert":
+          return {
+            kind: "assert",
+            hint: ex.hint,
+            value: walk(ex.value)
+          };
         case "build":
           return {
             kind: "build",
@@ -548,6 +588,11 @@ export class Expression {
             return this.labelsHave[ex.label];
           }
           throw new Error(`Should have label ${ex.label} but it's missing`);
+        case "assert":
+          if (get(ex.value) === 0) {
+            throw `Failed assertion: ${ex.hint}`;
+          }
+          return 1;
         case "build": {
           const ex2 = ex.expr.build(ex.params.map(get));
           for (const [label, v] of Object.entries(this.labelsHave)) {

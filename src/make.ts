@@ -21,6 +21,7 @@ import { Bytes } from "./bytes.ts";
 import { path } from "./deps.ts";
 import { ConstTable } from "./const.ts";
 import { version } from "./main.ts";
+import { stdlib } from "./stdlib.ts";
 
 export interface IMakeArgs {
   input: string;
@@ -191,7 +192,7 @@ function parseDotStatement(
   state: IParseState,
   cmd: string,
   line: ITok[],
-): { include: string } | { embed: string } | undefined {
+): { include: string } | { embed: string } | { stdlib: true } | undefined {
   switch (cmd) {
     case ".error":
       if (line.length === 1 && line[0].kind === TokEnum.STR) {
@@ -357,7 +358,7 @@ function parseDotStatement(
       return { embed: t.str };
     }
     case ".stdlib":
-      throw "TODO: .stdlib";
+      return { stdlib: true };
     case ".extlib":
       throw "TODO: .extlib";
     case ".logo":
@@ -1164,7 +1165,7 @@ function parseLabel(line: ITok[]): string | false {
 function parseLine(
   state: IParseState,
   line: ITok[],
-): { include: string } | { embed: string } | undefined {
+): { include: string } | { embed: string } | { stdlib: true } | undefined {
   // TODO: check for constants
   // TODO: check for macros
 
@@ -1313,7 +1314,13 @@ export async function makeFromFile(
 
         const includeEmbed = parseLine(state, line);
 
-        if (includeEmbed && "include" in includeEmbed) {
+        if (includeEmbed && "stdlib" in includeEmbed) {
+          const tokens2 = lex("stdlib", stdlib);
+          if (tokens2.some((t) => t.kind === TokEnum.ERROR)) {
+            throw new Error("Error inside .stdlib");
+          }
+          tokens.splice(0, 0, ...tokens2);
+        } else if (includeEmbed && "include" in includeEmbed) {
           const { include } = includeEmbed;
           const full = isAbsolute(include)
             ? include

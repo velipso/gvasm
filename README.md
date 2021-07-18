@@ -17,11 +17,11 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] Literal pools
 - [x] Defined constant expressions
 - [x] Scoped names and labels
+- [ ] Standard library (in progress)
 - [ ] Conditional compilation (in progress)
 - [ ] Test suite (in progress)
 - [ ] Defined constant macros
 - [ ] Structs
-- [ ] Standard library
 - [ ] Extended library
 - [ ] Disassembler
 - [ ] Examples and documentation

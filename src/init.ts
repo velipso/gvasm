@@ -21,8 +21,10 @@ export interface IInitArgs {
 export function generateInit(args: IInitArgs): string {
   const { title, initials, maker, version, region, code } = args;
 
-  // TODO: use .stdlib and then use REG_DISPCNT instead of 0x04000000, etc
   return `// ${title} v${version}
+
+// include standard library for useful constants
+.stdlib
 
 // GBA header
 b @main
@@ -41,8 +43,8 @@ b @main
 // For example, this will set the display to blueish green:
 
 // set REG_DISPCNT to 0
-ldr r0, =0x04000000
-ldr r1, =0x0
+ldr r0, =$REG_DISPCNT
+ldr r1, =0
 str r1, [r0]
 
 // set color 0 to blueish green

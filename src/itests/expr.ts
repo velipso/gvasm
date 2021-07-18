@@ -253,8 +253,8 @@ export function load(def: (test: ITest) => void) {
   assert("must pass positive value to $pos2neg", $a > 0) * \\
   -$a
 .i8 $pos2neg(5)  /// fb
-`
-    }
+`,
+    },
   });
 
   def({
@@ -268,7 +268,7 @@ export function load(def: (test: ITest) => void) {
   assert("must pass positive value to $pos2neg", $a > 0) * \\
   -$a
 .i8 $pos2neg(-5)
-`
-    }
+`,
+    },
   });
 }

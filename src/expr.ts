@@ -509,7 +509,7 @@ export class ExpressionBuilder {
           return {
             kind: "assert",
             hint: ex.hint,
-            value: walk(ex.value)
+            value: walk(ex.value),
           };
         case "build":
           return {

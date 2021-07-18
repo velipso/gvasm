@@ -216,8 +216,9 @@ export function load(def: (test: ITest) => void) {
 .i8 min(6, 3, 0, -3, 4)         /// fd
 .i8 nrt(100, 3)                 /// 04
 .i8 pow(3, 3)                   /// 1b
+.i16 rgb(2, 31, 10)             /// e2 2b
 .i8 sign(0), sign(5), sign(-5)  /// 00 01 ff
-.i8 sqrt(30)                    /// 05
+.i8 sqrt(30), sqrt(-30)         /// 05 05
 `,
     },
   });

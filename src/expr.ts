@@ -29,6 +29,13 @@ const functions: IFunctions = Object.freeze({
   min: { size: -1, f: (p) => Math.min(...p) },
   nrt: { size: 2, f: ([a, b]) => Math.pow(a, 1 / b) },
   pow: { size: 2, f: ([a, b]) => Math.pow(a, b) },
+  rgb: {
+    size: 3,
+    f: ([r, g, b]) =>
+      ((b & 0x1f) << 10) |
+      ((g & 0x1f) << 5) |
+      (r & 0x1f),
+  },
   sign: { size: 1, f: ([a]) => Math.sign(a) },
   sqrt: { size: 1, f: ([a]) => Math.sqrt(Math.abs(a)) },
 });

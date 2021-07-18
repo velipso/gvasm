@@ -407,22 +407,6 @@ function parseDotStatement(
       throw "TODO: .if/.elseif/.else/.endif";
     case ".printf":
       throw "TODO: .printf";
-    case ".rgb": { // TODO: replace with $rgb(r, g, b)
-      const r = parseNum(line, state.ctable);
-      parseComma(line, "Invalid .rgb statement");
-      const g = parseNum(line, state.ctable);
-      parseComma(line, "Invalid .rgb statement");
-      const b = parseNum(line, state.ctable);
-      if (line.length > 0) {
-        throw "Invalid .rgb statement";
-      }
-      state.bytes.write16(
-        ((b & 0x1f) << 10) |
-          ((g & 0x1f) << 5) |
-          (r & 0x1f),
-      );
-      break;
-    }
     case ".pool":
       if (line.length > 0) {
         throw "Invalid .pool statement";

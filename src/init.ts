@@ -38,23 +38,22 @@ b @main
 
 // Your game here!
 
-// For example, this will set the display to @color:
+// For example, this will set the display to blueish green:
 
 // set REG_DISPCNT to 0
 ldr r0, =0x04000000
 ldr r1, =0x0
 str r1, [r0]
 
-// set color 0 to the value at @color
+// set color 0 to blueish green
 ldr r0, =0x05000000
-ldrh r1, [#@color]
+ldrh r1, =rgb(0, 31, 15)
 str r1, [r0]
 
 // infinite loop
 @loop: b @loop
 
-// blueish green
-@color: .rgb 0, 31, 15
+.pool
 `;
 }
 
@@ -106,7 +105,6 @@ Pass --overwrite to stomp the file anyways`);
       throw false;
     }
 
-    // TODO: use .stdlib and then use REG_DISPCNT instead of 0x04000000, etc
     await Deno.writeTextFile(
       output,
       generateInit(args),

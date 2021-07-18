@@ -13,8 +13,10 @@ export function load(def: (test: ITest) => void) {
     name: "basic.sanity",
     desc: "Basic example program",
     kind: "make",
+    stdout: ["Main program at 0x080000c0"],
     files: {
       "/root/main": `
+.stdlib
 b @main.program.0      /// 2e 00 00 ea
 .Logo
 /// 24 ff ae 51 69 9a a2 21 3d 84 82 0a
@@ -36,8 +38,10 @@ b @main.program.0      /// 2e 00 00 ea
 
 @main.program.0:
 
-MOV r0, #0x04000000    /// 01 03 a0 e3
-mov r1, #0x0           /// 00 10 a0 e3
+.printf "Main program at %#08x", $_here
+
+ldr r0, =$REG_DISPCNT  /// 01 03 a0 e3
+MOV r1, #0x0           /// 00 10 a0 e3
 str r1, [r0]           /// 00 10 80 e5
 
 mov r0, #0x05000000    /// 05 04 a0 e3

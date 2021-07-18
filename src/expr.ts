@@ -484,7 +484,7 @@ export class ExpressionBuilder {
     return new ExpressionBuilder(term(), labelsNeed, paramNames.length);
   }
 
-  public static propagateLabels(src: ExpressionBuilder, tgt: Set<string>) {
+  private static propagateLabels(src: ExpressionBuilder, tgt: Set<string>) {
     for (const label of src.labelsNeed) {
       tgt.add(label);
     }

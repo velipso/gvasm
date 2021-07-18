@@ -57,3 +57,98 @@ export function b32(v: number) {
   const b4 = (v >> 24) & 0xff;
   return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
+
+export function printf(format: string, ...args: number[]): string {
+  let out = "";
+  let lastIndex = 0;
+  for (const match of format.matchAll(/%([-+0#]+)?(\d+)?([%bdiouxX])/g)) {
+    const index = match.index as number;
+    out += format.substr(lastIndex, index - lastIndex);
+    if (match[3] === "%") {
+      out += "%";
+    } else {
+      const flag = (f: string) => (match[1] ?? "").indexOf(f) >= 0;
+      const width = parseFloat(match[2] ?? "-1");
+      const format = match[3] ?? "d";
+
+      let str;
+      const arg = args.shift();
+      if (arg === undefined) {
+        str = match[0];
+      } else {
+        const v = arg | 0;
+        let prefix = "";
+        switch (format) {
+          case "b":
+            str = v.toString(2);
+            if (flag("#")) {
+              prefix = "0b";
+            }
+            break;
+          case "o":
+            str = v.toString(8);
+            if (flag("#")) {
+              prefix = "0c";
+            }
+            break;
+          case "u":
+            str = (v < 0 ? v + 4294967296 : v).toString();
+            break;
+          case "x":
+            str = v.toString(16).toLowerCase();
+            if (flag("#")) {
+              prefix = "0x";
+            }
+            break;
+          case "X":
+            str = v.toString(16).toUpperCase();
+            if (flag("#")) {
+              prefix = "0x";
+            }
+            break;
+          default:
+            str = v.toString();
+            break;
+        }
+
+        if (flag("+")) {
+          prefix = (v < 0 ? "-" : "+") + prefix;
+        }
+
+        if (prefix) {
+          if (flag("0")) {
+            while (str.length < width) {
+              str = "0" + str;
+            }
+            str = prefix + str;
+          } else {
+            str = prefix + str;
+            while (str.length < width) {
+              if (flag("-")) {
+                str += " ";
+              } else {
+                str = " " + str;
+              }
+            }
+          }
+        } else {
+          while (str.length < width) {
+            if (flag("0")) {
+              str = "0" + str;
+            } else if (flag("-")) {
+              str += " ";
+            } else {
+              str = " " + str;
+            }
+          }
+        }
+      }
+
+      out += str;
+    }
+
+    lastIndex = index + match[0].length;
+  }
+  out += format.substr(lastIndex);
+  return out;
+}

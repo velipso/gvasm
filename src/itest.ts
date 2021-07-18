@@ -13,6 +13,7 @@ import { load as thumbLoad } from "./itests/thumb.ts";
 import { load as poolLoad } from "./itests/pool.ts";
 import { load as constLoad } from "./itests/const.ts";
 import { load as scopeLoad } from "./itests/scope.ts";
+import { load as printfLoad } from "./itests/printf.ts";
 import { makeFromFile } from "./make.ts";
 
 export interface IItestArgs {
@@ -25,6 +26,7 @@ interface ITestMake {
   kind: "make";
   error?: true;
   skipBytes?: true;
+  stdout?: string[];
   files: { [filename: string]: string };
 }
 
@@ -47,6 +49,7 @@ function extractBytes(data: string): number[] {
 }
 
 async function itestMake(test: ITestMake): Promise<boolean> {
+  const stdout: string[] = [];
   const res = await makeFromFile(
     "/root/main",
     (filename) => filename.startsWith("/"),
@@ -64,6 +67,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
         throw new Error(`Not found: ${filename}`);
       }
     },
+    (str) => stdout.push(str),
   );
   if ("errors" in res) {
     if (test.error) {
@@ -79,6 +83,18 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   if (test.error) {
     console.error(`\nExpecting error in test, but no error was reported`);
     return false;
+  }
+
+  const testStdout = test.stdout ?? [];
+  for (let i = 0; i < Math.max(testStdout.length, stdout.length); i++) {
+    const exp = testStdout[i];
+    const got = stdout[i];
+    if (exp !== got) {
+      console.error(`\nStdout doesn't match as expected on line ${i + 1}`);
+      console.error(`  expected: ${JSON.stringify(exp)}`);
+      console.error(`  got:      ${JSON.stringify(got)}`);
+      return false;
+    }
   }
 
   if (test.skipBytes) {
@@ -135,6 +151,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   poolLoad(def);
   constLoad(def);
   scopeLoad(def);
+  printfLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

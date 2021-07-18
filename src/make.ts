@@ -14,7 +14,7 @@ import {
   lex,
   TokEnum,
 } from "./lexer.ts";
-import { assertNever, b16, b32 } from "./util.ts";
+import { assertNever, b16, b32, printf } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression, ExpressionBuilder } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
@@ -32,6 +32,7 @@ interface IParseState {
   arm: boolean;
   bytes: Bytes;
   ctable: ConstTable;
+  log(str: string): void;
 }
 
 type ISyms = { [sym: string]: Expression | number };
@@ -54,7 +55,7 @@ export function isNextId(line: ITok[], id: string): boolean {
 }
 
 function parseComma(line: ITok[], error: string) {
-  if (line[0].kind === TokEnum.ID && line[0].id === ",") {
+  if (isNextId(line, ",")) {
     line.shift();
   } else {
     throw error;
@@ -406,8 +407,22 @@ function parseDotStatement(
     case ".else":
     case ".endif":
       throw "TODO: .if/.elseif/.else/.endif";
-    case ".printf":
-      throw "TODO: .printf";
+    case ".printf": {
+      const format = line.shift();
+      if (!format || format.kind !== TokEnum.STR) {
+        throw "Invalid .printf statement";
+      }
+      const args: number[] = [];
+      while (isNextId(line, ",")) {
+        line.shift();
+        args.push(parseNum(line, state.ctable));
+      }
+      if (line.length > 0) {
+        throw "Invalid .printf statement";
+      }
+      state.log(printf(format.str, ...args));
+      break;
+    }
     case ".pool":
       if (line.length > 0) {
         throw "Invalid .pool statement";
@@ -1257,6 +1272,7 @@ export async function makeFromFile(
   isAbsolute: (filename: string) => boolean,
   readTextFile: (filename: string) => Promise<string>,
   readBinaryFile: (filename: string) => Promise<number[] | Uint8Array>,
+  log: (str: string) => void,
 ): Promise<{ result: readonly number[] } | { errors: string[] }> {
   let data;
   try {
@@ -1298,6 +1314,7 @@ export async function makeFromFile(
       }
       return false;
     }),
+    log,
   };
 
   if (tokens.length > 0) {
@@ -1407,6 +1424,7 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
       path.isAbsolute,
       Deno.readTextFile,
       Deno.readFile,
+      (str) => console.log(str),
     );
 
     if ("errors" in result) {

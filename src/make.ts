@@ -28,10 +28,32 @@ export interface IMakeArgs {
   output: string;
 }
 
+interface IDotStackBegin {
+  kind: "begin";
+  flp: IFilePos;
+}
+
+interface IDotStackIf {
+  kind: "if";
+  flp: IFilePos;
+  isTrue: boolean;
+  gotTrue: boolean;
+  gotElse: boolean;
+}
+
+interface IDotStackDefm {
+  kind: "defm";
+  flp: IFilePos;
+}
+
+type IDotStack = IDotStackBegin | IDotStackIf | IDotStackDefm;
+
 interface IParseState {
   arm: boolean;
   bytes: Bytes;
   ctable: ConstTable;
+  active: boolean;
+  dotStack: IDotStack[];
   log(str: string): void;
 }
 
@@ -388,25 +410,6 @@ function parseDotStatement(
       }
       state.bytes.writeCRC();
       break;
-    case ".begin":
-      if (line.length > 0) {
-        throw "Invalid .begin statement";
-      }
-      state.ctable.scopeBegin();
-      state.bytes.scopeBegin();
-      break;
-    case ".end":
-      if (line.length > 0) {
-        throw "Invalid .end statement";
-      }
-      state.ctable.scopeEnd();
-      state.bytes.scopeEnd();
-      break;
-    case ".if":
-    case ".elseif":
-    case ".else":
-    case ".endif":
-      throw "TODO: .if/.elseif/.else/.endif";
     case ".printf": {
       const format = line.shift();
       if (!format || format.kind !== TokEnum.STR) {
@@ -486,9 +489,6 @@ function parseDotStatement(
       state.ctable.defx(prefix + name, paramNames, expr);
       break;
     }
-    case ".defm":
-    case ".endm":
-      throw "TODO: .defm/.endm";
     default:
       throw `Unknown dot statement: ${cmd}`;
   }
@@ -1177,13 +1177,14 @@ function parseLabel(line: ITok[]): string | false {
   return false;
 }
 
+function recalcActive(state: IParseState): boolean {
+  return state.dotStack.every((ds) => ds.kind !== "if" || ds.isTrue);
+}
+
 function parseLine(
   state: IParseState,
   line: ITok[],
 ): { include: string } | { embed: string } | { stdlib: true } | undefined {
-  // TODO: check for constants
-  // TODO: check for macros
-
   // check for labels
   while (true) {
     const label = parseLabel(line);
@@ -1191,10 +1192,16 @@ function parseLine(
       if (
         line.length < 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":"
       ) {
-        throw "Missing colon after label";
+        if (state.active) {
+          throw "Missing colon after label";
+        } else {
+          return;
+        }
       }
       line.shift();
-      state.bytes.addLabel(label);
+      if (state.active) {
+        state.bytes.addLabel(label);
+      }
     } else {
       break;
     }
@@ -1206,9 +1213,115 @@ function parseLine(
 
   const cmdTok = line.shift();
   if (!cmdTok || cmdTok.kind !== TokEnum.ID) {
-    throw "Invalid command";
+    if (state.active) {
+      throw "Invalid command";
+    } else {
+      return;
+    }
   }
   const cmd = cmdTok.id;
+
+  // check for block-level dot commands
+  switch (cmd) {
+    case ".begin":
+      if (line.length > 0) {
+        throw "Invalid .begin statement";
+      }
+      if (state.active) {
+        state.ctable.scopeBegin();
+        state.bytes.scopeBegin();
+      }
+      state.dotStack.push({ kind: "begin", flp: cmdTok.flp });
+      return;
+    case ".end":
+      if (line.length > 0) {
+        throw "Invalid .end statement";
+      }
+      if (
+        state.dotStack.length <= 0 ||
+        state.dotStack[state.dotStack.length - 1].kind !== "begin"
+      ) {
+        throw "Unexpected .end statement, missing .begin";
+      }
+      state.dotStack.pop();
+      if (state.active) {
+        state.ctable.scopeEnd();
+        state.bytes.scopeEnd();
+      }
+      return;
+    case ".if": {
+      const v = parseNum(line, state.ctable);
+      if (line.length > 0) {
+        throw "Invalid .if statement";
+      }
+      state.dotStack.push({
+        kind: "if",
+        flp: cmdTok.flp,
+        isTrue: v !== 0,
+        gotTrue: v !== 0,
+        gotElse: false,
+      });
+      state.active = recalcActive(state);
+      return;
+    }
+    case ".elseif": {
+      const v = parseNum(line, state.ctable);
+      if (line.length > 0) {
+        throw "Invalid .elseif statement";
+      }
+      const dif = state.dotStack[state.dotStack.length - 1];
+      if (!dif || dif.kind !== "if") {
+        throw "Unexpected .elseif statement, missing .if";
+      }
+      if (dif.gotElse) {
+        throw "Cannot have .elseif statement after .else";
+      }
+      if (dif.gotTrue) {
+        dif.isTrue = false;
+      } else {
+        dif.isTrue = v !== 0;
+        dif.gotTrue = v !== 0;
+      }
+      state.active = recalcActive(state);
+      return;
+    }
+    case ".else": {
+      if (line.length > 0) {
+        throw "Invalid .else statement";
+      }
+      const dif = state.dotStack[state.dotStack.length - 1];
+      if (!dif || dif.kind !== "if") {
+        throw "Unexpected .else statement, missing .if";
+      }
+      if (dif.gotElse) {
+        throw "Cannot have more than one .else statement";
+      }
+      dif.gotElse = true;
+      dif.isTrue = !dif.gotTrue;
+      dif.gotTrue = true;
+      state.active = recalcActive(state);
+      return;
+    }
+    case ".endif": {
+      if (line.length > 0) {
+        throw "Invalid .endif statement";
+      }
+      const dif = state.dotStack[state.dotStack.length - 1];
+      if (!dif || dif.kind !== "if") {
+        throw "Unexpected .endif statement, missing .if";
+      }
+      state.dotStack.pop();
+      state.active = recalcActive(state);
+      return;
+    }
+    case ".defm":
+    case ".endm":
+      throw "TODO: .defm/.endm";
+  }
+
+  if (!state.active) {
+    return;
+  }
 
   if (cmd.startsWith(".")) {
     return parseDotStatement(state, cmd, line);
@@ -1314,6 +1427,8 @@ export async function makeFromFile(
       }
       return false;
     }),
+    active: true,
+    dotStack: [],
     log,
   };
 
@@ -1395,8 +1510,23 @@ export async function makeFromFile(
         }
       }
 
-      // all done, verify that we aren't missing an .end statement
-      state.ctable.verifyNoMissingEnd();
+      // all done, verify that we don't have any open blocks
+      const dif = state.dotStack[state.dotStack.length - 1];
+      if (dif) {
+        let msg;
+        switch (dif.kind) {
+          case "begin":
+            msg = "Missing .end for .begin statement";
+            break;
+          case "if":
+            msg = "Missing .endif for .if statement";
+            break;
+          case "defm":
+            msg = "Missing .endm for .defm statement";
+            break;
+        }
+        return { errors: [errorString(dif.flp, msg)] };
+      }
     } catch (e) {
       if (typeof e === "string") {
         return { errors: [errorString(flp, e)] };

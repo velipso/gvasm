@@ -53,16 +53,6 @@ export class ConstTable {
     }
   }
 
-  public verifyNoMissingEnd() {
-    if (this.locals.length > 1) {
-      if (this.locals.length === 2) {
-        throw "Missing .end statement at end of program";
-      }
-      throw `Missing ${this.locals.length -
-        1} .end statements at end of program`;
-    }
-  }
-
   public defx(cname: string, paramNames: string[], expr: ExpressionBuilder) {
     paramNames.forEach(this.checkName);
     this.def(cname, { kind: "expr", paramNames, expr });

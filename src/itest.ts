@@ -14,6 +14,7 @@ import { load as poolLoad } from "./itests/pool.ts";
 import { load as constLoad } from "./itests/const.ts";
 import { load as scopeLoad } from "./itests/scope.ts";
 import { load as printfLoad } from "./itests/printf.ts";
+import { load as ifLoad } from "./itests/if.ts";
 import { makeFromFile } from "./make.ts";
 
 export interface IItestArgs {
@@ -152,6 +153,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   constLoad(def);
   scopeLoad(def);
   printfLoad(def);
+  ifLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

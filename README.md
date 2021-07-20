@@ -3,28 +3,7 @@ gvasm
 
 Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 
-This is a work in progress -- as features are completed, they should be mostly stable:
-
-- [x] ARM opcode descriptions
-- [x] THUMB opcode descriptions
-- [x] Byte, halfword, word commands
-- [x] GBA header commands
-- [x] Include and embed
-- [x] Labels
-- [x] Constant expressions
-- [x] ARM opcode assembly
-- [x] THUMB opcode assembly
-- [x] Literal pools
-- [x] Defined constant expressions
-- [x] Scoped names and labels
-- [x] Conditional compilation
-- [x] Structs
-- [ ] Standard library (in progress)
-- [ ] Test suite (in progress)
-- [ ] Defined constant macros
-- [ ] Extended library
-- [ ] Disassembler
-- [ ] Examples and documentation
+The assembler is mostly completed, but the disassembler is more experimental.
 
 Install
 =======
@@ -59,7 +38,7 @@ Every test should pass!
 Usage
 =====
 
-Commands to get you started:
+Start by initializing a new file:
 
 ```
 gvasm init MyGame.gvasm
@@ -76,16 +55,13 @@ gvasm make MyGame.gvasm
 This will output `MyGame.gba`, which can be ran inside emulators.  The example program just sets the
 background color to green.
 
-Then, you can try disassembling the .gba file:
+References
+==========
 
-```
-gvasm dis MyGame.gba
-```
+* [Assembler Manual](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md)
 
-The disassembler doesn't work very well yet, as you'll see :-).
-
-Technical Docs
-==============
+GBA Technical Docs
+==================
 
 * [ARM7TDMI Tech Spec](https://developer.arm.com/documentation/ddi0210/c) ([mirror](https://github.com/velipso/gvasm/blob/main/mirror/arm7tdmi-tech.pdf))
 * [ARM7TDMI Data Sheet](https://www.dwedit.org/files/ARM7TDMI.pdf) ([mirror](https://github.com/velipso/gvasm/blob/main/mirror/arm7tdmi-data.pdf))

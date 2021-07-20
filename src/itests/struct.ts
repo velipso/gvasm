@@ -71,7 +71,6 @@ export function load(def: (test: ITest) => void) {
 .end
 
 .i8 $s.one        /// 00
-.i8 $s.two        /// 01
 .i8 $s.two.one    /// 02
 .i8 $s.two.two    /// 04
 .i8 $s.two.three  /// 08
@@ -101,6 +100,41 @@ export function load(def: (test: ITest) => void) {
 .i8 $s.two    /// 01
 .i8 $s.three  /// 02
 .i8 $s.four   /// 04
+`,
+    },
+  });
+
+  def({
+    name: "struct.reject-regular",
+    desc: "Reject regular statements inside .struct",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `
+.struct $a
+mov r0, r1
+.end
+`,
+    },
+  });
+
+  def({
+    name: "struct.array",
+    desc: "Arrays inside structs",
+    kind: "make",
+    files: {
+      "/root/main": `
+.struct $s
+  .s16 one[5]
+  .s32 two
+.end
+
+.i8 $s.one         /// 00
+.i8 $s.one.length  /// 05
+.i8 $s.one.bytes   /// 0a
+.i8 $s.two         /// 0c
+.i8 $s.two.length  /// 01
+.i8 $s.two.bytes   /// 04
 `,
     },
   });

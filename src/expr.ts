@@ -564,8 +564,12 @@ export class Expression {
     this.labelsHave = {};
   }
 
-  public getLabelsNeed(): Set<string> {
-    return this.labelsNeed;
+  public validateNoLabelsNeeded(hint: string) {
+    if (this.labelsNeed.size > 0) {
+      throw `${hint}, label${
+        this.labelsNeed.size === 1 ? "" : "s"
+      } not defined: ${[...this.labelsNeed].join(", ")}`;
+    }
   }
 
   public addLabel(label: string, v: number) {
@@ -601,7 +605,7 @@ export class Expression {
           const v = ex2.value();
           if (v === false) {
             throw new Error(
-              `Missing labels: ${[...ex2.getLabelsNeed()].join(", ")}`,
+              `Missing labels: ${[...ex2.labelsNeed].join(", ")}`,
             );
           }
           return v;

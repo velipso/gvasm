@@ -336,6 +336,26 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
+    name: "basic.base-after-labels",
+    desc: "Can't use .base after labels",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `@main: .base 0`,
+    },
+  });
+
+  def({
+    name: "basic.base-after-printf",
+    desc: "Can't use .base after .printf",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `.printf "hi"\n.base 0`,
+    },
+  });
+
+  def({
     name: "basic.align",
     desc: "Use .align command",
     kind: "make",

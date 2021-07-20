@@ -46,17 +46,22 @@ interface IDotStackStruct {
   flp: IFilePos;
 }
 
-interface IDotStackDefm {
-  kind: "defm";
+interface IDotStackMacro {
+  kind: "macro";
   flp: IFilePos;
 }
 
-type IDotStack = IDotStackBegin | IDotStackIf | IDotStackStruct | IDotStackDefm;
+type IDotStack =
+  | IDotStackBegin
+  | IDotStackIf
+  | IDotStackStruct
+  | IDotStackMacro;
 
 interface IParseState {
   arm: boolean;
   bytes: Bytes;
   ctable: ConstTable;
+  blockBase: boolean;
   active: boolean;
   struct: false | {
     nextByte: number;
@@ -94,19 +99,22 @@ function parseComma(line: ITok[], error: string) {
   }
 }
 
-function parseNum(line: ITok[], ctable: ConstTable, quiet = false): number {
-  const expr = ExpressionBuilder.parse(line, [], ctable);
+function parseNum(state: IParseState, line: ITok[], quiet = false): number {
+  const expr = ExpressionBuilder.parse(line, [], state.ctable);
   if (expr === false) {
     if (quiet) {
       return 0;
     }
     throw "Expecting constant number";
   }
-  const v = expr.build([]).value();
+  const e = expr.build([]);
+  state.bytes.addLabelsToExpression(e);
+  const v = e.value();
   if (v === false) {
     if (quiet) {
       return 0;
     }
+    e.validateNoLabelsNeeded("Expecting constant number");
     throw "Expecting constant number";
   }
   return v;
@@ -205,15 +213,15 @@ function parseReglist(
 }
 
 function parseNumCommas(
+  state: IParseState,
   line: ITok[],
   defaults: (number | false)[],
-  ctable: ConstTable,
   error: string,
 ): number[] {
   const result: number[] = [];
   for (const def of defaults) {
     if (def === false || line.length > 0) {
-      result.push(parseNum(line, ctable));
+      result.push(parseNum(state, line));
       if (isNextId(line, ",")) {
         line.shift();
       }
@@ -240,9 +248,12 @@ function parseDotStatement(
         throw "Invalid .error statement";
       }
     case ".base": {
-      const amount = parseNum(line, state.ctable);
+      const amount = parseNum(state, line);
       if (line.length > 0) {
         throw "Invalid .base statement";
+      }
+      if (state.blockBase) {
+        throw "Cannot use .base after other statements";
       }
       state.bytes.setBase(amount);
       break;
@@ -263,9 +274,9 @@ function parseDotStatement(
       break;
     case ".align": {
       const [amount, fill] = parseNumCommas(
+        state,
         line,
         [false, 0],
-        state.ctable,
         "Invalid .align statement",
       );
       if (amount < 2 || amount > 0x02000000) {
@@ -299,9 +310,9 @@ function parseDotStatement(
     case ".i8fill":
     case ".b8fill": {
       const [amount, fill] = parseNumCommas(
+        state,
         line,
         [false, 0],
-        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -334,9 +345,9 @@ function parseDotStatement(
     case ".i16fill":
     case ".b16fill": {
       const [amount, fill] = parseNumCommas(
+        state,
         line,
         [false, 0],
-        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -369,9 +380,9 @@ function parseDotStatement(
     case ".i32fill":
     case ".b32fill": {
       const [amount, fill] = parseNumCommas(
+        state,
         line,
         [false, 0],
-        state.ctable,
         `Invalid ${cmd} statement`,
       );
       if (amount < 0) {
@@ -434,7 +445,7 @@ function parseDotStatement(
       const args: number[] = [];
       while (isNextId(line, ",")) {
         line.shift();
-        args.push(parseNum(line, state.ctable));
+        args.push(parseNum(state, line));
       }
       if (line.length > 0) {
         throw "Invalid .printf statement";
@@ -522,12 +533,12 @@ function validateStr(partStr: string, line: ITok[]): boolean {
 }
 
 function validateNum(
+  state: IParseState,
   partNum: number,
   line: ITok[],
-  ctable: ConstTable,
 ): boolean {
   try {
-    if (parseNum(line, ctable) !== partNum) {
+    if (parseNum(state, line) !== partNum) {
       return false;
     }
     return true;
@@ -654,7 +665,7 @@ function parseArmStatement(
         }
         break;
       case "num":
-        if (!validateNum(part.num, line, state.ctable)) {
+        if (!validateNum(state, part.num, line)) {
           return false;
         }
         break;
@@ -979,7 +990,7 @@ function parseThumbStatement(
         }
         break;
       case "num":
-        if (!validateNum(part.num, line, state.ctable)) {
+        if (!validateNum(state, part.num, line)) {
           return false;
         }
         break;
@@ -1216,7 +1227,7 @@ function parseBlockStatement(
       state.dotStack.push({ kind: "begin", flp });
       return true;
     case ".if": {
-      const v = parseNum(line, state.ctable, !state.active);
+      const v = parseNum(state, line, !state.active);
       if (line.length > 0 && state.active) {
         throw "Invalid .if statement";
       }
@@ -1231,7 +1242,7 @@ function parseBlockStatement(
       return true;
     }
     case ".elseif": {
-      const v = parseNum(line, state.ctable, !state.active);
+      const v = parseNum(state, line, !state.active);
       if (line.length > 0 && state.active) {
         throw "Invalid .elseif statement";
       }
@@ -1300,10 +1311,6 @@ function parseBlockStatement(
       });
       if (state.struct) {
         state.struct.prefix.push(cname);
-        state.struct.defines.push({
-          name: state.struct.prefix.join("."),
-          value: state.struct.nextByte,
-        });
       } else {
         state.struct = {
           nextByte: 0,
@@ -1324,17 +1331,34 @@ function parseBlockStatement(
         }
       }
 
-      const names: string[] = [];
+      const names: [string, number][] = [];
       while (line.length > 0) {
         const name = parseName(line);
         if (name === false) {
           if (state.active) {
             throw `Invalid ${cmd} name`;
-          } else {
+          }
+          return true;
+        }
+        let array = 1;
+        if (isNextId(line, "[")) {
+          line.shift();
+          array = parseNum(state, line, !state.active);
+          if (array < 1) {
+            if (state.active) {
+              throw `Invalid ${cmd} array length for "${name}"`;
+            }
             return true;
           }
+          if (!isNextId(line, "]")) {
+            if (state.active) {
+              throw `Invalid ${cmd} array for "${name}"`;
+            }
+            return true;
+          }
+          line.shift();
         }
-        names.push(name);
+        names.push([name, array]);
         if (!isNextId(line, ",")) {
           break;
         }
@@ -1350,15 +1374,21 @@ function parseBlockStatement(
       }
 
       const size = cmd === ".s8" ? 1 : cmd === ".s16" ? 2 : 4;
-      for (const name of names) {
+      for (const [name, array] of names) {
         while ((state.struct.nextByte % size) !== 0) {
           state.struct.nextByte++;
         }
         state.struct.defines.push({
           name: [...state.struct.prefix, name].join("."),
           value: state.struct.nextByte,
+        }, {
+          name: [...state.struct.prefix, name, "length"].join("."),
+          value: array,
+        }, {
+          name: [...state.struct.prefix, name, "bytes"].join("."),
+          value: size * array,
         });
-        state.struct.nextByte += size;
+        state.struct.nextByte += size * array;
       }
       return true;
     }
@@ -1393,9 +1423,9 @@ function parseBlockStatement(
         }
       }
       return true;
-    case ".defm":
+    case ".macro":
     case ".endm":
-      throw "TODO: .defm/.endm";
+      throw "TODO: .macro/.endm";
   }
   return false;
 }
@@ -1458,6 +1488,9 @@ function parseLine(
 
   if (!state.active) {
     return;
+  }
+  if (state.struct) {
+    throw "Cannot have regular statements inside .struct";
   }
 
   if (cmd.startsWith(".")) {
@@ -1564,6 +1597,7 @@ export async function makeFromFile(
       }
       return false;
     }),
+    blockBase: false,
     active: true,
     struct: false,
     dotStack: [],
@@ -1584,7 +1618,11 @@ export async function makeFromFile(
           line.pop(); // remove newline
         }
 
-        const includeEmbed = parseLine(state, line);
+        let includeEmbed;
+        if (line.length > 0) {
+          includeEmbed = parseLine(state, line);
+          state.blockBase = true;
+        }
 
         if (includeEmbed && "stdlib" in includeEmbed) {
           const tokens2 = lex("stdlib", stdlib);
@@ -1655,9 +1693,7 @@ export async function makeFromFile(
           errors: [errorString(
             ds.flp,
             `Missing .end${
-              ds.kind === "defm"
-                ? "m"
-                : ""
+              ds.kind === "macro" ? "m" : ""
             } for .${ds.kind} statement`,
           )],
         };

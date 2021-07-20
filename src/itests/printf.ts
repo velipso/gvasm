@@ -69,12 +69,42 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
+    name: "printf.hex-unsigned",
+    desc: "Hex formatting should be unsigned",
+    kind: "make",
+    stdout: ["0xFFFFFFFF"],
+    files: {
+      "/root/main": `.printf "%#X", -1`,
+    },
+  });
+
+  def({
     name: "printf.unsigned",
     desc: "Unsigned formatting",
     kind: "make",
     stdout: ["-1 4294967295"],
     files: {
       "/root/main": `.printf "%i %u", 4294967295, 4294967295`,
+    },
+  });
+
+  def({
+    name: "printf.label-known",
+    desc: "Known label",
+    kind: "make",
+    stdout: ["0x08000000"],
+    files: {
+      "/root/main": `@main: .printf "%#08x", @main`,
+    },
+  });
+
+  def({
+    name: "printf.label-unknown",
+    desc: "Error on unknown label",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `.printf "%#08x", @main\n@main:`,
     },
   });
 }

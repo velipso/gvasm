@@ -95,13 +95,13 @@ export function printf(format: string, ...args: number[]): string {
             str = (v < 0 ? v + 4294967296 : v).toString();
             break;
           case "x":
-            str = v.toString(16).toLowerCase();
+            str = (v < 0 ? v + 4294967296 : v).toString(16).toLowerCase();
             if (flag("#")) {
               prefix = "0x";
             }
             break;
           case "X":
-            str = v.toString(16).toUpperCase();
+            str = (v < 0 ? v + 4294967296 : v).toString(16).toUpperCase();
             if (flag("#")) {
               prefix = "0x";
             }

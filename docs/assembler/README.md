@@ -104,7 +104,7 @@ Operators mostly copy from C.  Operators will return 1 for true, and 0 for false
 non-zero number is considered true.  Parenthesis can be used to override default precedence.
 
 | Operator                  | Description                                            |
-+---------------------------+--------------------------------------------------------+
+|---------------------------|--------------------------------------------------------|
 | `-$a`                     | Negation                                               |
 | `~$a`                     | Bit NOT                                                |
 | `!$a`                     | Logical NOT                                            |
@@ -125,7 +125,7 @@ non-zero number is considered true.  Parenthesis can be used to override default
 | `$a == $b`                | Test if equal                                          |
 | `$a != $b`                | Test if not equal                                      |
 | `$a && $b`                | Logical AND (short circuited)                          |
-| `$a || $b`                | Logical OR (short circuited)                           |
+| `$a \|\| $b`              | Logical OR (short circuited)                           |
 | `abs($a)`                 | Absolute value                                         |
 | `clamp($a, $low, $high)`  | Clamp `$a` between `$low` and `$high` (inclusive)      |
 | `log2($a)`                | Log base 2                                             |

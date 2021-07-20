@@ -15,8 +15,8 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-.defx $FOO = 1
-.defx $BAR = 2
+.def $FOO = 1
+.def $BAR = 2
 .i8 $foo         /// 01
 .i8 $foo + $bar  /// 03
 `,
@@ -29,10 +29,10 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-.defx $one         = 1
-.defx $five        = 5
-.defx $neg($a)     = -$a
-.defx $add($a, $b) = $a + $b
+.def $one         = 1
+.def $five        = 5
+.def $neg($a)     = -$a
+.def $add($a, $b) = $a + $b
 .i8 $neg(-5)                                    /// 05
 .i8 $add(1, 2)                                  /// 03
 .i8 $neg($one)                                  /// ff
@@ -51,7 +51,7 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       "/root/main": `
-.defx $add($a, $b) = $a + $b
+.def $add($a, $b) = $a + $b
 .i8 $add
 `,
     },
@@ -64,7 +64,7 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       "/root/main": `
-.defx $add($a, $b) = $a + $b
+.def $add($a, $b) = $a + $b
 .i8 $add(1)
 `,
     },
@@ -77,7 +77,7 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       "/root/main": `
-.defx $add($a, $b) = $a + $b
+.def $add($a, $b) = $a + $b
 .i8 $add(1, 2, 3)
 `,
     },
@@ -96,13 +96,13 @@ export function load(def: (test: ITest) => void) {
 .i16 1                   /// 01 00
 @three:
 
-.defx $add($a, $b) = $a + $b
+.def $add($a, $b) = $a + $b
 .i8 $add(@one, @three)   /// 04
 .i8 $add(@one, @six)     /// 07
 .i8 1                    /// 01
 @six:
 
-.defx $a10($a) = $a + @ten
+.def $a10($a) = $a + @ten
 .i8 $a10(1)              /// 0b
 .i8 $a10($a10(5))        /// 19
 .i8 $add($a10(2), 1)     /// 0d
@@ -121,7 +121,7 @@ export function load(def: (test: ITest) => void) {
 
 @ten:
 
-.defx $b10($a) = $a + @ten
+.def $b10($a) = $a + @ten
 .i8 $b10(1)              /// 0b
 .i8 $b10($b10(5))        /// 19
 .i8 $add($b10(2), 1)     /// 0d
@@ -222,7 +222,7 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     error: true,
     files: {
-      "/root/main": `.defx $_add($a, $b) = $a + $b`,
+      "/root/main": `.def $_add($a, $b) = $a + $b`,
     },
   });
 
@@ -232,7 +232,7 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     error: true,
     files: {
-      "/root/main": `.defx $add($_a, $b) = $_a + $b`,
+      "/root/main": `.def $add($_a, $b) = $_a + $b`,
     },
   });
 }

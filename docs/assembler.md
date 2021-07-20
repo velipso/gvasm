@@ -33,7 +33,7 @@ b @main          // branch to main method
 .error "message"
 .elseif $bar
 .else
-.endif
+.end
 
 .printf "format", $a, $b
 
@@ -47,14 +47,29 @@ b @main          // branch to main method
 .end
 
 // global macro
-.defm $foo $param1, $param2
+.macro $foo $param1, $param2
 .endm
 // local macro (disappears after .end)
-.defm $$foo $param1, $param2
+.macro $$foo $param1, $param2
 .endm
 
-.defx $foo($a, $b) = $a + $b
-.defx $foo = 1
+.def $foo($a, $b) = $a + $b
+.def $foo = 1
+
+.struct $foo
+  .s8 first
+  .s16 second
+  .struct bar
+    .s8 baz
+  .end
+  .s32 third, fourth
+.end
+
+.def $foo.first = 0
+.def $foo.second = 2
+.def $foo.bar.baz = 4
+.def $foo.third = 8
+.def $foo.fourth = 12
 
 .begin
 .end

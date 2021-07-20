@@ -18,10 +18,10 @@ This is a work in progress -- as features are completed, they should be mostly s
 - [x] Defined constant expressions
 - [x] Scoped names and labels
 - [x] Conditional compilation
+- [x] Structs
 - [ ] Standard library (in progress)
 - [ ] Test suite (in progress)
 - [ ] Defined constant macros
-- [ ] Structs
 - [ ] Extended library
 - [ ] Disassembler
 - [ ] Examples and documentation

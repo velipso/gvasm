@@ -41,18 +41,28 @@ interface IDotStackIf {
   gotElse: boolean;
 }
 
+interface IDotStackStruct {
+  kind: "struct";
+  flp: IFilePos;
+}
+
 interface IDotStackDefm {
   kind: "defm";
   flp: IFilePos;
 }
 
-type IDotStack = IDotStackBegin | IDotStackIf | IDotStackDefm;
+type IDotStack = IDotStackBegin | IDotStackIf | IDotStackStruct | IDotStackDefm;
 
 interface IParseState {
   arm: boolean;
   bytes: Bytes;
   ctable: ConstTable;
   active: boolean;
+  struct: false | {
+    nextByte: number;
+    prefix: string[];
+    defines: { name: string; value: number }[];
+  };
   dotStack: IDotStack[];
   log(str: string): void;
 }
@@ -84,13 +94,19 @@ function parseComma(line: ITok[], error: string) {
   }
 }
 
-function parseNum(line: ITok[], ctable: ConstTable): number {
+function parseNum(line: ITok[], ctable: ConstTable, quiet = false): number {
   const expr = ExpressionBuilder.parse(line, [], ctable);
   if (expr === false) {
+    if (quiet) {
+      return 0;
+    }
     throw "Expecting constant number";
   }
   const v = expr.build([]).value();
   if (v === false) {
+    if (quiet) {
+      return 0;
+    }
     throw "Expecting constant number";
   }
   return v;
@@ -434,9 +450,9 @@ function parseDotStatement(
         state.bytes.align(state.arm ? 4 : 2);
       }
       break;
-    case ".defx": {
+    case ".def": {
       if (!isNextId(line, "$")) {
-        throw "Expecting $const after .defx";
+        throw "Expecting $const after .def";
       }
       line.shift();
       let prefix = "$";
@@ -453,7 +469,7 @@ function parseDotStatement(
         line.shift();
         while (!isNextId(line, ")")) {
           if (!isNextId(line, "$")) {
-            throw "Expecting $param inside .defx parameter list";
+            throw "Expecting $param inside .def parameter list";
           }
           line.shift();
           if (isNextId(line, "$")) {
@@ -461,7 +477,7 @@ function parseDotStatement(
           }
           const pname = parseName(line);
           if (pname === false) {
-            throw "Expecting $param inside .defx parameter list";
+            throw "Expecting $param inside .def parameter list";
           }
           paramNames.push("$" + pname);
           if (isNextId(line, ",")) {
@@ -476,17 +492,17 @@ function parseDotStatement(
         line.shift();
       }
       if (!isNextId(line, "=")) {
-        throw "Missing `=` in .defx statement";
+        throw "Missing `=` in .def statement";
       }
       line.shift();
       const expr = ExpressionBuilder.parse(line, paramNames, state.ctable);
       if (expr === false) {
-        throw "Invalid expression in .defx statement";
+        throw "Invalid expression in .def statement";
       }
       if (line.length > 0) {
-        throw "Invalid .defx statement";
+        throw "Invalid .def statement";
       }
-      state.ctable.defx(prefix + name, paramNames, expr);
+      state.ctable.def(prefix + name, paramNames, expr);
       break;
     }
     default:
@@ -1181,29 +1197,243 @@ function recalcActive(state: IParseState): boolean {
   return state.dotStack.every((ds) => ds.kind !== "if" || ds.isTrue);
 }
 
+function parseBlockStatement(
+  state: IParseState,
+  line: ITok[],
+  cmd: string,
+  flp: IFilePos,
+): boolean {
+  const ds = state.dotStack[state.dotStack.length - 1];
+  switch (cmd) {
+    case ".begin":
+      if (line.length > 0 && state.active) {
+        throw "Invalid .begin statement";
+      }
+      if (state.active) {
+        state.ctable.scopeBegin();
+        state.bytes.scopeBegin();
+      }
+      state.dotStack.push({ kind: "begin", flp });
+      return true;
+    case ".if": {
+      const v = parseNum(line, state.ctable, !state.active);
+      if (line.length > 0 && state.active) {
+        throw "Invalid .if statement";
+      }
+      state.dotStack.push({
+        kind: "if",
+        flp,
+        isTrue: v !== 0,
+        gotTrue: v !== 0,
+        gotElse: false,
+      });
+      state.active = recalcActive(state);
+      return true;
+    }
+    case ".elseif": {
+      const v = parseNum(line, state.ctable, !state.active);
+      if (line.length > 0 && state.active) {
+        throw "Invalid .elseif statement";
+      }
+      if (!ds || ds.kind !== "if") {
+        throw "Unexpected .elseif statement, missing .if";
+      }
+      if (ds.gotElse) {
+        throw "Cannot have .elseif statement after .else";
+      }
+      if (ds.gotTrue) {
+        ds.isTrue = false;
+      } else {
+        ds.isTrue = v !== 0;
+        ds.gotTrue = v !== 0;
+      }
+      state.active = recalcActive(state);
+      return true;
+    }
+    case ".else": {
+      if (line.length > 0 && state.active) {
+        throw "Invalid .else statement";
+      }
+      if (!ds || ds.kind !== "if") {
+        throw "Unexpected .else statement, missing .if";
+      }
+      if (ds.gotElse) {
+        throw "Cannot have more than one .else statement";
+      }
+      ds.gotElse = true;
+      ds.isTrue = !ds.gotTrue;
+      ds.gotTrue = true;
+      state.active = recalcActive(state);
+      return true;
+    }
+    case ".struct": {
+      let cname = "";
+      try {
+        let prefix = "";
+        if (!state.struct) {
+          if (!isNextId(line, "$")) {
+            throw "Expecting $const after .struct";
+          }
+          line.shift();
+          prefix = "$";
+          if (isNextId(line, "$")) {
+            line.shift();
+            prefix += "$";
+          }
+        }
+        const name = parseName(line);
+        if (name === false) {
+          throw "Invalid .struct name";
+        }
+        if (line.length > 0) {
+          throw "Invalid .struct statement";
+        }
+        cname = prefix + name;
+      } catch (e) {
+        if (state.active) {
+          throw e;
+        }
+      }
+      state.dotStack.push({
+        kind: "struct",
+        flp,
+      });
+      if (state.struct) {
+        state.struct.prefix.push(cname);
+        state.struct.defines.push({
+          name: state.struct.prefix.join("."),
+          value: state.struct.nextByte,
+        });
+      } else {
+        state.struct = {
+          nextByte: 0,
+          prefix: [cname],
+          defines: [],
+        };
+      }
+      return true;
+    }
+    case ".s8":
+    case ".s16":
+    case ".s32": {
+      if (!state.struct) {
+        if (state.active) {
+          throw `Can't use ${cmd} outside of .struct`;
+        } else {
+          return true;
+        }
+      }
+
+      const names: string[] = [];
+      while (line.length > 0) {
+        const name = parseName(line);
+        if (name === false) {
+          if (state.active) {
+            throw `Invalid ${cmd} name`;
+          } else {
+            return true;
+          }
+        }
+        names.push(name);
+        if (!isNextId(line, ",")) {
+          break;
+        }
+        line.shift();
+      }
+
+      if (line.length > 0 || !state.active) {
+        if (state.active) {
+          throw `Invalid ${cmd} statement`;
+        } else {
+          return true;
+        }
+      }
+
+      const size = cmd === ".s8" ? 1 : cmd === ".s16" ? 2 : 4;
+      for (const name of names) {
+        while ((state.struct.nextByte % size) !== 0) {
+          state.struct.nextByte++;
+        }
+        state.struct.defines.push({
+          name: [...state.struct.prefix, name].join("."),
+          value: state.struct.nextByte,
+        });
+        state.struct.nextByte += size;
+      }
+      return true;
+    }
+    case ".end":
+      if (line.length > 0 && state.active) {
+        throw "Invalid .end statement";
+      }
+      if (
+        !ds || (ds.kind !== "begin" && ds.kind !== "if" && ds.kind !== "struct")
+      ) {
+        throw "Unexpected .end statement";
+      }
+      state.dotStack.pop();
+      if (ds.kind === "begin" && state.active) {
+        state.ctable.scopeEnd();
+        state.bytes.scopeEnd();
+      } else if (ds.kind === "if") {
+        state.active = recalcActive(state);
+      } else if (ds.kind === "struct") {
+        if (!state.struct) {
+          throw new Error("Expecting struct in parse state");
+        }
+        state.struct.prefix.pop();
+        if (state.struct.prefix.length <= 0) {
+          // all done!
+          if (state.active) {
+            for (const { name, value } of state.struct.defines) {
+              state.ctable.defNum(name, value);
+            }
+          }
+          state.struct = false;
+        }
+      }
+      return true;
+    case ".defm":
+    case ".endm":
+      throw "TODO: .defm/.endm";
+  }
+  return false;
+}
+
 function parseLine(
   state: IParseState,
   line: ITok[],
 ): { include: string } | { embed: string } | { stdlib: true } | undefined {
-  // check for labels
-  while (true) {
-    const label = parseLabel(line);
-    if (label !== false) {
-      if (
-        line.length < 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":"
-      ) {
+  if (!state.struct) {
+    // check for labels
+    while (true) {
+      let label;
+      try {
+        label = parseLabel(line);
+      } catch (e) {
         if (state.active) {
-          throw "Missing colon after label";
+          throw e;
         } else {
           return;
         }
       }
-      line.shift();
-      if (state.active) {
-        state.bytes.addLabel(label);
+      if (label !== false) {
+        if (
+          line.length <= 0 || line[0].kind !== TokEnum.ID || line[0].id !== ":"
+        ) {
+          if (state.active) {
+            throw "Missing colon after label";
+          } else {
+            return;
+          }
+        }
+        line.shift();
+        if (state.active) {
+          state.bytes.addLabel(label);
+        }
+      } else {
+        break;
       }
-    } else {
-      break;
     }
   }
 
@@ -1214,109 +1444,16 @@ function parseLine(
   const cmdTok = line.shift();
   if (!cmdTok || cmdTok.kind !== TokEnum.ID) {
     if (state.active) {
-      throw "Invalid command";
+      throw "Invalid statement";
     } else {
       return;
     }
   }
   const cmd = cmdTok.id;
 
-  // check for block-level dot commands
-  switch (cmd) {
-    case ".begin":
-      if (line.length > 0) {
-        throw "Invalid .begin statement";
-      }
-      if (state.active) {
-        state.ctable.scopeBegin();
-        state.bytes.scopeBegin();
-      }
-      state.dotStack.push({ kind: "begin", flp: cmdTok.flp });
-      return;
-    case ".end":
-      if (line.length > 0) {
-        throw "Invalid .end statement";
-      }
-      if (
-        state.dotStack.length <= 0 ||
-        state.dotStack[state.dotStack.length - 1].kind !== "begin"
-      ) {
-        throw "Unexpected .end statement, missing .begin";
-      }
-      state.dotStack.pop();
-      if (state.active) {
-        state.ctable.scopeEnd();
-        state.bytes.scopeEnd();
-      }
-      return;
-    case ".if": {
-      const v = parseNum(line, state.ctable);
-      if (line.length > 0) {
-        throw "Invalid .if statement";
-      }
-      state.dotStack.push({
-        kind: "if",
-        flp: cmdTok.flp,
-        isTrue: v !== 0,
-        gotTrue: v !== 0,
-        gotElse: false,
-      });
-      state.active = recalcActive(state);
-      return;
-    }
-    case ".elseif": {
-      const v = parseNum(line, state.ctable);
-      if (line.length > 0) {
-        throw "Invalid .elseif statement";
-      }
-      const dif = state.dotStack[state.dotStack.length - 1];
-      if (!dif || dif.kind !== "if") {
-        throw "Unexpected .elseif statement, missing .if";
-      }
-      if (dif.gotElse) {
-        throw "Cannot have .elseif statement after .else";
-      }
-      if (dif.gotTrue) {
-        dif.isTrue = false;
-      } else {
-        dif.isTrue = v !== 0;
-        dif.gotTrue = v !== 0;
-      }
-      state.active = recalcActive(state);
-      return;
-    }
-    case ".else": {
-      if (line.length > 0) {
-        throw "Invalid .else statement";
-      }
-      const dif = state.dotStack[state.dotStack.length - 1];
-      if (!dif || dif.kind !== "if") {
-        throw "Unexpected .else statement, missing .if";
-      }
-      if (dif.gotElse) {
-        throw "Cannot have more than one .else statement";
-      }
-      dif.gotElse = true;
-      dif.isTrue = !dif.gotTrue;
-      dif.gotTrue = true;
-      state.active = recalcActive(state);
-      return;
-    }
-    case ".endif": {
-      if (line.length > 0) {
-        throw "Invalid .endif statement";
-      }
-      const dif = state.dotStack[state.dotStack.length - 1];
-      if (!dif || dif.kind !== "if") {
-        throw "Unexpected .endif statement, missing .if";
-      }
-      state.dotStack.pop();
-      state.active = recalcActive(state);
-      return;
-    }
-    case ".defm":
-    case ".endm":
-      throw "TODO: .defm/.endm";
+  // check for block-level dot statements
+  if (parseBlockStatement(state, line, cmd, cmdTok.flp)) {
+    return;
   }
 
   if (!state.active) {
@@ -1428,6 +1565,7 @@ export async function makeFromFile(
       return false;
     }),
     active: true,
+    struct: false,
     dotStack: [],
     log,
   };
@@ -1511,21 +1649,18 @@ export async function makeFromFile(
       }
 
       // all done, verify that we don't have any open blocks
-      const dif = state.dotStack[state.dotStack.length - 1];
-      if (dif) {
-        let msg;
-        switch (dif.kind) {
-          case "begin":
-            msg = "Missing .end for .begin statement";
-            break;
-          case "if":
-            msg = "Missing .endif for .if statement";
-            break;
-          case "defm":
-            msg = "Missing .endm for .defm statement";
-            break;
-        }
-        return { errors: [errorString(dif.flp, msg)] };
+      const ds = state.dotStack[state.dotStack.length - 1];
+      if (ds) {
+        return {
+          errors: [errorString(
+            ds.flp,
+            `Missing .end${
+              ds.kind === "defm"
+                ? "m"
+                : ""
+            } for .${ds.kind} statement`,
+          )],
+        };
       }
     } catch (e) {
       if (typeof e === "string") {

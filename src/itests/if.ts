@@ -17,10 +17,10 @@ export function load(def: (test: ITest) => void) {
       "/root/main": `
 .if 1
   .printf "hi"
-.endif
+.end
 .if 0
   .printf "hello"
-.endif
+.end
 `,
     },
   });
@@ -37,15 +37,15 @@ export function load(def: (test: ITest) => void) {
     .printf "fail"
   .else
     .printf "fail"
-  .endif
+  .end
 .elseif 0
   .if 0
     .printf "fail"
   .elseif 1
     .if 1
       .printf "fail"
-    .endif
-  .endif
+    .end
+  .end
 .else
   .if 0
     .printf "fail"
@@ -54,7 +54,7 @@ export function load(def: (test: ITest) => void) {
       .printf "fail"
     .else
       .printf "fail"
-    .endif
+    .end
   .elseif 1
     .if 1
       .if 1
@@ -62,19 +62,19 @@ export function load(def: (test: ITest) => void) {
           .printf "fail"
         .else
           .printf "pass"
-        .endif
+        .end
       .else
         .printf "fail"
-      .endif
+      .end
     .elseif 1
       .printf "fail"
     .else
       .printf "fail"
-    .endif
+    .end
   .elseif 1
     .printf "fail"
-  .endif
-.endif
+  .end
+.end
 `,
     },
   });
@@ -91,15 +91,15 @@ export function load(def: (test: ITest) => void) {
 @L0:     .printf "fail"
 @L0:   .else
 @L0:     .printf "fail"
-@L0:   .endif
+@L0:   .end
 @L0: .elseif 0
 @L0:   .if 0
 @L0:     .printf "fail"
 @L0:   .elseif 1
 @L0:     .if 1
 @L0:       .printf "fail"
-@L0:     .endif
-@L0:   .endif
+@L0:     .end
+@L0:   .end
 @L0: .else
 @L1:   .if 0
 @L0:     .printf "fail"
@@ -108,7 +108,7 @@ export function load(def: (test: ITest) => void) {
 @L0:       .printf "fail"
 @L0:     .else
 @L0:       .printf "fail"
-@L0:     .endif
+@L0:     .end
 @L0:   .elseif 1
 @L2:     .if 1
 @L3:       .if 1
@@ -116,19 +116,19 @@ export function load(def: (test: ITest) => void) {
 @L0:           .printf "fail"
 @L0:         .else
 @L5:           .printf "pass"
-@L6:         .endif
+@L6:         .end
 @L7:       .else
 @L0:         .printf "fail"
-@L0:       .endif
+@L0:       .end
 @L8:     .elseif 1
 @L0:       .printf "fail"
 @L0:     .else
 @L0:       .printf "fail"
-@L0:     .endif
+@L0:     .end
 @L9:   .elseif 1
 @L0:     .printf "fail"
-@L0:   .endif
-@La: .endif
+@L0:   .end
+@La: .end
 `,
     },
   });
@@ -148,7 +148,7 @@ export function load(def: (test: ITest) => void) {
   .include "fail"
 .else
   .include "pass"
-.endif
+.end
 
 .if 0
   .include "fail"
@@ -158,7 +158,7 @@ export function load(def: (test: ITest) => void) {
   .include "pass"
 .else
   .include "fail"
-.endif
+.end
 
 .if 0
   .include "fail"
@@ -168,7 +168,7 @@ export function load(def: (test: ITest) => void) {
   .include "fail"
 .else
   .include "fail"
-.endif
+.end
 
 .if 1
   .include "pass"
@@ -178,9 +178,28 @@ export function load(def: (test: ITest) => void) {
   .include "fail"
 .else
   .include "fail"
-.endif
+.end
 `,
       "/root/pass": `.printf "pass"`,
+    },
+  });
+
+  def({
+    name: "if.ignore-errors",
+    desc: "Ignore errors inside .if 0",
+    kind: "make",
+    files: {
+      "/root/main": `
+.if 0
+asdf
+hello world
+"what's up"
+@asdf
+@@@@asdf:
+.asdf
+$$$$
+.end
+`,
     },
   });
 }

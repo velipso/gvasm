@@ -249,7 +249,7 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-.defx $pos2neg($a) = \\
+.def $pos2neg($a) = \\
   assert("must pass positive value to $pos2neg", $a > 0) * \\
   -$a
 .i8 $pos2neg(5)  /// fb
@@ -264,7 +264,7 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       "/root/main": `
-.defx $pos2neg($a) = \\
+.def $pos2neg($a) = \\
   assert("must pass positive value to $pos2neg", $a > 0) * \\
   -$a
 .i8 $pos2neg(-5)

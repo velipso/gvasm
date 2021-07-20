@@ -14,17 +14,17 @@ export function load(def: (test: ITest) => void) {
     kind: "make",
     files: {
       "/root/main": `
-.defx $one = 1
+.def $one = 1
 .i8 $one             /// 01
-.defx $$two = 2
+.def $$two = 2
 .i8 $$two            /// 02
 .begin
   .i8 $one           /// 01
-  .defx $$two = 3
+  .def $$two = 3
   .i8 $$two          /// 03
   .begin
     .i8 $one         /// 01
-    .defx $$two = 4
+    .def $$two = 4
     .i8 $$two        /// 04
   .end
   .i8 $$two          /// 03
@@ -41,13 +41,13 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       "/root/main": `
-.defx $one = 1
+.def $one = 1
 .i8 $one
-.defx $$two = 2
+.def $$two = 2
 .i8 $$two
 .begin
   .i8 $one
-  .defx $$two = 3
+  .def $$two = 3
   .i8 $$two
   .begin
     .i8 $one

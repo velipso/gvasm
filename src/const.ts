@@ -53,9 +53,17 @@ export class ConstTable {
     }
   }
 
-  public defx(cname: string, paramNames: string[], expr: ExpressionBuilder) {
+  public def(cname: string, paramNames: string[], expr: ExpressionBuilder) {
     paramNames.forEach(this.checkName);
-    this.def(cname, { kind: "expr", paramNames, expr });
+    this.defConst(cname, { kind: "expr", paramNames, expr });
+  }
+
+  public defNum(cname: string, num: number) {
+    this.defConst(cname, {
+      kind: "expr",
+      paramNames: [],
+      expr: ExpressionBuilder.fromNum(num),
+    });
   }
 
   private checkName(cname: string) {
@@ -64,7 +72,7 @@ export class ConstTable {
     }
   }
 
-  private def(cname: string, con: IConstMacro | IConstExpr) {
+  private defConst(cname: string, con: IConstMacro | IConstExpr) {
     this.checkName(cname);
     const scope = cname.startsWith("$$") ? this.locals[0] : this.globals;
     if (cname in scope) {

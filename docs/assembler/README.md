@@ -266,7 +266,7 @@ Alias for `.i8fill`.
 
 Outputs big-endian 16-bit numbers.
 
-Note that the value is truncated to 16-bits, so for example, `.i16 0xabcdef` will output
+Note that the value is truncated to 16-bits, so for example, `.b16 0xabcdef` will output
 `0xcd 0xef`.
 
 ### `.b16fill <amount>[, <fill>]`
@@ -322,7 +322,7 @@ This doesn't currently work and is under development.
 
 Outputs raw bytes.
 
-Note that the value is truncated to a byte, so for example, `.i8 0xabcd` will output `0xab`.
+Note that the value is truncated to a byte, so for example, `.i8 0xabcd` will output `0xcd`.
 
 ### `.i8fill <amount>[, <fill>]`
 
@@ -383,7 +383,7 @@ Prints data to the console during compilation.
 
 Includes the standard library, which defines useful constants like `$REG_DISCNT`, etc.
 
-### `.struct <constant>` / `.end`
+### `.struct <prefix>` / `.end`
 
 Defines constants as offsets from zero, using `.s8`, `.s16`, and `.s32`.
 

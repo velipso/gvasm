@@ -151,7 +151,7 @@ non-zero number is considered true.  Parenthesis can be used to override default
 | `pow($a, $b)`             | Power                                                   |
 | `rgb($r, $g, $b)`         | Returns 15-bit value using each color component (0-31)  |
 | `sign($a)`                | Returns -1, 0, or 1 based on the sign of `$a`           |
-| `sqrt($a)`                | Returns the square root of `$a`                         |
+| `sqrt($a)`                | Square root of `$a`                                     |
 
 Note: `assert` is useful to verify values at compile-time, for example:
 
@@ -408,16 +408,16 @@ Prints data to the console during compilation.
 
 ### `.stdlib`
 
-Includes the standard library, which defines useful constants like `$REG_DISCNT`, etc.
+Includes the standard library, which defines useful constants like `$REG_DISPCNT`, etc.
 
 ### `.struct <prefix>` / `.end`
 
 Defines constants as offsets from zero, using `.s8`, `.s16`, and `.s32`.
 
-### `.title <title>`
-
-Outputs the ASCII title of the game, used in the GBA header.
-
 ### `.thumb`
 
 Switches the assembler into THUMB mode.  See also, `.arm`.
+
+### `.title <title>`
+
+Outputs the ASCII title of the game, used in the GBA header.

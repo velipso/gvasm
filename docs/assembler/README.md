@@ -306,7 +306,7 @@ Defines a constant.
 
 ### `.embed <filename>`
 
-Includes a binary file by outputing the bytes in `<filename>`.
+Includes a binary file by outputting the bytes in `<filename>`.
 
 ### `.error <message>`
 

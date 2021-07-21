@@ -97,6 +97,21 @@ Constants can also take parameters:
 .printf "%i", $lerp(10, 20, 80) // prints 18 to console
 ```
 
+### Reserved Constants
+
+Constants beginning with an underscore are reserved for the assembler.
+
+The following constants are always defined and depend on the assembler state:
+
+| Constant    | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
+| `$_arm`     | True if in ARM mode (`.arm`)                                                |
+| `$_thumb`   | True if in THUMB mode (`.thumb`)                                            |
+| `$_here`    | The next address to be output                                               |
+| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for THUMB) |
+| `$_base`    | The base value (set by `.base <base>`)                                      |
+
 Constant Expressions
 --------------------
 

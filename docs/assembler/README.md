@@ -118,39 +118,51 @@ Constant Expressions
 Operators mostly copy from C.  Operators will return 1 for true, and 0 for false, though any
 non-zero number is considered true.  Parenthesis can be used to override default precedence.
 
-| Operator                  | Description                                            |
-|---------------------------|--------------------------------------------------------|
-| `-$a`                     | Negation                                               |
-| `~$a`                     | Bit NOT                                                |
-| `!$a`                     | Logical NOT                                            |
-| `$a + $b`                 | Addition                                               |
-| `$a - $b`                 | Subtraction                                            |
-| `$a * $b`                 | Multiplication                                         |
-| `$a / $b`                 | Division (integer)                                     |
-| `$a % $b`                 | Modulo                                                 |
-| `$a << $b`                | Shift left                                             |
-| `$a >> $b`                | Sign-extended shift right                              |
-| `$a >>> $b`               | Logical shift right                                    |
-| `$a & $b`                 | Bit AND                                                |
-| `$a ^ $b`                 | Bit XOR                                                |
-| `$a < $b`                 | Test if less than                                      |
-| `$a <= $b`                | Test if less than or equal                             |
-| `$a > $b`                 | Test if greater than                                   |
-| `$a >= $b`                | Test if greater than or equal                          |
-| `$a == $b`                | Test if equal                                          |
-| `$a != $b`                | Test if not equal                                      |
-| `$a && $b`                | Logical AND (short circuited)                          |
-| `$a \|\| $b`              | Logical OR (short circuited)                           |
-| `abs($a)`                 | Absolute value                                         |
-| `clamp($a, $low, $high)`  | Clamp `$a` between `$low` and `$high` (inclusive)      |
-| `log2($a)`                | Log base 2                                             |
-| `max($a, ...)`            | Maximum of all arguments                               |
-| `min($a, ...)`            | Minimum of all arguments                               |
-| `nrt($a, $b)`             | Nth root, returns `pow($a, 1 / $b)`                    |
-| `pow($a, $b)`             | Power                                                  |
-| `rgb($r, $g, $b)`         | Returns 15-bit value using each color component (0-31) |
-| `sign($a)`                | Returns -1, 0, or 1 based on the sign of `$a`          |
-| `sqrt($a)`                | Returns the square root of `$a`                        |
+| Operator                  | Description                                             |
+|---------------------------|---------------------------------------------------------|
+| `-$a`                     | Negation                                                |
+| `~$a`                     | Bit NOT                                                 |
+| `!$a`                     | Logical NOT                                             |
+| `$a + $b`                 | Addition                                                |
+| `$a - $b`                 | Subtraction                                             |
+| `$a * $b`                 | Multiplication                                          |
+| `$a / $b`                 | Division (integer)                                      |
+| `$a % $b`                 | Modulo                                                  |
+| `$a << $b`                | Shift left                                              |
+| `$a >> $b`                | Sign-extended shift right                               |
+| `$a >>> $b`               | Logical shift right                                     |
+| `$a & $b`                 | Bit AND                                                 |
+| `$a ^ $b`                 | Bit XOR                                                 |
+| `$a < $b`                 | Test if less than                                       |
+| `$a <= $b`                | Test if less than or equal                              |
+| `$a > $b`                 | Test if greater than                                    |
+| `$a >= $b`                | Test if greater than or equal                           |
+| `$a == $b`                | Test if equal                                           |
+| `$a != $b`                | Test if not equal                                       |
+| `$a && $b`                | Logical AND (short circuited)                           |
+| `$a \|\| $b`              | Logical OR (short circuited)                            |
+| `assert("msg", $cond)`    | Returns 1 if `$cond` is true, otherwise generates error |
+| `abs($a)`                 | Absolute value                                          |
+| `clamp($a, $low, $high)`  | Clamp `$a` between `$low` and `$high` (inclusive)       |
+| `log2($a)`                | Log base 2                                              |
+| `max($a, ...)`            | Maximum of all arguments                                |
+| `min($a, ...)`            | Minimum of all arguments                                |
+| `nrt($a, $b)`             | Nth root, returns `pow($a, 1 / $b)`                     |
+| `pow($a, $b)`             | Power                                                   |
+| `rgb($r, $g, $b)`         | Returns 15-bit value using each color component (0-31)  |
+| `sign($a)`                | Returns -1, 0, or 1 based on the sign of `$a`           |
+| `sqrt($a)`                | Returns the square root of `$a`                         |
+
+Note: `assert` is useful to verify values at compile-time, for example:
+
+```
+.def $offset($a) =                                        \
+  assert("Offset is out of range", $a >= 0 && $a < 5) * ( \
+    $a * 100 + 30                                         \
+  )
+
+.i8 $offset(-5) // generates compile-time error
+```
 
 Structs
 -------

@@ -421,3 +421,57 @@ Switches the assembler into THUMB mode.  See also, `.arm`.
 ### `.title <title>`
 
 Outputs the ASCII title of the game, used in the GBA header.
+
+THUMB Opcode Summary
+====================
+
+TODO: figure out behavior of shifting by zero `{lsl,lsr,asr} r0, r1, #0`
+
+| Statement              | Action                          | Status |
+|------------------------|---------------------------------|--------|
+| `adcs rD, rS`          | `rD += rS + C`                  | Yes    |
+| `add rD, rS`           | `rD += rS` <sup>1</sup>         | No     |
+| `adds rD, rS`          | `rD += rS`                      | Yes    |
+| `adds rD, rS, rN`      | `rD = rS + rN`                  | Yes    |
+| `adds rD, rS, #amount` | `rD = rS + amount`              | Yes    |
+| `adds rD, #amount`     | `rD += amount`                  | Yes    |
+| `ands rD, rS`          | `rD &= rS`                      | Yes    |
+| `asrs rD, rS, #shift`  | `rD = rS >> shift`              | Yes    |
+| `asrs rD, rS`          | `rD >>= rS`                     | Yes    |
+| `bic rD, rS`           | `rD &= ~rS`                     | Yes    |
+| `bx rS`                | `pc = rS` <sup>2</sup>          | No     |
+| `cmn rD, rS`           | `status = rD + rS`              | Yes    |
+| `cmp rD, #amount`      | `status = rD - amount`          | Yes    |
+| `cmp rD, rS`           | `status = rD - rS` <sup>3</sup> | Yes    |
+| `eors rD, rS`          | `rD = ^= rS`                    | Yes    |
+| `ldr rD, =value`       | `rD = value` <sup>4</sup>       | No     |
+| `lsls rD, rS, #shift`  | `rD = rS << shift`              | Yes    |
+| `lsls rD, rS`          | `rD <<= rS`                     | Yes    |
+| `lsrs rD, rS, #shift`  | `rD = rS >>> shift`             | Yes    |
+| `lsrs rD, rS`          | `rD >>>= rS`                    | Yes    |
+| `mov rD, rS`           | `rD = rS` <sup>1</sup>          | No     |
+| `movs rD, rS`          | `rD = rS`                       | Yes    |
+| `movs rD, #amount`     | `rD = amount`                   | Yes    |
+| `muls rD, rS`          | `rD *= rS`                      | Yes    |
+| `mvns rD, rS`          | `rD = ~rS`                      | Yes    |
+| `orrs rD, rS`          | `rD |= rS`                      | Yes    |
+| `negs rD, rS`          | `rD = -rS`                      | Yes    |
+| `rors rD, rS`          | `rD = rD ROR rS`                | Yes    |
+| `sbcs rD, rS`          | `rD -= rS - ~C`                 | Yes    |
+| `subs rD, rS`          | `rD -= rS`                      | Yes    |
+| `subs rD, rS, rN`      | `rD = rS - rN`                  | Yes    |
+| `subs rD, rS, #amount` | `rD = rS - amount`              | Yes    |
+| `subs rD, #amount`     | `rD -= amount`                  | Yes    |
+| `tst rD, rS`           | `status = rD & rS`              | Yes    |
+
+TODO: Format 6 onwards
+
+<sup>1</sup> Either `rD` or `rS` must range from `r8` - `r15`.
+
+<sup>2</sup> Bit 0 will determine processor state; if bit 0 is set, stay in THUMB mode, otherwise
+switch to ARM mode.
+
+<sup>3</sup> Registers can range from `r0` - `r15`, and status is always set.
+
+<sup>4</sup> Pseudo-instruction that requires `.pool` statement afterwards to store the constant in
+ROM.

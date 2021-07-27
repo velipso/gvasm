@@ -303,8 +303,26 @@ export namespace Arm {
     //    Rm, <shiftname> <register>                  OR
     //    <#expression>
     //
-    // There should be 3 * 7 = 21 entries in this section
+    // There should be 3 * 7 = 21 entries in this section (plus one for "nop")
 
+    {
+      ref: "4.5,4.5.2,4.5.8.1",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "value", sym: "Rm", v: 0 }, // Rm = r0
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        { s: 2, k: "value", sym: "shift", v: 0 }, // shift = lsl
+        { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 4, k: "value", sym: "Rd", v: 0 }, // Rn = r0
+        { s: 4, k: "ignored", sym: "Rn", v: 0 }, // Rn is ignored for mov
+        { s: 1, k: "value", sym: "s", v: 0 }, // s = false
+        { s: 4, k: "value", sym: "oper", v: 13 }, // oper = mov
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        { s: 4, k: "value", sym: "cond", v: 14 }, // cond = always
+      ],
+      syntax: ["nop"],
+    },
     // mov/mvn
     {
       ref: "4.5,4.5.2,4.5.8.1",
@@ -2344,7 +2362,12 @@ export namespace Thumb {
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rs" },
         { s: 5, k: "immediate", sym: "shift" },
-        { s: 2, k: "enum", sym: "oper", enum: ["lsl", "lsr", "asr", false] },
+        {
+          s: 2,
+          k: "enum",
+          sym: "oper",
+          enum: ["lsls/lsl", "lsrs/lsr", "asrs/asr", false],
+        },
         { s: 3, k: "value", v: 0 },
       ],
       syntax: ["$oper $Rd, $Rs, #$shift"],
@@ -2359,9 +2382,22 @@ export namespace Thumb {
       category: "Format 2: Add/Subtract",
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rn" },
+        { s: 1, k: "enum", sym: "oper", enum: ["adds/add", "subs/sub"] },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 5, k: "value", v: 3 },
+      ],
+      syntax: ["$oper $Rd, $Rn"],
+    },
+    {
+      ref: "5.2",
+      category: "Format 2: Add/Subtract",
+      codeParts: [
+        { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rs" },
         { s: 3, k: "register", sym: "Rn" },
-        { s: 1, k: "enum", sym: "oper", enum: ["add", "sub"] },
+        { s: 1, k: "enum", sym: "oper", enum: ["adds/add", "subs/sub"] },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
         { s: 5, k: "value", v: 3 },
       ],
@@ -2373,8 +2409,24 @@ export namespace Thumb {
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rs" },
+        { s: 3, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 1, k: "value", sym: "oper", v: 0 }, // oper = add
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 5, k: "value", v: 3 },
+      ],
+      syntax: [
+        "movs $Rd, $Rs",
+        "mov $Rd, $Rs",
+      ],
+    },
+    {
+      ref: "5.2",
+      category: "Format 2: Add/Subtract",
+      codeParts: [
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rs" },
         { s: 3, k: "immediate", sym: "amount" },
-        { s: 1, k: "enum", sym: "oper", enum: ["add", "sub"] },
+        { s: 1, k: "enum", sym: "oper", enum: ["adds/add", "subs/sub"] },
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
         { s: 5, k: "value", v: 3 },
       ],
@@ -2391,7 +2443,12 @@ export namespace Thumb {
       codeParts: [
         { s: 8, k: "immediate", sym: "amount" },
         { s: 3, k: "register", sym: "Rd" },
-        { s: 2, k: "enum", sym: "oper", enum: ["mov", "cmp", "add", "sub"] },
+        {
+          s: 2,
+          k: "enum",
+          sym: "oper",
+          enum: ["movs/mov", "cmp", "adds/add", "subs/sub"],
+        },
         { s: 3, k: "value", v: 1 },
       ],
       syntax: ["$oper $Rd, #$amount"],
@@ -2412,22 +2469,22 @@ export namespace Thumb {
           k: "enum",
           sym: "oper",
           enum: [
-            "and",
-            "eor",
-            "lsl",
-            "lsr",
-            "asr",
-            "adc",
-            "sbc",
-            "ror",
+            "ands/and",
+            "eors/eor",
+            "lsls/lsl",
+            "lsrr/lsr",
+            "asrs/asr",
+            "adcs/adc",
+            "sbcs/sbc",
+            "rors/ror",
             "tst",
-            "neg",
+            "negs/neg",
             "cmp",
             "cmn",
-            "orr",
-            "mul",
-            "bic",
-            "mvn",
+            "orrs/orr",
+            "muls/mul",
+            "bics/bic",
+            "mvns/mvn",
           ],
         },
         { s: 6, k: "value", v: 16 },
@@ -2439,6 +2496,19 @@ export namespace Thumb {
     // FORMAT 5: HI REGISTER OPERATIONS/BRANCH EXCHANGE
     //
 
+    {
+      ref: "5.5",
+      category: "Format 5: Hi Register Operations/Branch Exchange",
+      codeParts: [
+        { s: 3, k: "value", sym: "Hd", v: 0 }, // Hd = r8
+        { s: 3, k: "value", sym: "Hs", v: 0 }, // Hs = r8
+        { s: 1, k: "value", sym: "h2", v: 1 },
+        { s: 1, k: "value", sym: "h1", v: 1 },
+        { s: 2, k: "value", sym: "oper", v: 2 }, // oper = mov
+        { s: 6, k: "value", v: 17 },
+      ],
+      syntax: ["nop"],
+    },
     {
       ref: "5.5",
       category: "Format 5: Hi Register Operations/Branch Exchange",

@@ -242,4 +242,20 @@ ldr r2, =@here - 8  /// 02 23 a0 e3
 `,
     },
   });
+
+  def({
+    name: "pool.too-far-away",
+    desc: "Use .pool too far away from ldr",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `
+ldr r2, =12345
+.align 0x1000
+.i32 0
+.i8 0
+.pool
+`,
+    },
+  });
 }

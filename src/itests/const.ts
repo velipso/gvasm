@@ -170,6 +170,9 @@ export function load(def: (test: ITest) => void) {
 .i8 $_arm, $_thumb   /// 01 00
 .thumb
 .i8 $_arm, $_thumb   /// 00 01
+.def $thumb = $_thumb
+.arm
+.i8 $thumb           /// 01
 `,
     },
   });

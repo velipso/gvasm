@@ -75,6 +75,8 @@ asr r7, r7       /// 3f 41
 // add registers
 add r4, r1, r6     /// 8c 19
 add r4, r1, #6     /// 8c 1d
+add r4, r1, #0     /// 0c 1c
+movs r4, r1        /// 0c 1c
 // add immediate
 add r4, #0         /// 00 34
 add r4, #200       /// c8 34
@@ -86,6 +88,8 @@ add r4, sp, #844   /// d3 ac
 add sp, #400       /// 64 b0
 add sp, #404       /// 65 b0
 // add hi register
+add r4, r4, r2     /// a4 18
+add r4, r2         /// a4 18
 add r4, r13        /// 6c 44
 add r13, r4        /// a5 44
 add r9, r13        /// e9 44
@@ -100,6 +104,8 @@ add r9, r13        /// e9 44
     files: {
       "/root/main": `.thumb
 // subtract registers
+sub r4, r4, r2     /// a4 1a
+sub r4, r2         /// a4 1a
 sub r4, r1, r6     /// 8c 1b
 sub r4, r1, #6     /// 8c 1f
 // subtract immediate
@@ -109,6 +115,18 @@ sub r4, #255       /// ff 3c
 // subtract sp
 sub sp, #400       /// e4 b0
 sub sp, #404       /// e5 b0
+`,
+    },
+  });
+
+  def({
+    name: "thumb.nop",
+    desc: "Nop",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+mov r8, r8    /// c0 46
+nop           /// c0 46
 `,
     },
   });

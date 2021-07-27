@@ -77,6 +77,18 @@ bl.cc @L4           /// 01 00 00 3b
     },
   });
 
+  def({
+    name: "arm.nop",
+    desc: "Nop",
+    kind: "make",
+    files: {
+      "/root/main": `
+mov r0, r0  /// 00 00 a0 e1
+nop         /// 00 00 a0 e1
+`,
+    },
+  });
+
   for (
     const { op, desc, code } of [
       { op: "mov", desc: "Move", code: 13 },

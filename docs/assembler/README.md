@@ -454,8 +454,9 @@ TODO: figure out behavior of shifting by zero `{lsl,lsr,asr} r0, r1, #0`
 | `movs rD, #amount`     | `rD = amount`                   | Yes    |
 | `muls rD, rS`          | `rD *= rS`                      | Yes    |
 | `mvns rD, rS`          | `rD = ~rS`                      | Yes    |
-| `orrs rD, rS`          | `rD |= rS`                      | Yes    |
 | `negs rD, rS`          | `rD = -rS`                      | Yes    |
+| `nop`                  | Do nothing                      | No     |
+| `orrs rD, rS`          | `rD \|= rS`                     | Yes    |
 | `rors rD, rS`          | `rD = rD ROR rS`                | Yes    |
 | `sbcs rD, rS`          | `rD -= rS - ~C`                 | Yes    |
 | `subs rD, rS`          | `rD -= rS`                      | Yes    |
@@ -471,7 +472,7 @@ TODO: Format 6 onwards
 <sup>2</sup> Bit 0 will determine processor state; if bit 0 is set, stay in THUMB mode, otherwise
 switch to ARM mode.
 
-<sup>3</sup> Registers can range from `r0` - `r15`, and status is always set.
+<sup>3</sup> Registers can range from `r0` - `r15`.
 
 <sup>4</sup> Pseudo-instruction that requires `.pool` statement afterwards to store the constant in
 ROM.

@@ -44,13 +44,13 @@ b @main
 
 // set REG_DISPCNT to 0
 ldr r0, =$REG_DISPCNT
-ldr r1, =0
-str r1, [r0]
+ldrh r1, =0
+strh r1, [r0]
 
 // set color 0 to blueish green
 ldr r0, =0x05000000
 ldrh r1, =rgb(0, 31, 15)
-str r1, [r0]
+strh r1, [r0]
 
 // infinite loop
 @loop: b @loop

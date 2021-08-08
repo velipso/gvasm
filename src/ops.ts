@@ -2898,6 +2898,16 @@ export namespace Thumb {
     {
       ref: "5.19",
       category: "Format 19: Long Branch With Link",
+      codeParts: [
+        { s: 11, k: "value", sym: "offset", v: 0 }, // add 0 to LR
+        { s: 1, k: "value", sym: "h2", v: 1 },
+        { s: 4, k: "value", v: 15 },
+      ],
+      syntax: ["bl lr"],
+    },
+    {
+      ref: "5.19",
+      category: "Format 19: Long Branch With Link",
       doubleInstruction: true, // this is a 32-bit instruction embedded into two 16-bit instructions
       codeParts: [
         { s: 11, k: "offsetsplit", sym: "offset", low: false },

@@ -138,4 +138,21 @@ mov r0, r1
 `,
     },
   });
+
+  def({
+    name: "struct.start-address",
+    desc: "Start address with struct",
+    kind: "make",
+    files: {
+      "/root/main": `
+.struct $s = 0x03000000
+  .s8 one
+  .s8 two
+.end
+
+.i32 $s.one      /// 00 00 00 03
+.i32 $s.two      /// 01 00 00 03
+`,
+    },
+  });
 }

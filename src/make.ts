@@ -1279,6 +1279,7 @@ function parseBlockStatement(
     }
     case ".struct": {
       let cname = "";
+      let nextByte = 0;
       try {
         let prefix = "";
         if (!state.struct) {
@@ -1295,6 +1296,10 @@ function parseBlockStatement(
         const name = parseName(line);
         if (name === false) {
           throw "Invalid .struct name";
+        }
+        if (isNextId(line, "=")) {
+          line.shift();
+          nextByte = parseNum(state, line);
         }
         if (line.length > 0) {
           throw "Invalid .struct statement";
@@ -1313,7 +1318,7 @@ function parseBlockStatement(
         state.struct.prefix.push(cname);
       } else {
         state.struct = {
-          nextByte: 0,
+          nextByte,
           prefix: [cname],
           defines: [],
         };

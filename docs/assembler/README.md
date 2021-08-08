@@ -209,6 +209,23 @@ Equivalent to:
 .def $Player.magic = 8 // padded to align to 32-bits
 ```
 
+Start offsets are supported:
+
+```
+.struct $Player = 0x03000000 // start at 0x03000000
+  .s8 health, stamina
+  .s32 magic
+.end
+```
+
+Equivalent to:
+
+```
+.def $Player.health = 0x03000000
+.def $Player.stamina = 0x03000001
+.def $Player.magic = 0x03000004
+```
+
 Arrays are also supported:
 
 ```

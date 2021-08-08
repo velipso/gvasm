@@ -294,7 +294,8 @@ export namespace Arm {
     //
     // 1. mov/mvn                                     OR
     //    cmp/cmn/teq/tst                             OR
-    //    and/eor/sub/rsb/add/adc/sbc/rsc/orr/bic
+    //    and/eor/sub/rsb/add/adc/sbc/rsc/orr/bic     OR
+    //    and/eor/etc, where Rn = Rd
     // 2. Rm, (lsl/asr/ror) #0                        OR
     //    Rm, lsr #32                                 OR
     //    Rm, asr #32                                 OR
@@ -303,7 +304,7 @@ export namespace Arm {
     //    Rm, <shiftname> <register>                  OR
     //    <#expression>
     //
-    // There should be 3 * 7 = 21 entries in this section (plus one for "nop")
+    // There should be 4 * 7 = 28 entries in this section (plus one for "nop")
 
     {
       ref: "4.5,4.5.2,4.5.8.1",
@@ -1028,6 +1029,59 @@ export namespace Arm {
       codeParts: [
         { s: 4, k: "register", sym: "Rm" },
         { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        { s: 2, k: "value", sym: "shift", v: 0 }, // shift = lsl
+        { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm",
+        "$oper$s$cond $Rd, $Rm, lsr #0",
+        "$oper$s$cond $Rd, $Rm, asr #0",
+        "$oper$s$cond $Rd, $Rm, ror #0",
+        "$oper$s.$cond $Rd, $Rm",
+        "$oper$s.$cond $Rd, $Rm, lsr #0",
+        "$oper$s.$cond $Rd, $Rm, asr #0",
+        "$oper$s.$cond $Rd, $Rm, ror #0",
+        "$oper$cond$s $Rd, $Rm",
+        "$oper$cond$s $Rd, $Rm, lsr #0",
+        "$oper$cond$s $Rd, $Rm, asr #0",
+        "$oper$cond$s $Rd, $Rm, ror #0",
+      ],
+    },
+    {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
         { s: 2, k: "value", sym: "shift", v: 1 }, // shift = lsr
         { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
         { s: 4, k: "register", sym: "Rd" },
@@ -1064,6 +1118,50 @@ export namespace Arm {
         "$oper$s$cond $Rd, $Rn, $Rm, lsr #32",
         "$oper$s.$cond $Rd, $Rn, $Rm, lsr #32",
         "$oper$cond$s $Rd, $Rn, $Rm, lsr #32",
+      ],
+    },
+    {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        { s: 2, k: "value", sym: "shift", v: 1 }, // shift = lsr
+        { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm, lsr #32",
+        "$oper$s.$cond $Rd, $Rm, lsr #32",
+        "$oper$cond$s $Rd, $Rm, lsr #32",
       ],
     },
     {
@@ -1116,6 +1214,50 @@ export namespace Arm {
       codeParts: [
         { s: 4, k: "register", sym: "Rm" },
         { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        { s: 2, k: "value", sym: "shift", v: 2 }, // shift = asr
+        { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm, asr #32",
+        "$oper$s.$cond $Rd, $Rm, asr #32",
+        "$oper$cond$s $Rd, $Rm, asr #32",
+      ],
+    },
+    {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
         { s: 2, k: "value", sym: "shift", v: 3 }, // shift = ror
         { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
         { s: 4, k: "register", sym: "Rd" },
@@ -1152,6 +1294,50 @@ export namespace Arm {
         "$oper$s$cond $Rd, $Rn, $Rm, rrx",
         "$oper$s.$cond $Rd, $Rn, $Rm, rrx",
         "$oper$cond$s $Rd, $Rn, $Rm, rrx",
+      ],
+    },
+    {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        { s: 2, k: "value", sym: "shift", v: 3 }, // shift = ror
+        { s: 5, k: "value", sym: "amount", v: 0 }, // amount = 0
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm, rrx",
+        "$oper$s.$cond $Rd, $Rm, rrx",
+        "$oper$cond$s $Rd, $Rm, rrx",
       ],
     },
     {
@@ -1208,6 +1394,55 @@ export namespace Arm {
       category: "Data Processing",
       codeParts: [
         { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 0 }, // instruction specified shift amount
+        {
+          s: 2,
+          k: "enum",
+          sym: "shift",
+          enum: ["lsl/asl", "lsr", "asr", "ror"],
+        },
+        { s: 5, k: "immediate", sym: "amount" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm, $shift #$amount",
+        "$oper$s.$cond $Rd, $Rm, $shift #$amount",
+        "$oper$cond$s $Rd, $Rm, $shift #$amount",
+      ],
+    },
+    {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
         { s: 1, k: "value", v: 1 }, // register specified shift amount
         {
           s: 2,
@@ -1254,6 +1489,56 @@ export namespace Arm {
       ],
     },
     {
+      ref: "4.5,4.5.2,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 4, k: "register", sym: "Rm" },
+        { s: 1, k: "value", v: 1 }, // register specified shift amount
+        {
+          s: 2,
+          k: "enum",
+          sym: "shift",
+          enum: ["lsl/asl", "lsr", "asr", "ror"],
+        },
+        { s: 1, k: "value", v: 0 },
+        { s: 4, k: "register", sym: "Rs" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, $Rm, $shift $Rs",
+        "$oper$s.$cond $Rd, $Rm, $shift $Rs",
+        "$oper$cond$s $Rd, $Rm, $shift $Rs",
+      ],
+    },
+    {
       ref: "4.5,4.5.3,4.5.8.3",
       category: "Data Processing",
       codeParts: [
@@ -1292,6 +1577,47 @@ export namespace Arm {
         "$oper$s$cond $Rd, $Rn, #$expression",
         "$oper$s.$cond $Rd, $Rn, #$expression",
         "$oper$cond$s $Rd, $Rn, #$expression",
+      ],
+    },
+    {
+      ref: "4.5,4.5.3,4.5.8.3",
+      category: "Data Processing",
+      codeParts: [
+        { s: 12, k: "rotimm", sym: "expression" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 4, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "s", enum: ["", "s"] },
+        {
+          s: 4,
+          k: "enum",
+          sym: "oper",
+          enum: [
+            "and",
+            "eor",
+            "sub",
+            "rsb",
+            "add",
+            "adc",
+            "sbc",
+            "rsc",
+            false,
+            false,
+            false,
+            false,
+            "orr",
+            false,
+            "bic",
+            false,
+          ],
+        },
+        { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
+        { s: 2, k: "value", v: 0 },
+        condition,
+      ],
+      syntax: [
+        "$oper$s$cond $Rd, #$expression",
+        "$oper$s.$cond $Rd, #$expression",
+        "$oper$cond$s $Rd, #$expression",
       ],
     },
 

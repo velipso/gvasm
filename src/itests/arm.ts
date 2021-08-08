@@ -281,6 +281,12 @@ ${op}lo r3, r9, r14            /// 0e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14           /// 0e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14           /// 0e 30 ${b1}9 3${a0}
 
+${op} r3, r14                  /// 0e 30 ${b0}3 e${a0}
+${op}s r3, r14                 /// 0e 30 ${b1}3 e${a0}
+${op}lo r3, r14                /// 0e 30 ${b0}3 3${a0}
+${op}slo r3, r14               /// 0e 30 ${b1}3 3${a0}
+${op}los r3, r14               /// 0e 30 ${b1}3 3${a0}
+
 ${op} r3, r9, r14, lsl #0      /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsl #0     /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, lsl #0    /// 0e 30 ${b0}9 3${a0}
@@ -292,6 +298,12 @@ ${op}s r3, r9, r14, lsr #0     /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, lsr #0    /// 0e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, lsr #0   /// 0e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsr #0   /// 0e 30 ${b1}9 3${a0}
+
+${op} r3, r14, lsr #0          /// 0e 30 ${b0}3 e${a0}
+${op}s r3, r14, lsr #0         /// 0e 30 ${b1}3 e${a0}
+${op}lo r3, r14, lsr #0        /// 0e 30 ${b0}3 3${a0}
+${op}slo r3, r14, lsr #0       /// 0e 30 ${b1}3 3${a0}
+${op}los r3, r14, lsr #0       /// 0e 30 ${b1}3 3${a0}
 
 ${op} r3, r9, r14, asr #0      /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, asr #0     /// 0e 30 ${b1}9 e${a0}
@@ -311,11 +323,23 @@ ${op}lo r3, r9, r14, lsr #32   /// 2e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, lsr #32  /// 2e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsr #32  /// 2e 30 ${b1}9 3${a0}
 
+${op} r3, r14, lsr #32         /// 2e 30 ${b0}3 e${a0}
+${op}s r3, r14, lsr #32        /// 2e 30 ${b1}3 e${a0}
+${op}lo r3, r14, lsr #32       /// 2e 30 ${b0}3 3${a0}
+${op}slo r3, r14, lsr #32      /// 2e 30 ${b1}3 3${a0}
+${op}los r3, r14, lsr #32      /// 2e 30 ${b1}3 3${a0}
+
 ${op} r3, r9, r14, asr #32     /// 4e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, asr #32    /// 4e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, asr #32   /// 4e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, asr #32  /// 4e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14, asr #32  /// 4e 30 ${b1}9 3${a0}
+
+${op} r3, r14, asr #32         /// 4e 30 ${b0}3 e${a0}
+${op}s r3, r14, asr #32        /// 4e 30 ${b1}3 e${a0}
+${op}lo r3, r14, asr #32       /// 4e 30 ${b0}3 3${a0}
+${op}slo r3, r14, asr #32      /// 4e 30 ${b1}3 3${a0}
+${op}los r3, r14, asr #32      /// 4e 30 ${b1}3 3${a0}
 
 ${op} r3, r9, r14, rrx         /// 6e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, rrx        /// 6e 30 ${b1}9 e${a0}
@@ -323,11 +347,23 @@ ${op}lo r3, r9, r14, rrx       /// 6e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, rrx      /// 6e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14, rrx      /// 6e 30 ${b1}9 3${a0}
 
+${op} r3, r14, rrx             /// 6e 30 ${b0}3 e${a0}
+${op}s r3, r14, rrx            /// 6e 30 ${b1}3 e${a0}
+${op}lo r3, r14, rrx           /// 6e 30 ${b0}3 3${a0}
+${op}slo r3, r14, rrx          /// 6e 30 ${b1}3 3${a0}
+${op}los r3, r14, rrx          /// 6e 30 ${b1}3 3${a0}
+
 ${op} r3, r9, r14, lsl #5      /// 8e 32 ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr #10    /// 2e 35 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, asr #15   /// ce 37 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, ror #20  /// 6e 3a ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsl #25  /// 8e 3c ${b1}9 3${a0}
+
+${op} r3, r14, lsl #5          /// 8e 32 ${b0}3 e${a0}
+${op}s r3, r14, lsr #10        /// 2e 35 ${b1}3 e${a0}
+${op}lo r3, r14, asr #15       /// ce 37 ${b0}3 3${a0}
+${op}slo r3, r14, ror #20      /// 6e 3a ${b1}3 3${a0}
+${op}los r3, r14, lsl #25      /// 8e 3c ${b1}3 3${a0}
 
 ${op} r3, r9, r14, lsl r10     /// 1e 3a ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr r10    /// 3e 3a ${b1}9 e${a0}
@@ -335,11 +371,23 @@ ${op}lo r3, r9, r14, asr r10   /// 5e 3a ${b0}9 3${a0}
 ${op}slo r3, r9, r14, ror r10  /// 7e 3a ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsl r10  /// 1e 3a ${b1}9 3${a0}
 
+${op} r3, r14, lsl r10         /// 1e 3a ${b0}3 e${a0}
+${op}s r3, r14, lsr r10        /// 3e 3a ${b1}3 e${a0}
+${op}lo r3, r14, asr r10       /// 5e 3a ${b0}3 3${a0}
+${op}slo r3, r14, ror r10      /// 7e 3a ${b1}3 3${a0}
+${op}los r3, r14, lsl r10      /// 1e 3a ${b1}3 3${a0}
+
 ${op} r3, r9, #0x34000000      /// 0d 33 ${b0}9 e${a2}
 ${op}s r3, r9, #0x560000       /// 56 38 ${b1}9 e${a2}
 ${op}lo r3, r9, #0x7800        /// 1e 3b ${b0}9 3${a2}
 ${op}slo r3, r9, #0x91         /// 91 30 ${b1}9 3${a2}
 ${op}los r3, r9, #0x50         /// 05 3e ${b1}9 3${a2}
+
+${op} r3, #0x34000000          /// 0d 33 ${b0}3 e${a2}
+${op}s r3, #0x560000           /// 56 38 ${b1}3 e${a2}
+${op}lo r3, #0x7800            /// 1e 3b ${b0}3 3${a2}
+${op}slo r3, #0x91             /// 91 30 ${b1}3 3${a2}
+${op}los r3, #0x50             /// 05 3e ${b1}3 3${a2}
 `,
       },
     });

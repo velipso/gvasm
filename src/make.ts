@@ -1709,7 +1709,10 @@ export async function makeFromFile(
                 log(str);
                 return Promise.resolve(sink.NIL);
               },
-              f_warn: () => Promise.resolve(sink.NIL),
+              f_warn: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
+                log(str);
+                return Promise.resolve(sink.NIL);
+              },
               f_ask: () => Promise.resolve(sink.NIL),
             });
             sink.ctx_autonative(

@@ -94,4 +94,27 @@ include "../one.sink" /// 01 02
       "/one.sink": `put '.i8 1, 2'`,
     },
   });
+
+  def({
+    name: "script.end-comments",
+    desc: "Comments at .end should work",
+    kind: "make",
+    files: {
+      "/root/main": `
+.script
+  put '.i8 0, 1, 2, 3'
+  /// 00 01 02 03
+.end // end
+.script
+  put '.i8 4, 5, 6, 7'
+  /// 04 05 06 07
+.end /* end
+*/
+.script
+  put '.i8 8, 9, 10, 11'
+  /// 08 09 0a 0b
+.end /* end */
+`,
+    },
+  });
 }

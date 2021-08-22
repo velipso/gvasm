@@ -1468,7 +1468,9 @@ function parseBlockStatement(
         throw "Invalid .end statement";
       }
       if (
-        !ds || (ds.kind !== "begin" && ds.kind !== "if" && ds.kind !== "struct")
+        !ds ||
+        (ds.kind !== "begin" && ds.kind !== "if" && ds.kind !== "struct" &&
+          ds.kind !== "script")
       ) {
         throw "Unexpected .end statement";
       }
@@ -1692,13 +1694,15 @@ export async function makeFromFile(
   const tokens: ITok[] = [];
   let lineStr;
   while ((lineStr = lineStrs.shift())) {
+    const { filename, line, data } = lineStr;
     if (state.script) {
       // process sink script
-      if (lineStr.data.trim() === ".end") {
+      const tok = lexAddLine({ ...lx }, filename, line, data).shift();
+      if (tok && tok.kind === TokEnum.ID && tok.id === ".end") {
         if (state.script === true) {
           // ignored script section
           state.script = false;
-          state.dotStack.pop();
+          lineStrs.unshift(lineStr);
         } else {
           if (
             await sink.scr_loadfile(state.script.scr, state.script.startFile)
@@ -1728,9 +1732,8 @@ export async function makeFromFile(
             );
             const run = await sink.ctx_run(ctx);
             if (run === sink.run.PASS) {
-              lineStrs.unshift(...put);
+              lineStrs.unshift(...put, lineStr);
               state.script = false;
-              state.dotStack.pop();
             } else {
               return {
                 errors: [
@@ -1758,7 +1761,6 @@ export async function makeFromFile(
       }
     } else {
       // process assembly
-      const { filename, line, data } = lineStr;
       tokens.push(...lexAddLine(lx, filename, line, data));
 
       const errors: string[] = [];

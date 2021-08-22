@@ -20,8 +20,6 @@ Globals
 |-------------------|-------------------------------------------------------------------------|
 | `put a, ...`      | Output arguments to the gvasm assembler                                 |
 | `say a, ...`      | Output arguments to stdout                                              |
-| `warn a, ...`     | Output arguments to stderr                                              |
-| `ask a, ...`      | Prompt the user for input from stdin                                    |
 | `exit a, ...`     | Output arguments to stdout and terminate execution in success           |
 | `abort a, ...`    | Terminate execution in failure using arguments as the error message     |
 | `isnum a`         | Returns true if `a` is a number; otherwise false                        |

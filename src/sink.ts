@@ -5324,8 +5324,6 @@ enum struct_enum {
 
 function symtbl_loadStdlib(sym: symtbl_st): void {
   SAC(sym, "say", op_enum.SAY, -1);
-  SAC(sym, "warn", op_enum.WARN, -1);
-  SAC(sym, "ask", op_enum.ASK, -1);
   SAC(sym, "exit", op_enum.EXIT, -1);
   SAC(sym, "abort", op_enum.ABORT, -1);
   SAC(sym, "isnum", op_enum.ISNUM, 1);

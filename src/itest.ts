@@ -196,16 +196,12 @@ async function itestSink(test: ITestSink): Promise<boolean> {
   const { stdout: correctStdout } = test;
   if (res) {
     let stdout = "";
-    let stderr = "";
     const ctx = sink.ctx_new(scr, {
       f_say: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
         stdout += `${str}\n`;
         return Promise.resolve(sink.NIL);
       },
-      f_warn: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
-        stderr += `${str}\n`;
-        return Promise.resolve(sink.NIL);
-      },
+      f_warn: () => Promise.resolve(sink.NIL),
       f_ask: () => Promise.resolve(sink.NIL),
     });
     sink.ctx_autonative(ctx, "testnative", null, () => Promise.resolve("test"));

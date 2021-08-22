@@ -82,6 +82,7 @@ interface IParseState {
     body: ILineStr[];
     startFile: string;
   };
+  store: { [key: string]: string };
   posix: boolean;
   fileType(filename: string): Promise<sink.fstype>;
   readBinaryFile(filename: string): Promise<number[] | Uint8Array>;
@@ -1286,6 +1287,9 @@ function parseBlockStatement(
         );
         sink.scr_addpath(scr, ".");
         sink.scr_autonative(scr, "put");
+        sink.scr_autonative(scr, "store.set");
+        sink.scr_autonative(scr, "store.get");
+        sink.scr_autonative(scr, "store.has");
         state.script = { scr, startFile, body };
       } else {
         state.script = true; // we're in a script, but we're ignoring it
@@ -1684,6 +1688,7 @@ export async function makeFromFile(
     struct: false,
     dotStack: [],
     script: false,
+    store: {},
     posix,
     fileType,
     readBinaryFile,
@@ -1728,6 +1733,53 @@ export async function makeFromFile(
                 }
                 put.push(...splitLines(flp.filename, out.join("\n"), flp.line));
                 return Promise.resolve(sink.NIL);
+              },
+            );
+            sink.ctx_autonative(
+              ctx,
+              "store.set",
+              null,
+              (_ctx: sink.ctx, args: sink.val[]) => {
+                if (args.length <= 0 || !sink.isstr(args[0])) {
+                  return Promise.reject("Expecting string for argument 1");
+                }
+                const key = args[0] as string;
+                const val = args.length < 1 ? sink.NIL : args[1];
+                if (val === sink.NIL) {
+                  delete state.store[key];
+                } else {
+                  state.store[key] = sink.pickle_binstr(val);
+                }
+                return Promise.resolve(val);
+              },
+            );
+            sink.ctx_autonative(
+              ctx,
+              "store.get",
+              null,
+              (_ctx: sink.ctx, args: sink.val[]) => {
+                if (args.length <= 0 || !sink.isstr(args[0])) {
+                  return Promise.reject("Expecting string for argument 1");
+                }
+                const key = args[0] as string;
+                const def = args.length < 1 ? sink.NIL : args[1];
+                if (key in state.store) {
+                  const res = sink.pickle_valstr(state.store[key]);
+                  return Promise.resolve(res === false ? def : res);
+                }
+                return Promise.resolve(def);
+              },
+            );
+            sink.ctx_autonative(
+              ctx,
+              "store.has",
+              null,
+              (_ctx: sink.ctx, args: sink.val[]) => {
+                if (args.length <= 0 || !sink.isstr(args[0])) {
+                  return Promise.reject("Expecting string for argument 1");
+                }
+                const key = args[0] as string;
+                return Promise.resolve(sink.bool(key in state.store));
               },
             );
             const run = await sink.ctx_run(ctx);

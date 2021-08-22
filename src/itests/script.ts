@@ -117,4 +117,22 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: "script.store",
+    desc: "Store values between scripts",
+    kind: "make",
+    files: {
+      "/root/main": `
+.script
+  var x = 1
+  store.set 'x', {2}
+.end
+.script
+  var x = 3
+  put ".i8 \${store.has 'x'}, \${(store.get 'x')[0]}" /// 01 02
+.end
+`,
+    },
+  });
 }

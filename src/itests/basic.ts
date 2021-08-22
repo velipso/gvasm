@@ -38,7 +38,7 @@ b @main.program.0      /// 2e 00 00 ea
 
 @main.program.0:
 
-.printf "Main program at %#08x", $_here
+.printf 'Main program at %#08x', $_here
 
 ldr r0, =$REG_DISPCNT  /// 01 03 a0 e3
 MOV r1, #0x0           /// 00 10 a0 e3

@@ -41,6 +41,7 @@ interface ILex {
   ch2: string;
   num: number;
   numBase: number;
+  quote: string;
   str: string;
   strHexval: number;
   strHexleft: number;
@@ -146,7 +147,7 @@ export function errorString(flp: IFilePos, msg: string) {
   return `${flpString(flp)}: ${msg}`;
 }
 
-function lexNew(): ILex {
+export function lexNew(): ILex {
   return {
     state: LexEnum.START,
     flpS: FILEPOS_NULL,
@@ -156,6 +157,7 @@ function lexNew(): ILex {
     ch2: "",
     num: 0,
     numBase: 10,
+    quote: "",
     str: "",
     strHexval: 0,
     strHexleft: 0,
@@ -190,7 +192,8 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         } else {
           lx.state = LexEnum.NUM_BODY;
         }
-      } else if (ch1 === '"') {
+      } else if (ch1 === '"' || ch1 === "'") {
+        lx.quote = ch1;
         lx.str = "";
         lx.state = LexEnum.STR;
       } else if (ch1 === "\r") {
@@ -369,7 +372,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
     case LexEnum.STR:
       if (ch1 === "\r" || ch1 === "\n") {
         tks.push(tokError(lx.flp2, "Missing end of string"));
-      } else if (ch1 === '"') {
+      } else if (ch1 === lx.quote) {
         lx.state = LexEnum.START;
         tks.push(tokStr(flpS, lx.str));
       } else if (ch1 === "\\") {
@@ -438,29 +441,16 @@ function lexAdd(lx: ILex, flp: IFilePos, ch: string, tks: ITok[]) {
   lexProcess(lx, tks);
 }
 
-export function lex(filename: string, data: string): ITok[] {
+export function lexAddLine(
+  lx: ILex,
+  filename: string,
+  line: number,
+  data: string,
+): ITok[] {
+  data += "\n";
   const tks: ITok[] = [];
-  const lx = lexNew();
-  let wascr = false;
-  const flp = { filename, line: 1, chr: 1 };
   for (let i = 0; i < data.length; i++) {
-    const b = data.charAt(i);
-    lexAdd(lx, { ...flp }, b, tks);
-    if (b === "\n") {
-      if (!wascr) {
-        flp.line++;
-        flp.chr = 1;
-      }
-      wascr = false;
-    } else if (b === "\r") {
-      flp.line++;
-      flp.chr = 1;
-      wascr = true;
-    } else {
-      flp.chr++;
-      wascr = false;
-    }
+    lexAdd(lx, { filename, line, chr: i + 1 }, data.charAt(i), tks);
   }
-  lexAdd(lx, flp, "\n", tks);
   return tks;
 }

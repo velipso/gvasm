@@ -16,7 +16,11 @@ import { load as scopeLoad } from "./itests/scope.ts";
 import { load as printfLoad } from "./itests/printf.ts";
 import { load as ifLoad } from "./itests/if.ts";
 import { load as structLoad } from "./itests/struct.ts";
+import { load as scriptLoad } from "./itests/script.ts";
+import { load as sinkLoad } from "./itests/sink.ts";
 import { makeFromFile } from "./make.ts";
+import * as sink from "./sink.ts";
+import { assertNever } from "./util.ts";
 
 export interface IItestArgs {
   filters: string[];
@@ -29,10 +33,18 @@ interface ITestMake {
   error?: true;
   skipBytes?: true;
   stdout?: string[];
+  rawInclude?: true;
   files: { [filename: string]: string };
 }
 
-export type ITest = ITestMake;
+interface ITestSink {
+  name: string;
+  kind: "sink";
+  stdout?: string;
+  files: { [fiename: string]: string };
+}
+
+export type ITest = ITestMake | ITestSink;
 
 function extractBytes(data: string): number[] {
   const bytes = data
@@ -54,7 +66,18 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   const stdout: string[] = [];
   const res = await makeFromFile(
     "/root/main",
+    true,
     (filename) => filename.startsWith("/"),
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(sink.fstype.FILE);
+      } else if (
+        Object.keys(test.files).some((f) => f.startsWith(`${filename}/`))
+      ) {
+        return Promise.resolve(sink.fstype.DIR);
+      }
+      return Promise.resolve(sink.fstype.NONE);
+    },
     (filename) => {
       if (filename in test.files) {
         return Promise.resolve(test.files[filename]);
@@ -64,7 +87,13 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     },
     (filename) => {
       if (filename in test.files) {
-        return Promise.resolve(extractBytes(test.files[filename]));
+        if (test.rawInclude) {
+          return Promise.resolve(
+            new TextEncoder().encode(test.files[filename]),
+          );
+        } else {
+          return Promise.resolve(extractBytes(test.files[filename]));
+        }
       } else {
         throw new Error(`Not found: ${filename}`);
       }
@@ -135,6 +164,90 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   return true;
 }
 
+async function itestSink(test: ITestSink): Promise<boolean> {
+  const scr = sink.scr_new(
+    {
+      f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
+        if (file in test.files) {
+          return Promise.resolve(sink.fstype.FILE);
+        } else if (
+          Object.keys(test.files).some((f) => f.startsWith(`${file}/`))
+        ) {
+          return Promise.resolve(sink.fstype.DIR);
+        }
+        return Promise.resolve(sink.fstype.NONE);
+      },
+      f_fsread: async (_scr: sink.scr, file: string): Promise<boolean> => {
+        const data = test.files[file];
+        if (typeof data === "undefined") {
+          return false;
+        }
+        await sink.scr_write(scr, data);
+        return true;
+      },
+    },
+    "/root",
+    true,
+    false,
+  );
+  sink.scr_addpath(scr, ".");
+  sink.scr_autonative(scr, "testnative");
+  const res = await sink.scr_loadfile(scr, "main.sink");
+  const { stdout: correctStdout } = test;
+  if (res) {
+    let stdout = "";
+    let stderr = "";
+    const ctx = sink.ctx_new(scr, {
+      f_say: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
+        stdout += `${str}\n`;
+        return Promise.resolve(sink.NIL);
+      },
+      f_warn: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
+        stderr += `${str}\n`;
+        return Promise.resolve(sink.NIL);
+      },
+      f_ask: () => Promise.resolve(sink.NIL),
+    });
+    sink.ctx_autonative(ctx, "testnative", null, () => Promise.resolve("test"));
+    const run = await sink.ctx_run(ctx);
+    if (run !== sink.run.PASS) {
+      if (typeof correctStdout === "undefined") {
+        return true;
+      }
+      console.error(`\nFailed to run script: ${sink.ctx_geterr(ctx)}`);
+      return false;
+    }
+    if (typeof correctStdout === "undefined") {
+      console.error("\nScript succeeded but expected it to fail");
+      return false;
+    }
+    if (stdout === test.stdout) {
+      return true;
+    }
+    let done = 0;
+    stdout.split("\n").forEach((line, i) => {
+      if (done >= 3) {
+        return;
+      }
+      const correctLine = correctStdout.split("\n")[i];
+      if (correctLine !== line) {
+        console.error(
+          `\nLine ${i +
+            1} mismatch:\n  expetected:  ${correctLine}\n  instead got: ${line}`,
+        );
+        done++;
+      }
+    });
+    return false;
+  } else {
+    if (typeof correctStdout === "undefined") {
+      return true;
+    }
+    console.log(`\nFailed to load script: ${sink.scr_geterr(scr)}`);
+    return false;
+  }
+}
+
 export async function itest({ filters }: IItestArgs): Promise<number> {
   const tests: { index: number; test: ITest }[] = [];
   const def = (test: ITest) => {
@@ -156,6 +269,8 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   printfLoad(def);
   ifLoad(def);
   structLoad(def);
+  scriptLoad(def);
+  sinkLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));
@@ -182,7 +297,17 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
 
     try {
       // TODO: switch on different test types
-      const pass = await itestMake(test.test);
+      let pass;
+      switch (test.test.kind) {
+        case "make":
+          pass = await itestMake(test.test);
+          break;
+        case "sink":
+          pass = await itestSink(test.test);
+          break;
+        default:
+          assertNever(test.test);
+      }
 
       if (pass) {
         console.log(`pass     [${indexStr}] ${name}`);

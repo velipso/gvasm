@@ -242,6 +242,32 @@ Equivalent to:
 .def $Player.itemIds.bytes = 6   // 6 total bytes
 ```
 
+Scripts
+-------
+
+Compile-time scripts can be used for processing data before outputting it to the assembler.
+
+The scripting language is simple but powerful.  For detailed information on the language, read:
+
+* [Scripting Guide](./script.md)
+* [Scripting Standard Library](./lib.md)
+
+In summary, scripts are executed inside `.script` / `.end` blocks, and anything output using `put`
+inside the script is assembled as source code.  For example:
+
+```
+.script
+  for var i: range 100
+    put ".i8 $i"
+  end
+  // outputs:
+  //   .i8 0
+  //   .i8 1
+  //   .i8 2
+  //   ...etc, up to 99
+.end
+```
+
 Pool Literals
 -------------
 
@@ -422,6 +448,13 @@ Outputs a literal pool, for use with the `ldr rX, =constant` pseudo-instructions
 ### `.printf <format>[, <args...>]`
 
 Prints data to the console during compilation.
+
+### `.script` / `.end`
+
+Embeds a script to execute at compile-time.
+
+See the [scripting language documentation](./script.md), and the script environment
+[standard library](./lib.md).
 
 ### `.stdlib`
 

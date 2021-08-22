@@ -151,7 +151,7 @@ ldrsb.mi r0, =0x12   /// dc 00 df 41
 
   def({
     name: "pool.thumb.ldr-mov",
-    desc: "THUMB pool ldr converted to mov",
+    desc: "Thumb pool ldr converted to mov",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -165,7 +165,7 @@ ldr r3, =200  /// c8 23
 
   def({
     name: "pool.thumb.ldr-pool",
-    desc: "THUMB pool ldr stored in literal pool",
+    desc: "Thumb pool ldr stored in literal pool",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -186,7 +186,7 @@ ldr r4, =0x12345678  /// 00 4c
 
   def({
     name: "pool.thumb.ldr-misaligned",
-    desc: "THUMB pool ldr of misaligned pool",
+    desc: "Thumb pool ldr of misaligned pool",
     kind: "make",
     files: {
       "/root/main": `.thumb

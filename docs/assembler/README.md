@@ -107,9 +107,9 @@ The following constants are always defined and depend on the assembler state:
 |-------------|-----------------------------------------------------------------------------|
 | `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
 | `$_arm`     | True if in ARM mode (`.arm`)                                                |
-| `$_thumb`   | True if in THUMB mode (`.thumb`)                                            |
+| `$_thumb`   | True if in Thumb mode (`.thumb`)                                            |
 | `$_here`    | The next address to be output                                               |
-| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for THUMB) |
+| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for Thumb) |
 | `$_base`    | The base value (set by `.base <base>`)                                      |
 
 Constant Expressions
@@ -274,7 +274,7 @@ Pool Literals
 The assembler supports the following syntax:
 
 ```
-// ARM or THUMB:
+// ARM or Thumb:
 ldr rX, =1234
 
 // only ARM:
@@ -465,13 +465,13 @@ Defines constants as offsets from zero, using `.s8`, `.s16`, and `.s32`.
 
 ### `.thumb`
 
-Switches the assembler into THUMB mode.  See also, `.arm`.
+Switches the assembler into Thumb mode.  See also, `.arm`.
 
 ### `.title <title>`
 
 Outputs the ASCII title of the game, used in the GBA header.
 
-THUMB Opcode Summary
+Thumb Opcode Summary
 ====================
 
 TODO: figure out behavior of shifting by zero `{lsl,lsr,asr} r0, r1, #0`
@@ -518,7 +518,7 @@ TODO: Format 6 onwards
 
 <sup>1</sup> Either `rD` or `rS` must range from `r8` - `r15`.
 
-<sup>2</sup> Bit 0 will determine processor state; if bit 0 is set, stay in THUMB mode, otherwise
+<sup>2</sup> Bit 0 will determine processor state; if bit 0 is set, stay in Thumb mode, otherwise
 switch to ARM mode.
 
 <sup>3</sup> Registers can range from `r0` - `r15`.

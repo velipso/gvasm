@@ -453,8 +453,7 @@ Prints data to the console during compilation.
 
 Embeds a script to execute at compile-time.
 
-See the [scripting language documentation](./script.md), and the script environment
-[standard library](./lib.md).
+See the [scripting guide](./script.md), and the available [standard library](./lib.md).
 
 ### `.stdlib`
 

@@ -1,8 +1,8 @@
 Scripting Guide
 ===============
 
-The scripting language inside gvasm is based almost entirely on [sink](https://sinklang.org), with
-a few modifications.  This guide will introduce the scripting language.
+The scripting language inside gvasm is based almost entirely on
+[sink](https://github.com/velipso/sink), with a few modifications.
 
 See the [standard library](./lib.md) for documentation on the commands included in the language.
 

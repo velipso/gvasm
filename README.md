@@ -4,8 +4,8 @@ gvasm
 Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 
 The assembler works for ARM and Thumb code, and has features like conditional compilation, defined
-constants and functions, struct layout, compile-time scripts, and literal pools.  The full manual
-for the assembler is [here](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md).
+constants and functions, struct layout, compile-time scripts, and literal pools.  Read
+[the assembler manual](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md).
 
 The disassembler is still experimental, but does work for ARM instructions.  Now that the assembler
 is done, I'll be working on the disassembler more slowly.

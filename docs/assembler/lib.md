@@ -68,9 +68,9 @@ built-in unary and binary operators.
 | `num.log10 a`       | Log base 10 of `a`                                                   |
 | `num.exp a`         | *e*<sup>`a`</sup>                                                    |
 | `num.lerp a, b, t`  | Linear interpolation from `a` to `b`, by amount `t`                  |
-| `num.hex a, b`      | Convert `a` to a sink hexadecimal string, 0-padded to `b` digits     |
-| `num.oct a, b`      | Convert `a` to a sink octal string, 0-padded to `b` digits           |
-| `num.bin a, b`      | Convert `a` to a sink binary string, 0-padded to `b` digits          |
+| `num.hex a, b`      | Convert `a` to a hexadecimal string, 0-padded to `b` digits          |
+| `num.oct a, b`      | Convert `a` to a octal string, 0-padded to `b` digits                |
+| `num.bin a, b`      | Convert `a` to a binary string, 0-padded to `b` digits               |
 
 Integer
 -------
@@ -260,13 +260,13 @@ The binary format is compact, fast, and restores list references -- therefore it
 serialize *any* value, and is the recommended format for serialization.
 
 Note: `pickle.valid` does not validate all possible JSON, just the subset that can be correctly
-deserialized to a sink value.
+deserialized to a value.
 
 | Function            | Description                                                             |
 |---------------------|-------------------------------------------------------------------------|
-| `pickle.json a`     | Converts a *non-circular* sink value `a` to a serialized string in JSON |
-| `pickle.bin a`      | Converts *any* sink value `a` to a binary serialized string             |
-| `pickle.val a`      | Converts a serialized value `a` (JSON or binary) back to a sink value   |
+| `pickle.json a`     | Converts a *non-circular* value `a` to a serialized string in JSON      |
+| `pickle.bin a`      | Converts *any* value `a` to a binary serialized string                  |
+| `pickle.val a`      | Converts a serialized value `a` (JSON or binary) back to a value        |
 | `pickle.valid a`    | Returns `nil` if `a` is invalid, `1` if JSON format, and `2` if binary  |
 | `pickle.sibling a`  | True if `a` has sibling references                                      |
 | `pickle.circular a` | True if `a` has circular references                                     |
@@ -275,9 +275,9 @@ deserialized to a sink value.
 ```
 pickle.json {1, nil}     // => '[1,null]'
 pickle.val '[[-1],5]'    // => {{-1}, 5}
-pickle.valid '{}'        // => nil, not all of JSON can be converted to sink
+pickle.valid '{}'        // => nil, not all of JSON can be converted
 pickle.valid '"\u1000"'  // => nil, only bytes in strings are supported ("\u0000" to "\u00FF")
-pickle.valid 'null'      // => 1, JSON formatted serialized sink value (`null` maps to `nil`)
+pickle.valid 'null'      // => 1, JSON formatted serialized value (`null` maps to `nil`)
 ```
 
 Store

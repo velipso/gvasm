@@ -327,8 +327,8 @@ Another way to share values is to store them under a unique key in the global st
 
 | Function                     | Description                                                     |
 |------------------------------|-----------------------------------------------------------------|
-| `store.set "key", value`     | Store `value` in a global state under `"key"`                   |
-| `store.get "key"[, default]` | Retrieve value stored under `"key"` (or `default` if not found) |
-| `store.has "key"`            | Returns true if `"key"` is defined in the store                 |
+| `store.set 'key', value`     | Store `value` in a global state under `'key'`                   |
+| `store.get 'key'[, default]` | Retrieve value stored under `'key'` (or `default` if not found) |
+| `store.has 'key'`            | Returns true if `'key'` is defined in the store                 |
 
 You can delete entries by setting them to `nil`.

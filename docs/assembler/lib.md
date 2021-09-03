@@ -13,6 +13,7 @@ Scripting Standard Library
 | [List](#list)                       | `list.*`   |
 | [Pickle](#pickle)                   | `pickle.*` |
 | [Store](#store)                     | `store.*`  |
+| [Image](#image)                     | `image.*`  |
 
 Globals
 -------
@@ -30,7 +31,6 @@ Globals
 | `order a, b`      | Compare `a` with `b` according to the sorting precedence (-1, 0, 1)     |
 | `pick cond, a, b` | If `cond` is true, return `a`, otherwise return `b` (short-circuited)   |
 | `embed 'file'`    | At compile-time, load the contents of `'file'` as a string              |
-| `image data`      | Decodes image data (.PNG, etc) into `{width, height, {...pixels}}`      |
 | `stacktrace`      | Return a list of strings with stacktrace information                    |
 
 Number
@@ -333,3 +333,31 @@ Another way to share values is to store them under a unique key in the global st
 | `store.has 'key'`            | Returns true if `'key'` is defined in the store                 |
 
 You can delete entries by setting them to `nil`.
+
+Image
+-----
+
+| Function              | Description                                          |
+|-----------------------|------------------------------------------------------|
+| `image.load data`     | Load an image file (.PNG, etc) into a list of pixels |
+
+You can decode common image formats into raw pixel data for processing.
+
+For example:
+
+```
+var sprite = image.load embed './sprite.png'
+if sprite
+  // sprite loaded correctly!
+  var height = &sprite
+  var width = &sprite[0]
+  for var row, y: sprite
+  	for var pixel, x: row
+  	  var {r, g, b, a} = pixel
+  	  // each component ranges from 0-255
+  	end
+  end
+else
+  abort 'Failed to load sprite!'
+end
+```

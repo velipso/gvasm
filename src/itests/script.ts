@@ -137,14 +137,22 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: "script.image",
+    name: "script.image.load",
     desc: "Load images",
     kind: "make",
-    stdout: ["pass"],
+    stdout: [
+      "{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, " +
+      "{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, " +
+      "{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}",
+      "{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, " +
+      "{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, " +
+      "{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}",
+      "nil",
+    ],
     files: {
       "/root/main": `
 .script
-  var png = {
+  var png = { // raw png data
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
     0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x03, 0x08, 0x06, 0x00, 0x00, 0x00, 0x56, 0x28, 0xb5,
     0xbf, 0x00, 0x00, 0x00, 0x2d, 0x49, 0x44, 0x41, 0x54, 0x08, 0x99, 0x05, 0xc1, 0x41, 0x01, 0x40,
@@ -152,28 +160,10 @@ include "../one.sink" /// 01 02
     0xb6, 0xcf, 0x06, 0x55, 0xc1, 0x12, 0xc6, 0xa0, 0xec, 0xd7, 0xdb, 0x77, 0x1f, 0xcf, 0xb9, 0xad,
     0xf3, 0x03, 0xff, 0x1f, 0x0c, 0xac, 0x55, 0x57, 0x90, 0x28, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
     0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
-  } | list.str
-  var expected = {
-    3, // width
-    3, // height
-    { // pixel data in RGBA format
-      0, 0, 0, 255,
-      255, 255, 255, 255,
-      0, 0, 0, 0,
-      255, 0, 0, 255,
-      0, 255, 0, 255,
-      0, 0, 255, 255,
-      69, 103, 137, 255,
-      76, 59, 42, 127,
-      0, 0, 0, 1
-    }
   }
-  var img = image png
-  if (order img, expected) == 0
-    say 'pass'
-  else
-    say 'fail'
-  end
+  say image.load png // load as array of numbers
+  say image.load list.str png // load as byte string
+  say image.load {'one', 'two'}
 .end
 `,
     },

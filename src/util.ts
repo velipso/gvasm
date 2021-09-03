@@ -58,6 +58,25 @@ export function b32(v: number) {
   return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
+export interface ILineStr {
+  filename: string;
+  line: number;
+  data: string;
+}
+
+export function splitLines(
+  filename: string,
+  lines: string,
+  startLine = 1,
+): ILineStr[] {
+  return (
+    lines.split("\r\n")
+      .flatMap((a) => a.split("\r"))
+      .flatMap((a) => a.split("\n"))
+      .map((data, i) => ({ filename, line: startLine + i, data }))
+  );
+}
+
 export function printf(format: string, ...args: number[]): string {
   let out = "";
   let lastIndex = 0;

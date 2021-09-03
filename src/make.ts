@@ -19,7 +19,7 @@ import { assertNever, b16, b32, printf } from "./util.ts";
 import { Arm, Thumb } from "./ops.ts";
 import { Expression, ExpressionBuilder } from "./expr.ts";
 import { Bytes } from "./bytes.ts";
-import { path } from "./deps.ts";
+import { loadImage, path } from "./deps.ts";
 import { ConstTable } from "./const.ts";
 import { version } from "./main.ts";
 import { stdlib } from "./stdlib.ts";
@@ -1290,6 +1290,7 @@ function parseBlockStatement(
         sink.scr_autonative(scr, "store.set");
         sink.scr_autonative(scr, "store.get");
         sink.scr_autonative(scr, "store.has");
+        sink.scr_autonative(scr, "image");
         state.script = { scr, startFile, body };
       } else {
         state.script = true; // we're in a script, but we're ignoring it
@@ -1780,6 +1781,28 @@ export async function makeFromFile(
                 }
                 const key = args[0] as string;
                 return Promise.resolve(sink.bool(key in state.store));
+              },
+            );
+            sink.ctx_autonative(
+              ctx,
+              "image",
+              null,
+              async (_ctx: sink.ctx, args: sink.val[]) => {
+                if (args.length <= 0 || !sink.isstr(args[0])) {
+                  return Promise.reject("Expecting string for argument 1");
+                }
+                const png = args[0] as string;
+                const img = await loadImage(
+                  new Uint8Array(png.split("").map((a) => a.charCodeAt(0))),
+                );
+                if (img === null) {
+                  return sink.NIL;
+                }
+                return new sink.list(
+                  img.width,
+                  img.height,
+                  Array.from(img.data) as sink.list,
+                );
               },
             );
             const run = await sink.ctx_run(ctx);

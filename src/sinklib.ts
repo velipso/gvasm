@@ -102,13 +102,13 @@ export function loadLibIntoContext(
         null
       );
       if (img === null) {
-        return sink.NIL;
+        return Promise.reject("Unknown image format");
       }
       if (
         img.width <= 0 || img.height <= 0 ||
         img.width * img.height * 4 !== img.data.length
       ) {
-        return sink.NIL;
+        return Promise.reject("Unsupported color format, please use RGBA");
       }
       const ret = new sink.list();
       for (let y = 0, k = 0; y < img.height; y++) {

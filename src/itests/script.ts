@@ -147,7 +147,6 @@ include "../one.sink" /// 01 02
       "{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, " +
       "{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, " +
       "{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}",
-      "nil",
     ],
     files: {
       "/root/main": `
@@ -163,7 +162,20 @@ include "../one.sink" /// 01 02
   }
   say image.load png // load as array of numbers
   say image.load list.str png // load as byte string
-  say image.load {'one', 'two'}
+.end
+`,
+    },
+  });
+
+  def({
+    name: "script.image.load-fail",
+    desc: "Fail to load image",
+    kind: "make",
+    error: true,
+    files: {
+      "/root/main": `
+.script
+  image.load {'one', 'two'}
 .end
 `,
     },

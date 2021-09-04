@@ -350,9 +350,9 @@ var sprite = image.load embed './sprite.png'
 var height = &sprite
 var width = &sprite[0]
 for var row, y: sprite
-	for var pixel, x: row
-	  var {r, g, b, a} = pixel
-	  // each component ranges from 0-255
-	end
+  for var pixel, x: row
+    var {r, g, b, a} = pixel
+    // each component ranges from 0-255
+  end
 end
 ```

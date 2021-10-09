@@ -155,10 +155,11 @@ ldrsb.mi r0, =0x12   /// dc 00 df 41
     kind: "make",
     files: {
       "/root/main": `.thumb
-mov r2, #100  /// 64 22
-ldr r2, =100  /// 64 22
-ldr r3, =100  /// 64 23
-ldr r3, =200  /// c8 23
+movs r2, #100  /// 64 22
+ldr r2, =100   /// 01 4a
+ldr r3, =100   /// 00 4b
+ldr r3, =200   /// 01 4b
+.pool          /// 64 00 00 00 c8 00 00 00
 `,
     },
   });

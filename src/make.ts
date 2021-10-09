@@ -23,6 +23,7 @@ import { path } from "./deps.ts";
 import { ConstTable } from "./const.ts";
 import { version } from "./main.ts";
 import { stdlib } from "./stdlib.ts";
+import { extlib } from "./extlib.ts";
 import { loadLibIntoContext, loadLibIntoScript } from "./sinklib.ts";
 import * as sink from "./sink.ts";
 
@@ -257,7 +258,12 @@ function parseDotStatement(
   state: IParseState,
   cmd: string,
   line: ITok[],
-): { include: string } | { embed: string } | { stdlib: true } | undefined {
+):
+  | { include: string }
+  | { embed: string }
+  | { stdlib: true }
+  | { extlib: true }
+  | undefined {
   switch (cmd) {
     case ".error":
       if (line.length === 1 && line[0].kind === TokEnum.STR) {
@@ -428,7 +434,7 @@ function parseDotStatement(
     case ".stdlib":
       return { stdlib: true };
     case ".extlib":
-      throw "TODO: .extlib";
+      return { extlib: true };
     case ".logo":
       if (line.length > 0) {
         throw "Invalid .logo statement";
@@ -1169,11 +1175,8 @@ function parseThumbPoolStatement(
     errorString(flp, "Incomplete statement"),
     { ex },
     { align: 4, bytes: 4, sym: "ex" },
-    ({ ex }, _) => {
-      if (ex >= 0 && ex < 256) {
-        // convert to: mov rd, #expression
-        return 0x2000 | (rd << 8) | ex;
-      }
+    () => {
+      // can't convert to movs rd, #expression because it modifies the status register :-(
       return false;
     },
     (_, address, poolAddress) => {
@@ -1508,7 +1511,12 @@ function parseBlockStatement(
 function parseLine(
   state: IParseState,
   line: ITok[],
-): { include: string } | { embed: string } | { stdlib: true } | undefined {
+):
+  | { include: string }
+  | { embed: string }
+  | { stdlib: true }
+  | { extlib: true }
+  | undefined {
   if (!state.struct) {
     // check for labels
     while (true) {
@@ -1759,6 +1767,8 @@ export async function makeFromFile(
 
             if (includeEmbed && "stdlib" in includeEmbed) {
               lineStrs.unshift(...splitLines("stdlib", stdlib));
+            } else if (includeEmbed && "extlib" in includeEmbed) {
+              lineStrs.unshift(...splitLines("extlib", extlib));
             } else if (includeEmbed && "include" in includeEmbed) {
               const { include } = includeEmbed;
               const full = isAbsolute(include)

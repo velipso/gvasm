@@ -1,0 +1,1909 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>GBA Instruction Set</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+html { margin: 0; padding: 0 }
+
+body, html {
+  background-color: #def;
+  font-family: sans-serif;
+  font-size: 22px;
+  line-height: 32px;
+}
+
+body {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 770px;
+}
+
+h1 {
+  font-size: 150%;
+  margin: 20px 0;
+  padding: 0;
+}
+
+h2 {
+  font-size: 120%;
+  margin: 20px 0;
+  padding: 0;
+}
+
+input {
+  background-color: #fff;
+  outline: none;
+  border: 1px solid #777;
+  border-radius: 6px;
+  font-size: 20px;
+  padding: 4px;
+  font-family: monospace;
+  min-width: 0;
+}
+
+button {
+  font-size: 20px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  border: 1px solid #777;
+  background-color: #fff;
+}
+
+input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+}
+
+input:focus, button:focus {
+  box-shadow: 0px 0px 0px 3px #fa0;
+}
+
+section {
+  margin: 3px 0;
+  padding: 0;
+  border-radius: 8px;
+}
+
+section h3 {
+  font-size: 80%;
+  font-weight: normal;
+  font-style: italic;
+  margin: 10px -15px 10px;
+  padding: 10px 12px 0;
+  border-top: 1px solid #aaa;
+  opacity: 0.6;
+}
+
+section h3:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
+section p,
+section pre {
+  margin: 10px 0;
+  padding: 0 5px;
+}
+
+section pre {
+  overflow-x: auto;
+}
+
+section ul {
+  margin: 10px 0 15px 35px;
+  padding: 0;
+}
+
+header {
+  display: flex;
+  flex-flow: row wrap;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  background-color: #eef7ff;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 110%;
+}
+
+main {
+  border: 1px solid #aaa;
+  border-top: none;
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  background-color: #eef7ff;
+  padding: 0 15px;
+}
+
+.format {
+  flex: 9;
+  white-space: nowrap;
+}
+
+.summary {
+  flex: 11;
+  white-space: nowrap;
+}
+
+.text {
+  cursor: text;
+}
+
+.format, .summary, .armEquivalent, .op, .reg, .imm, .com, .label, .mono {
+  font-family: monospace;
+}
+
+.op {
+  font-weight: bold;
+}
+
+.reg {
+  color: #707;
+}
+
+.imm {
+  color: #095;
+}
+
+.com {
+  opacity: 0.5;
+}
+
+.label {
+  color: #47f;
+  font-style: italic;
+}
+  </style>
+</head>
+<body>
+  <h1>GBA Instruction Set</h1>
+  <p>
+    <input type="text" id="search" placeholder="Search" autofocus oninput="javascript: filter();" />
+    <label>
+      <input type="checkbox" id="arm" checked oninput="javascript: filter();" />
+      ARM
+    </label>
+    <label>
+      <input type="checkbox" id="thumb" checked oninput="javascript: filter();" />
+      Thumb
+    </label>
+    <button onclick="javascript: reset();">Reset</button>
+  </p>
+  <h2 id="armHeader">ARM</h2>
+  <article id="armArticle">
+  </article>
+  <h2 id="thumbHeader">Thumb</h2>
+  <article id="thumbArticle">
+    <section id="thumb-adcs" data-filter="adcs adc">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">adcs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> +
+            <span class="reg">Rs</span> +
+            C-bit
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add contents of <span class="reg">Rd</span>, the contents of <span class="reg">Rs</span>,
+          and the C-bit of the CPSR.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">adc</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adcs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">adcs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 + r3 + C-bit and set condition</span>
+             <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-add" data-filter="add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">add&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> +
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add contents of <span class="reg">Rd</span> to contents of <span class="reg">Rn</span>.
+          Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Does not set CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> can range from
+            <span class="reg">r0</span> to <span class="reg">r15</span>, unlike most Thumb
+            instructions</li>
+          <li>Either <span class="reg">Rd</span> or <span class="reg">Rs</span> (or both) must range
+            from <span class="reg">r8</span> to <span class="reg">r15</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">add</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">add</span> <span class="reg">r0</span>, <span class="reg">r12</span>  <span class="com">// r0 = r0 + r12</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-adds-inc" data-filter="adds add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">adds</span>
+            <span class="reg">Rd</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> +
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add 8-bit immediate value to contents of <span class="reg">Rd</span> and place the result
+          in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">255</span></li>
+          <li>Assembler also allows <span class="op">add</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adds</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">adds</span> <span class="reg">r1</span>, #<span class="imm">255</span>  <span class="com">// r1 = r1 + 255 and set condition codes</span>
+               <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-adds-reg" data-filter="adds add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">adds</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> +
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add contents of <span class="reg">Rd</span> to contents of <span class="reg">Rn</span>.
+          Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">add</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adds</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">adds</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 + r3 and set condition codes on</span>
+             <span class="com">// the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-adds-imm" data-filter="adds add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">adds</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> +
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add 3-bit immediate value to contents of <span class="reg">Rs</span>.  Place result in
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">7</span></li>
+          <li>Assembler also allows <span class="op">add</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adds</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">adds</span> <span class="reg">r0</span>, <span class="reg">r3</span>, #<span class="imm">2</span>  <span class="com">// r0 = r3 + 2 and set condition codes</span>
+                 <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-adds-reg2" data-filter="adds add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">adds</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            <span class="reg">Rn</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> +
+            <span class="reg">Rn</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add contents of <span class="reg">Rn</span> to contents of <span class="reg">Rs</span>.
+          Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span>, <span class="reg">Rs</span>, and
+            <span class="reg">Rn</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">add</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adds</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          <span class="reg">Rn</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">adds</span> <span class="reg">r0</span>, <span class="reg">r3</span>, <span class="reg">r4</span>  <span class="com">// r0 = r3 + r4 and set condition</span>
+                 <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ands" data-filter="ands and">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ands</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> AND
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise AND the contents of <span class="reg">Rd</span> and the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">and</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ands</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ands</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 AND r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-asrs-reg" data-filter="asrs asr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">asrs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> &gt;&gt;
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform arithmetic shift right on <span class="reg">Rd</span> by the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">asr</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          asr <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">asrs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 &gt;&gt; r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-asrs-imm" data-filter="asrs asr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">asrs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Offset</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> &gt;&gt;
+            <span class="imm">Offset</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform arithmetic shift right on <span class="reg">Rs</span> by a 5-bit immediate value
+          and store the result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+            <span class="imm">31</span></li>
+          <li>Assembler also allows <span class="op">asr</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          asr #<span class="imm">Offset</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">asrs</span> <span class="reg">r2</span>, <span class="reg">r5</span>, #<span class="imm">27</span>  <span class="com">// Arithmetic shift right the</span>
+                  <span class="com">// contents of r5 by 27 and store the</span>
+                  <span class="com">// result in r2.  Set conditions</span>
+                  <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bics" data-filter="bics bic">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bics</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> AND NOT
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise clear the contents of <span class="reg">Rd</span> using the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">bic</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bics</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">bics</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 AND NOT r3 and set condition</span>
+             <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bx" data-filter="bx">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bx&nbsp;&nbsp;</span>
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">PC</span> =
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform branch (plus optional state change) to address in <span class="reg">Rs</span>.
+        </p>
+        <p>
+          Bit 0 of the address determines the processor state on entry to the routine:
+        </p>
+        <ul style="list-style-type: none;">
+          <li>Bit 0 = 0 &ndash; causes the processor to enter ARM state</li>
+          <li>Bit 0 = 1 &ndash; causes the processor to enter Thumb state</li>
+        </ul>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rs</span> can range from <span class="reg">r0</span> to
+            <span class="reg">r15</span>, unlike most Thumb instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bx</span>
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">bx</span> <span class="reg">r11</span>  <span class="com">// Transfer contents of r11 into the PC.</span>
+        <span class="com">// Bit 0 of r11 determines whether ARM or Thumb</span>
+        <span class="com">// state is entered.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-cmn" data-filter="cmn">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">cmn&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span> status of
+            <span class="reg">Rd</span> +
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Compare contents of <span class="reg">Rd</span> with the contents of
+          <span class="mono">-</span><span class="reg">Rs</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">cmn</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmn</span> <span class="reg">r2</span>, <span class="reg">r6</span>  <span class="com">// Set condition codes on r2 + r6.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-cmp-reg" data-filter="cmp">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">cmp&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span> status of
+            <span class="reg">Rd</span> -
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Compare contents of <span class="reg">Rd</span> with the contents of
+          <span class="reg">Rs</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> can range from
+            <span class="reg">r0</span> to <span class="reg">r15</span>, unlike most Thumb
+            instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">cmp</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r12</span>, <span class="reg">r6</span>  <span class="com">// Set condition codes on r12 - r6.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-cmp-imm" data-filter="cmp">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">cmp&nbsp;</span>
+            <span class="reg">Rd</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span> status of
+            <span class="reg">Rd</span> -
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Compare contents of <span class="reg">Rd</span> with 8-bit immediate value.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">255</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">cmp</span>
+          <span class="reg">Rd</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r2</span>, #<span class="imm">62</span>  <span class="com">// Set condition codes on r2 - 62.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-eors" data-filter="eors eor">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">eors</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> EOR
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise EOR the contents of <span class="reg">Rd</span> and the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">eor</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">eors</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">eors</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 EOR r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldr-pool" data-filter="ldr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldr&nbsp;</span>
+            <span class="reg">Rd</span>,
+            =<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Load the 32-bit constant from the next literal pool into <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Assembler requires a <span class="mono">.pool</span> statement somewhere after this
+            instruction in order to store <span class="imm">Value</span> in the ROM</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldr</span>
+          <span class="reg">Rd</span>,
+          =<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldr</span> <span class="reg">r0</span>, =<span class="imm">123</span>  <span class="com">// r0 = 123</span>
+              <span class="com">// ... later ...</span>
+.pool         <span class="com">// outputs 123 to the ROM</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldr-pc" data-filter="ldr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldr&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [#<span class="label">@Address</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            [<span class="label">@Address</span>]
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Load the 32-bit constant from <span class="label">@Address</span> into
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="label">@Address</span> must be after the instruction within 1020
+            bytes</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldr</span>
+          <span class="reg">Rd</span>,
+          [#<span class="label">@Address</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">@data</span>]  <span class="com">// r0 = load @data</span>
+                  <span class="com">// ... later ...</span>
+.align <span class="imm">4</span>          <span class="com">// make sure data is word aligned</span>
+<span class="label">@data:</span> .i32 <span class="imm">123</span>   <span class="com">// outputs 123 to the ROM</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-lsls-reg" data-filter="lsls lsl">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">lsls</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> &lt;&lt;
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform logical shift left on <span class="reg">Rd</span> by the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">lsr</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          lsl <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">lsls</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 &lt;&lt; r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-lsls-imm" data-filter="lsls lsl">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">lsls</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Offset</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> &lt;&lt;
+            <span class="imm">Offset</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform logical shift left on <span class="reg">Rs</span> by a 5-bit immediate value
+          and store the result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+            <span class="imm">31</span></li>
+          <li>Assembler also allows <span class="op">lsl</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          lsl #<span class="imm">Offset</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">lsls</span> <span class="reg">r2</span>, <span class="reg">r5</span>, #<span class="imm">27</span>  <span class="com">// Logical shift left the contents of</span>
+                  <span class="com">// r5 by 27 and store the result in</span>
+                  <span class="com">// r2.  Set conditions codes on the</span>
+                  <span class="com">// result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-lsrs-reg" data-filter="lsrs lsr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">lsrs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> &gt;&gt;&gt;
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform logical shift right on <span class="reg">Rd</span> by the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">lsl</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          lsr <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">lsrs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 &gt;&gt;&gt; r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-lsrs-imm" data-filter="lsrs lsr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">lsrs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Offset</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> &gt;&gt;&gt;
+            <span class="imm">Offset</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform logical right left on <span class="reg">Rs</span> by a 5-bit immediate value
+          and store the result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+            <span class="imm">31</span></li>
+          <li>Assembler also allows <span class="op">lsr</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          lsr #<span class="imm">Offset</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">lsrs</span> <span class="reg">r2</span>, <span class="reg">r5</span>, #<span class="imm">27</span>  <span class="com">// Logical shift right the contents</span>
+                  <span class="com">// of r5 by 27 and store the result</span>
+                  <span class="com">// in r2.  Set conditions codes on</span>
+                  <span class="com">// the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-mov" data-filter="mov">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">mov&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Move contents of <span class="reg">Rs</span> into <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Does not set CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> can range from
+            <span class="reg">r0</span> to <span class="reg">r15</span>, unlike most Thumb
+            instructions</li>
+          <li>Either <span class="reg">Rd</span> or <span class="reg">Rs</span> (or both) must range
+            from <span class="reg">r8</span> to <span class="reg">r15</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">mov</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">mov</span> <span class="reg">r0</span>, <span class="reg">r12</span>  <span class="com">// r0 = r12</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-movs-imm" data-filter="movs mov">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">movs</span>
+            <span class="reg">Rd</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Move 8-bit immediate value into <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">255</span></li>
+          <li>Assembler also allows <span class="op">mov</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">movs</span> <span class="reg">r0</span>, #<span class="imm">128</span>  <span class="com">// r0 = 128 and set condition codes.
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-movs-reg" data-filter="movs mov">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">movs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Move contents of <span class="reg">Rs</span> into <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">mov</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">adds</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          #<span class="imm">0</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">movs</span> <span class="reg">r0</span>, <span class="reg">r6</span>  <span class="com">// r0 = r6 and set condition codes.
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-muls" data-filter="muls mul">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">muls</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> *
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Multiply the contents of <span class="reg">Rd</span> and the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">mul</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">muls</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">muls</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 * r3 and set condition codes on</span>
+             <span class="com">// the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-mvns" data-filter="mvns mvn">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">mvns</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            NOT <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise NOT the contents of <span class="reg">Rs</span> and place the result in
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">mvn</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">mvns</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">mvns</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = NOT r3 and set condition codes on</span>
+             <span class="com">// the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-negs" data-filter="negs neg">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">negs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            -<span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Negate the contents of <span class="reg">Rs</span> and place result in
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">neg</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">rsbs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          #<span class="imm">0</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">negs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = -r3 and set condition codes on the</span>
+             <span class="com">// result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-nop" data-filter="nop">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">nop</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            No action
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          No action.
+        </p>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">mov</span>
+          <span class="reg">r8</span>,
+          <span class="reg">r8</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">nop</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-orrs" data-filter="orrs orr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">orrs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> OR
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise OR the contents of <span class="reg">Rd</span> and the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">orr</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">orrs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">orrs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 OR r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-rors" data-filter="rors ror">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">rors</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> ROR
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Bitwise rotate right the contents of <span class="reg">Rd</span> by the contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">ror</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">movs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          ror <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">rors</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 ROR r3 and set condition codes</span>
+             <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-sbcs" data-filter="sbcs sbc">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">sbcs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> -
+            <span class="reg">Rs</span> -
+            NOT C-bit
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract NOT C-Bit and the contents of <span class="reg">Rs</span> from the contents of
+          <span class="reg">Rd</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">sbc</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">sbcs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">sbcs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 - r3 - NOT C-bit and set</span>
+             <span class="com">// condition codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-subs-dec" data-filter="subs sub">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">subs</span>
+            <span class="reg">Rd</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> -
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract 8-bit immediate value from contents of <span class="reg">Rd</span> and place the
+          result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">255</span></li>
+          <li>Assembler also allows <span class="op">sub</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">subs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">subs</span> <span class="reg">r6</span>, #<span class="imm">145</span>  <span class="com">// r6 = r6 - 145 and set condition codes</span>
+               <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-subs-reg" data-filter="subs sub">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">subs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rd</span> -
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract contents of <span class="reg">Rd</span> to contents of
+          <span class="reg">Rn</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">sub</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">subs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rd</span>,
+          <span class="reg">Rn</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">subs</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 - r3 and set condition codes on</span>
+             <span class="com">// the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-subs-imm" data-filter="subs sub">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">subs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> -
+            <span class="imm">Value</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract 3-bit immediate value from contents of <span class="reg">Rs</span>.  Place result
+          in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">7</span></li>
+          <li>Assembler also allows <span class="op">sub</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">subs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">subs</span> <span class="reg">r0</span>, <span class="reg">r3</span>, #<span class="imm">2</span>  <span class="com">// r0 = r3 - 2 and set condition codes</span>
+                 <span class="com">// on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-subs-reg2" data-filter="subs sub">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">subs</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            <span class="reg">Rn</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span>
+            <span class="reg">Rd</span> =
+            <span class="reg">Rs</span> -
+            <span class="reg">Rn</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract contents of <span class="reg">Rn</span> from contents of
+          <span class="reg">Rs</span>.  Place result in <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span>, <span class="reg">Rs</span>, and
+            <span class="reg">Rn</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li>Assembler also allows <span class="op">sub</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">subs</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          <span class="reg">Rn</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">subs</span> <span class="reg">r0</span>, <span class="reg">r3</span>, <span class="reg">r4</span>  <span class="com">// r0 = r3 - r4 and set condition</span>
+                 <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-tst" data-filter="tst">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">tst&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="text">
+            <span class="com">//</span> status of
+            <span class="reg">Rd</span> AND
+            <span class="reg">Rs</span>
+          </span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Set condition codes based on the result of <span class="reg">Rd</span> AND
+          <span class="reg">Rs</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Sets CPSR condition codes</li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">tst</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">tst</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// Set condition codes on r0 AND r3</span>
+</pre>
+      </main>
+    </section>
+  </article>
+  <script>
+function $(id){
+  return document.getElementById(id);
+}
+
+function filter(){
+  var arm = $('arm').checked;
+  var thumb = $('thumb').checked;
+  $('armHeader').style.display = arm ? '' : 'none';
+  $('armArticle').style.display = arm ? '' : 'none';
+  $('thumbHeader').style.display = thumb ? '' : 'none';
+  $('thumbArticle').style.display = thumb ? '' : 'none';
+}
+
+function reset(){
+  document.querySelectorAll('section').forEach(function(section){
+    showSection(section, false, true);
+  });
+  $('search').value = '';
+  $('arm').checked = true;
+  $('thumb').checked = true;
+  $('search').focus();
+  filter();
+}
+
+var resetBoxShadow = function(){};
+function showSection(section, show, skipPush){
+  var header = section.querySelector('header');
+  var main = section.querySelector('main');
+  if (!skipPush)
+    history.pushState('', document.title, location.pathname + (show ? '#' + section.id : ''));
+  if (show){
+    resetBoxShadow();
+    section.style.boxShadow = '0px 0px 0px 2px #fa0';
+    resetBoxShadow = function(){ section.style.boxShadow = ''; };
+    main.style.display = '';
+    header.style.borderBottomLeftRadius = '0';
+    header.style.borderBottomRightRadius = '0';
+    setTimeout(function(){
+      window.scrollTo(0, section.getBoundingClientRect().top + window.pageYOffset);
+    }, 20);
+  }
+  else{
+    section.style.boxShadow = '';
+    main.style.display = 'none';
+    header.style.borderBottomLeftRadius = '';
+    header.style.borderBottomRightRadius = '';
+  }
+}
+
+document.querySelectorAll('section').forEach(function(section){
+  var header = section.querySelector('header');
+  var main = section.querySelector('main');
+  main.style.display = 'none';
+  header.addEventListener('click', function(e){
+    if (e.target.tagName === 'SPAN')
+      return;
+    showSection(section, main.style.display === 'none', false);
+  });
+});
+
+window.addEventListener('load', function(){
+  if (window.location.hash.length > 0){
+    var section = document.querySelector(window.location.hash);
+    if (section && section.tagName === 'SECTION'){
+      showSection(section, true, true);
+      return;
+    }
+  }
+  reset();
+});
+
+window.addEventListener('popstate', function(){
+  if (window.location.hash.length > 0){
+    var section = document.querySelector(window.location.hash);
+    if (section && section.tagName === 'SECTION')
+      showSection(section, true, true);
+  }
+});
+  </script>
+</body>
+</html>

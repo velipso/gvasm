@@ -2919,6 +2919,16 @@ export namespace Thumb {
       ref: "5.6",
       category: "Format 6: PC-Relative Load",
       codeParts: [
+        { s: 8, k: "value", sym: "offset", v: 0 }, // offset = 0
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 5, k: "value", v: 9 },
+      ],
+      syntax: ["ldr $Rd, [pc]"],
+    },
+    {
+      ref: "5.6",
+      category: "Format 6: PC-Relative Load",
+      codeParts: [
         { s: 8, k: "word", sym: "offset" },
         { s: 3, k: "register", sym: "Rd" },
         { s: 5, k: "value", v: 9 },
@@ -2988,12 +2998,38 @@ export namespace Thumb {
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rb" },
+        { s: 5, k: "value", sym: "offset", v: 0 }, // offset = 0
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 1, k: "value", sym: "b", v: 0 }, // transfer word quantity
+        { s: 3, k: "value", v: 3 },
+      ],
+      syntax: ["$oper $Rd, [$Rb]"],
+    },
+    {
+      ref: "5.9",
+      category: "Format 9: Load/Store With Immediate Offset",
+      codeParts: [
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rb" },
         { s: 5, k: "word", sym: "offset" },
         { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
         { s: 1, k: "value", sym: "b", v: 0 }, // transfer word quantity
         { s: 3, k: "value", v: 3 },
       ],
       syntax: ["$oper $Rd, [$Rb, #$offset]"],
+    },
+    {
+      ref: "5.9",
+      category: "Format 9: Load/Store With Immediate Offset",
+      codeParts: [
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rb" },
+        { s: 5, k: "value", sym: "offset", v: 0 }, // offset = 0
+        { s: 1, k: "enum", sym: "oper", enum: ["strb", "ldrb"] },
+        { s: 1, k: "value", sym: "b", v: 1 }, // transfer byte quantity
+        { s: 3, k: "value", v: 3 },
+      ],
+      syntax: ["$oper $Rd, [$Rb]"],
     },
     {
       ref: "5.9",
@@ -3019,6 +3055,18 @@ export namespace Thumb {
       codeParts: [
         { s: 3, k: "register", sym: "Rd" },
         { s: 3, k: "register", sym: "Rb" },
+        { s: 5, k: "value", sym: "offset", v: 0 }, // offset = 0
+        { s: 1, k: "enum", sym: "oper", enum: ["strh", "ldrh"] },
+        { s: 4, k: "value", v: 8 },
+      ],
+      syntax: ["$oper $Rd, [$Rb]"],
+    },
+    {
+      ref: "5.10",
+      category: "Format 10: Load/Store Halfword",
+      codeParts: [
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 3, k: "register", sym: "Rb" },
         { s: 5, k: "halfword", sym: "offset" },
         { s: 1, k: "enum", sym: "oper", enum: ["strh", "ldrh"] },
         { s: 4, k: "value", v: 8 },
@@ -3030,6 +3078,17 @@ export namespace Thumb {
     // FORMAT 11: SP-RELATIVE LOAD/STORE
     //
 
+    {
+      ref: "5.11",
+      category: "Format 11: SP-Relative Load/Store",
+      codeParts: [
+        { s: 8, k: "value", sym: "offset", v: 0 }, // offset = 0
+        { s: 3, k: "register", sym: "Rd" },
+        { s: 1, k: "enum", sym: "oper", enum: ["str", "ldr"] },
+        { s: 4, k: "value", v: 9 },
+      ],
+      syntax: ["$oper $Rd, [sp]"],
+    },
     {
       ref: "5.11",
       category: "Format 11: SP-Relative Load/Store",

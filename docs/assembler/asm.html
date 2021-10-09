@@ -17,7 +17,7 @@ body, html {
 body {
   margin: 0 auto;
   padding: 20px;
-  max-width: 770px;
+  max-width: 800px;
 }
 
 h1 {
@@ -162,7 +162,7 @@ main {
   <p>
     <input type="text" id="search" placeholder="Search" autofocus oninput="javascript: filter();" />
     <label>
-      <input type="checkbox" id="arm" checked oninput="javascript: filter();" />
+      <input type="checkbox" id="arm" oninput="javascript: filter();" />
       ARM
     </label>
     <label>
@@ -173,6 +173,7 @@ main {
   </p>
   <h2 id="armHeader">ARM</h2>
   <article id="armArticle">
+    <p>TODO: this</p>
   </article>
   <h2 id="thumbHeader">Thumb</h2>
   <article id="thumbArticle">
@@ -180,19 +181,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">adcs</span>
+            <span class="op">adcs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> +
-            <span class="reg">Rs</span> +
-            C-bit
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> +
+          <span class="reg">Rs</span> +
+          C-bit
         </div>
       </header>
       <main>
@@ -227,18 +226,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">add&nbsp;</span>
+            <span class="op">add&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> +
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> +
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -274,18 +271,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">adds</span>
+            <span class="op">adds&nbsp;</span>
             <span class="reg">Rd</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> +
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> +
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -322,18 +317,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">adds</span>
+            <span class="op">adds&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> +
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> +
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -368,19 +361,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">adds</span>
+            <span class="op">adds&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> +
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> +
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -417,19 +408,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">adds</span>
+            <span class="op">adds&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             <span class="reg">Rn</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> +
-            <span class="reg">Rn</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> +
+          <span class="reg">Rn</span>
         </div>
       </header>
       <main>
@@ -465,18 +454,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">ands</span>
+            <span class="op">ands&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> AND
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> AND
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -511,18 +498,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">asrs</span>
+            <span class="op">asrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> &gt;&gt;
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> &gt;&gt;
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -557,19 +542,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">asrs</span>
+            <span class="op">asrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             #<span class="imm">Offset</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> &gt;&gt;
-            <span class="imm">Offset</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> &gt;&gt;
+          <span class="imm">Offset</span>
         </div>
       </header>
       <main>
@@ -608,18 +591,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">bics</span>
+            <span class="op">bics&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> AND NOT
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> AND NOT
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -654,16 +635,14 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">bx&nbsp;&nbsp;</span>
+            <span class="op">bx&nbsp;&nbsp;&nbsp;</span>
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">PC</span> =
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">PC</span> =
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -701,17 +680,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">cmn&nbsp;</span>
+            <span class="op">cmn&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span> status of
-            <span class="reg">Rd</span> +
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span> status of
+          <span class="reg">Rd</span> +
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -743,17 +720,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">cmp&nbsp;</span>
+            <span class="op">cmp&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span> status of
-            <span class="reg">Rd</span> -
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span> status of
+          <span class="reg">Rd</span> -
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -786,17 +761,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">cmp&nbsp;</span>
+            <span class="op">cmp&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span> status of
-            <span class="reg">Rd</span> -
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span> status of
+          <span class="reg">Rd</span> -
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -829,18 +802,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">eors</span>
+            <span class="op">eors&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> EOR
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> EOR
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -875,17 +846,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">ldr&nbsp;</span>
+            <span class="op">ldr&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             =<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -908,7 +877,7 @@ main {
         </p>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">ldr</span> <span class="reg">r0</span>, =<span class="imm">123</span>  <span class="com">// r0 = 123</span>
+<span class="op">ldr</span> <span class="reg">r0</span>, =<span class="imm">123</span>  <span class="com">// r0 = load 123 from pool</span>
               <span class="com">// ... later ...</span>
 .pool         <span class="com">// outputs 123 to the ROM</span>
 </pre>
@@ -919,17 +888,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">ldr&nbsp;</span>
+            <span class="op">ldr&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             [#<span class="label">@Address</span>]
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            [<span class="label">@Address</span>]
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          [<span class="label">@Address</span>]
         </div>
       </header>
       <main>
@@ -943,7 +910,7 @@ main {
           <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
             <span class="reg">r7</span></li>
           <li><span class="label">@Address</span> must be after the instruction within 1020
-            bytes</li>
+            bytes, word aligned</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
@@ -953,10 +920,191 @@ main {
         </p>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">@data</span>]  <span class="com">// r0 = load @data</span>
+<span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">@data</span>]  <span class="com">// r0 = load 123 from @data</span>
                   <span class="com">// ... later ...</span>
 .align <span class="imm">4</span>          <span class="com">// make sure data is word aligned</span>
 <span class="label">@data:</span> .i32 <span class="imm">123</span>   <span class="com">// outputs 123 to the ROM</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldr-0" data-filter="ldr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldr&nbsp;&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rs</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          [<span class="reg">Rs</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Load <span class="reg">Rd</span> from the address in <span class="reg">Rs</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="reg">Rs</span> must either range from <span class="reg">r0</span> to
+            <span class="reg">r7</span>, be <span class="reg">sp</span>, or be
+            <span class="reg">pc</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldr</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldr</span> <span class="reg">r0</span>, [<span class="reg">r1</span>]  <span class="com">// r0 = load from address in r1</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldr-imm" data-filter="ldr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldr&nbsp;&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            #<span class="imm">Offset</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          [<span class="reg">Rb</span> +
+          <span class="imm">Offset</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and <span class="imm">Offset</span>.  Load <span class="reg">Rd</span> from the address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="reg">Rb</span> must either range from <span class="reg">r0</span> to
+            <span class="reg">r7</span>, be <span class="reg">sp</span>, or be
+            <span class="reg">pc</span></li>
+          <li>If <span class="reg">Rb</span> ranges from <span class="reg">r0</span> to
+            <span class="reg">r7</span>, <span class="imm">Offset</span> must range from
+            <span class="imm">0</span> to
+            <span class="imm">124</span>, word aligned</li>
+          <li>If <span class="reg">Rb</span> is <span class="reg">sp</span> or
+            <span class="reg">pc</span>, <span class="imm">Offset</span> must range from
+            <span class="imm">0</span> to <span class="imm">1020</span>, word aligned</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldr</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          #<span class="imm">Offset</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldr</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, #<span class="imm">8</span>]  <span class="com">// r0 = load from r1+8</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldr-reg" data-filter="ldr">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldr&nbsp;&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            <span class="reg">Ro</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          [<span class="reg">Rb</span> +
+          <span class="reg">Ro</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and the value in <span class="reg">Ro</span>.  Load the contents of the address into
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span>, <span class="reg">Rb</span>, and
+            <span class="reg">Ro</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldr</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          <span class="reg">Ro</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldr</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, <span class="reg">r6</span>]  <span class="com">// r0 = [r1 + r6]</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldrb-reg" data-filter="ldrb">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldrb&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            <span class="reg">Ro</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          byte [<span class="reg">Rb</span> +
+          <span class="reg">Ro</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and the value in <span class="reg">Ro</span>.  Load the byte value at the address into
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span>, <span class="reg">Rb</span>, and
+            <span class="reg">Ro</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldrb</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          <span class="reg">Ro</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldrb</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, <span class="reg">r6</span>]  <span class="com">// r0 = byte at [r1 + r6]</span>
 </pre>
       </main>
     </section>
@@ -965,18 +1113,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">lsls</span>
+            <span class="op">lsls&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> &lt;&lt;
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> &lt;&lt;
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1011,19 +1157,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">lsls</span>
+            <span class="op">lsls&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             #<span class="imm">Offset</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> &lt;&lt;
-            <span class="imm">Offset</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> &lt;&lt;
+          <span class="imm">Offset</span>
         </div>
       </header>
       <main>
@@ -1062,18 +1206,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">lsrs</span>
+            <span class="op">lsrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> &gt;&gt;&gt;
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> &gt;&gt;&gt;
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1108,19 +1250,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">lsrs</span>
+            <span class="op">lsrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             #<span class="imm">Offset</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> &gt;&gt;&gt;
-            <span class="imm">Offset</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> &gt;&gt;&gt;
+          <span class="imm">Offset</span>
         </div>
       </header>
       <main>
@@ -1159,17 +1299,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">mov&nbsp;</span>
+            <span class="op">mov&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1203,17 +1341,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">movs</span>
+            <span class="op">movs&nbsp;</span>
             <span class="reg">Rd</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -1247,17 +1383,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">movs</span>
+            <span class="op">movs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1290,18 +1424,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">muls</span>
+            <span class="op">muls&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> *
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> *
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1336,17 +1468,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">mvns</span>
+            <span class="op">mvns&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            NOT <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          NOT <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1380,17 +1510,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">negs</span>
+            <span class="op">negs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            -<span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          -<span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1429,10 +1557,8 @@ main {
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            No action
-          </span>
+          <span class="com">//</span>
+          No action
         </div>
       </header>
       <main>
@@ -1457,18 +1583,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">orrs</span>
+            <span class="op">orrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> OR
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> OR
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1503,18 +1627,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">rors</span>
+            <span class="op">rors&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> ROR
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> ROR
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1549,19 +1671,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">sbcs</span>
+            <span class="op">sbcs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> -
-            <span class="reg">Rs</span> -
-            NOT C-bit
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> -
+          <span class="reg">Rs</span> -
+          NOT C-bit
         </div>
       </header>
       <main>
@@ -1592,22 +1712,108 @@ main {
       </main>
     </section>
 
+    <section id="thumb-str-reg" data-filter="str">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">str&nbsp;&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            <span class="reg">Ro</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          [<span class="reg">Rb</span> +
+          <span class="reg">Ro</span>] =
+          <span class="reg">Rd</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and the value in <span class="reg">Ro</span>.  Store the contents of
+          <span class="reg">Rd</span> at the address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span>, <span class="reg">Rb</span>, and
+            <span class="reg">Ro</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">str</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          <span class="reg">Ro</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">str</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, <span class="reg">r6</span>]  <span class="com">// store r0 at address r1 + r6</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-strb-reg" data-filter="strb">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">strb&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            <span class="reg">Ro</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          [<span class="reg">Rb</span> +
+          <span class="reg">Ro</span>] =
+          byte <span class="reg">Rd</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and the value in <span class="reg">Ro</span>.  Store the byte value in
+          <span class="reg">Rd</span> at the address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span>, <span class="reg">Rb</span>, and
+            <span class="reg">Ro</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">strb</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          <span class="reg">Ro</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">strb</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, <span class="reg">r6</span>]  <span class="com">// store byte r0 at address r1 + r6</span>
+</pre>
+      </main>
+    </section>
+
     <section id="thumb-subs-dec" data-filter="subs sub">
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">subs</span>
+            <span class="op">subs&nbsp;</span>
             <span class="reg">Rd</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> -
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> -
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -1644,18 +1850,16 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">subs</span>
+            <span class="op">subs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rd</span> -
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rd</span> -
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1690,19 +1894,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">subs</span>
+            <span class="op">subs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> -
-            <span class="imm">Value</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> -
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -1739,19 +1941,17 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">subs</span>
+            <span class="op">subs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
             <span class="reg">Rn</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span>
-            <span class="reg">Rd</span> =
-            <span class="reg">Rs</span> -
-            <span class="reg">Rn</span>
-          </span>
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> -
+          <span class="reg">Rn</span>
         </div>
       </header>
       <main>
@@ -1787,17 +1987,15 @@ main {
       <header>
         <div class="format">
           <span class="text">
-            <span class="op">tst&nbsp;</span>
+            <span class="op">tst&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>
           </span>
         </div>
         <div class="summary">
-          <span class="text">
-            <span class="com">//</span> status of
-            <span class="reg">Rd</span> AND
-            <span class="reg">Rs</span>
-          </span>
+          <span class="com">//</span> status of
+          <span class="reg">Rd</span> AND
+          <span class="reg">Rs</span>
         </div>
       </header>
       <main>
@@ -1844,7 +2042,7 @@ function reset(){
     showSection(section, false, true);
   });
   $('search').value = '';
-  $('arm').checked = true;
+  $('arm').checked = false;
   $('thumb').checked = true;
   $('search').focus();
   filter();
@@ -1879,9 +2077,19 @@ document.querySelectorAll('section').forEach(function(section){
   var header = section.querySelector('header');
   var main = section.querySelector('main');
   main.style.display = 'none';
+  var shouldIgnore = false;
+  function ignore(e){
+    return (e.target.tagName === 'SPAN' && e.target.className === 'text') ||
+      (e.target.parentNode.tagName === 'SPAN' && e.target.parentNode.className === 'text');
+  }
+  header.addEventListener('mousedown', function(e){
+    shouldIgnore = ignore(e);
+  });
   header.addEventListener('click', function(e){
-    if (e.target.tagName === 'SPAN')
+    if (ignore(e) || shouldIgnore){
+      shouldIgnore = false;
       return;
+    }
     showSection(section, main.style.display === 'none', false);
   });
 });

@@ -220,6 +220,8 @@ bx r13  /// 68 47
     files: {
       "/root/main": `.thumb
 // relative to PC
+ldr r4, [pc, #0]     /// 00 4c
+ldr r4, [pc]         /// 00 4c
 ldr r4, [pc, #844]   /// d3 4c
 ldr r4, [#@L]        /// 01 4c
 ldr r4, [#@L]        /// 00 4c
@@ -228,16 +230,24 @@ ldr r4, [#@L]        /// 00 4c
 // word
 ldr r7, [r5, r3]     /// ef 58
 ldr r3, [r6, #116]   /// 73 6f
+ldr r3, [r6, #0]     /// 33 68
+ldr r3, [r6]         /// 33 68
 ldr r2, [sp, #492]   /// 7b 9a
+ldr r2, [sp, #0]     /// 00 9a
+ldr r2, [sp]         /// 00 9a
 // half word
 ldrh r7, [r5, r3]    /// ef 5a
 ldrsh r7, [r5, r3]   /// ef 5e
 ldrh r3, [r6, #58]   /// 73 8f
+ldrh r3, [r6, #0]    /// 33 88
+ldrh r3, [r6]        /// 33 88
 // byte
 ldrb r7, [r5, r3]    /// ef 5c
 ldsb r7, [r5, r3]    /// ef 56
 ldrsb r7, [r5, r3]   /// ef 56
 ldrb r3, [r6, #29]   /// 73 7f
+ldrb r3, [r6, #0]    /// 33 78
+ldrb r3, [r6]        /// 33 78
 `,
     },
   });
@@ -251,13 +261,21 @@ ldrb r3, [r6, #29]   /// 73 7f
 // word
 str r7, [r5, r3]     /// ef 50
 str r3, [r6, #116]   /// 73 67
+str r3, [r6, #0]     /// 33 60
+str r3, [r6]         /// 33 60
 str r2, [sp, #492]   /// 7b 92
+str r2, [sp, #0]     /// 00 92
+str r2, [sp]         /// 00 92
 // half word
 strh r7, [r5, r3]    /// ef 52
 strh r3, [r6, #58]   /// 73 87
+strh r3, [r6, #0]    /// 33 80
+strh r3, [r6]        /// 33 80
 // byte
 strb r7, [r5, r3]    /// ef 54
 strb r3, [r6, #29]   /// 73 77
+strb r3, [r6, #0]    /// 33 70
+strb r3, [r6]        /// 33 70
 `,
     },
   });

@@ -172,18 +172,30 @@ cmp r9, r13   /// e9 45
 
   for (
     const { op, desc, code } of [
+      { op: "ands", desc: "Bitwise and", code: 0 },
       { op: "and", desc: "Bitwise and", code: 0 },
+      { op: "eors", desc: "Bitwise exclusive or", code: 1 },
       { op: "eor", desc: "Bitwise exclusive or", code: 1 },
+      { op: "adcs", desc: "Add with carry", code: 5 },
       { op: "adc", desc: "Add with carry", code: 5 },
+      { op: "sbcs", desc: "Subtract with carry", code: 6 },
       { op: "sbc", desc: "Subtract with carry", code: 6 },
+      { op: "rors", desc: "Rotate right", code: 7 },
       { op: "ror", desc: "Rotate right", code: 7 },
       { op: "tst", desc: "Bit test", code: 8 },
+      { op: "negs", desc: "Negate", code: 9 },
       { op: "neg", desc: "Negate", code: 9 },
       { op: "cmn", desc: "Compare negative", code: 11 },
+      { op: "orrs", desc: "Bitwise or", code: 12 },
       { op: "orr", desc: "Bitwise or", code: 12 },
+      { op: "muls", desc: "Multiply", code: 13 },
       { op: "mul", desc: "Multiply", code: 13 },
+      { op: "bics", desc: "Bit clear", code: 14 },
       { op: "bic", desc: "Bit clear", code: 14 },
+      { op: "mvns", desc: "Move not", code: 15 },
       { op: "mvn", desc: "Move not", code: 15 },
+      { op: "nots", desc: "Move not", code: 15 },
+      { op: "not", desc: "Move not", code: 15 },
     ]
   ) {
     const a = code >> 2;

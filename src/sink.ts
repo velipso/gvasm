@@ -15966,18 +15966,18 @@ export function str_hashplain(
   }
 
   function x64_mul(a: u64, b: u64): u64 {
-    var A0 = a[0] & 0xFFFF; // lowest 16 bits
-    var A1 = a[0] >>> 16; // ...
-    var A2 = a[1] & 0xFFFF; // ...
-    var A3 = a[1] >>> 16; // highest 16 bits
-    var B0 = b[0] & 0xFFFF;
-    var B1 = b[0] >>> 16;
-    var B2 = b[1] & 0xFFFF;
-    var B3 = b[1] >>> 16;
-    var T;
-    var R0, R1, R2, R3;
+    const A0 = a[0] & 0xFFFF; // lowest 16 bits
+    const A1 = a[0] >>> 16; // ...
+    const A2 = a[1] & 0xFFFF; // ...
+    const A3 = a[1] >>> 16; // highest 16 bits
+    const B0 = b[0] & 0xFFFF;
+    const B1 = b[0] >>> 16;
+    const B2 = b[1] & 0xFFFF;
+    const B3 = b[1] >>> 16;
+    let T;
+    let R1, R2, R3;
     T = A0 * B0;
-    R0 = T & 0xFFFF;
+    const R0 = T & 0xFFFF;
     T = A1 * B0 + (T >>> 16);
     R1 = T & 0xFFFF;
     T = A2 * B0 + (T >>> 16);
@@ -16104,7 +16104,7 @@ export function str_hashplain(
 
   let k1: u64 = [0, 0];
   let k2: u64 = [0, 0];
-  var tail = bytes.substr(nblocks << 4);
+  const tail = bytes.substr(nblocks << 4);
 
   switch (tail.length) {
     case 15:
@@ -16215,7 +16215,7 @@ export function list_cat(ctx: ctx, vals: val[]): val {
 }
 
 export function list_joinplain(vals: list | val[], sep: string): val {
-  var out = "";
+  let out = "";
   for (let i = 0; i < vals.length; i++) {
     out += (i > 0 ? sep : "") + tostr(vals[i]);
   }

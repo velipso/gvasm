@@ -93,6 +93,7 @@ nop         /// 00 00 a0 e1
     const { op, desc, code } of [
       { op: "mov", desc: "Move", code: 13 },
       { op: "mvn", desc: "Move not", code: 15 },
+      { op: "not", desc: "Move not", code: 15 },
     ]
   ) {
     const b = (code & 7) << 1;

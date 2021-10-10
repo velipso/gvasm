@@ -356,7 +356,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -412,7 +412,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -456,7 +456,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -500,7 +500,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -549,7 +549,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -599,7 +599,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 0 }, // immediate = 0
@@ -640,7 +640,7 @@ export namespace Arm {
             false,
             "mov",
             false,
-            "mvn",
+            "mvn/not",
           ],
         },
         { s: 1, k: "value", sym: "immediate", v: 1 }, // immediate = 1
@@ -2810,7 +2810,7 @@ export namespace Thumb {
             "orrs/orr",
             "muls/mul",
             "bics/bic",
-            "mvns/mvn",
+            "mvns/nots/mvn/not",
           ],
         },
         { s: 6, k: "value", v: 16 },

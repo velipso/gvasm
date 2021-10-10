@@ -11,7 +11,7 @@ import { dis, IDisArgs } from "./dis.ts";
 import { IItestArgs, itest } from "./itest.ts";
 import { argParse, path } from "./deps.ts";
 
-export const version = 1002004;
+export const version = 1002005;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;

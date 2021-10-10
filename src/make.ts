@@ -576,13 +576,23 @@ function validateSymExpr(
   partSym: string,
   line: ITok[],
   ctable: ConstTable,
+  negate: boolean,
 ): boolean {
   try {
     const expr = ExpressionBuilder.parse(line, [], ctable);
     if (expr === false) {
       return false;
     }
-    syms[partSym] = expr.build([]);
+    const ex = expr.build([]);
+    if (!negate) {
+      syms[partSym] = ex;
+      return true;
+    }
+    const v = ex.value();
+    if (v === false || v >= 0) {
+      return false;
+    }
+    syms[partSym] = -v;
     return true;
   } catch (_) {
     return false;
@@ -703,7 +713,7 @@ function parseArmStatement(
           case "pcoffset12":
           case "offsetsplit":
           case "pcoffsetsplit":
-            if (!validateSymExpr(syms, part.sym, line, state.ctable)) {
+            if (!validateSymExpr(syms, part.sym, line, state.ctable, false)) {
               return false;
             }
             break;
@@ -1022,12 +1032,21 @@ function parseThumbStatement(
         const codePart = part.codeParts[0];
         switch (codePart.k) {
           case "word":
+          case "negword":
           case "halfword":
           case "shalfword":
           case "immediate":
           case "pcoffset":
           case "offsetsplit":
-            if (!validateSymExpr(syms, part.sym, line, state.ctable)) {
+            if (
+              !validateSymExpr(
+                syms,
+                part.sym,
+                line,
+                state.ctable,
+                codePart.k === "negword",
+              )
+            ) {
               return false;
             }
             break;
@@ -1106,6 +1125,7 @@ function parseThumbStatement(
             opcode.push(codePart.s, codePart.v);
             break;
           case "word":
+          case "negword":
             pushAlign(codePart.s, syms[codePart.sym], 2);
             break;
           case "halfword":

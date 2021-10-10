@@ -97,6 +97,10 @@ section ul {
   padding: 0;
 }
 
+section ul ul {
+  margin-top: 0;
+}
+
 header {
   display: flex;
   flex-flow: row wrap;
@@ -131,7 +135,7 @@ main {
   cursor: text;
 }
 
-.format, .summary, .armEquivalent, .op, .reg, .imm, .com, .label, .mono {
+.format, .summary, .armEquivalent, .op, .reg, .imm, .com, .label, .reglist, .mono {
   font-family: monospace;
 }
 
@@ -154,6 +158,10 @@ main {
 .label {
   color: #47f;
   font-style: italic;
+}
+
+.reglist {
+  color: #f47;
 }
   </style>
 </head>
@@ -222,6 +230,52 @@ main {
       </main>
     </section>
 
+    <section id="thumb-add-sp" data-filter="sp add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">add&nbsp;&nbsp;</span>
+            <span class="reg">sp</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">sp</span> =
+          <span class="reg">sp</span> +
+          <span class="imm">Value</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add 9-bit immediate value to contents of <span class="reg">sp</span> and place the result
+          in <span class="reg">sp</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Does not set CPSR condition codes</li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">508</span>, word aligned</li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">sub</span>
+              <span class="reg">sp</span>, #-<span class="imm">Value</span></span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">add</span>
+          <span class="reg">sp</span>,
+          <span class="reg">sp</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">add</span> <span class="reg">sp</span>, #<span class="imm">64</span>  <span class="com">// sp = sp + 64</span>
+</pre>
+      </main>
+    </section>
+
     <section id="thumb-add" data-filter="alu add">
       <header>
         <div class="format">
@@ -263,6 +317,53 @@ main {
         <h3>Example</h3>
 <pre class="example">
 <span class="op">add</span> <span class="reg">r0</span>, <span class="reg">r12</span>  <span class="com">// r0 = r0 + r12</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-add-imm" data-filter="sp pc add">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">add&nbsp;&nbsp;</span>
+            <span class="reg">Rd</span>,
+            <span class="reg">Rs</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          <span class="reg">Rs</span> +
+          <span class="imm">Value</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Add 10-bit immediate value to contents of <span class="reg">Rs</span>.  Place result in
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Does not set CPSR condition codes</li>
+          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
+            <span class="reg">r7</span></li>
+          <li><span class="reg">Rs</span> must be <span class="reg">sp</span> or
+            <span class="reg">pc</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">1020</span>, word aligned</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">add</span>
+          <span class="reg">Rd</span>,
+          <span class="reg">Rs</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">add</span> <span class="reg">r0</span>, <span class="reg">sp</span>, #<span class="imm">212</span>  <span class="com">// r0 = sp + 212</span>
 </pre>
       </main>
     </section>
@@ -545,14 +646,14 @@ main {
             <span class="op">asrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
-            #<span class="imm">Offset</span>
+            #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
           <span class="reg">Rs</span> &gt;&gt;
-          <span class="imm">Offset</span>
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -566,7 +667,7 @@ main {
           <li>Sets CPSR condition codes</li>
           <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
-          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
           <li>Assembler also allows <span class="op">asr</span> for this instruction</li>
         </ul>
@@ -575,7 +676,7 @@ main {
           <span class="op">movs</span>
           <span class="reg">Rd</span>,
           <span class="reg">Rs</span>,
-          asr #<span class="imm">Offset</span>
+          asr #<span class="imm">Value</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -631,7 +732,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-bx" data-filter="branch bx">
+    <section id="thumb-bx" data-filter="pc bx">
       <header>
         <div class="format">
           <span class="text">
@@ -641,7 +742,7 @@ main {
         </div>
         <div class="summary">
           <span class="com">//</span>
-          <span class="reg">PC</span> =
+          <span class="reg">pc</span> =
           <span class="reg">Rs</span>
         </div>
       </header>
@@ -669,7 +770,7 @@ main {
         </p>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">bx</span> <span class="reg">r11</span>  <span class="com">// Transfer contents of r11 into the PC.</span>
+<span class="op">bx</span> <span class="reg">r11</span>  <span class="com">// Transfer contents of r11 into the pc.</span>
         <span class="com">// Bit 0 of r11 determines whether ARM or Thumb</span>
         <span class="com">// state is entered.</span>
 </pre>
@@ -842,6 +943,52 @@ main {
       </main>
     </section>
 
+    <section id="thumb-ldmia" data-filter="mem ldmia ldmfd">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldmia</span>
+            <span class="reg">Rb</span>!,
+            {<span class="reglist">Rlist</span>}
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reglist">Rlist</span> =
+          [<span class="reg">Rb</span>], increasing
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Load the registers specified by <span class="reglist">Rlist</span>, starting at the base
+          address in <span class="reg">Rb</span> and increasing.  Write back the new base address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reglist">Rlist</span> can contain any register from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">ldmfd</span> <span class="reg">Rb</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldmia</span>
+          <span class="reg">Rb</span>!,
+          {<span class="reglist">Rlist</span>}
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldmia</span> <span class="reg">r7</span>!, {<span class="reg">r0</span>-<span class="reg">r3</span>}  <span class="com">// Load registers r0, r1, r2, r3 by</span>
+                    <span class="com">// starting at address in r7 and</span>
+                    <span class="com">// increasing.  Write back the new</span>
+                    <span class="com">// base address to r7.</span>
+</pre>
+      </main>
+    </section>
+
     <section id="thumb-ldr-pool" data-filter="mem ldr">
       <header>
         <div class="format">
@@ -928,7 +1075,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-ldr-0" data-filter="mem ldr">
+    <section id="thumb-ldr-0" data-filter="mem sp pc ldr">
       <header>
         <div class="format">
           <span class="text">
@@ -969,28 +1116,28 @@ main {
       </main>
     </section>
 
-    <section id="thumb-ldr-imm" data-filter="mem ldr">
+    <section id="thumb-ldr-imm" data-filter="mem sp pc ldr">
       <header>
         <div class="format">
           <span class="text">
             <span class="op">ldr&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             [<span class="reg">Rb</span>,
-            #<span class="imm">Offset</span>]
+            #<span class="imm">Value</span>]
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
           [<span class="reg">Rb</span> +
-          <span class="imm">Offset</span>]
+          <span class="imm">Value</span>]
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
           Calculate the target address by adding together the value in <span class="reg">Rb</span>
-          and <span class="imm">Offset</span>.  Load <span class="reg">Rd</span> from the address.
+          and <span class="imm">Value</span>.  Load <span class="reg">Rd</span> from the address.
         </p>
         <h3>Notes</h3>
         <ul>
@@ -1000,11 +1147,11 @@ main {
             <span class="reg">r7</span>, be <span class="reg">sp</span>, or be
             <span class="reg">pc</span></li>
           <li>If <span class="reg">Rb</span> ranges from <span class="reg">r0</span> to
-            <span class="reg">r7</span>, <span class="imm">Offset</span> must range from
+            <span class="reg">r7</span>, <span class="imm">Value</span> must range from
             <span class="imm">0</span> to
             <span class="imm">124</span>, word aligned</li>
           <li>If <span class="reg">Rb</span> is <span class="reg">sp</span> or
-            <span class="reg">pc</span>, <span class="imm">Offset</span> must range from
+            <span class="reg">pc</span>, <span class="imm">Value</span> must range from
             <span class="imm">0</span> to <span class="imm">1020</span>, word aligned</li>
         </ul>
         <h3>ARM Equivalent</h3>
@@ -1012,7 +1159,7 @@ main {
           <span class="op">ldr</span>
           <span class="reg">Rd</span>,
           [<span class="reg">Rb</span>,
-          #<span class="imm">Offset</span>]
+          #<span class="imm">Value</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -1113,21 +1260,21 @@ main {
             <span class="op">ldrb&nbsp;</span>
             <span class="reg">Rd</span>,
             [<span class="reg">Rb</span>,
-            #<span class="imm">Offset</span>]
+            #<span class="imm">Value</span>]
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
           byte [<span class="reg">Rb</span> +
-          <span class="imm">Offset</span>]
+          <span class="imm">Value</span>]
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
           Calculate the target address by adding together the value in <span class="reg">Rb</span>
-          and <span class="imm">Offset</span>.  Load the byte value at the address into
+          and <span class="imm">Value</span>.  Load the byte value at the address into
           <span class="reg">Rd</span>.
         </p>
         <h3>Notes</h3>
@@ -1136,7 +1283,7 @@ main {
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
           <li>High 24 bits of <span class="reg">Rd</span> will be set to
             <span class="imm">0</span></li>
-          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
         </ul>
         <h3>ARM Equivalent</h3>
@@ -1144,7 +1291,7 @@ main {
           <span class="op">ldrb</span>
           <span class="reg">Rd</span>,
           [<span class="reg">Rb</span>,
-          #<span class="imm">Offset</span>]
+          #<span class="imm">Value</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -1199,7 +1346,95 @@ main {
       </main>
     </section>
 
-    <section id="thumb-ldrh" data-filter="mem ldrh">
+    <section id="thumb-ldrh-0" data-filter="mem ldrh">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldrh&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rs</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          halfword [<span class="reg">Rs</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Load the halfword value at the address <span class="reg">Rs</span> into
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>High 16 bits of <span class="reg">Rd</span> will be set to
+            <span class="imm">0</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldrh</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldrh</span> <span class="reg">r0</span>, [<span class="reg">r1</span>]  <span class="com">// r0 = halfword at [r1]</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldrh-imm" data-filter="mem ldrh">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ldrh&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            #<span class="imm">Value</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">Rd</span> =
+          halfword [<span class="reg">Rb</span> +
+          <span class="imm">Value</span>]
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and <span class="imm">Value</span>.  Load the halfword value at the address into
+          <span class="reg">Rd</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> and <span class="reg">Rb</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>High 16 bits of <span class="reg">Rd</span> will be set to
+            <span class="imm">0</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">62</span>, halfword aligned</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldrh</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          #<span class="imm">Value</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">ldrh</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, #<span class="imm">12</span>]  <span class="com">// r0 = byte at [r1 + 12]</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ldrh-reg" data-filter="mem ldrh">
       <header>
         <div class="format">
           <span class="text">
@@ -1388,14 +1623,14 @@ main {
             <span class="op">lsls&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
-            #<span class="imm">Offset</span>
+            #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
           <span class="reg">Rs</span> &lt;&lt;
-          <span class="imm">Offset</span>
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -1409,7 +1644,7 @@ main {
           <li>Sets CPSR condition codes</li>
           <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
-          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
           <li>Assembler also allows <span class="op">lsl</span> for this instruction</li>
         </ul>
@@ -1418,7 +1653,7 @@ main {
           <span class="op">movs</span>
           <span class="reg">Rd</span>,
           <span class="reg">Rs</span>,
-          lsl #<span class="imm">Offset</span>
+          lsl #<span class="imm">Value</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -1481,14 +1716,14 @@ main {
             <span class="op">lsrs&nbsp;</span>
             <span class="reg">Rd</span>,
             <span class="reg">Rs</span>,
-            #<span class="imm">Offset</span>
+            #<span class="imm">Value</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
           <span class="reg">Rs</span> &gt;&gt;&gt;
-          <span class="imm">Offset</span>
+          <span class="imm">Value</span>
         </div>
       </header>
       <main>
@@ -1502,7 +1737,7 @@ main {
           <li>Sets CPSR condition codes</li>
           <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
-          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
           <li>Assembler also allows <span class="op">lsr</span> for this instruction</li>
         </ul>
@@ -1511,7 +1746,7 @@ main {
           <span class="op">movs</span>
           <span class="reg">Rd</span>,
           <span class="reg">Rs</span>,
-          lsr #<span class="imm">Offset</span>
+          lsr #<span class="imm">Value</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -1778,7 +2013,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-nop" data-filter="nop nop">
+    <section id="thumb-nop" data-filter="nop">
       <header>
         <div class="format">
           <span class="text">
@@ -1804,6 +2039,96 @@ main {
         <h3>Example</h3>
 <pre class="example">
 <span class="op">nop</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-pop" data-filter="sp mem pop ldmia ldmfd">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">pop&nbsp;&nbsp;</span>
+            {<span class="reglist">Rlist</span>}
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span> pop
+          <span class="reglist">Rlist</span>, increase
+          <span class="reg">sp</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Pop the registers specified by <span class="reglist">Rlist</span> from the stack.
+          Increase the stack pointer <span class="reg">sp</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reglist">Rlist</span> can contain any register from
+            <span class="reg">r0</span> to <span class="reg">r7</span>, in addition to
+            <span class="reg">pc</span></li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">lmdia</span> <span class="reg">sp</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+            <li><span class="mono"><span class="op">ldmfd</span> <span class="reg">sp</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ldmia</span>
+          <span class="reg">sp</span>!,
+          {<span class="reglist">Rlist</span>}
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">pop</span> {<span class="reg">r0</span>-<span class="reg">r3</span>, <span class="reg">pc</span>}  <span class="com">// pop r0, r1, r2, r3, and pc from stack</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-push" data-filter="sp mem push stmdb stmfd">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">push&nbsp;</span>
+            {<span class="reglist">Rlist</span>}
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span> push
+          <span class="reglist">Rlist</span>, decrease
+          <span class="reg">sp</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Push the registers specified by <span class="reglist">Rlist</span> onto the stack.
+          Decrease the stack pointer <span class="reg">sp</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reglist">Rlist</span> can contain any register from
+            <span class="reg">r0</span> to <span class="reg">r7</span>, in addition to
+            <span class="reg">lr</span></li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">stmdb</span> <span class="reg">sp</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+            <li><span class="mono"><span class="op">stmfd</span> <span class="reg">sp</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">stmdb</span>
+          <span class="reg">sp</span>!,
+          {<span class="reglist">Rlist</span>}
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">push</span> {<span class="reg">r0</span>-<span class="reg">r3</span>, <span class="reg">lr</span>}  <span class="com">// push r0, r1, r2, r3, and lr on stack</span>
 </pre>
       </main>
     </section>
@@ -1941,7 +2266,53 @@ main {
       </main>
     </section>
 
-    <section id="thumb-str-0" data-filter="mem str">
+    <section id="thumb-stmia" data-filter="mem stmia stmea">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">stmia</span>
+            <span class="reg">Rb</span>!,
+            {<span class="reglist">Rlist</span>}
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          [<span class="reg">Rb</span>] =
+          <span class="reglist">Rlist</span>, increasing
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Store the registers specified by <span class="reglist">Rlist</span>, starting at the base
+          address in <span class="reg">Rb</span> and increasing.  Write back the new base address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reglist">Rlist</span> can contain any register from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">stmea</span> <span class="reg">Rb</span>!,
+              {<span class="reglist">Rlist</span>}</span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">stmia</span>
+          <span class="reg">Rb</span>!,
+          {<span class="reglist">Rlist</span>}
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">stmia</span> <span class="reg">r7</span>!, {<span class="reg">r0</span>-<span class="reg">r3</span>}  <span class="com">// Store registers r0, r1, r2, r3 by</span>
+                    <span class="com">// starting at address in r7 and</span>
+                    <span class="com">// increasing.  Write back the new</span>
+                    <span class="com">// base address to r7.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-str-0" data-filter="mem sp str">
       <header>
         <div class="format">
           <span class="text">
@@ -1982,20 +2353,20 @@ main {
       </main>
     </section>
 
-    <section id="thumb-str-imm" data-filter="mem str">
+    <section id="thumb-str-imm" data-filter="mem sp str">
       <header>
         <div class="format">
           <span class="text">
             <span class="op">str&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
             [<span class="reg">Rb</span>,
-            #<span class="imm">Offset</span>]
+            #<span class="imm">Value</span>]
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           [<span class="reg">Rb</span> +
-          <span class="imm">Offset</span>] =
+          <span class="imm">Value</span>] =
           <span class="reg">Rd</span>
         </div>
       </header>
@@ -2003,7 +2374,7 @@ main {
         <h3>Description</h3>
         <p>
           Calculate the target address by adding together the value in <span class="reg">Rb</span>
-          and <span class="imm">Offset</span>.  Store the contents of <span class="reg">Rd</span>
+          and <span class="imm">Value</span>.  Store the contents of <span class="reg">Rd</span>
           at the address.
         </p>
         <h3>Notes</h3>
@@ -2013,11 +2384,11 @@ main {
           <li><span class="reg">Rb</span> must either range from <span class="reg">r0</span> to
             <span class="reg">r7</span>, or be <span class="reg">sp</span></li>
           <li>If <span class="reg">Rb</span> ranges from <span class="reg">r0</span> to
-            <span class="reg">r7</span>, <span class="imm">Offset</span> must range from
+            <span class="reg">r7</span>, <span class="imm">Value</span> must range from
             <span class="imm">0</span> to
             <span class="imm">124</span>, word aligned</li>
           <li>If <span class="reg">Rb</span> is <span class="reg">sp</span>,
-            <span class="imm">Offset</span> must range from
+            <span class="imm">Value</span> must range from
             <span class="imm">0</span> to <span class="imm">1020</span>, word aligned</li>
         </ul>
         <h3>ARM Equivalent</h3>
@@ -2025,7 +2396,7 @@ main {
           <span class="op">str</span>
           <span class="reg">Rd</span>,
           [<span class="reg">Rb</span>,
-          #<span class="imm">Offset</span>]
+          #<span class="imm">Value</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -2101,14 +2472,14 @@ main {
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
-            <span class="reg">r7</span></li>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">strb</span>
           <span class="reg">Rd</span>,
-          [<span class="reg">Rb</span>]
+          [<span class="reg">Rs</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -2124,13 +2495,13 @@ main {
             <span class="op">strb&nbsp;</span>
             <span class="reg">Rd</span>,
             [<span class="reg">Rb</span>,
-            #<span class="imm">Offset</span>]
+            #<span class="imm">Value</span>]
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           [<span class="reg">Rb</span> +
-          <span class="imm">Offset</span>] =
+          <span class="imm">Value</span>] =
           byte <span class="reg">Rd</span>
         </div>
       </header>
@@ -2138,14 +2509,14 @@ main {
         <h3>Description</h3>
         <p>
           Calculate the target address by adding together the value in <span class="reg">Rb</span>
-          and <span class="imm">Offset</span>.  Store the byte value in
+          and <span class="imm">Value</span>.  Store the byte value in
           <span class="reg">Rd</span> at the address.
         </p>
         <h3>Notes</h3>
         <ul>
           <li><span class="reg">Rd</span> and <span class="reg">Rb</span> must range from
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
-          <li><span class="imm">Offset</span> must range from <span class="imm">0</span> to
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
         </ul>
         <h3>ARM Equivalent</h3>
@@ -2153,7 +2524,7 @@ main {
           <span class="op">strb</span>
           <span class="reg">Rd</span>,
           [<span class="reg">Rb</span>,
-          #<span class="imm">Offset</span>]
+          #<span class="imm">Value</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
@@ -2206,6 +2577,91 @@ main {
       </main>
     </section>
 
+    <section id="thumb-strh-0" data-filter="mem strh">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">strh&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rs</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          [<span class="reg">Rs</span>] =
+          halfword <span class="reg">Rd</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Store the halfword value in <span class="reg">Rd</span> at the address
+          <span class="reg">Rs</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">strh</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rs</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">strh</span> <span class="reg">r0</span>, [<span class="reg">r1</span>]  <span class="com">// store halfword r0 at address r1</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-strh-imm" data-filter="mem strh">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">strh&nbsp;</span>
+            <span class="reg">Rd</span>,
+            [<span class="reg">Rb</span>,
+            #<span class="imm">Value</span>]
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          [<span class="reg">Rb</span> +
+          <span class="imm">Value</span>] =
+          halfword <span class="reg">Rd</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Calculate the target address by adding together the value in <span class="reg">Rb</span>
+          and <span class="imm">Value</span>.  Store the halfword value in
+          <span class="reg">Rd</span> at the address.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="reg">Rd</span> and <span class="reg">Rb</span> must range from
+            <span class="reg">r0</span> to <span class="reg">r7</span></li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">62</span>, halfword aligned</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">strh</span>
+          <span class="reg">Rd</span>,
+          [<span class="reg">Rb</span>,
+          #<span class="imm">Value</span>]
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">strh</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, #<span class="imm">12</span>]  <span class="com">// store halfword r0 at address</span>
+                    <span class="com">// r1 + 12</span>
+</pre>
+      </main>
+    </section>
+
     <section id="thumb-strh-reg" data-filter="mem strh">
       <header>
         <div class="format">
@@ -2247,6 +2703,52 @@ main {
 <pre class="example">
 <span class="op">strh</span> <span class="reg">r0</span>, [<span class="reg">r1</span>, <span class="reg">r6</span>]  <span class="com">// store halfword r0 at address</span>
                    <span class="com">// r1 + r6</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-sub-sp" data-filter="sp sub">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">sub&nbsp;&nbsp;</span>
+            <span class="reg">sp</span>,
+            #<span class="imm">Value</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">sp</span> =
+          <span class="reg">sp</span> -
+          <span class="imm">Value</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Subtract 9-bit immediate value from contents of <span class="reg">sp</span> and place the
+          result in <span class="reg">sp</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li>Does not set CPSR condition codes</li>
+          <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
+            <span class="imm">508</span>, word aligned</li>
+          <li>Assembler also allows for this instruction:<ul>
+            <li><span class="mono"><span class="op">add</span>
+              <span class="reg">sp</span>, #-<span class="imm">Value</span></span></li>
+          </ul></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">sub</span>
+          <span class="reg">sp</span>,
+          <span class="reg">sp</span>,
+          #<span class="imm">Value</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">sub</span> <span class="reg">sp</span>, #<span class="imm">64</span>  <span class="com">// sp = sp - 64</span>
 </pre>
       </main>
     </section>

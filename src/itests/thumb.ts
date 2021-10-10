@@ -87,6 +87,8 @@ add r4, sp, #844   /// d3 ac
 // add sp
 add sp, #400       /// 64 b0
 add sp, #404       /// 65 b0
+sub sp, #-400      /// 64 b0
+sub sp, #-404      /// 65 b0
 // add hi register
 add r4, r4, r2     /// a4 18
 add r4, r2         /// a4 18
@@ -115,6 +117,8 @@ sub r4, #255       /// ff 3c
 // subtract sp
 sub sp, #400       /// e4 b0
 sub sp, #404       /// e5 b0
+add sp, #-400      /// e4 b0
+add sp, #-404      /// e5 b0
 `,
     },
   });
@@ -330,9 +334,15 @@ strb r3, [r6]        /// 33 70
     kind: "make",
     files: {
       "/root/main": `.thumb
-push {r0, r1, r5-r7}       /// e3 b4
-push {r0, r1, r5-r7, r14}  /// e3 b5
-push {r0, lr, r1, r5-r7}   /// e3 b5
+push {r0, r1, r5-r7}             /// e3 b4
+stmdb sp!, {r0, r1, r5-r7}       /// e3 b4
+stmfd sp!, {r0, r1, r5-r7}       /// e3 b4
+push {r0, r1, r5-r7, r14}        /// e3 b5
+stmdb sp!, {r0, r1, r5-r7, r14}  /// e3 b5
+stmfd sp!, {r0, r1, r5-r7, r14}  /// e3 b5
+push {r0, lr, r1, r5-r7}         /// e3 b5
+stmdb sp!, {r0, lr, r1, r5-r7}   /// e3 b5
+stmfd sp!, {r0, lr, r1, r5-r7}   /// e3 b5
 `,
     },
   });
@@ -351,9 +361,15 @@ push {r0, lr, r1, r5-r7}   /// e3 b5
     kind: "make",
     files: {
       "/root/main": `.thumb
-pop {r0, r1, r5-r7}       /// e3 bc
-pop {r0, r1, r5-r7, r15}  /// e3 bd
-pop {r0, pc, r1, r5-r7}   /// e3 bd
+pop {r0, r1, r5-r7}              /// e3 bc
+ldmia sp!, {r0, r1, r5-r7}       /// e3 bc
+ldmfd sp!, {r0, r1, r5-r7}       /// e3 bc
+pop {r0, r1, r5-r7, r15}         /// e3 bd
+ldmia sp!, {r0, r1, r5-r7, r15}  /// e3 bd
+ldmfd sp!, {r0, r1, r5-r7, r15}  /// e3 bd
+pop {r0, pc, r1, r5-r7}          /// e3 bd
+ldmia sp!, {r0, pc, r1, r5-r7}   /// e3 bd
+ldmfd sp!, {r0, pc, r1, r5-r7}   /// e3 bd
 `,
     },
   });
@@ -365,6 +381,7 @@ pop {r0, pc, r1, r5-r7}   /// e3 bd
     files: {
       "/root/main": `.thumb
 stmia r3!, {r0-r3}  /// 0f c3
+stmea r3!, {r0-r3}  /// 0f c3
 `,
     },
   });
@@ -376,6 +393,7 @@ stmia r3!, {r0-r3}  /// 0f c3
     files: {
       "/root/main": `.thumb
 ldmia r3!, {r0-r3}  /// 0f cb
+ldmfd r3!, {r0-r3}  /// 0f cb
 `,
     },
   });
@@ -425,6 +443,9 @@ b @top      /// dd e7
 b @next     /// 05 e0
 .i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
 @next:
+bal @next2  /// 05 e0
+.i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
+@next2:
 `,
     },
   });

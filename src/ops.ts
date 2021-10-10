@@ -2601,6 +2601,12 @@ export namespace Thumb {
     sym: string;
   }
 
+  interface ICodePartNegWord {
+    s: number;
+    k: "negword";
+    sym: "offset";
+  }
+
   interface ICodePartHalfword {
     s: number;
     k: "halfword";
@@ -2644,6 +2650,7 @@ export namespace Thumb {
     | ICodePartRegister
     | ICodePartRegisterHigh
     | ICodePartWord
+    | ICodePartNegWord
     | ICodePartHalfword
     | ICodePartSignedHalfword
     | ICodePartRegList
@@ -3125,7 +3132,27 @@ export namespace Thumb {
       ref: "5.13",
       category: "Format 13: Add Offset To Stack Pointer",
       codeParts: [
-        { s: 7, k: "word", sym: "offset", sign: false },
+        { s: 7, k: "negword", sym: "offset" },
+        { s: 1, k: "value", v: 0 }, // offset is positive
+        { s: 8, k: "value", v: 176 },
+      ],
+      syntax: ["sub sp, #$offset"],
+    },
+    {
+      ref: "5.13",
+      category: "Format 13: Add Offset To Stack Pointer",
+      codeParts: [
+        { s: 7, k: "negword", sym: "offset" },
+        { s: 1, k: "value", v: 1 }, // offset is negative
+        { s: 8, k: "value", v: 176 },
+      ],
+      syntax: ["add sp, #$offset"],
+    },
+    {
+      ref: "5.13",
+      category: "Format 13: Add Offset To Stack Pointer",
+      codeParts: [
+        { s: 7, k: "word", sym: "offset" },
         { s: 1, k: "value", v: 0 }, // offset is positive
         { s: 8, k: "value", v: 176 },
       ],
@@ -3135,7 +3162,7 @@ export namespace Thumb {
       ref: "5.13",
       category: "Format 13: Add Offset To Stack Pointer",
       codeParts: [
-        { s: 7, k: "word", sym: "offset", sign: false },
+        { s: 7, k: "word", sym: "offset" },
         { s: 1, k: "value", v: 1 }, // offset is negative
         { s: 8, k: "value", v: 176 },
       ],
@@ -3156,7 +3183,11 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["push $Rlist"],
+      syntax: [
+        "push $Rlist",
+        "stmdb sp!, $Rlist",
+        "stmfd sp!, $Rlist",
+      ],
     },
     {
       ref: "5.14",
@@ -3168,7 +3199,11 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 0 }, // store
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["push $Rlist"],
+      syntax: [
+        "push $Rlist",
+        "stmdb sp!, $Rlist",
+        "stmfd sp!, $Rlist",
+      ],
     },
     {
       ref: "5.14",
@@ -3180,7 +3215,11 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["pop $Rlist"],
+      syntax: [
+        "pop $Rlist",
+        "ldmia sp!, $Rlist",
+        "ldmfd sp!, $Rlist",
+      ],
     },
     {
       ref: "5.14",
@@ -3192,7 +3231,11 @@ export namespace Thumb {
         { s: 1, k: "value", sym: "l", v: 1 }, // load
         { s: 4, k: "value", v: 11 },
       ],
-      syntax: ["pop $Rlist"],
+      syntax: [
+        "pop $Rlist",
+        "ldmia sp!, $Rlist",
+        "ldmfd sp!, $Rlist",
+      ],
     },
 
     //
@@ -3205,7 +3248,7 @@ export namespace Thumb {
       codeParts: [
         { s: 8, k: "reglist", sym: "Rlist" },
         { s: 3, k: "register", sym: "Rb" },
-        { s: 1, k: "enum", sym: "oper", enum: ["stmia", "ldmia"] },
+        { s: 1, k: "enum", sym: "oper", enum: ["stmia/stmea", "ldmia/ldmfd"] },
         { s: 4, k: "value", v: 12 },
       ],
       syntax: ["$oper $Rb!, $Rlist"],
@@ -3273,7 +3316,10 @@ export namespace Thumb {
         { s: 11, k: "shalfword", sym: "offset" },
         { s: 5, k: "value", v: 28 },
       ],
-      syntax: ["b $offset"],
+      syntax: [
+        "b $offset",
+        "bal $offset",
+      ],
     },
 
     //

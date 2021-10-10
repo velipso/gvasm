@@ -1195,8 +1195,12 @@ function parseThumbPoolStatement(
     errorString(flp, "Incomplete statement"),
     { ex },
     { align: 4, bytes: 4, sym: "ex" },
-    () => {
-      // can't convert to movs rd, #expression because it modifies the status register :-(
+    ({ ex }, address) => {
+      // convert to: add rd, pc, #offset
+      const offset = ex - (address & 0xfffffffd) - 4;
+      if (offset >= 0 && offset <= 1020 && (offset & 3) === 0) {
+        return 0xa800 | (rd << 8) | (offset >> 2);
+      }
       return false;
     },
     (_, address, poolAddress) => {

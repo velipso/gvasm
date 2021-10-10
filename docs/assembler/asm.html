@@ -2988,6 +2988,51 @@ function filter(){
   $('armArticle').style.display = arm ? '' : 'none';
   $('thumbHeader').style.display = thumb ? '' : 'none';
   $('thumbArticle').style.display = thumb ? '' : 'none';
+
+  var terms = {};
+  $('search').value
+    .toLowerCase()
+    .replace(/[^a-z]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .filter(function(t){ return t !== ''; })
+    .map(function(t){
+      if (t.startsWith('mem'))
+        t = 'mem';
+      if (t.startsWith('bran') || t.startsWith('jum'))
+        t = 'pc';
+      if (t.startsWith('stac'))
+        t = 'sp';
+      if (t.startsWith('math'))
+        t = 'alu';
+      if (t.startsWith('read') || t.startsWith('load'))
+        t = 'ldr ldm lds';
+      if (t.startsWith('writ') || t.startsWith('stor'))
+        t = 'str stm';
+      t.split(' ').forEach(function(s){
+        terms[s] = true;
+      });
+    });
+  terms = Object.keys(terms);
+
+  var armCount = 0, thumbCount = 0;
+  document.querySelectorAll('section').forEach(function(section){
+    var f = section.getAttribute('data-filter').split(' ');
+    var show = terms.length <= 0 || f.some(function(g){ return terms.some(function(t){
+      return g.indexOf(t) >= 0;
+    }); });
+    showSection(section, false, true);
+    section.style.display = show ? '' : 'none';
+    if (show){
+      if (section.id.startsWith('arm'))
+        armCount++;
+      else if (section.id.startsWith('thumb'))
+        thumbCount++;
+    }
+  });
+
+  $('armHeader').innerText = 'ARM (' + armCount + ')';
+  $('thumbHeader').innerText = 'Thumb (' + thumbCount + ')';
 }
 
 function resetSearch(){
@@ -2998,9 +3043,6 @@ function resetSearch(){
 }
 
 function reset(){
-  document.querySelectorAll('section').forEach(function(section){
-    showSection(section, false, true);
-  });
   resetSearch();
   $('search').focus();
 }
@@ -3030,7 +3072,11 @@ function showSection(section, show, skipPush){
   }
 }
 
+var sectionIds = {};
 document.querySelectorAll('section').forEach(function(section){
+  if (section.id in sectionIds)
+    alert('Duplicate section id: ' + section.id);
+  sectionIds[section.id] = true;
   var header = section.querySelector('header');
   var main = section.querySelector('main');
   main.style.display = 'none';

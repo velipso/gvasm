@@ -151,7 +151,7 @@ ldrsb.mi r0, =0x12   /// dc 00 df 41
 
   def({
     name: "pool.thumb.ldr-mov",
-    desc: "Thumb pool ldr converted to mov",
+    desc: "Thumb pool ldr isn't converted to mov",
     kind: "make",
     files: {
       "/root/main": `.thumb
@@ -160,6 +160,23 @@ ldr r2, =100   /// 01 4a
 ldr r3, =100   /// 00 4b
 ldr r3, =200   /// 01 4b
 .pool          /// 64 00 00 00 c8 00 00 00
+`,
+    },
+  });
+
+  // TODO: verify in emulator this is correct
+  def({
+    name: "pool.thumb.ldr-add",
+    desc: "Thumb pool ldr is converted to add pc",
+    kind: "make",
+    files: {
+      "/root/main": `.thumb
+ldr r3, =@here /// 03 ab
+.i16 0         /// 00 00
+ldr r3, =@here /// 02 ab
+.i16 0, 0, 0   /// 00 00 00 00 00 00
+.i32 0         /// 00 00 00 00
+@here:
 `,
     },
   });

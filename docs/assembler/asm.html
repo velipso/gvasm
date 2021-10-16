@@ -135,7 +135,7 @@ main {
   cursor: text;
 }
 
-.format, .summary, .armEquivalent, .op, .reg, .imm, .com, .label, .reglist, .mono {
+.format, .summary, .armEquivalent, .op, .reg, .imm, .com, .label, .reglist, .flag, .mono {
   font-family: monospace;
 }
 
@@ -162,6 +162,10 @@ main {
 
 .reglist {
   color: #f47;
+}
+
+.flag {
+  color: #d90;
 }
   </style>
 </head>
@@ -688,6 +692,285 @@ main {
       </main>
     </section>
 
+    <section id="thumb-b" data-filter="pc b">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">b&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 1023 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bal</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">b</span> <span class="label">@end</span>  <span class="com">// Branch to end.</span>
+        <span class="com">// ... later ...</span>
+<span class="label">@end:</span>   <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bcc" data-filter="pc bcc blo">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bcc&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">C</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is clear
+          (unsigned lower).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li>Assembler also allows <span class="op">blo</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bcc</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bcc</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt; 45 (unsigned).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bcs" data-filter="pc bcs bhs">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bcs&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">C</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is set
+          (unsigned higher or same).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li>Assembler also allows <span class="op">bhs</span> for this instruction</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bcs</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bcs</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (unsigned).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-beq" data-filter="pc beq">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">beq&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">Z</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is set (equal).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">beq</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">beq</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 = 45.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bge" data-filter="pc bge">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bge&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">N</span>=<span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">N</span> equals
+          <span class="flag">V</span> (signed greater or equal).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bge</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bge</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (signed).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bgt" data-filter="pc bgt">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bgt&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">Z</span> and
+          <span class="flag">N</span>=<span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is clear and
+          <span class="flag">N</span> equals <span class="flag">V</span> (signed greater than).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bgt</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bgt</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt; 45 (signed).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bhi" data-filter="pc bhi">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bhi&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">C</span> and !<span class="flag">Z</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is set and
+          <span class="flag">Z</span> is clear (unsigned higher).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bhi</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bhi</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt; 45 (unsigned).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
     <section id="thumb-bics" data-filter="alu bics bic">
       <header>
         <div class="format">
@@ -728,6 +1011,364 @@ main {
 <pre class="example">
 <span class="op">bics</span> <span class="reg">r0</span>, <span class="reg">r3</span>  <span class="com">// r0 = r0 AND NOT r3 and set condition</span>
              <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bl" data-filter="pc bl">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bl&nbsp;&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          <span class="reg">lr</span> =
+          <span class="reg">pc</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Save return address to <span class="reg">lr</span>, and branch to
+          <span class="label">@Label</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 2<sup>22</sup> instructions</li>
+        </ul>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">bl</span> <span class="label">@routine</span>  <span class="com">// Branch to routine.</span>
+             <span class="com">// ... later ...</span>
+<span class="label">@routine:</span>    <span class="com">// Must be half-word aligned.</span>
+<span class="op">mov</span> <span class="reg">pc</span>, <span class="reg">lr</span>   <span class="com">// Return to previous location.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-ble" data-filter="pc ble">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">ble&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">Z</span> or
+          <span class="flag">N</span>=!<span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is set, or
+          <span class="flag">N</span> equals not <span class="flag">V</span> (signed less than or
+          equal).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">ble</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">ble</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (signed).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bls" data-filter="pc bls">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bls&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">C</span> or <span class="flag">Z</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is clear or
+          <span class="flag">Z</span> is set (unsigned lower or same).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bls</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bls</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (unsigned).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-blt" data-filter="pc blt">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">blt&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">N</span>=!<span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">N</span> equals not
+          <span class="flag">V</span> (signed less than).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">blt</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">blt</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt; 45 (signed).</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bmi" data-filter="pc bmi">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bmi&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">N</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">N</span> is set
+          (negative).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bmi</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bmi</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 set.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bne" data-filter="pc bne">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bne&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">Z</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is clear
+          (not equal).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bne</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bne</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 != 45.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bpl" data-filter="pc bpl">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bpl&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">N</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">N</span> is clear
+          (positive or zero).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bpl</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bpl</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 clear.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bvc" data-filter="pc bvc">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bvc&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if !<span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">V</span> is clear (no
+          overflow).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bvc</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bvc</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 didn't overflow.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-bvs" data-filter="pc bvs">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">bvs&nbsp;&nbsp;</span>
+            <span class="label">@Label</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          if <span class="flag">V</span>,
+          <span class="reg">pc</span> =
+          <span class="label">@Label</span>
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Branch to <span class="label">@Label</span> if <span class="flag">V</span> is set
+          (overflow).
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="label">@Label</span> must be within 255 instructions</li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">bvs</span>
+          <span class="label">@Label</span>
+        </p>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
+<span class="op">bvs</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 overflowed.</span>
+          <span class="com">// ... later ...</span>
+<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -989,7 +1630,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-ldr-pool" data-filter="mem ldr">
+    <section id="thumb-ldr-pool" data-filter="mem pool ldr">
       <header>
         <div class="format">
           <span class="text">
@@ -2932,6 +3573,92 @@ main {
 <pre class="example">
 <span class="op">subs</span> <span class="reg">r0</span>, <span class="reg">r3</span>, <span class="reg">r4</span>  <span class="com">// r0 = r3 - r4 and set condition</span>
                  <span class="com">// codes on the result.</span>
+</pre>
+      </main>
+    </section>
+
+    <section id="thumb-swi" data-filter="pc swi">
+      <header>
+        <div class="format">
+          <span class="text">
+            <span class="op">swi&nbsp;&nbsp;</span>
+            <span class="imm">Comment</span>
+          </span>
+        </div>
+        <div class="summary">
+          <span class="com">//</span>
+          software interrupt
+        </div>
+      </header>
+      <main>
+        <h3>Description</h3>
+        <p>
+          Perform a software interrupt.  The processor jumps to the GBA BIOS, and runs the routine
+          specified by <span class="imm">Comment</span>.
+        </p>
+        <h3>Notes</h3>
+        <ul>
+          <li><span class="imm">Comment</span> must range from <span class="imm">0</span> to
+            <span class="imm">255</span></li>
+        </ul>
+        <h3>ARM Equivalent</h3>
+        <p class="armEquivalent">
+          <span class="op">swi</span>
+          <span class="imm">Comment</span>
+        </p>
+        <h3>GBA Software Interrupts</h3>
+        <p>
+          Reference: <a href="https://problemkaputt.de/gbatek.htm#biosfunctionsummary" target="_blank">GBATEK</a>,
+          <a href="http://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm#BIOS%20(Software%20Interrupts)" target="_blank">CowBite</a>.
+        </p>
+        <ul class="mono">
+          <li><span class="imm">&nbsp;0</span> - SoftReset</li>
+          <li><span class="imm">&nbsp;1</span> - RegisterRamReset</li>
+          <li><span class="imm">&nbsp;2</span> - Halt</li>
+          <li><span class="imm">&nbsp;3</span> - Stop/Sleep</li>
+          <li><span class="imm">&nbsp;4</span> - IntrWait</li>
+          <li><span class="imm">&nbsp;5</span> - VBlankIntrWait</li>
+          <li><span class="imm">&nbsp;6</span> - Div</li>
+          <li><span class="imm">&nbsp;7</span> - DivArm</li>
+          <li><span class="imm">&nbsp;8</span> - Sqrt</li>
+          <li><span class="imm">&nbsp;9</span> - ArcTan</li>
+          <li><span class="imm">10</span> - ArcTan2</li>
+          <li><span class="imm">11</span> - CPUSet</li>
+          <li><span class="imm">12</span> - CPUFastSet</li>
+          <li><span class="imm">13</span> - GetBiosChecksum</li>
+          <li><span class="imm">14</span> - BgAffineSet</li>
+          <li><span class="imm">15</span> - ObjAffineSet</li>
+          <li><span class="imm">16</span> - BitUnPack</li>
+          <li><span class="imm">17</span> - LZ77UnCompWRAM</li>
+          <li><span class="imm">18</span> - LZ77UnCompVRAM</li>
+          <li><span class="imm">19</span> - HuffUnComp</li>
+          <li><span class="imm">20</span> - RLUnCompWRAM</li>
+          <li><span class="imm">21</span> - RLUnCompVRAM</li>
+          <li><span class="imm">22</span> - Diff8bitUnFilterWRAM</li>
+          <li><span class="imm">23</span> - Diff8bitUnFilterVRAM</li>
+          <li><span class="imm">24</span> - Diff16bitUnFilter</li>
+          <li><span class="imm">25</span> - SoundBiasChange</li>
+          <li><span class="imm">26</span> - SoundDriverInit</li>
+          <li><span class="imm">27</span> - SoundDriverMode</li>
+          <li><span class="imm">28</span> - SoundDriverMain</li>
+          <li><span class="imm">29</span> - SoundDriverVSync</li>
+          <li><span class="imm">30</span> - SoundChannelClear</li>
+          <li><span class="imm">31</span> - MIDIKey2Freq</li>
+          <li><span class="imm">32</span> - MusicPlayerOpen</li>
+          <li><span class="imm">33</span> - MusicPlayerStart</li>
+          <li><span class="imm">34</span> - MusicPlayerStop</li>
+          <li><span class="imm">35</span> - MusicPlayerContinue</li>
+          <li><span class="imm">36</span> - MusicPlayerFadeOut</li>
+          <li><span class="imm">37</span> - MultiBoot</li>
+          <li><span class="imm">38</span> - HardReset</li>
+          <li><span class="imm">39</span> - CustomHalt</li>
+          <li><span class="imm">40</span> - SoundDriverVSyncOff</li>
+          <li><span class="imm">41</span> - SoundDriverVSyncOn</li>
+          <li><span class="imm">42</span> - SoundGetJumpList</li>
+        </ul>
+        <h3>Example</h3>
+<pre class="example">
+<span class="op">swi</span> <span class="imm">38</span>  <span class="com">// Perform a hard reset.</span>
 </pre>
       </main>
     </section>

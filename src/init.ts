@@ -29,7 +29,7 @@ export function generateInit(args: IInitArgs): string {
 // GBA header
 b @main
 .logo
-.title "${title}"
+.title "${title.toUpperCase()}"
 .i8 "${code}${initials}${region}${maker}"
 .i16 150, 0, 0, 0, 0
 .i8 ${version} // version

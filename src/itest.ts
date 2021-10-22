@@ -228,8 +228,10 @@ async function itestSink(test: ITestSink): Promise<boolean> {
       const correctLine = correctStdout.split("\n")[i];
       if (correctLine !== line) {
         console.error(
-          `\nLine ${i +
-            1} mismatch:\n  expetected:  ${correctLine}\n  instead got: ${line}`,
+          `\nLine ${
+            i +
+            1
+          } mismatch:\n  expetected:  ${correctLine}\n  instead got: ${line}`,
         );
         done++;
       }

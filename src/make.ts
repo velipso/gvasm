@@ -765,8 +765,10 @@ function parseArmStatement(
           case "immediate": {
             const v = syms[codePart.sym];
             if (v < 0 || v >= (1 << codePart.s)) {
-              throw `Immediate value out of range 0..${(1 << codePart.s) -
-                1}: ${v}`;
+              throw `Immediate value out of range 0..${
+                (1 << codePart.s) -
+                1
+              }: ${v}`;
             }
             opcode.push(codePart.s, v);
             break;
@@ -1097,8 +1099,10 @@ function parseThumbStatement(
       const opcode = new BitNumber(maxSize);
       const pushAlign = (size: number, v: number, shift: number) => {
         if (v < 0 || v >= (1 << (size + shift))) {
-          throw `Immediate value out of range 0..${((1 << size) - 1) <<
-            shift}: ${v}`;
+          throw `Immediate value out of range 0..${
+            ((1 << size) - 1) <<
+            shift
+          }: ${v}`;
         }
         if (v & ((1 << shift) - 1)) {
           throw `Immediate value is not ${
@@ -1904,7 +1908,8 @@ export async function make({ input, output }: IMakeArgs): Promise<number> {
     return 0;
   } catch (e) {
     if (e !== false) {
-      console.error(`${e}\nUnknown fatal error`);
+      console.error(e);
+      console.error("Unknown fatal error");
     }
     return 1;
   }

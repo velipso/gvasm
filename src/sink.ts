@@ -5579,6 +5579,9 @@ function pathjoin(prev: string, next: string, posix: boolean): string {
       ret.push(p[i]);
     }
   }
+  if (ret.length <= 0) {
+    return ".";
+  }
   return ret.join(posix ? "/" : "\\");
 }
 

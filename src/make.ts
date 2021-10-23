@@ -69,6 +69,7 @@ type IDotStack =
 
 interface IParseState {
   arm: boolean;
+  main: boolean;
   bytes: Bytes;
   ctable: ConstTable;
   blockBase: boolean;
@@ -94,7 +95,9 @@ interface IParseState {
 type ISyms = { [sym: string]: Expression | number };
 
 function decodeRegister(id: string): number {
-  if (id === "sp") {
+  if (id === "ip") {
+    return 12;
+  } else if (id === "sp") {
     return 13;
   } else if (id === "lr") {
     return 14;
@@ -325,9 +328,9 @@ function parseDotStatement(
             false,
             ({ v }) => v,
           );
-          if (line.length > 0) {
-            parseComma(line, `Invalid ${cmd} statement`);
-          }
+        }
+        if (line.length > 0) {
+          parseComma(line, `Invalid ${cmd} statement`);
         }
       }
       break;
@@ -1677,10 +1680,11 @@ export async function makeFromFile(
     return { errors: [`Failed to read file: ${filename}`] };
   }
 
-  const lineStrs = splitLines(filename, data);
+  const lineStrs = splitLines(filename, data, true);
   const lx = lexNew();
   const state: IParseState = {
     arm: true,
+    main: true,
     bytes: new Bytes(),
     ctable: new ConstTable((cname) => {
       if (cname === "$_version") {
@@ -1689,6 +1693,8 @@ export async function makeFromFile(
         return state.arm ? 1 : 0;
       } else if (cname === "$_thumb") {
         return state.arm ? 0 : 1;
+      } else if (cname === "$_main") {
+        return state.main ? 1 : 0;
       } else if (cname === "$_here") {
         return state.bytes.nextAddress();
       } else if (cname === "$_pc") {
@@ -1715,6 +1721,7 @@ export async function makeFromFile(
   let lineStr;
   while ((lineStr = lineStrs.shift())) {
     const { filename, line, data } = lineStr;
+    state.main = lineStr.main;
     if (state.script) {
       // process sink script
       const tok = lexAddLine({ ...lx }, filename, line, data).shift();
@@ -1736,7 +1743,7 @@ export async function makeFromFile(
               f_warn: () => Promise.resolve(sink.NIL),
               f_ask: () => Promise.resolve(sink.NIL),
             });
-            loadLibIntoContext(ctx, put, state.store);
+            loadLibIntoContext(ctx, put, state.store, lineStr.main);
             const run = await sink.ctx_run(ctx);
             if (run === sink.run.PASS) {
               lineStrs.unshift(...put, lineStr);
@@ -1794,9 +1801,9 @@ export async function makeFromFile(
             state.blockBase = true;
 
             if (includeEmbed && "stdlib" in includeEmbed) {
-              lineStrs.unshift(...splitLines("stdlib", stdlib));
+              lineStrs.unshift(...splitLines("stdlib", stdlib, false));
             } else if (includeEmbed && "extlib" in includeEmbed) {
-              lineStrs.unshift(...splitLines("extlib", extlib));
+              lineStrs.unshift(...splitLines("extlib", extlib, false));
             } else if (includeEmbed && "include" in includeEmbed) {
               const { include } = includeEmbed;
               const full = isAbsolute(include)
@@ -1820,7 +1827,7 @@ export async function makeFromFile(
                 };
               }
 
-              lineStrs.unshift(...splitLines(full, data2));
+              lineStrs.unshift(...splitLines(full, data2, false));
             } else if (includeEmbed && "embed" in includeEmbed) {
               const { embed } = includeEmbed;
               const full = isAbsolute(embed)

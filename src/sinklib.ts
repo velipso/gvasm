@@ -21,6 +21,7 @@ export function loadLibIntoContext(
   ctx: sink.ctx,
   put: ILineStr[],
   store: { [key: string]: string },
+  main: boolean,
 ) {
   sink.ctx_autonative(
     ctx,
@@ -32,7 +33,7 @@ export function loadLibIntoContext(
       for (const arg of args) {
         out.push(sink.tostr(arg));
       }
-      put.push(...splitLines(flp.filename, out.join("\n"), flp.line));
+      put.push(...splitLines(flp.filename, out.join("\n"), main, flp.line));
       return Promise.resolve(sink.NIL);
     },
   );

@@ -11,7 +11,7 @@ import { dis, IDisArgs } from "./dis.ts";
 import { IItestArgs, itest } from "./itest.ts";
 import { argParse, path } from "./deps.ts";
 
-export const version = 1002008;
+export const version = 1002009;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -44,7 +44,7 @@ function printInitHelp() {
 
 <output>       The output .gvasm file
 -t <title>     Game title (max of 12 characters, default "Game")
--i <initials>  Game initials (must be 2 characters, default "AA")
+-i <initials>  Game initials (must be 2 characters, defaults to title)
 -m <maker>     Game maker (must be 2 characters, default "77")
 -v <version>   Game version (must be number from 0..255, default 0)
 -r <region>    Game region (must be 1 character, default "E"):
@@ -111,7 +111,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
     );
     return 1;
   }
-  const initials = a.initials ?? "AA";
+  const initials = a.initials ?? `${a.title}AA`.substr(0, 2);
   if (initials.length !== 2) {
     console.error(
       `Invalid initials, must be 2 characters, but got: "${initials}"`,

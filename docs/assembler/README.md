@@ -108,6 +108,7 @@ The following constants are always defined and depend on the assembler state:
 | `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
 | `$_arm`     | True if in ARM mode (`.arm`)                                                |
 | `$_thumb`   | True if in Thumb mode (`.thumb`)                                            |
+| `$_main`    | True if the current file is the start file, not included from another       |
 | `$_here`    | The next address to be output                                               |
 | `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for Thumb) |
 | `$_base`    | The base value (set by `.base <base>`)                                      |
@@ -310,6 +311,28 @@ ldrh r0, =rgb(12, 31, 5)
 ```
 
 Notice that the infinite loop prevents the pool data from being wrongly executed.
+
+Registers
+---------
+
+ARM7TDMI has 37 registers, but less are visible depending on the processor operating mode.
+
+Typically, ARM mode has access to 17 registers:
+
+```
+r0    r4    r8     r12/ip
+r1    r5    r9     r13/sp
+r2    r6    r10    r14/lr
+r3    r7    r11    r15/pc
+```
+
+And the `cpsr` register via the PSR instructions (`mov rX, cpsr` and `mov cpsr, rX`).
+
+The `pc` is the program counter, `lr` is the link register, `sp` is the stack pointer, and `ip` is
+the intra-procedure register (which can be used for anything).
+
+Thumb mode restricts the registers further, usually limiting them from `r0` to `r7`, with special
+cases for `sp` and `pc`.  However, `add`, `mov`, `cmp`, and `bx` can access `r8` to `r15`.
 
 Dot Statements
 --------------

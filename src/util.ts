@@ -62,18 +62,20 @@ export interface ILineStr {
   filename: string;
   line: number;
   data: string;
+  main: boolean;
 }
 
 export function splitLines(
   filename: string,
   lines: string,
+  main: boolean,
   startLine = 1,
 ): ILineStr[] {
   return (
     lines.split("\r\n")
       .flatMap((a) => a.split("\r"))
       .flatMap((a) => a.split("\n"))
-      .map((data, i) => ({ filename, line: startLine + i, data }))
+      .map((data, i) => ({ filename, line: startLine + i, data, main }))
   );
 }
 

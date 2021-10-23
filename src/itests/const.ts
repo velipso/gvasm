@@ -178,6 +178,49 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
+    name: "const.main",
+    desc: "Constant $_main is defined",
+    kind: "make",
+    files: {
+      "/root/main": `
+.if $_main
+  .i8 1          /// 01
+  .script
+    put '.i8 2'  /// 02
+  .end
+  .include "one" /// 03 04
+.else
+  .script
+    put '.i8 5'  /// 05
+  .end
+  .include "two" /// 06 07
+.end
+`,
+      "/root/one": `
+.if $_main
+  .i8 99
+.else
+  .i8 3
+  .script
+    put '.i8 4'
+  .end
+  .include "main"
+.end
+`,
+      "/root/two": `
+.if $_main
+  .i8 99
+.else
+  .i8 6
+  .script
+    put '.i8 7'
+  .end
+.end
+`,
+    },
+  });
+
+  def({
     name: "const.here",
     desc: "Constant $_here is defined",
     kind: "make",

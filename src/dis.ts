@@ -114,6 +114,7 @@ function pad(amount: number, code: string): string {
 }
 
 function registerToString(v: number): string {
+  if (v === 12) return "ip";
   if (v === 13) return "sp";
   if (v === 14) return "lr";
   if (v === 15) return "pc";

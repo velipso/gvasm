@@ -21,41 +21,52 @@ export interface IInitArgs {
 export function generateInit(args: IInitArgs): string {
   const { title, initials, maker, version, region, code } = args;
 
-  return `// ${title} v${version}
+  return `//
+// ${title} v${version}
+//
 
-// include standard library for useful constants
-.stdlib
+  // include standard library for useful constants
+  .stdlib
 
-// GBA header
-b @main
-.logo
-.title "${title.toUpperCase()}"
-.i8 "${code}${initials}${region}${maker}"
-.i16 150, 0, 0, 0, 0
-.i8 ${version} // version
-.crc
-.i16 0
+  // GBA header
+  .begin
+  b @@main
+  .logo
+  .title "${title.toUpperCase()}"
+  .i8 "${(code + initials + region + maker).toUpperCase()}"
+  .i16 150, 0, 0, 0, 0
+  .i8 ${version} // version
+  .crc
+  .i16 0
+@@main:
+  .end
 
-@main:
+  // set cartridge wait state for faster access
+  ldr r0, =$REG_WAITCNT
+  ldr r1, =0x4317
+  strh r1, [r0]
 
-// Your game here!
+  // Your game here!
 
-// For example, this will set the display to blueish green:
+  // For example, this will set the display to blueish green:
 
-// set REG_DISPCNT to 0
-ldr r0, =$REG_DISPCNT
-ldrh r1, =0
-strh r1, [r0]
+  // set REG_DISPCNT to 0
+  ldr r0, =$REG_DISPCNT
+  ldr r1, =0
+  strh r1, [r0]
 
-// set color 0 to blueish green
-ldr r0, =0x05000000
-ldrh r1, =rgb(0, 31, 15)
-strh r1, [r0]
+  // set color 0 to blueish green
+  ldr r0, =0x05000000
+  ldr r1, =rgb(0, 31, 15)
+  strh r1, [r0]
 
-// infinite loop
-@loop: b @loop
+  // infinite loop
+@loop:
+  b @loop
 
-.pool
+  .pool
+  .align 4
+  .i8 "FLASH512_Vnnn", 0, 0, 0 // tell emulators we want 512kbit of SRAM
 `;
 }
 
@@ -103,7 +114,7 @@ export async function init(args: IInitArgs): Promise<number> {
 
     if (!overwrite && await fileExists(output)) {
       console.error(`Output file already exists, cannot overwrite: ${output}
-Pass --overwrite to stomp the file anyways`);
+Use --overwrite to stomp the file anyways`);
       throw false;
     }
 
@@ -111,13 +122,15 @@ Pass --overwrite to stomp the file anyways`);
       output,
       generateInit(args),
     ).catch((e) => {
-      console.error(`${e}\nFailed to write output file: ${output}`);
+      console.error(e);
+      console.error(`Failed to write output file: ${output}`);
       throw false;
     });
     return 0;
   } catch (e) {
     if (e !== false) {
-      console.error(`${e}\nUnknown fatal error`);
+      console.error(e);
+      console.error("Unknown fatal error");
     }
     return 1;
   }

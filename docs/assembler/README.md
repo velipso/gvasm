@@ -346,7 +346,21 @@ For examples, `.align 4` will output `0x00` until the next byte is aligned to th
 
 ### `.arm`
 
-Switches the assembler into ARM mode (default).  See also: `.thumb`.
+Switches the assembler into ARM mode (default).  Automatically aligns to word boundary.
+
+Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
+
+```
+.thumb
+// Thumb mode
+.begin
+  .arm
+  // ARM mode
+.end
+// back to Thumb mode, with auto alignment
+```
+
+See also: `.thumb`.
 
 ### `.b8 <value, ...>`
 
@@ -389,6 +403,8 @@ the first statement.
 ### `.begin` / `.end`
 
 Creates a new scope for local labels and constants.
+
+If assembler mode changes upon `.end`, then it will auto-align.
 
 ### `.crc`
 
@@ -489,7 +505,21 @@ Defines constants as offsets from zero, using `.s8`, `.s16`, and `.s32`.
 
 ### `.thumb`
 
-Switches the assembler into Thumb mode.  See also, `.arm`.
+Switches the assembler into Thumb mode.  Automatically aligns to halfword boundary.
+
+Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
+
+```
+.arm
+// ARM mode
+.begin
+  .thumb
+  // Thumb mode
+.end
+// back to ARM mode, with auto alignment
+```
+
+See also, `.arm`.
 
 ### `.title <title>`
 

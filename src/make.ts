@@ -34,6 +34,7 @@ export interface IMakeArgs {
 
 interface IDotStackBegin {
   kind: "begin";
+  arm: boolean;
   flp: IFilePos;
 }
 
@@ -290,14 +291,14 @@ function parseDotStatement(
         throw "Invalid .arm statement";
       }
       state.bytes.align(4);
-      state.arm = true;
+      setARM(state, true);
       break;
     case ".thumb":
       if (line.length > 0) {
         throw "Invalid .thumb statement";
       }
       state.bytes.align(2);
-      state.arm = false;
+      setARM(state, false);
       break;
     case ".align": {
       const [amount, fill] = parseNumCommas(
@@ -485,7 +486,7 @@ function parseDotStatement(
         throw "Invalid .pool statement";
       }
       if (state.bytes.writePool()) {
-        state.bytes.align(state.arm ? 4 : 2);
+        state.bytes.align(isARM(state) ? 4 : 2);
       }
       break;
     case ".def": {
@@ -1276,7 +1277,7 @@ function parseBlockStatement(
         state.ctable.scopeBegin();
         state.bytes.scopeBegin();
       }
-      state.dotStack.push({ kind: "begin", flp });
+      state.dotStack.push({ kind: "begin", arm: isARM(state), flp });
       return true;
     case ".script":
       if (line.length > 0 && state.active) {
@@ -1514,6 +1515,10 @@ function parseBlockStatement(
       if (ds.kind === "begin" && state.active) {
         state.ctable.scopeEnd();
         state.bytes.scopeEnd();
+        if (ds.arm !== isARM(state)) {
+          // if we're switching Thumb <-> ARM due to .end, then realign
+          state.bytes.align(ds.arm ? 2 : 4);
+        }
       } else if (ds.kind === "if") {
         state.active = recalcActive(state);
       } else if (ds.kind === "struct") {
@@ -1609,7 +1614,7 @@ function parseLine(
 
   if (cmd.startsWith(".")) {
     return parseDotStatement(state, cmd, line);
-  } else if (state.arm) {
+  } else if (isARM(state)) {
     const pool = parsePoolStatement([...line], state.ctable);
     if (pool) {
       parseArmPoolStatement(state, cmdTok.flp, cmd, pool);
@@ -1664,6 +1669,27 @@ function parseLine(
   }
 }
 
+function isARM(state: IParseState): boolean {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === "begin") {
+      return ds.arm;
+    }
+  }
+  return state.arm;
+}
+
+function setARM(state: IParseState, arm: boolean) {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === "begin") {
+      ds.arm = arm;
+      return;
+    }
+  }
+  state.arm = arm;
+}
+
 export async function makeFromFile(
   filename: string,
   posix: boolean,
@@ -1690,15 +1716,15 @@ export async function makeFromFile(
       if (cname === "$_version") {
         return version;
       } else if (cname === "$_arm") {
-        return state.arm ? 1 : 0;
+        return isARM(state) ? 1 : 0;
       } else if (cname === "$_thumb") {
-        return state.arm ? 0 : 1;
+        return !isARM(state) ? 1 : 0;
       } else if (cname === "$_main") {
         return state.main ? 1 : 0;
       } else if (cname === "$_here") {
         return state.bytes.nextAddress();
       } else if (cname === "$_pc") {
-        return state.bytes.nextAddress() + (state.arm ? 8 : 4);
+        return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
       } else if (cname === "$_base") {
         return state.bytes.getBase();
       }

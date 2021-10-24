@@ -141,4 +141,42 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: "scope.arm-thumb",
+    desc: ".arm and .thumb should be scoped",
+    kind: "make",
+    files: {
+      "/root/main": `
+.if $_arm
+  .i32 1 /// 01 00 00 00
+.end
+
+.begin
+  .thumb
+  .if $_thumb
+    .i32 2 /// 02 00 00 00
+  .end
+
+  .begin
+    .if $_thumb
+      .i32 3 /// 03 00 00 00
+    .end
+    .arm
+    .if $_arm
+      .i32 4 /// 04 00 00 00
+    .end
+  .end
+
+  .if $_thumb
+    .i16 5 /// 05 00
+  .end
+.end /// 00 00
+
+.if $_arm
+  .i32 6 /// 06 00 00 00
+.end
+`,
+    },
+  });
 }

@@ -81,6 +81,18 @@ export class ConstTable {
     scope[cname] = con;
   }
 
+  public defined(cname: string): boolean {
+    if (cname.startsWith("$_")) {
+      return this.lookupNative(cname.toLowerCase()) !== false;
+    } else {
+      if (cname in this.macroParams[0]) {
+        return true;
+      }
+      const scope = cname.startsWith("$$") ? this.locals[0] : this.globals;
+      return cname in scope;
+    }
+  }
+
   public lookup(cname: string): IConstMacro | IConstExpr | IConstTokens {
     if (cname.startsWith("$_")) {
       const num = this.lookupNative(cname.toLowerCase());

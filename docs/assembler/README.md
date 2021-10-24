@@ -145,6 +145,7 @@ non-zero number is considered true.  Parenthesis can be used to override default
 | `assert("msg", $cond)`    | Returns 1 if `$cond` is true, otherwise generates error |
 | `abs($a)`                 | Absolute value                                          |
 | `clamp($a, $low, $high)`  | Clamp `$a` between `$low` and `$high` (inclusive)       |
+| `defined($a)`             | Returns 1 if `$a` is defined, otherwise 0               |
 | `log2($a)`                | Log base 2                                              |
 | `max($a, ...)`            | Maximum of all arguments                                |
 | `min($a, ...)`            | Minimum of all arguments                                |

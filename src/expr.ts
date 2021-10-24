@@ -267,6 +267,7 @@ export class ExpressionBuilder {
             line[0].kind === TokEnum.ID && (
               line[0].id in functions ||
               line[0].id === "assert" ||
+              line[0].id === "defined" ||
               line[0].id === "(" ||
               line[0].id === "-" ||
               line[0].id === "+" ||
@@ -355,6 +356,25 @@ export class ExpressionBuilder {
           }
           line.shift();
           result = { kind: "assert", hint: hint.str, value };
+        } else if (t.id === "defined") {
+          if (!isNextId(line, "(")) {
+            throw "Expecting '(' at start of call";
+          }
+          line.shift();
+          if (!isNextId(line, "$")) {
+            throw `Expecting constant name inside defined()`;
+          }
+          line.shift();
+          const cname = parsePrefixName(
+            "$",
+            line,
+            "Invalid constant inside defined()",
+          );
+          if (!isNextId(line, ")")) {
+            throw "Expecting ')' at end of call";
+          }
+          line.shift();
+          result = { kind: "num", value: ctable.defined(cname) ? 1 : 0 };
         } else if (t.id === "(") {
           result = { kind: "unary", op: "(", value: term() };
           if (!isNextId(line, ")")) {

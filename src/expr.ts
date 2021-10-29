@@ -5,10 +5,10 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { assertNever } from "./util.ts";
-import { ITok, TokEnum } from "./lexer.ts";
-import { isNextId, parseName } from "./make.ts";
-import { ConstTable } from "./const.ts";
+import { assertNever } from './util.ts';
+import { ITok, TokEnum } from './lexer.ts';
+import { isNextId, parseName } from './make.ts';
+import { ConstTable } from './const.ts';
 
 interface IFunctions {
   [name: string]: {
@@ -21,8 +21,7 @@ const functions: IFunctions = Object.freeze({
   abs: { size: 1, f: ([a]) => Math.abs(a) },
   clamp: {
     size: 3,
-    f: ([a, b, c]) =>
-      b <= c ? (a < b ? b : a > c ? c : a) : (a < c ? c : a > b ? b : a),
+    f: ([a, b, c]) => b <= c ? (a < b ? b : a > c ? c : a) : (a < c ? c : a > b ? b : a),
   },
   log2: { size: 1, f: ([a]) => Math.log2(a) },
   max: { size: -1, f: (p) => Math.max(...p) },
@@ -41,104 +40,104 @@ const functions: IFunctions = Object.freeze({
 });
 
 interface IExprNum {
-  kind: "num";
+  kind: 'num';
   value: number;
 }
 
 interface IExprLabel {
-  kind: "label";
+  kind: 'label';
   label: string;
 }
 
 interface IExprParam {
-  kind: "param";
+  kind: 'param';
   index: number;
 }
 
 interface IExprAssert {
-  kind: "assert";
+  kind: 'assert';
   hint: string;
   value: IExpr;
 }
 
 interface IExprAssertWithParam {
-  kind: "assert";
+  kind: 'assert';
   hint: string;
   value: IExprWithParam;
 }
 
 interface IExprBuild {
-  kind: "build";
+  kind: 'build';
   expr: ExpressionBuilder;
   params: IExpr[];
 }
 
 interface IExprBuildWithParam {
-  kind: "build";
+  kind: 'build';
   expr: ExpressionBuilder;
   params: IExprWithParam[];
 }
 
 interface IExprFunc {
-  kind: "func";
+  kind: 'func';
   func: string;
   params: IExpr[];
 }
 
 interface IExprFuncWithParam {
-  kind: "func";
+  kind: 'func';
   func: string;
   params: IExprWithParam[];
 }
 
 type UnaryOp =
-  | "neg"
-  | "~"
-  | "!"
-  | "(";
+  | 'neg'
+  | '~'
+  | '!'
+  | '(';
 
 interface IExprUnary {
-  kind: "unary";
+  kind: 'unary';
   op: UnaryOp;
   value: IExpr;
 }
 
 interface IExprUnaryWithParam {
-  kind: "unary";
+  kind: 'unary';
   op: UnaryOp;
   value: IExprWithParam;
 }
 
 type BinaryOp =
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "%"
-  | "<<"
-  | ">>"
-  | ">>>"
-  | "&"
-  | "|"
-  | "^"
-  | "<"
-  | "<="
-  | ">"
-  | ">="
-  | "=="
-  | "!="
-  | "&&"
-  | "||";
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '<<'
+  | '>>'
+  | '>>>'
+  | '&'
+  | '|'
+  | '^'
+  | '<'
+  | '<='
+  | '>'
+  | '>='
+  | '=='
+  | '!='
+  | '&&'
+  | '||';
 
 interface IExprBinary {
-  kind: "binary";
+  kind: 'binary';
   op: BinaryOp;
   left: IExpr;
   right: IExpr;
 }
 
 interface IExprBinaryWithParam {
-  kind: "binary";
+  kind: 'binary';
   op: BinaryOp;
   left: IExprWithParam;
   right: IExprWithParam;
@@ -146,37 +145,37 @@ interface IExprBinaryWithParam {
 
 function isBinaryOp(op: string): op is BinaryOp {
   return (
-    op === "+" ||
-    op === "-" ||
-    op === "*" ||
-    op === "/" ||
-    op === "%" ||
-    op === "<<" ||
-    op === ">>" ||
-    op === ">>>" ||
-    op === "&" ||
-    op === "|" ||
-    op === "^" ||
-    op === "<" ||
-    op === "<=" ||
-    op === ">" ||
-    op === ">=" ||
-    op === "==" ||
-    op === "!=" ||
-    op === "&&" ||
-    op === "||"
+    op === '+' ||
+    op === '-' ||
+    op === '*' ||
+    op === '/' ||
+    op === '%' ||
+    op === '<<' ||
+    op === '>>' ||
+    op === '>>>' ||
+    op === '&' ||
+    op === '|' ||
+    op === '^' ||
+    op === '<' ||
+    op === '<=' ||
+    op === '>' ||
+    op === '>=' ||
+    op === '==' ||
+    op === '!=' ||
+    op === '&&' ||
+    op === '||'
   );
 }
 
 interface IExprTernary {
-  kind: "?:";
+  kind: '?:';
   condition: IExpr;
   iftrue: IExpr;
   iffalse: IExpr;
 }
 
 interface IExprTernaryWithParam {
-  kind: "?:";
+  kind: '?:';
   condition: IExprWithParam;
   iftrue: IExprWithParam;
   iffalse: IExprWithParam;
@@ -204,7 +203,7 @@ type IExprWithParam =
   | IExprTernaryWithParam;
 
 function parsePrefixName(
-  prefix: "@" | "$",
+  prefix: '@' | '$',
   line: ITok[],
   error: string,
 ): string {
@@ -224,7 +223,7 @@ function checkParamSize(got: number, expect: number) {
   if (got === expect) {
     return;
   }
-  const exp = `${expect} parameter${expect === 1 ? "" : "s"}`;
+  const exp = `${expect} parameter${expect === 1 ? '' : 's'}`;
   const err = `expecting ${exp}, but got ${got} instead`;
   if (got < expect) {
     throw `Too few parameters; ${err}`;
@@ -251,7 +250,7 @@ export class ExpressionBuilder {
   }
 
   public static fromNum(num: number) {
-    return new ExpressionBuilder({ kind: "num", value: num }, new Set(), 0);
+    return new ExpressionBuilder({ kind: 'num', value: num }, new Set(), 0);
   }
 
   public static parse(
@@ -266,15 +265,15 @@ export class ExpressionBuilder {
           (
             line[0].kind === TokEnum.ID && (
               line[0].id in functions ||
-              line[0].id === "assert" ||
-              line[0].id === "defined" ||
-              line[0].id === "(" ||
-              line[0].id === "-" ||
-              line[0].id === "+" ||
-              line[0].id === "~" ||
-              line[0].id === "@" ||
-              line[0].id === "$" ||
-              line[0].id === "!"
+              line[0].id === 'assert' ||
+              line[0].id === 'defined' ||
+              line[0].id === '(' ||
+              line[0].id === '-' ||
+              line[0].id === '+' ||
+              line[0].id === '~' ||
+              line[0].id === '@' ||
+              line[0].id === '$' ||
+              line[0].id === '!'
             )
           ) ||
           line[0].kind === TokEnum.NUM
@@ -284,37 +283,37 @@ export class ExpressionBuilder {
       return false;
     }
     const readParams = (params: IExprWithParam[]) => {
-      if (!isNextId(line, "(")) {
-        throw "Expecting '(' at start of call";
+      if (!isNextId(line, '(')) {
+        throw 'Expecting \'(\' at start of call';
       }
       line.shift();
-      while (!isNextId(line, ")")) {
+      while (!isNextId(line, ')')) {
         params.push(term());
-        if (isNextId(line, ",")) {
+        if (isNextId(line, ',')) {
           line.shift();
         } else {
           break;
         }
       }
-      if (!isNextId(line, ")")) {
-        throw "Expecting ')' at end of call";
+      if (!isNextId(line, ')')) {
+        throw 'Expecting \')\' at end of call';
       }
       line.shift();
     };
     const term = (): IExprWithParam => {
       // collect all unary operators
-      const unary: ("neg" | "~" | "!")[] = [];
+      const unary: ('neg' | '~' | '!')[] = [];
       while (true) {
-        if (isNextId(line, "+")) {
+        if (isNextId(line, '+')) {
           line.shift();
-        } else if (isNextId(line, "-")) {
-          unary.push("neg");
+        } else if (isNextId(line, '-')) {
+          unary.push('neg');
           line.shift();
-        } else if (isNextId(line, "~")) {
-          unary.push("~");
+        } else if (isNextId(line, '~')) {
+          unary.push('~');
           line.shift();
-        } else if (isNextId(line, "!")) {
-          unary.push("!");
+        } else if (isNextId(line, '!')) {
+          unary.push('!');
           line.shift();
         } else {
           break;
@@ -324,11 +323,11 @@ export class ExpressionBuilder {
       // get the terminal
       const t = line.shift();
       if (!t) {
-        throw "Invalid expression";
+        throw 'Invalid expression';
       }
       let result: IExprWithParam | undefined;
       if (t.kind === TokEnum.NUM) {
-        result = { kind: "num", value: t.num };
+        result = { kind: 'num', value: t.num };
       } else if (t.kind === TokEnum.ID) {
         if (t.id in functions) {
           const params: IExprWithParam[] = [];
@@ -336,76 +335,76 @@ export class ExpressionBuilder {
           if (functions[t.id].size >= 0) {
             checkParamSize(params.length, functions[t.id].size);
           }
-          result = { kind: "func", func: t.id, params };
-        } else if (t.id === "assert") {
-          if (!isNextId(line, "(")) {
-            throw "Expecting '(' at start of call";
+          result = { kind: 'func', func: t.id, params };
+        } else if (t.id === 'assert') {
+          if (!isNextId(line, '(')) {
+            throw 'Expecting \'(\' at start of call';
           }
           line.shift();
           const hint = line.shift();
           if (!hint || hint.kind !== TokEnum.STR) {
             throw `Expecting string as first parameter to assert()`;
           }
-          if (!isNextId(line, ",")) {
-            throw "Expecting two parameters to assert()";
+          if (!isNextId(line, ',')) {
+            throw 'Expecting two parameters to assert()';
           }
           line.shift();
           const value = term();
-          if (!isNextId(line, ")")) {
-            throw "Expecting ')' at end of call";
+          if (!isNextId(line, ')')) {
+            throw 'Expecting \')\' at end of call';
           }
           line.shift();
-          result = { kind: "assert", hint: hint.str, value };
-        } else if (t.id === "defined") {
-          if (!isNextId(line, "(")) {
-            throw "Expecting '(' at start of call";
+          result = { kind: 'assert', hint: hint.str, value };
+        } else if (t.id === 'defined') {
+          if (!isNextId(line, '(')) {
+            throw 'Expecting \'(\' at start of call';
           }
           line.shift();
-          if (!isNextId(line, "$")) {
+          if (!isNextId(line, '$')) {
             throw `Expecting constant name inside defined()`;
           }
           line.shift();
           const cname = parsePrefixName(
-            "$",
+            '$',
             line,
-            "Invalid constant inside defined()",
+            'Invalid constant inside defined()',
           );
-          if (!isNextId(line, ")")) {
-            throw "Expecting ')' at end of call";
+          if (!isNextId(line, ')')) {
+            throw 'Expecting \')\' at end of call';
           }
           line.shift();
-          result = { kind: "num", value: ctable.defined(cname) ? 1 : 0 };
-        } else if (t.id === "(") {
-          result = { kind: "unary", op: "(", value: term() };
-          if (!isNextId(line, ")")) {
-            throw "Expecting close parenthesis";
+          result = { kind: 'num', value: ctable.defined(cname) ? 1 : 0 };
+        } else if (t.id === '(') {
+          result = { kind: 'unary', op: '(', value: term() };
+          if (!isNextId(line, ')')) {
+            throw 'Expecting close parenthesis';
           }
           line.shift();
-        } else if (t.id === "@") {
+        } else if (t.id === '@') {
           const label = parsePrefixName(
-            "@",
+            '@',
             line,
-            "Invalid label in expression",
+            'Invalid label in expression',
           );
           labelsNeed.add(label);
-          result = { kind: "label", label };
-        } else if (t.id === "$") {
+          result = { kind: 'label', label };
+        } else if (t.id === '$') {
           const cname = parsePrefixName(
-            "$",
+            '$',
             line,
-            "Invalid constant in expression",
+            'Invalid constant in expression',
           );
           if (paramNames.indexOf(cname) >= 0) {
-            result = { kind: "param", index: paramNames.indexOf(cname) };
+            result = { kind: 'param', index: paramNames.indexOf(cname) };
           } else {
             const params: IExprWithParam[] = [];
-            if (isNextId(line, "(")) {
+            if (isNextId(line, '(')) {
               readParams(params);
             }
             const cvalue = ctable.lookup(cname);
-            if (cvalue.kind === "expr") {
+            if (cvalue.kind === 'expr') {
               ExpressionBuilder.propagateLabels(cvalue.expr, labelsNeed);
-              result = { kind: "build", expr: cvalue.expr, params };
+              result = { kind: 'build', expr: cvalue.expr, params };
             } else {
               throw `Constant cannot be called as an expression: ${cname}`;
             }
@@ -413,14 +412,14 @@ export class ExpressionBuilder {
         }
       }
       if (!result) {
-        throw "Invalid expression";
+        throw 'Invalid expression';
       }
 
       // apply unary operators to the terminal
       while (true) {
         const op = unary.pop();
         if (op) {
-          result = { kind: "unary", op, value: result };
+          result = { kind: 'unary', op, value: result };
         } else {
           break;
         }
@@ -428,34 +427,34 @@ export class ExpressionBuilder {
 
       const precedence = (op: BinaryOp): number => {
         switch (op) {
-          case "*":
-          case "/":
-          case "%":
+          case '*':
+          case '/':
+          case '%':
             return 0;
-          case "+":
-          case "-":
+          case '+':
+          case '-':
             return 1;
-          case "<<":
-          case ">>":
-          case ">>>":
+          case '<<':
+          case '>>':
+          case '>>>':
             return 2;
-          case "&":
+          case '&':
             return 3;
-          case "^":
+          case '^':
             return 4;
-          case "|":
+          case '|':
             return 5;
-          case "<=":
-          case "<":
-          case ">=":
-          case ">":
+          case '<=':
+          case '<':
+          case '>=':
+          case '>':
             return 6;
-          case "==":
-          case "!=":
+          case '==':
+          case '!=':
             return 7;
-          case "&&":
+          case '&&':
             return 8;
-          case "||":
+          case '||':
             return 9;
           default:
             assertNever(op);
@@ -470,31 +469,31 @@ export class ExpressionBuilder {
           line.shift();
           const right = term();
           if (
-            right.kind === "binary" && precedence(id) <= precedence(right.op)
+            right.kind === 'binary' && precedence(id) <= precedence(right.op)
           ) {
             // (result id right.left) right.kind right.right
             result = {
-              kind: "binary",
+              kind: 'binary',
               op: right.op,
-              left: { kind: "binary", op: id, left: result, right: right.left },
+              left: { kind: 'binary', op: id, left: result, right: right.left },
               right: right.right,
             };
           } else {
             // result id (right.left right.kind right.right)
-            result = { kind: "binary", op: id, left: result, right };
+            result = { kind: 'binary', op: id, left: result, right };
           }
-        } else if (id === "?") {
+        } else if (id === '?') {
           line.shift();
           const iftrue = term();
           if (
             line.length <= 0 || line[0].kind !== TokEnum.ID ||
-            line[0].id !== ":"
+            line[0].id !== ':'
           ) {
-            throw "Invalid operator, missing ':'";
+            throw 'Invalid operator, missing \':\'';
           }
           line.shift();
           const iffalse = term();
-          result = { kind: "?:", condition: result, iftrue, iffalse };
+          result = { kind: '?:', condition: result, iftrue, iffalse };
         }
       }
 
@@ -516,49 +515,49 @@ export class ExpressionBuilder {
     // walk the tree and convert IExprParam to the finalized number
     const walk = (ex: IExprWithParam): IExpr => {
       switch (ex.kind) {
-        case "param":
+        case 'param':
           // convert param to number
           return {
-            kind: "num",
+            kind: 'num',
             value: params[ex.index],
           };
-        case "num":
-        case "label":
+        case 'num':
+        case 'label':
           return ex;
-        case "assert":
+        case 'assert':
           return {
-            kind: "assert",
+            kind: 'assert',
             hint: ex.hint,
             value: walk(ex.value),
           };
-        case "build":
+        case 'build':
           return {
-            kind: "build",
+            kind: 'build',
             expr: ex.expr,
             params: ex.params.map(walk),
           };
-        case "func":
+        case 'func':
           return {
-            kind: "func",
+            kind: 'func',
             func: ex.func,
             params: ex.params.map(walk),
           };
-        case "unary":
+        case 'unary':
           return {
-            kind: "unary",
+            kind: 'unary',
             op: ex.op,
             value: walk(ex.value),
           };
-        case "binary":
+        case 'binary':
           return {
-            kind: "binary",
+            kind: 'binary',
             op: ex.op,
             left: walk(ex.left),
             right: walk(ex.right),
           };
-        case "?:":
+        case '?:':
           return {
-            kind: "?:",
+            kind: '?:',
             condition: walk(ex.condition),
             iftrue: walk(ex.iftrue),
             iffalse: walk(ex.iffalse),
@@ -566,7 +565,7 @@ export class ExpressionBuilder {
         default:
           assertNever(ex);
       }
-      throw new Error("Unknown expression");
+      throw new Error('Unknown expression');
     };
 
     return new Expression(walk(this.expr), this.labelsNeed);
@@ -586,9 +585,9 @@ export class Expression {
 
   public validateNoLabelsNeeded(hint: string) {
     if (this.labelsNeed.size > 0) {
-      throw `${hint}, label${
-        this.labelsNeed.size === 1 ? "" : "s"
-      } not defined: ${[...this.labelsNeed].join(", ")}`;
+      throw `${hint}, label${this.labelsNeed.size === 1 ? '' : 's'} not defined: ${
+        [...this.labelsNeed].join(', ')
+      }`;
     }
   }
 
@@ -605,19 +604,19 @@ export class Expression {
     }
     const get = (ex: IExpr): number => {
       switch (ex.kind) {
-        case "num":
+        case 'num':
           return ex.value;
-        case "label":
+        case 'label':
           if (ex.label in this.labelsHave) {
             return this.labelsHave[ex.label];
           }
           throw new Error(`Should have label ${ex.label} but it's missing`);
-        case "assert":
+        case 'assert':
           if (get(ex.value) === 0) {
             throw `Failed assertion: ${ex.hint}`;
           }
           return 1;
-        case "build": {
+        case 'build': {
           const ex2 = ex.expr.build(ex.params.map(get));
           for (const [label, v] of Object.entries(this.labelsHave)) {
             ex2.addLabel(label, v);
@@ -625,74 +624,74 @@ export class Expression {
           const v = ex2.value();
           if (v === false) {
             throw new Error(
-              `Missing labels: ${[...ex2.labelsNeed].join(", ")}`,
+              `Missing labels: ${[...ex2.labelsNeed].join(', ')}`,
             );
           }
           return v;
         }
-        case "func": {
+        case 'func': {
           const func = functions[ex.func];
           if (!func) {
             throw new Error(`Unknown function: ${func}`);
           }
           return func.f(ex.params.map(get)) | 0;
         }
-        case "unary":
+        case 'unary':
           switch (ex.op) {
-            case "neg":
+            case 'neg':
               return -get(ex.value);
-            case "~":
+            case '~':
               return ~get(ex.value);
-            case "!":
+            case '!':
               return get(ex.value) === 0 ? 1 : 0;
-            case "(":
+            case '(':
               return get(ex.value);
             default:
               assertNever(ex);
           }
           break;
-        case "binary":
+        case 'binary':
           switch (ex.op) {
-            case "+":
+            case '+':
               return (get(ex.left) + get(ex.right)) | 0;
-            case "-":
+            case '-':
               return (get(ex.left) - get(ex.right)) | 0;
-            case "*":
+            case '*':
               return (get(ex.left) * get(ex.right)) | 0;
-            case "/":
+            case '/':
               return (get(ex.left) / get(ex.right)) | 0;
-            case "%":
+            case '%':
               return (get(ex.left) % get(ex.right)) | 0;
-            case "<<":
+            case '<<':
               return (get(ex.left) << get(ex.right)) | 0;
-            case ">>":
+            case '>>':
               return (get(ex.left) >> get(ex.right)) | 0;
-            case ">>>":
+            case '>>>':
               return (get(ex.left) >>> get(ex.right)) | 0;
-            case "&":
+            case '&':
               return (get(ex.left) & get(ex.right)) | 0;
-            case "|":
+            case '|':
               return (get(ex.left) | get(ex.right)) | 0;
-            case "^":
+            case '^':
               return (get(ex.left) ^ get(ex.right)) | 0;
-            case "<":
+            case '<':
               return get(ex.left) < get(ex.right) ? 1 : 0;
-            case "<=":
+            case '<=':
               return get(ex.left) <= get(ex.right) ? 1 : 0;
-            case ">":
+            case '>':
               return get(ex.left) > get(ex.right) ? 1 : 0;
-            case ">=":
+            case '>=':
               return get(ex.left) >= get(ex.right) ? 1 : 0;
-            case "==":
+            case '==':
               return get(ex.left) == get(ex.right) ? 1 : 0;
-            case "!=":
+            case '!=':
               return get(ex.left) != get(ex.right) ? 1 : 0;
-            case "&&": {
+            case '&&': {
               const left = get(ex.left);
               const right = get(ex.right);
               return left === 0 ? left : right;
             }
-            case "||": {
+            case '||': {
               const left = get(ex.left);
               const right = get(ex.right);
               return left !== 0 ? left : right;
@@ -701,7 +700,7 @@ export class Expression {
               assertNever(ex);
           }
           break;
-        case "?:": {
+        case '?:': {
           const condition = get(ex.condition);
           const iftrue = get(ex.iftrue);
           const iffalse = get(ex.iffalse);
@@ -710,7 +709,7 @@ export class Expression {
         default:
           assertNever(ex);
       }
-      throw new Error("Unknown expression");
+      throw new Error('Unknown expression');
     };
     return get(this.expr);
   }

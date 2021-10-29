@@ -5,25 +5,25 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "pool.missing",
-    desc: "Error if .pool is required but missing",
-    kind: "make",
+    name: 'pool.missing',
+    desc: 'Error if .pool is required but missing',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `ldr r0, =0x12345678`,
+      '/root/main': `ldr r0, =0x12345678`,
     },
   });
 
   def({
-    name: "pool.arm.ldr-mov",
-    desc: "ARM pool ldr converted to mov",
-    kind: "make",
+    name: 'pool.arm.ldr-mov',
+    desc: 'ARM pool ldr converted to mov',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mov r2, #0x03000000  /// 03 24 a0 e3
 ldr r2, =0x03000000  /// 03 24 a0 e3
 ldr r3, =0x34000000  /// 0d 33 a0 e3
@@ -37,11 +37,11 @@ ldrmi r3, =0x50      /// 05 3e a0 43
   });
 
   def({
-    name: "pool.arm.ldr-mvn",
-    desc: "ARM pool ldr converted to mvn",
-    kind: "make",
+    name: 'pool.arm.ldr-mvn',
+    desc: 'ARM pool ldr converted to mvn',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mvn r0, #0x03000000     /// 03 04 e0 e3
 ldr r0, =0xfcffffff     /// 03 04 e0 e3
 ldr r3, =0xcbffffff     /// 0d 33 e0 e3
@@ -55,11 +55,11 @@ ldrmi r3, =0xfffffffaf  /// 05 3e e0 43
   });
 
   def({
-    name: "pool.arm.ldr-pool",
-    desc: "ARM pool ldr stored in literal pool",
-    kind: "make",
+    name: 'pool.arm.ldr-pool',
+    desc: 'ARM pool ldr stored in literal pool',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldr r2, [#@L.0]        /// 04 20 1f e5
 @L.0: .i32 0x12345678  /// 78 56 34 12
 ldr r2, =0x12345678    /// 04 20 1f e5
@@ -81,11 +81,11 @@ ldr.mi r8, =0x12345678  /// 0c 80 9f 45
   });
 
   def({
-    name: "pool.arm.ldrh",
-    desc: "ARM pool ldrh",
-    kind: "make",
+    name: 'pool.arm.ldrh',
+    desc: 'ARM pool ldrh',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldrh r2, [#@L.0]     /// b4 20 5f e1
 @L.0: .i32 0x1234    /// 34 12 00 00
 ldrh r2, =0x1234     /// b4 20 5f e1
@@ -104,11 +104,11 @@ ldrh.mi r0, =0x1234  /// bc 00 df 41
   });
 
   def({
-    name: "pool.arm.ldrsh",
-    desc: "ARM pool ldrsh",
-    kind: "make",
+    name: 'pool.arm.ldrsh',
+    desc: 'ARM pool ldrsh',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldrsh r2, [#@L.0]     /// f4 20 5f e1
 @L.0: .i32 0x1234     /// 34 12 00 00
 ldrsh r2, =0x1234     /// f4 20 5f e1
@@ -127,11 +127,11 @@ ldrsh.mi r0, =0x1234  /// fc 00 df 41
   });
 
   def({
-    name: "pool.arm.ldrsb",
-    desc: "ARM pool ldrsb",
-    kind: "make",
+    name: 'pool.arm.ldrsb',
+    desc: 'ARM pool ldrsb',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldrsb r2, [#@L.0]    /// d4 20 5f e1
 @L.0: .i32 0x12      /// 12 00 00 00
 ldrsb r2, =0x12      /// d4 20 5f e1
@@ -150,11 +150,11 @@ ldrsb.mi r0, =0x12   /// dc 00 df 41
   });
 
   def({
-    name: "pool.thumb.ldr-mov",
-    desc: "Thumb pool ldr isn't converted to mov",
-    kind: "make",
+    name: 'pool.thumb.ldr-mov',
+    desc: 'Thumb pool ldr isn\'t converted to mov',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 movs r2, #100  /// 64 22
 ldr r2, =100   /// 01 4a
 ldr r3, =100   /// 00 4b
@@ -165,11 +165,11 @@ ldr r3, =200   /// 01 4b
   });
 
   def({
-    name: "pool.thumb.ldr-add",
-    desc: "Thumb pool ldr is converted to add pc",
-    kind: "make",
+    name: 'pool.thumb.ldr-add',
+    desc: 'Thumb pool ldr is converted to add pc',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 ldr r3, =@here /// 03 a3
 .i16 0         /// 00 00
 ldr r3, =@here /// 02 a3
@@ -181,11 +181,11 @@ ldr r3, =@here /// 02 a3
   });
 
   def({
-    name: "pool.thumb.ldr-pool",
-    desc: "Thumb pool ldr stored in literal pool",
-    kind: "make",
+    name: 'pool.thumb.ldr-pool',
+    desc: 'Thumb pool ldr stored in literal pool',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 ldr r4, [#@L]        /// 01 4c
 ldr r4, [#@L]        /// 01 4c
 ldr r4, [#@L]        /// 00 4c
@@ -202,11 +202,11 @@ ldr r4, =0x12345678  /// 00 4c
   });
 
   def({
-    name: "pool.thumb.ldr-misaligned",
-    desc: "Thumb pool ldr of misaligned pool",
-    kind: "make",
+    name: 'pool.thumb.ldr-misaligned',
+    desc: 'Thumb pool ldr of misaligned pool',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 ldr r4, [#@L]        /// 01 4c
 ldr r4, [#@L]        /// 01 4c
 ldr r4, [#@L]        /// 00 4c
@@ -223,11 +223,11 @@ ldr r4, =0x12345678  /// 00 4c
   });
 
   def({
-    name: "pool.early-rewrite",
-    desc: "Use a label to generate a mov statement",
-    kind: "make",
+    name: 'pool.early-rewrite',
+    desc: 'Use a label to generate a mov statement',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @here:
 ldr r2, =@here  /// 02 23 a0 e3
 `,
@@ -235,11 +235,11 @@ ldr r2, =@here  /// 02 23 a0 e3
   });
 
   def({
-    name: "pool.late-rewrite-pool",
-    desc: "Use a label after .pool to force a ldr",
-    kind: "make",
+    name: 'pool.late-rewrite-pool',
+    desc: 'Use a label after .pool to force a ldr',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldr r0, =@here + 1  /// 04 00 1f e5
 .pool               /// 09 00 00 08
 @here:
@@ -248,11 +248,11 @@ ldr r0, =@here + 1  /// 04 00 1f e5
   });
 
   def({
-    name: "pool.late-rewrite-mov",
-    desc: "Use a label after .pool but backtrack to mov",
-    kind: "make",
+    name: 'pool.late-rewrite-mov',
+    desc: 'Use a label after .pool but backtrack to mov',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldr r2, =@here - 8  /// 02 23 a0 e3
 .pool               /// 00 00 00 00
 @here:
@@ -261,12 +261,12 @@ ldr r2, =@here - 8  /// 02 23 a0 e3
   });
 
   def({
-    name: "pool.too-far-away",
-    desc: "Use .pool too far away from ldr",
-    kind: "make",
+    name: 'pool.too-far-away',
+    desc: 'Use .pool too far away from ldr',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 ldr r2, =12345
 .align 0x1000
 .i32 0

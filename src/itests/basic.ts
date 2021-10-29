@@ -5,17 +5,17 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
-import { generateInit } from "../init.ts";
+import { ITest } from '../itest.ts';
+import { generateInit } from '../init.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "basic.sanity",
-    desc: "Basic example program",
-    kind: "make",
-    stdout: ["Main program at 0x080000c0"],
+    name: 'basic.sanity',
+    desc: 'Basic example program',
+    kind: 'make',
+    stdout: ['Main program at 0x080000c0'],
     files: {
-      "/root/main": `
+      '/root/main': `
 .stdlib
 b @main.program.0      /// 2e 00 00 ea
 .Logo
@@ -54,30 +54,30 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.init",
-    desc: "Make sure init program compiles",
-    kind: "make",
+    name: 'basic.init',
+    desc: 'Make sure init program compiles',
+    kind: 'make',
     skipBytes: true,
     files: {
-      "/root/main": generateInit({
-        output: "",
-        title: "Game",
-        initials: "AA",
-        maker: "77",
+      '/root/main': generateInit({
+        output: '',
+        title: 'Game',
+        initials: 'AA',
+        maker: '77',
         version: 25,
-        region: "E",
-        code: "C",
+        region: 'E',
+        code: 'C',
         overwrite: false,
       }),
     },
   });
 
   def({
-    name: "basic.i8",
-    desc: "Use .i8 command",
-    kind: "make",
+    name: 'basic.i8',
+    desc: 'Use .i8 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8 0           /// 00
 .i8 1, 2, 3     /// 01 02 03
 .i8 -1, -2, -3  /// ff fe fd
@@ -89,11 +89,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.i8fill",
-    desc: "Use .i8fill command",
-    kind: "make",
+    name: 'basic.i8fill',
+    desc: 'Use .i8fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8fill 10    /// 00 00 00 00 00 00 00 00 00 00
 .i8fill 9, 1  /// 01 01 01 01 01 01 01 01 01
 `,
@@ -101,11 +101,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b8",
-    desc: "Use .b8 command",
-    kind: "make",
+    name: 'basic.b8',
+    desc: 'Use .b8 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b8 0           /// 00
 .b8 1, 2, 3     /// 01 02 03
 .b8 -1, -2, -3  /// ff fe fd
@@ -117,11 +117,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b8fill",
-    desc: "Use .b8fill command",
-    kind: "make",
+    name: 'basic.b8fill',
+    desc: 'Use .b8fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b8fill 10    /// 00 00 00 00 00 00 00 00 00 00
 .b8fill 9, 1  /// 01 01 01 01 01 01 01 01 01
 `,
@@ -129,11 +129,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.i16",
-    desc: "Use .i16 command",
-    kind: "make",
+    name: 'basic.i16',
+    desc: 'Use .i16 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i16 0           /// 00 00
 .i16 1, 2, 3     /// 01 00 02 00 03 00
 .i16 -1, -2, -3  /// ff ff fe ff fd ff
@@ -144,11 +144,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.i16fill",
-    desc: "Use .i16fill command",
-    kind: "make",
+    name: 'basic.i16fill',
+    desc: 'Use .i16fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i16fill 5     /// 00 00 00 00 00 00 00 00 00 00
 .i16fill 4, 1  /// 01 00 01 00 01 00 01 00
 `,
@@ -156,11 +156,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b16",
-    desc: "Use .b16 command",
-    kind: "make",
+    name: 'basic.b16',
+    desc: 'Use .b16 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b16 0           /// 00 00
 .b16 1, 2, 3     /// 00 01 00 02 00 03
 .b16 -1, -2, -3  /// ff ff ff fe ff fd
@@ -171,11 +171,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b16fill",
-    desc: "Use .b16fill command",
-    kind: "make",
+    name: 'basic.b16fill',
+    desc: 'Use .b16fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b16fill 5     /// 00 00 00 00 00 00 00 00 00 00
 .b16fill 4, 1  /// 00 01 00 01 00 01 00 01
 `,
@@ -183,11 +183,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.i32",
-    desc: "Use .i32 command",
-    kind: "make",
+    name: 'basic.i32',
+    desc: 'Use .i32 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i32 0           /// 00 00 00 00
 .i32 1, 2, 3     /// 01 00 00 00 02 00 00 00 03 00 00 00
 .i32 -1, -2, -3  /// ff ff ff ff fe ff ff ff fd ff ff ff
@@ -198,11 +198,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.i32fill",
-    desc: "Use .i32fill command",
-    kind: "make",
+    name: 'basic.i32fill',
+    desc: 'Use .i32fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i32fill 3     /// 00 00 00 00 00 00 00 00 00 00 00 00
 .i32fill 2, 1  /// 01 00 00 00 01 00 00 00
 `,
@@ -210,11 +210,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b32",
-    desc: "Use .b32 command",
-    kind: "make",
+    name: 'basic.b32',
+    desc: 'Use .b32 command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b32 0           /// 00 00 00 00
 .b32 1, 2, 3     /// 00 00 00 01 00 00 00 02 00 00 00 03
 .b32 -1, -2, -3  /// ff ff ff ff ff ff ff fe ff ff ff fd
@@ -225,11 +225,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.b32fill",
-    desc: "Use .b32fill command",
-    kind: "make",
+    name: 'basic.b32fill',
+    desc: 'Use .b32fill command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .b32fill 3     /// 00 00 00 00 00 00 00 00 00 00 00 00
 .b32fill 2, 1  /// 00 00 00 01 00 00 00 01
 `,
@@ -237,11 +237,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.hex",
-    desc: "Represent number as hexidecimal",
-    kind: "make",
+    name: 'basic.hex',
+    desc: 'Represent number as hexidecimal',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8 0x45             /// 45
 .i16 0x12_34         /// 34 12
 .i32 -0xff_ff_ff_ff  /// 01 00 00 00
@@ -250,11 +250,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.dec",
-    desc: "Represent number as decimal",
-    kind: "make",
+    name: 'basic.dec',
+    desc: 'Represent number as decimal',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8 12__7    /// 7f
 .i16 -5_1_2  /// 00 fe
 .i32 4_096   /// 00 10 00 00
@@ -263,19 +263,19 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.dec-invalid",
-    desc: "Invalid decimal number",
-    kind: "make",
+    name: 'basic.dec-invalid',
+    desc: 'Invalid decimal number',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.i32 123abc` },
+    files: { '/root/main': `.i32 123abc` },
   });
 
   def({
-    name: "basic.oct",
-    desc: "Represent number as octal",
-    kind: "make",
+    name: 'basic.oct',
+    desc: 'Represent number as octal',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8 0c7_7          /// 3f
 .i16 0c55_55       /// 6d 0b
 .i32 -0c1234_5670  /// 48 34 d6 ff
@@ -284,19 +284,19 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.oct-invalid",
-    desc: "Invalid octal number",
-    kind: "make",
+    name: 'basic.oct-invalid',
+    desc: 'Invalid octal number',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.i32 0c56781` },
+    files: { '/root/main': `.i32 0c56781` },
   });
 
   def({
-    name: "basic.bin",
-    desc: "Represent number as binary",
-    kind: "make",
+    name: 'basic.bin',
+    desc: 'Represent number as binary',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8  0b1000_1111                                /// 8f
 .i16 0b1010_0101_1111_0000                      /// f0 a5
 .i32 0b1100_1101_1110_1111_0001_0010_0011_0100  /// 34 12 ef cd
@@ -305,19 +305,19 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.bin-invalid",
-    desc: "Invalid binary number",
-    kind: "make",
+    name: 'basic.bin-invalid',
+    desc: 'Invalid binary number',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.i32 0b1011210` },
+    files: { '/root/main': `.i32 0b1011210` },
   });
 
   def({
-    name: "basic.base-zero",
-    desc: "Use .i32 command with base zero",
-    kind: "make",
+    name: 'basic.base-zero',
+    desc: 'Use .i32 command with base zero',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .base 0
 @zero: .i32 @zero /// 00 00 00 00
 `,
@@ -325,42 +325,42 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.base-default",
-    desc: "Use .i32 command with default base",
-    kind: "make",
+    name: 'basic.base-default',
+    desc: 'Use .i32 command with default base',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @main: .i32 @main /// 00 00 00 08
 `,
     },
   });
 
   def({
-    name: "basic.base-after-labels",
-    desc: "Can't use .base after labels",
-    kind: "make",
+    name: 'basic.base-after-labels',
+    desc: 'Can\'t use .base after labels',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `@main: .base 0`,
+      '/root/main': `@main: .base 0`,
     },
   });
 
   def({
-    name: "basic.base-after-printf",
-    desc: "Can't use .base after .printf",
-    kind: "make",
+    name: 'basic.base-after-printf',
+    desc: 'Can\'t use .base after .printf',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `.printf "hi"\n.base 0`,
+      '/root/main': `.printf "hi"\n.base 0`,
     },
   });
 
   def({
-    name: "basic.align",
-    desc: "Use .align command",
-    kind: "make",
+    name: 'basic.align',
+    desc: 'Use .align command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8 7     /// 07
 .align 4  /// 00 00 00
 .i8 9     /// 09
@@ -369,11 +369,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.align-base",
-    desc: "Make sure .align takes .base into account",
-    kind: "make",
+    name: 'basic.align-base',
+    desc: 'Make sure .align takes .base into account',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .base 1
 .align 4        /// 00 00 00
 .i8 9           /// 09
@@ -384,11 +384,11 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.title",
-    desc: "Use .title command",
-    kind: "make",
+    name: 'basic.title',
+    desc: 'Use .title command',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .title ""              /// 00 00 00 00 00 00 00 00 00 00 00 00
 .title "A"             /// 41 00 00 00 00 00 00 00 00 00 00 00
 .title "AAAAAAAAAAAA"  /// 41 41 41 41 41 41 41 41 41 41 41 41
@@ -397,33 +397,33 @@ str r1, [r0]           /// 00 10 80 e5
   });
 
   def({
-    name: "basic.title-overflow",
-    desc: "Error when a .title is too long",
-    kind: "make",
+    name: 'basic.title-overflow',
+    desc: 'Error when a .title is too long',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .title "AAAAAAAAAAAAZ"
 `,
     },
   });
 
   def({
-    name: "basic.error",
-    desc: "Use .error command",
-    kind: "make",
+    name: 'basic.error',
+    desc: 'Use .error command',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `.error "This is an error %d", 5`,
+      '/root/main': `.error "This is an error %d", 5`,
     },
   });
 
   def({
-    name: "basic.continue-line",
-    desc: "Use backslash to continue a line",
-    kind: "make",
+    name: 'basic.continue-line',
+    desc: 'Use backslash to continue a line',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i8   \\
  1    \\  // comment here
  ,    \\  /* comment here */

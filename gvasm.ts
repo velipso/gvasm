@@ -6,5 +6,5 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { main } from "./src/main.ts";
+import { main } from './src/main.ts';
 Deno.exit(await main(Deno.args));

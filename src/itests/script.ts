@@ -5,15 +5,15 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "script.i8",
-    desc: "Use .i8 command inside .script",
-    kind: "make",
+    name: 'script.i8',
+    desc: 'Use .i8 command inside .script',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
   for: range 5
     put '.i8 0, 1, 2, 3'
@@ -29,11 +29,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "script.if",
-    desc: "Wrap .script in .if",
-    kind: "make",
+    name: 'script.if',
+    desc: 'Wrap .script in .if',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .if 0
   .script
     for: range 5
@@ -48,12 +48,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "script.missing-end",
-    desc: "Forget to close .script with .end",
-    kind: "make",
+    name: 'script.missing-end',
+    desc: 'Forget to close .script with .end',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
 put '.i8 0'
 `,
@@ -61,12 +61,12 @@ put '.i8 0'
   });
 
   def({
-    name: "script.bad-comment",
-    desc: "Forget to close block comment in .script",
-    kind: "make",
+    name: 'script.bad-comment',
+    desc: 'Forget to close block comment in .script',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
 /*
 .end
@@ -78,29 +78,29 @@ put '.i8 0'
   });
 
   def({
-    name: "script.include",
-    desc: "Use include inside .script",
-    kind: "make",
+    name: 'script.include',
+    desc: 'Use include inside .script',
+    kind: 'make',
     rawInclude: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
 include "common.sink" /// 05 06
 include "common.sink" /// 05 06
 include "../one.sink" /// 01 02
 .end
 `,
-      "/root/common.sink": `put '.i8 5, 6'`,
-      "/one.sink": `put '.i8 1, 2'`,
+      '/root/common.sink': `put '.i8 5, 6'`,
+      '/one.sink': `put '.i8 1, 2'`,
     },
   });
 
   def({
-    name: "script.end-comments",
-    desc: "Comments at .end should work",
-    kind: "make",
+    name: 'script.end-comments',
+    desc: 'Comments at .end should work',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
   put '.i8 0, 1, 2, 3'
   /// 00 01 02 03
@@ -119,11 +119,11 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: "script.store",
-    desc: "Store values between scripts",
-    kind: "make",
+    name: 'script.store',
+    desc: 'Store values between scripts',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
   var x = 1
   store.set 'x', {2}
@@ -137,19 +137,19 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: "script.image.load",
-    desc: "Load images",
-    kind: "make",
+    name: 'script.image.load',
+    desc: 'Load images',
+    kind: 'make',
     stdout: [
-      "{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, " +
-      "{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, " +
-      "{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}",
-      "{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, " +
-      "{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, " +
-      "{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}",
+      '{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, ' +
+      '{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, ' +
+      '{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}',
+      '{{{0, 0, 0, 255}, {255, 255, 255, 255}, {0, 0, 0, 0}}, ' +
+      '{{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}}, ' +
+      '{{69, 103, 137, 255}, {76, 59, 42, 127}, {0, 0, 0, 1}}}',
     ],
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
   var png = { // raw png data
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
@@ -168,12 +168,12 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: "script.image.load-fail",
-    desc: "Fail to load image",
-    kind: "make",
+    name: 'script.image.load-fail',
+    desc: 'Fail to load image',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .script
   image.load {'one', 'two'}
 .end

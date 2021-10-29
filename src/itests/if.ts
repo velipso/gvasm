@@ -5,16 +5,16 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "if.basic",
-    desc: "Basic usage of .if",
-    kind: "make",
-    stdout: ["hi"],
+    name: 'if.basic',
+    desc: 'Basic usage of .if',
+    kind: 'make',
+    stdout: ['hi'],
     files: {
-      "/root/main": `
+      '/root/main': `
 .if 1
   .printf "hi"
 .end
@@ -26,12 +26,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "if.nested",
-    desc: "Nested .if statements",
-    kind: "make",
-    stdout: ["pass"],
+    name: 'if.nested',
+    desc: 'Nested .if statements',
+    kind: 'make',
+    stdout: ['pass'],
     files: {
-      "/root/main": `
+      '/root/main': `
 .if 0
   .if 0
     .printf "fail"
@@ -80,12 +80,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "if.label",
-    desc: "Labeled .if statements",
-    kind: "make",
-    stdout: ["pass"],
+    name: 'if.label',
+    desc: 'Labeled .if statements',
+    kind: 'make',
+    stdout: ['pass'],
     files: {
-      "/root/main": `
+      '/root/main': `
 @L0: .if 0
 @L0:   .if 0
 @L0:     .printf "fail"
@@ -134,12 +134,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "if.include",
-    desc: "Use .include inside .if statements",
-    kind: "make",
-    stdout: ["pass", "pass", "pass", "pass"],
+    name: 'if.include',
+    desc: 'Use .include inside .if statements',
+    kind: 'make',
+    stdout: ['pass', 'pass', 'pass', 'pass'],
     files: {
-      "/root/main": `
+      '/root/main': `
 .if 0
   .include "fail"
 .elseif 0
@@ -180,16 +180,16 @@ export function load(def: (test: ITest) => void) {
   .include "fail"
 .end
 `,
-      "/root/pass": `.printf "pass"`,
+      '/root/pass': `.printf "pass"`,
     },
   });
 
   def({
-    name: "if.ignore-errors",
-    desc: "Ignore errors inside .if 0",
-    kind: "make",
+    name: 'if.ignore-errors',
+    desc: 'Ignore errors inside .if 0',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .if 0
 asdf
 hello world

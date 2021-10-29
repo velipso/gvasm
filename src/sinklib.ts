@@ -5,16 +5,16 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ILineStr, splitLines } from "./util.ts";
-import { loadImage } from "./deps.ts";
-import * as sink from "./sink.ts";
+import { ILineStr, splitLines } from './util.ts';
+import { loadImage } from './deps.ts';
+import * as sink from './sink.ts';
 
 export function loadLibIntoScript(scr: sink.scr) {
-  sink.scr_autonative(scr, "put");
-  sink.scr_autonative(scr, "store.set");
-  sink.scr_autonative(scr, "store.get");
-  sink.scr_autonative(scr, "store.has");
-  sink.scr_autonative(scr, "image.load");
+  sink.scr_autonative(scr, 'put');
+  sink.scr_autonative(scr, 'store.set');
+  sink.scr_autonative(scr, 'store.get');
+  sink.scr_autonative(scr, 'store.has');
+  sink.scr_autonative(scr, 'image.load');
 }
 
 export function loadLibIntoContext(
@@ -25,7 +25,7 @@ export function loadLibIntoContext(
 ) {
   sink.ctx_autonative(
     ctx,
-    "put",
+    'put',
     null,
     (ctx: sink.ctx, args: sink.val[]) => {
       const flp = sink.ctx_source(ctx);
@@ -33,17 +33,17 @@ export function loadLibIntoContext(
       for (const arg of args) {
         out.push(sink.tostr(arg));
       }
-      put.push(...splitLines(flp.filename, out.join("\n"), main, flp.line));
+      put.push(...splitLines(flp.filename, out.join('\n'), main, flp.line));
       return Promise.resolve(sink.NIL);
     },
   );
   sink.ctx_autonative(
     ctx,
-    "store.set",
+    'store.set',
     null,
     (_ctx: sink.ctx, args: sink.val[]) => {
       if (args.length <= 0 || !sink.isstr(args[0])) {
-        return Promise.reject("Expecting string for argument 1");
+        return Promise.reject('Expecting string for argument 1');
       }
       const key = args[0] as string;
       const val = args.length < 1 ? sink.NIL : args[1];
@@ -57,11 +57,11 @@ export function loadLibIntoContext(
   );
   sink.ctx_autonative(
     ctx,
-    "store.get",
+    'store.get',
     null,
     (_ctx: sink.ctx, args: sink.val[]) => {
       if (args.length <= 0 || !sink.isstr(args[0])) {
-        return Promise.reject("Expecting string for argument 1");
+        return Promise.reject('Expecting string for argument 1');
       }
       const key = args[0] as string;
       const def = args.length < 1 ? sink.NIL : args[1];
@@ -74,11 +74,11 @@ export function loadLibIntoContext(
   );
   sink.ctx_autonative(
     ctx,
-    "store.has",
+    'store.has',
     null,
     (_ctx: sink.ctx, args: sink.val[]) => {
       if (args.length <= 0 || !sink.isstr(args[0])) {
-        return Promise.reject("Expecting string for argument 1");
+        return Promise.reject('Expecting string for argument 1');
       }
       const key = args[0] as string;
       return Promise.resolve(sink.bool(key in store));
@@ -86,30 +86,28 @@ export function loadLibIntoContext(
   );
   sink.ctx_autonative(
     ctx,
-    "image.load",
+    'image.load',
     null,
     async (_ctx: sink.ctx, args: sink.val[]) => {
       if (args.length <= 0) {
-        return Promise.reject("Expecting string or list for argument 1");
+        return Promise.reject('Expecting string or list for argument 1');
       }
       let data = args[0];
-      if (typeof data === "string") {
-        data = data.split("").map((a) => a.charCodeAt(0)) as sink.list;
+      if (typeof data === 'string') {
+        data = data.split('').map((a) => a.charCodeAt(0)) as sink.list;
       }
       if (!Array.isArray(data)) {
-        return Promise.reject("Expecting string or list for argument 1");
+        return Promise.reject('Expecting string or list for argument 1');
       }
-      const img = await loadImage(new Uint8Array(data as number[])).catch(() =>
-        null
-      );
+      const img = await loadImage(new Uint8Array(data as number[])).catch(() => null);
       if (img === null) {
-        return Promise.reject("Unknown image format");
+        return Promise.reject('Unknown image format');
       }
       if (
         img.width <= 0 || img.height <= 0 ||
         img.width * img.height * 4 !== img.data.length
       ) {
-        return Promise.reject("Unsupported color format, please use RGBA");
+        return Promise.reject('Unsupported color format, please use RGBA');
       }
       const ret = new sink.list();
       for (let y = 0, k = 0; y < img.height; y++) {

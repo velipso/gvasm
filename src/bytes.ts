@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { Expression } from "./expr.ts";
+import { Expression } from './expr.ts';
 
 const MAX_LENGTH = 0x02000000;
 
@@ -70,7 +70,7 @@ export class Bytes {
       Object.keys(this.globalLabels).length > 0 ||
       this.localLabels.some((l) => Object.keys(l).length > 0)
     ) {
-      throw "Cannot use .base after other statements";
+      throw 'Cannot use .base after other statements';
     }
     this.base = base;
   }
@@ -81,9 +81,7 @@ export class Bytes {
 
   private push(...v: number[]) {
     if (this.array.length + v.length > MAX_LENGTH) {
-      throw `Program too large, exceeds maximum length of 0x${
-        MAX_LENGTH.toString(16)
-      } bytes`;
+      throw `Program too large, exceeds maximum length of 0x${MAX_LENGTH.toString(16)} bytes`;
     }
     for (const n of v) {
       this.array.push(n & 0xff);
@@ -227,7 +225,7 @@ export class Bytes {
     const values: { [name: string]: number } = {};
     for (const name of Object.keys(pex.exprs)) {
       const ex = pex.exprs[name];
-      if (typeof ex === "number") {
+      if (typeof ex === 'number') {
         values[name] = ex;
       } else {
         const exv = ex.value();
@@ -255,7 +253,7 @@ export class Bytes {
   }
 
   public addLabel(label: string) {
-    const isLocal = label.startsWith("@@");
+    const isLocal = label.startsWith('@@');
     const scope = isLocal ? this.localLabels[0] : this.globalLabels;
     if (label in scope) {
       throw `Cannot redefine label: ${label}`;
@@ -318,7 +316,7 @@ export class Bytes {
 
   public writeCRC() {
     if (this.array.length < 0xbd) {
-      throw "Invalid .crc statement: header too small";
+      throw 'Invalid .crc statement: header too small';
     }
     let crc = -0x19;
     for (let i = 0xa0; i < 0xbd; i++) {
@@ -335,7 +333,7 @@ export class Bytes {
       if (pex.pool && pex.poolAddress === false) {
         const pv = pex.exprs[pex.pool.sym];
         let writev: number | false = false;
-        if (typeof pv === "number") {
+        if (typeof pv === 'number') {
           writev = pv;
         } else {
           const px = pv.value();
@@ -360,7 +358,7 @@ export class Bytes {
           // write the constant
           poolAddress = this.nextAddress();
 
-          if (typeof writev === "number") {
+          if (typeof writev === 'number') {
             if (pex.pool.bytes === 1) {
               this.write8(writev);
             } else if (pex.pool.bytes === 2) {
@@ -368,7 +366,7 @@ export class Bytes {
             } else if (pex.pool.bytes === 4) {
               this.write32(writev);
             } else {
-              throw new Error("Invalid byte size for pool value");
+              throw new Error('Invalid byte size for pool value');
             }
             written.push({ v: writev, addr: poolAddress });
           } else {
@@ -380,7 +378,7 @@ export class Bytes {
             } else if (pex.pool.bytes === 4) {
               pex.rewritePool = this.rewrite32();
             } else {
-              throw new Error("Invalid byte size for pool value");
+              throw new Error('Invalid byte size for pool value');
             }
           }
         }

@@ -31,15 +31,15 @@ export function ranges(list: number[]): IRange[] {
 }
 
 export function isSpace(c: string) {
-  return c === " " || c === "\n" || c === "\r" || c === "\t";
+  return c === ' ' || c === '\n' || c === '\r' || c === '\t';
 }
 
 export function isAlpha(c: string) {
-  return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 export function isNum(c: string) {
-  return c >= "0" && c <= "9";
+  return c >= '0' && c <= '9';
 }
 
 // reverse byte order
@@ -72,25 +72,25 @@ export function splitLines(
   startLine = 1,
 ): ILineStr[] {
   return (
-    lines.split("\r\n")
-      .flatMap((a) => a.split("\r"))
-      .flatMap((a) => a.split("\n"))
+    lines.split('\r\n')
+      .flatMap((a) => a.split('\r'))
+      .flatMap((a) => a.split('\n'))
       .map((data, i) => ({ filename, line: startLine + i, data, main }))
   );
 }
 
 export function printf(format: string, ...args: number[]): string {
-  let out = "";
+  let out = '';
   let lastIndex = 0;
   for (const match of format.matchAll(/%([-+0#]+)?(\d+)?([%bdiouxX])/g)) {
     const index = match.index as number;
     out += format.substr(lastIndex, index - lastIndex);
-    if (match[3] === "%") {
-      out += "%";
+    if (match[3] === '%') {
+      out += '%';
     } else {
-      const flag = (f: string) => (match[1] ?? "").indexOf(f) >= 0;
-      const width = parseFloat(match[2] ?? "-1");
-      const format = match[3] ?? "d";
+      const flag = (f: string) => (match[1] ?? '').indexOf(f) >= 0;
+      const width = parseFloat(match[2] ?? '-1');
+      const format = match[3] ?? 'd';
 
       let str;
       const arg = args.shift();
@@ -98,33 +98,33 @@ export function printf(format: string, ...args: number[]): string {
         str = match[0];
       } else {
         const v = arg | 0;
-        let prefix = "";
+        let prefix = '';
         switch (format) {
-          case "b":
+          case 'b':
             str = v.toString(2);
-            if (flag("#")) {
-              prefix = "0b";
+            if (flag('#')) {
+              prefix = '0b';
             }
             break;
-          case "o":
+          case 'o':
             str = v.toString(8);
-            if (flag("#")) {
-              prefix = "0c";
+            if (flag('#')) {
+              prefix = '0c';
             }
             break;
-          case "u":
+          case 'u':
             str = (v < 0 ? v + 4294967296 : v).toString();
             break;
-          case "x":
+          case 'x':
             str = (v < 0 ? v + 4294967296 : v).toString(16).toLowerCase();
-            if (flag("#")) {
-              prefix = "0x";
+            if (flag('#')) {
+              prefix = '0x';
             }
             break;
-          case "X":
+          case 'X':
             str = (v < 0 ? v + 4294967296 : v).toString(16).toUpperCase();
-            if (flag("#")) {
-              prefix = "0x";
+            if (flag('#')) {
+              prefix = '0x';
             }
             break;
           default:
@@ -132,34 +132,34 @@ export function printf(format: string, ...args: number[]): string {
             break;
         }
 
-        if (flag("+")) {
-          prefix = (v < 0 ? "-" : "+") + prefix;
+        if (flag('+')) {
+          prefix = (v < 0 ? '-' : '+') + prefix;
         }
 
         if (prefix) {
-          if (flag("0")) {
+          if (flag('0')) {
             while (str.length < width) {
-              str = "0" + str;
+              str = '0' + str;
             }
             str = prefix + str;
           } else {
             str = prefix + str;
             while (str.length < width) {
-              if (flag("-")) {
-                str += " ";
+              if (flag('-')) {
+                str += ' ';
               } else {
-                str = " " + str;
+                str = ' ' + str;
               }
             }
           }
         } else {
           while (str.length < width) {
-            if (flag("0")) {
-              str = "0" + str;
-            } else if (flag("-")) {
-              str += " ";
+            if (flag('0')) {
+              str = '0' + str;
+            } else if (flag('-')) {
+              str += ' ';
             } else {
-              str = " " + str;
+              str = ' ' + str;
             }
           }
         }

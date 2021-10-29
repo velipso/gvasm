@@ -5,15 +5,15 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "arm.bx",
-    desc: "Branch and exchange",
-    kind: "make",
+    name: 'arm.bx',
+    desc: 'Branch and exchange',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 bx r9      /// 19 ff 2f e1
 bxeq r14   /// 1e ff 2f 01
 bx.eq r14  /// 1e ff 2f 01
@@ -22,21 +22,21 @@ bx.eq r14  /// 1e ff 2f 01
   });
 
   def({
-    name: "arm.bx-period",
-    desc: "Branch and exchange can't end in period",
-    kind: "make",
+    name: 'arm.bx-period',
+    desc: 'Branch and exchange can\'t end in period',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `bx. r9`,
+      '/root/main': `bx. r9`,
     },
   });
 
   def({
-    name: "arm.b",
-    desc: "Branch",
-    kind: "make",
+    name: 'arm.b',
+    desc: 'Branch',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L1: b 0x08000008  /// 00 00 00 ea
 @L2: b @L1         /// fd ff ff ea
 @L3: bne @L3       /// fe ff ff 1a
@@ -48,12 +48,12 @@ b.cs @L4           /// 01 00 00 2a
   });
 
   def({
-    name: "arm.b-misaligned",
-    desc: "Branch misaligned",
-    kind: "make",
+    name: 'arm.b-misaligned',
+    desc: 'Branch misaligned',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 b @L1  /// 00 00 00 00
 .i8 0  /// 00
 @L1:
@@ -62,11 +62,11 @@ b @L1  /// 00 00 00 00
   });
 
   def({
-    name: "arm.bl",
-    desc: "Branch and Link",
-    kind: "make",
+    name: 'arm.bl',
+    desc: 'Branch and Link',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L1: bl 0x08000008  /// 00 00 00 eb
 @L2: bl @L1         /// fd ff ff eb
 @L3: blhs @L3       /// fe ff ff 2b
@@ -78,11 +78,11 @@ bl.cc @L4           /// 01 00 00 3b
   });
 
   def({
-    name: "arm.nop",
-    desc: "Nop",
-    kind: "make",
+    name: 'arm.nop',
+    desc: 'Nop',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mov r0, r0  /// 00 00 a0 e1
 nop         /// 00 00 a0 e1
 `,
@@ -91,9 +91,9 @@ nop         /// 00 00 a0 e1
 
   for (
     const { op, desc, code } of [
-      { op: "mov", desc: "Move", code: 13 },
-      { op: "mvn", desc: "Move not", code: 15 },
-      { op: "not", desc: "Move not", code: 15 },
+      { op: 'mov', desc: 'Move', code: 13 },
+      { op: 'mvn', desc: 'Move not', code: 15 },
+      { op: 'not', desc: 'Move not', code: 15 },
     ]
   ) {
     const b = (code & 7) << 1;
@@ -102,9 +102,9 @@ nop         /// 00 00 a0 e1
     def({
       name: `arm.${op}`,
       desc,
-      kind: "make",
+      kind: 'make',
       files: {
-        "/root/main": `
+        '/root/main': `
 ${op} r3, r14               /// 0e 30 ${b0}0 e1
 ${op}s r3, r14              /// 0e 30 ${b1}0 e1
 ${op}mi r3, r14             /// 0e 30 ${b0}0 41
@@ -188,10 +188,10 @@ ${op}mis r3, #0x50          /// 05 3e ${b1}0 43
 
   for (
     const { op, desc, code } of [
-      { op: "tst", desc: "Bitwise and test", code: 8 },
-      { op: "teq", desc: "Bitwise exclusive or test", code: 9 },
-      { op: "cmp", desc: "Compare", code: 10 },
-      { op: "cmn", desc: "Compare negative", code: 11 },
+      { op: 'tst', desc: 'Bitwise and test', code: 8 },
+      { op: 'teq', desc: 'Bitwise exclusive or test', code: 9 },
+      { op: 'cmp', desc: 'Compare', code: 10 },
+      { op: 'cmn', desc: 'Compare negative', code: 11 },
     ]
   ) {
     const b = (code & 7) << 1;
@@ -199,9 +199,9 @@ ${op}mis r3, #0x50          /// 05 3e ${b1}0 43
     def({
       name: `arm.${op}`,
       desc,
-      kind: "make",
+      kind: 'make',
       files: {
-        "/root/main": `
+        '/root/main': `
 ${op} r9, r14              /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14            /// 0e 00 ${b1}9 51
 ${op}.pl r9, r14           /// 0e 00 ${b1}9 51
@@ -252,16 +252,16 @@ ${op}.pl r9, #0x7800       /// 1e 0b ${b1}9 53
 
   for (
     const { op, desc, code } of [
-      { op: "and", desc: "Bitwise and", code: 0 },
-      { op: "eor", desc: "Bitwise exclusive or", code: 1 },
-      { op: "sub", desc: "Subtraction", code: 2 },
-      { op: "rsb", desc: "Reverse subtraction", code: 3 },
-      { op: "add", desc: "Addition", code: 4 },
-      { op: "adc", desc: "Addition with carry", code: 5 },
-      { op: "sbc", desc: "Subtraction with carry", code: 6 },
-      { op: "rsc", desc: "Reverse subtraction with carry", code: 7 },
-      { op: "orr", desc: "Bitwise or", code: 12 },
-      { op: "bic", desc: "Bit clear", code: 14 },
+      { op: 'and', desc: 'Bitwise and', code: 0 },
+      { op: 'eor', desc: 'Bitwise exclusive or', code: 1 },
+      { op: 'sub', desc: 'Subtraction', code: 2 },
+      { op: 'rsb', desc: 'Reverse subtraction', code: 3 },
+      { op: 'add', desc: 'Addition', code: 4 },
+      { op: 'adc', desc: 'Addition with carry', code: 5 },
+      { op: 'sbc', desc: 'Subtraction with carry', code: 6 },
+      { op: 'rsc', desc: 'Reverse subtraction with carry', code: 7 },
+      { op: 'orr', desc: 'Bitwise or', code: 12 },
+      { op: 'bic', desc: 'Bit clear', code: 14 },
     ]
   ) {
     const a = code >> 3;
@@ -273,9 +273,9 @@ ${op}.pl r9, #0x7800       /// 1e 0b ${b1}9 53
     def({
       name: `arm.${op}`,
       desc,
-      kind: "make",
+      kind: 'make',
       files: {
-        "/root/main": `
+        '/root/main': `
 ${op} r3, r9, r14              /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14             /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14            /// 0e 30 ${b0}9 3${a0}
@@ -395,11 +395,11 @@ ${op}los r3, #0x50             /// 05 3e ${b1}3 3${a2}
   }
 
   def({
-    name: "arm.mrs",
-    desc: "Transfer PSR to register",
-    kind: "make",
+    name: 'arm.mrs',
+    desc: 'Transfer PSR to register',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mov r12, cpsr     /// 00 c0 0f e1
 mov r12, spsr     /// 00 c0 4f e1
 movvs r12, cpsr   /// 00 c0 0f 61
@@ -413,11 +413,11 @@ mrsvs r12, spsr   /// 00 c0 4f 61
   });
 
   def({
-    name: "arm.msr",
-    desc: "Transfer register to PSR",
-    kind: "make",
+    name: 'arm.msr',
+    desc: 'Transfer register to PSR',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mov cpsr, r13                /// 0d f0 29 e1
 mov spsr, r13                /// 0d f0 69 e1
 movvc cpsr, r13              /// 0d f0 29 71
@@ -449,11 +449,11 @@ msrvc spsr_flg, #0xf0000000  /// 0f f2 68 73
   });
 
   def({
-    name: "arm.mul",
-    desc: "Multiply",
-    kind: "make",
+    name: 'arm.mul',
+    desc: 'Multiply',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mul r1, r9, r4     /// 99 04 01 e0
 muls r1, r9, r4    /// 99 04 11 e0
 mulhi r1, r9, r4   /// 99 04 01 80
@@ -464,11 +464,11 @@ mulhis r1, r9, r4  /// 99 04 11 80
   });
 
   def({
-    name: "arm.mla",
-    desc: "Multiply and accumulate",
-    kind: "make",
+    name: 'arm.mla',
+    desc: 'Multiply and accumulate',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 mla r1, r9, r4, r12     /// 99 c4 21 e0
 mlas r1, r9, r4, r12    /// 99 c4 31 e0
 mlahi r1, r9, r4, r12   /// 99 c4 21 80
@@ -479,11 +479,11 @@ mlahis r1, r9, r4, r12  /// 99 c4 31 80
   });
 
   def({
-    name: "arm.mull",
-    desc: "Multiply long",
-    kind: "make",
+    name: 'arm.mull',
+    desc: 'Multiply long',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 umull r5, r3, r13, r11     /// 9d 5b 83 e0
 umulls r5, r3, r13, r11    /// 9d 5b 93 e0
 umullls r5, r3, r13, r11   /// 9d 5b 83 90
@@ -499,11 +499,11 @@ smulllss r5, r3, r13, r11  /// 9d 5b d3 90
   });
 
   def({
-    name: "arm.mlal",
-    desc: "Multiply and accumulate long",
-    kind: "make",
+    name: 'arm.mlal',
+    desc: 'Multiply and accumulate long',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 umlal r5, r3, r13, r11     /// 9d 5b a3 e0
 umlals r5, r3, r13, r11    /// 9d 5b b3 e0
 umlalls r5, r3, r13, r11   /// 9d 5b a3 90
@@ -520,8 +520,8 @@ smlallss r5, r3, r13, r11  /// 9d 5b f3 90
 
   for (
     const { op, desc, code } of [
-      { op: "str", desc: "Store", code: 0 },
-      { op: "ldr", desc: "Load", code: 1 },
+      { op: 'str', desc: 'Store', code: 0 },
+      { op: 'ldr', desc: 'Load', code: 1 },
     ]
   ) {
     const c0 = code.toString(16);
@@ -535,9 +535,9 @@ smlallss r5, r3, r13, r11  /// 9d 5b f3 90
     def({
       name: `arm.${op}`,
       desc,
-      kind: "make",
+      kind: 'make',
       files: {
-        "/root/main": `
+        '/root/main': `
 ${op} r2, [r9]                        /// 00 20 ${c8}9 e5
 ${op}b r2, [r9]                       /// 00 20 ${cc}9 e5
 ${op}ge r2, [r9]                      /// 00 20 ${c8}9 a5
@@ -1308,11 +1308,11 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
   }
 
   def({
-    name: "arm.str-pc-relative",
-    desc: "Store word relative to PC",
-    kind: "make",
+    name: 'arm.str-pc-relative',
+    desc: 'Store word relative to PC',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L0: .i16 100, 200  /// 64 00 c8 00
 str r2, [#@L0]      /// 0c 20 0f e5
 strb r2, [#@L0]     /// 10 20 4f e5
@@ -1329,11 +1329,11 @@ strgeb r2, [#@L1]!  /// 04 20 6f a5
   });
 
   def({
-    name: "arm.ldr-pc-relative",
-    desc: "Load word relative to PC",
-    kind: "make",
+    name: 'arm.ldr-pc-relative',
+    desc: 'Load word relative to PC',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L0: .i16 100, 200  /// 64 00 c8 00
 ldr r2, [#@L0]      /// 0c 20 1f e5
 ldrb r2, [#@L0]     /// 10 20 5f e5
@@ -1350,31 +1350,31 @@ ldrgeb r2, [#@L1]!  /// 04 20 7f a5
   });
 
   def({
-    name: "arm.str-overflow-immediate",
-    desc: "Store with overflow immediate",
-    kind: "make",
+    name: 'arm.str-overflow-immediate',
+    desc: 'Store with overflow immediate',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `str r2, [r9], r10, lsl #32`,
+      '/root/main': `str r2, [r9], r10, lsl #32`,
     },
   });
 
   def({
-    name: "arm.str-overflow-offset",
-    desc: "Store with overflow offset",
-    kind: "make",
+    name: 'arm.str-overflow-offset',
+    desc: 'Store with overflow offset',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `str r2, [r9, #4096]`,
+      '/root/main': `str r2, [r9, #4096]`,
     },
   });
 
   def({
-    name: "arm.strh",
-    desc: "Store half word",
-    kind: "make",
+    name: 'arm.strh',
+    desc: 'Store half word',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 strh r11, [r4]                /// b0 b0 44 e1
 strhlt r11, [r4]              /// b0 b0 44 b1
 strlth r11, [r4]              /// b0 b0 44 b1
@@ -1438,11 +1438,11 @@ strlth r11, [r4], -r13        /// bd b0 04 b0
   });
 
   def({
-    name: "arm.strh-pc-relative",
-    desc: "Store half word relative to PC",
-    kind: "make",
+    name: 'arm.strh-pc-relative',
+    desc: 'Store half word relative to PC',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L0: .i16 100, 200  /// 64 00 c8 00
 strh r11, [#@L0]    /// bc b0 4f e1
 strh r11, [#@L0]!   /// b0 b1 6f e1
@@ -1455,21 +1455,21 @@ strh r11, [#@L1]!   /// b4 b0 6f e1
   });
 
   def({
-    name: "arm.strh-overflow",
-    desc: "Store half word with overflow offset",
-    kind: "make",
+    name: 'arm.strh-overflow',
+    desc: 'Store half word with overflow offset',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `strh r2, [r9, #256]`,
+      '/root/main': `strh r2, [r9, #256]`,
     },
   });
 
   def({
-    name: "arm.ldrh",
-    desc: "Load half word",
-    kind: "make",
+    name: 'arm.ldrh',
+    desc: 'Load half word',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldrh r11, [r4]                /// b0 b0 54 e1
 ldrhgt r11, [r4]              /// b0 b0 54 c1
 ldrgth r11, [r4]              /// b0 b0 54 c1
@@ -1666,11 +1666,11 @@ ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
   });
 
   def({
-    name: "arm.ldrh-pc-relative",
-    desc: "Load half word relative to PC",
-    kind: "make",
+    name: 'arm.ldrh-pc-relative',
+    desc: 'Load half word relative to PC',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @L0: .i16 100, 200  /// 64 00 c8 00
 ldrh r11, [#@L0]    /// bc b0 5f e1
 ldrsh r11, [#@L0]   /// f0 b1 5f e1
@@ -1691,11 +1691,11 @@ ldrsb r11, [#@L1]!  /// d4 b0 7f e1
   });
 
   def({
-    name: "arm.push",
-    desc: "Push registers to stack",
-    kind: "make",
+    name: 'arm.push',
+    desc: 'Push registers to stack',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 push {r0-r4, r8, lr}           /// 1f 41 2d e9
 pushle {r3, r5-r9, r13-r15}    /// e8 e3 2d d9
 
@@ -1706,11 +1706,11 @@ pushle {r3, r5-r9, r13-r15}^   /// e8 e3 6d d9
   });
 
   def({
-    name: "arm.stm",
-    desc: "Store multiple registers",
-    kind: "make",
+    name: 'arm.stm',
+    desc: 'Store multiple registers',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 stmed r5, {r1-lr}             /// fe 7f 05 e8
 stmdale r5, {r1-lr}           /// fe 7f 05 d8
 stmleda r5, {r1-lr}           /// fe 7f 05 d8
@@ -1767,11 +1767,11 @@ stmlefa r5!, {r1-lr}^         /// fe 7f e5 d9
   });
 
   def({
-    name: "arm.pop",
-    desc: "Pop registers from stack",
-    kind: "make",
+    name: 'arm.pop',
+    desc: 'Pop registers from stack',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 pop {r0-r4, r8, lr}           /// 1f 41 bd e8
 pople {r3, r5-r9, r13-r15}    /// e8 e3 bd d8
 
@@ -1782,11 +1782,11 @@ pople {r3, r5-r9, r13-r15}^   /// e8 e3 fd d8
   });
 
   def({
-    name: "arm.ldm",
-    desc: "Store multiple registers",
-    kind: "make",
+    name: 'arm.ldm',
+    desc: 'Store multiple registers',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 ldmfa r5, {r1-lr}             /// fe 7f 15 e8
 ldmdale r5, {r1-lr}           /// fe 7f 15 d8
 ldmleda r5, {r1-lr}           /// fe 7f 15 d8
@@ -1843,11 +1843,11 @@ ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
   });
 
   def({
-    name: "arm.swp",
-    desc: "Swap",
-    kind: "make",
+    name: 'arm.swp',
+    desc: 'Swap',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 swp r8, r9, [r1]      /// 99 80 01 e1
 swpb r8, r9, [r1]     /// 99 80 41 e1
 swppl r8, r9, [r1]    /// 99 80 01 51
@@ -1860,11 +1860,11 @@ swpplb r8, r9, [r1]   /// 99 80 41 51
   });
 
   def({
-    name: "arm.swi",
-    desc: "Software interrupt",
-    kind: "make",
+    name: 'arm.swi',
+    desc: 'Software interrupt',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 swi 0            /// 00 00 00 ef
 swi 100          /// 64 00 00 ef
 swi 0xffffff     /// ff ff ff ef
@@ -1877,22 +1877,22 @@ swi.mi 0xffffff  /// ff ff ff 4f
   });
 
   def({
-    name: "arm.swi-overflow",
-    desc: "Software interrupt with overflowed comment",
-    kind: "make",
+    name: 'arm.swi-overflow',
+    desc: 'Software interrupt with overflowed comment',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `swi 16777216`,
+      '/root/main': `swi 16777216`,
     },
   });
 
   def({
-    name: "arm.swi-underflow",
-    desc: "Software interrupt with underflowed comment",
-    kind: "make",
+    name: 'arm.swi-underflow',
+    desc: 'Software interrupt with underflowed comment',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `swi -1`,
+      '/root/main': `swi -1`,
     },
   });
 }

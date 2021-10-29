@@ -5,15 +5,15 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "struct.basic",
-    desc: "Basic usage of .struct",
-    kind: "make",
+    name: 'struct.basic',
+    desc: 'Basic usage of .struct',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s
   .s8 one, two
   .s16 three
@@ -29,11 +29,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "struct.align",
-    desc: "Struct members should align correctly",
-    kind: "make",
+    name: 'struct.align',
+    desc: 'Struct members should align correctly',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s
   .s8 one
   .s32 two
@@ -54,11 +54,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "struct.nested",
-    desc: "Structs can contain structs",
-    kind: "make",
+    name: 'struct.nested',
+    desc: 'Structs can contain structs',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s
   .s8 one
   .struct two
@@ -81,11 +81,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "struct.if",
-    desc: "Structs can have conditional fields",
-    kind: "make",
+    name: 'struct.if',
+    desc: 'Structs can have conditional fields',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s
   .s8 one, two
   .if 0
@@ -105,12 +105,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "struct.reject-regular",
-    desc: "Reject regular statements inside .struct",
-    kind: "make",
+    name: 'struct.reject-regular',
+    desc: 'Reject regular statements inside .struct',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $a
 mov r0, r1
 .end
@@ -119,11 +119,11 @@ mov r0, r1
   });
 
   def({
-    name: "struct.array",
-    desc: "Arrays inside structs",
-    kind: "make",
+    name: 'struct.array',
+    desc: 'Arrays inside structs',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s
   .s16 one[5]
   .s32 two
@@ -140,11 +140,11 @@ mov r0, r1
   });
 
   def({
-    name: "struct.start-address",
-    desc: "Start address with struct",
-    kind: "make",
+    name: 'struct.start-address',
+    desc: 'Start address with struct',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .struct $s = 0x03000000
   .s8 one
   .s8 two

@@ -5,15 +5,15 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "thumb.lsl",
-    desc: "Logical shift left",
-    kind: "make",
+    name: 'thumb.lsl',
+    desc: 'Logical shift left',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // move and shift
 lsl r3, r5, #10  /// ab 02
 lsl r7, r7, #31  /// ff 07
@@ -25,21 +25,21 @@ lsl r7, r7       /// bf 40
   });
 
   def({
-    name: "thumb.lsl-overflow",
-    desc: "Logical shift left with overflow",
-    kind: "make",
+    name: 'thumb.lsl-overflow',
+    desc: 'Logical shift left with overflow',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `.thumb\nlsl r3, r5, #32`,
+      '/root/main': `.thumb\nlsl r3, r5, #32`,
     },
   });
 
   def({
-    name: "thumb.lsr",
-    desc: "Logical shift right",
-    kind: "make",
+    name: 'thumb.lsr',
+    desc: 'Logical shift right',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // move and shift
 lsr r3, r5, #10  /// ab 0a
 lsr r7, r7, #31  /// ff 0f
@@ -51,11 +51,11 @@ lsr r7, r7       /// ff 40
   });
 
   def({
-    name: "thumb.asr",
-    desc: "Arithmetic shift right",
-    kind: "make",
+    name: 'thumb.asr',
+    desc: 'Arithmetic shift right',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // move and shift
 asr r3, r5, #10  /// ab 12
 asr r7, r7, #31  /// ff 17
@@ -67,11 +67,11 @@ asr r7, r7       /// 3f 41
   });
 
   def({
-    name: "thumb.add",
-    desc: "Add",
-    kind: "make",
+    name: 'thumb.add',
+    desc: 'Add',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // add registers
 add r4, r1, r6     /// 8c 19
 add r4, r1, #6     /// 8c 1d
@@ -100,11 +100,11 @@ add r9, r13        /// e9 44
   });
 
   def({
-    name: "thumb.sub",
-    desc: "Subtract",
-    kind: "make",
+    name: 'thumb.sub',
+    desc: 'Subtract',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // subtract registers
 sub r4, r4, r2     /// a4 1a
 sub r4, r2         /// a4 1a
@@ -124,11 +124,11 @@ add sp, #-404      /// e5 b0
   });
 
   def({
-    name: "thumb.nop",
-    desc: "Nop",
-    kind: "make",
+    name: 'thumb.nop',
+    desc: 'Nop',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 mov r8, r8    /// c0 46
 nop           /// c0 46
 `,
@@ -136,11 +136,11 @@ nop           /// c0 46
   });
 
   def({
-    name: "thumb.mov",
-    desc: "Move",
-    kind: "make",
+    name: 'thumb.mov',
+    desc: 'Move',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // mov immediate
 mov r4, #0    /// 00 24
 mov r4, #100  /// 64 24
@@ -154,11 +154,11 @@ mov r9, r13   /// e9 46
   });
 
   def({
-    name: "thumb.cmp",
-    desc: "Compare",
-    kind: "make",
+    name: 'thumb.cmp',
+    desc: 'Compare',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // cmp immediate
 cmp r4, #0    /// 00 2c
 cmp r4, #100  /// 64 2c
@@ -176,30 +176,30 @@ cmp r9, r13   /// e9 45
 
   for (
     const { op, desc, code } of [
-      { op: "ands", desc: "Bitwise and", code: 0 },
-      { op: "and", desc: "Bitwise and", code: 0 },
-      { op: "eors", desc: "Bitwise exclusive or", code: 1 },
-      { op: "eor", desc: "Bitwise exclusive or", code: 1 },
-      { op: "adcs", desc: "Add with carry", code: 5 },
-      { op: "adc", desc: "Add with carry", code: 5 },
-      { op: "sbcs", desc: "Subtract with carry", code: 6 },
-      { op: "sbc", desc: "Subtract with carry", code: 6 },
-      { op: "rors", desc: "Rotate right", code: 7 },
-      { op: "ror", desc: "Rotate right", code: 7 },
-      { op: "tst", desc: "Bit test", code: 8 },
-      { op: "negs", desc: "Negate", code: 9 },
-      { op: "neg", desc: "Negate", code: 9 },
-      { op: "cmn", desc: "Compare negative", code: 11 },
-      { op: "orrs", desc: "Bitwise or", code: 12 },
-      { op: "orr", desc: "Bitwise or", code: 12 },
-      { op: "muls", desc: "Multiply", code: 13 },
-      { op: "mul", desc: "Multiply", code: 13 },
-      { op: "bics", desc: "Bit clear", code: 14 },
-      { op: "bic", desc: "Bit clear", code: 14 },
-      { op: "mvns", desc: "Move not", code: 15 },
-      { op: "mvn", desc: "Move not", code: 15 },
-      { op: "nots", desc: "Move not", code: 15 },
-      { op: "not", desc: "Move not", code: 15 },
+      { op: 'ands', desc: 'Bitwise and', code: 0 },
+      { op: 'and', desc: 'Bitwise and', code: 0 },
+      { op: 'eors', desc: 'Bitwise exclusive or', code: 1 },
+      { op: 'eor', desc: 'Bitwise exclusive or', code: 1 },
+      { op: 'adcs', desc: 'Add with carry', code: 5 },
+      { op: 'adc', desc: 'Add with carry', code: 5 },
+      { op: 'sbcs', desc: 'Subtract with carry', code: 6 },
+      { op: 'sbc', desc: 'Subtract with carry', code: 6 },
+      { op: 'rors', desc: 'Rotate right', code: 7 },
+      { op: 'ror', desc: 'Rotate right', code: 7 },
+      { op: 'tst', desc: 'Bit test', code: 8 },
+      { op: 'negs', desc: 'Negate', code: 9 },
+      { op: 'neg', desc: 'Negate', code: 9 },
+      { op: 'cmn', desc: 'Compare negative', code: 11 },
+      { op: 'orrs', desc: 'Bitwise or', code: 12 },
+      { op: 'orr', desc: 'Bitwise or', code: 12 },
+      { op: 'muls', desc: 'Multiply', code: 13 },
+      { op: 'mul', desc: 'Multiply', code: 13 },
+      { op: 'bics', desc: 'Bit clear', code: 14 },
+      { op: 'bic', desc: 'Bit clear', code: 14 },
+      { op: 'mvns', desc: 'Move not', code: 15 },
+      { op: 'mvn', desc: 'Move not', code: 15 },
+      { op: 'nots', desc: 'Move not', code: 15 },
+      { op: 'not', desc: 'Move not', code: 15 },
     ]
   ) {
     const a = code >> 2;
@@ -207,9 +207,9 @@ cmp r9, r13   /// e9 45
     def({
       name: `thumb.${op}`,
       desc,
-      kind: "make",
+      kind: 'make',
       files: {
-        "/root/main": `.thumb
+        '/root/main': `.thumb
 ${op} r2, r7  /// ${b}a 4${a}
 ${op} r0, r6  /// ${b}0 4${a}
 `,
@@ -218,11 +218,11 @@ ${op} r0, r6  /// ${b}0 4${a}
   }
 
   def({
-    name: "thumb.bx",
-    desc: "Branch and exchange",
-    kind: "make",
+    name: 'thumb.bx',
+    desc: 'Branch and exchange',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 bx r4   /// 20 47
 bx r13  /// 68 47
 `,
@@ -230,11 +230,11 @@ bx r13  /// 68 47
   });
 
   def({
-    name: "thumb.ldr",
-    desc: "Load",
-    kind: "make",
+    name: 'thumb.ldr',
+    desc: 'Load',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // relative to PC
 ldr r4, [pc, #0]     /// 00 4c
 ldr r4, [pc]         /// 00 4c
@@ -269,11 +269,11 @@ ldrb r3, [r6]        /// 33 78
   });
 
   def({
-    name: "thumb.str",
-    desc: "Store",
-    kind: "make",
+    name: 'thumb.str',
+    desc: 'Store',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 // word
 str r7, [r5, r3]     /// ef 50
 str r3, [r6, #116]   /// 73 67
@@ -297,43 +297,43 @@ strb r3, [r6]        /// 33 70
   });
 
   def({
-    name: "thumb.strsh-missing",
-    desc: "Verify strsh is missing",
-    kind: "make",
+    name: 'thumb.strsh-missing',
+    desc: 'Verify strsh is missing',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.thumb\nstrsh r7, [r5, r3]` },
+    files: { '/root/main': `.thumb\nstrsh r7, [r5, r3]` },
   });
 
   def({
-    name: "thumb.stsh-missing",
-    desc: "Verify strh is missing",
-    kind: "make",
+    name: 'thumb.stsh-missing',
+    desc: 'Verify strh is missing',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.thumb\nstsh r7, [r5, r3]` },
+    files: { '/root/main': `.thumb\nstsh r7, [r5, r3]` },
   });
 
   def({
-    name: "thumb.strsb-missing",
-    desc: "Verify strsb is missing",
-    kind: "make",
+    name: 'thumb.strsb-missing',
+    desc: 'Verify strsb is missing',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.thumb\nstrsb r7, [r5, r3]` },
+    files: { '/root/main': `.thumb\nstrsb r7, [r5, r3]` },
   });
 
   def({
-    name: "thumb.stsb-missing",
-    desc: "Verify stsb is missing",
-    kind: "make",
+    name: 'thumb.stsb-missing',
+    desc: 'Verify stsb is missing',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.thumb\nstsb r7, [r5, r3]` },
+    files: { '/root/main': `.thumb\nstsb r7, [r5, r3]` },
   });
 
   def({
-    name: "thumb.push",
-    desc: "Push registers to stack",
-    kind: "make",
+    name: 'thumb.push',
+    desc: 'Push registers to stack',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 push {r0, r1, r5-r7}             /// e3 b4
 stmdb sp!, {r0, r1, r5-r7}       /// e3 b4
 stmfd sp!, {r0, r1, r5-r7}       /// e3 b4
@@ -348,19 +348,19 @@ stmfd sp!, {r0, lr, r1, r5-r7}   /// e3 b5
   });
 
   def({
-    name: "thumb.push-overflow",
-    desc: "Verify push doesn't allow high registers",
-    kind: "make",
+    name: 'thumb.push-overflow',
+    desc: 'Verify push doesn\'t allow high registers',
+    kind: 'make',
     error: true,
-    files: { "/root/main": `.thumb\npush {r0-r8}` },
+    files: { '/root/main': `.thumb\npush {r0-r8}` },
   });
 
   def({
-    name: "thumb.pop",
-    desc: "Pop registers from stack",
-    kind: "make",
+    name: 'thumb.pop',
+    desc: 'Pop registers from stack',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 pop {r0, r1, r5-r7}              /// e3 bc
 ldmia sp!, {r0, r1, r5-r7}       /// e3 bc
 ldmfd sp!, {r0, r1, r5-r7}       /// e3 bc
@@ -375,11 +375,11 @@ ldmfd sp!, {r0, pc, r1, r5-r7}   /// e3 bd
   });
 
   def({
-    name: "thumb.stmia",
-    desc: "Store multiple",
-    kind: "make",
+    name: 'thumb.stmia',
+    desc: 'Store multiple',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 stmia r3!, {r0-r3}  /// 0f c3
 stmea r3!, {r0-r3}  /// 0f c3
 `,
@@ -387,11 +387,11 @@ stmea r3!, {r0-r3}  /// 0f c3
   });
 
   def({
-    name: "thumb.ldmia",
-    desc: "Load multiple",
-    kind: "make",
+    name: 'thumb.ldmia',
+    desc: 'Load multiple',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 ldmia r3!, {r0-r3}  /// 0f cb
 ldmfd r3!, {r0-r3}  /// 0f cb
 `,
@@ -399,11 +399,11 @@ ldmfd r3!, {r0-r3}  /// 0f cb
   });
 
   def({
-    name: "thumb.b",
-    desc: "Branch",
-    kind: "make",
+    name: 'thumb.b',
+    desc: 'Branch',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 @top:
 beq @top    /// fe d0
 beq @bot    /// 1d d0
@@ -451,11 +451,11 @@ bal @next2  /// 05 e0
   });
 
   def({
-    name: "thumb.swi",
-    desc: "Software interrupt",
-    kind: "make",
+    name: 'thumb.swi',
+    desc: 'Software interrupt',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 swi 0    /// 00 df
 swi 100  /// 64 df
 swi 255  /// ff df
@@ -464,11 +464,11 @@ swi 255  /// ff df
   });
 
   def({
-    name: "thumb.bl",
-    desc: "Branch and link",
-    kind: "make",
+    name: 'thumb.bl',
+    desc: 'Branch and link',
+    kind: 'make',
     files: {
-      "/root/main": `.thumb
+      '/root/main': `.thumb
 @top:
 bl @top     /// ff f7 fe ff
 bl @bot     /// 00 f0 06 f8

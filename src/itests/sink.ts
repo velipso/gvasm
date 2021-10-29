@@ -5,12 +5,12 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "sink.0.sanity",
-    kind: "sink",
+    name: 'sink.0.sanity',
+    kind: 'sink',
     stdout: `123
 82938
 7023512703
@@ -92,7 +92,7 @@ nil
 {1, 'two\\three''four', 5}
 `,
     files: {
-      "/root/main.sink": `#
+      '/root/main.sink': `#
 # comment
 #
 
@@ -336,8 +336,8 @@ say {1, 'two\\three''four', 5}
   });
 
   def({
-    name: "sink.1.namespaces",
-    kind: "sink",
+    name: 'sink.1.namespaces',
+    kind: 'sink',
     stdout: `adding 4 5
 9
 inside obj.test
@@ -345,7 +345,7 @@ inside obj.test
 q
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def add x
   say 'bad'
 end
@@ -385,20 +385,20 @@ test
   });
 
   def({
-    name: "sink.2.say-as-cmd",
-    kind: "sink",
+    name: 'sink.2.say-as-cmd',
+    kind: 'sink',
     stdout: `
 say returns "nil"
 `,
     files: {
-      "/root/main.sink": `say 'say returns "' ~ say ~ '"'
+      '/root/main.sink': `say 'say returns "' ~ say ~ '"'
 `,
     },
   });
 
   def({
-    name: "sink.3.math",
-    kind: "sink",
+    name: 'sink.3.math',
+    kind: 'sink',
     stdout: `1
 {-2, -3}
 1000 0
@@ -408,7 +408,7 @@ say returns "nil"
 1
 `,
     files: {
-      "/root/main.sink": `def r1000 a
+      '/root/main.sink': `def r1000 a
   return num.round a * 1000
 end
 
@@ -424,8 +424,8 @@ say num.min {6, 2, 4, 8, 1, 3}
   });
 
   def({
-    name: "sink.4.list-ops",
-    kind: "sink",
+    name: 'sink.4.list-ops',
+    kind: 'sink',
     stdout: `~= {1, 2, 3, 4, 5, 6, 7}
 b: {1, 2, 3, 4, 5, 6}
 b: {-1, 0, 1, 2, 3, 4, 5, 6, 8, 9}
@@ -438,7 +438,7 @@ b: {9, 8, 6, 5, 4, 3, 2, 1, 0, -1}
 ab
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var a = {1, 2, 3, 4, 5}
 
 list.push a, 6
@@ -473,12 +473,12 @@ say list.join {'a', 'b'}
   });
 
   def({
-    name: "sink.5.multi-push",
-    kind: "sink",
+    name: 'sink.5.multi-push',
+    kind: 'sink',
     stdout: `{1, 2, 3}
 `,
     files: {
-      "/root/main.sink": `var a = {1}
+      '/root/main.sink': `var a = {1}
 a | list.push 2 | list.push 3
 say a
 `,
@@ -486,8 +486,8 @@ say a
   });
 
   def({
-    name: "sink.6.lvalues",
-    kind: "sink",
+    name: 'sink.6.lvalues',
+    kind: 'sink',
     stdout: `15
 35 35
 1 2
@@ -509,7 +509,7 @@ say a
 2
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x, y, z
 
 y = 5
@@ -611,8 +611,8 @@ y = 2
   });
 
   def({
-    name: "sink.7.varargs",
-    kind: "sink",
+    name: 'sink.7.varargs',
+    kind: 'sink',
     stdout: `1 2 {3, 4, 5}
 4 nil {}
 1 2 {3, 4}
@@ -622,7 +622,7 @@ y = 2
 1 2 {3, 4, 5} 6 {}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def test1 a, b, ...c
   say a, b, c
 end
@@ -653,11 +653,11 @@ test3 # 1 2 {3, 4, 5} 6 {}
   });
 
   def({
-    name: "sink.8.open-eof",
-    kind: "sink",
+    name: 'sink.8.open-eof',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say 1
 
 do
@@ -666,8 +666,8 @@ do
   });
 
   def({
-    name: "sink.9.rand",
-    kind: "sink",
+    name: 'sink.9.rand',
+    kind: 'sink',
     stdout: `0xFB4153C8
 0x5D9A39CC
 0x42312A62
@@ -679,7 +679,7 @@ do
 0x4DC332DB
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 rand.seed 988
 
 say num.hex rand.int, 8
@@ -712,15 +712,15 @@ say num.hex rand.int, 8
   });
 
   def({
-    name: "sink.10.lex-memleak",
-    kind: "sink",
+    name: 'sink.10.lex-memleak',
+    kind: 'sink',
     stdout: `1
 2
 3
 4
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def foo n
   say n
   def bar n2
@@ -739,15 +739,15 @@ foo 1
   });
 
   def({
-    name: "sink.12.setat",
-    kind: "sink",
+    name: 'sink.12.setat',
+    kind: 'sink',
     stdout: `{0} 1
 {0, 1} 2
 {0, 1, nil, nil, 4} 5
 {0, 1, nil, 3, 8} 5
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x = {}
 x[0] = 0
 say x, &x
@@ -763,14 +763,14 @@ say x, &x
   });
 
   def({
-    name: "sink.13.alias",
-    kind: "sink",
+    name: 'sink.13.alias',
+    kind: 'sink',
     stdout: `{123}
 123
 {456}
 `,
     files: {
-      "/root/main.sink": `var x = {}
+      '/root/main.sink': `var x = {}
 def getx
   return x
 end
@@ -785,8 +785,8 @@ say x
   });
 
   def({
-    name: "sink.14.loop",
-    kind: "sink",
+    name: 'sink.14.loop',
+    kind: 'sink',
     stdout: `0
 1
 2
@@ -795,7 +795,7 @@ say x
 done
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var i = 0
 for
   say i
@@ -810,8 +810,8 @@ say 'done'
   });
 
   def({
-    name: "sink.15.include",
-    kind: "sink",
+    name: 'sink.15.include',
+    kind: 'sink',
     stdout: `start
 inside test1.sink
 test1: 1
@@ -828,7 +828,7 @@ test3: 6
 end
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say 'start'
 
 include './test1.sink'
@@ -857,21 +857,21 @@ T3.test3 6
 
 say 'end'
 `,
-      "/root/test1.sink": `
+      '/root/test1.sink': `
 say 'inside test1.sink'
 
 def test1 a
   say "test1: \$a"
 end
 `,
-      "/root/test2/index.sink": `
+      '/root/test2/index.sink': `
 say 'inside test2/index.sink'
 
 def test2 a
   say "test2: \$a"
 end
 `,
-      "/root/test3.sink": `
+      '/root/test3.sink': `
 say 'inside test3.sink'
 
 def test3 a
@@ -882,11 +882,11 @@ end
   });
 
   def({
-    name: "sink.16.def-fail",
-    kind: "sink",
+    name: 'sink.16.def-fail',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 namespace baz
   var x
   def qux
@@ -905,8 +905,8 @@ end
   });
 
   def({
-    name: "sink.17.str-interp",
-    kind: "sink",
+    name: 'sink.17.str-interp',
+    kind: 'sink',
     stdout: `x: 5
 y: {5, 6, 7}
 y[1] + y[2]: 13
@@ -914,7 +914,7 @@ y[1] + y[2]: 13
 {"hi \${{1}[0]}"}[0]: hi 1
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x = 5, y = {5, 6, 7}
 say "x: \$x"
 say "y: \$y"
@@ -926,16 +926,16 @@ say "{\\"hi \\\${{1}[0]}\\"}[0]: \${{"hi \${{1}[0]}"}[0]}"
   });
 
   def({
-    name: "sink.18.open-eof-inc",
-    kind: "sink",
+    name: 'sink.18.open-eof-inc',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 include 'test.sink'
 
 test {
 `,
-      "/root/test.sink": `
+      '/root/test.sink': `
 def test
   say 'inside test'
 end
@@ -944,12 +944,12 @@ end
   });
 
   def({
-    name: "sink.19.early-return",
-    kind: "sink",
+    name: 'sink.19.early-return',
+    kind: 'sink',
     stdout: `1
 `,
     files: {
-      "/root/main.sink": `say 1
+      '/root/main.sink': `say 1
 return
 say 2
 `,
@@ -957,12 +957,12 @@ say 2
   });
 
   def({
-    name: "sink.20.vararg-return",
-    kind: "sink",
+    name: 'sink.20.vararg-return',
+    kind: 'sink',
     stdout: `2
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def test ...c
   return c[1]
 end
@@ -973,15 +973,15 @@ say test 1, 2, 3
   });
 
   def({
-    name: "sink.21.expr-keyend",
-    kind: "sink",
+    name: 'sink.21.expr-keyend',
+    kind: 'sink',
     stdout: `0
 1
 2
 hi
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var i = 0
 do
   say i
@@ -1004,8 +1004,8 @@ if i < 1 elseif i < 2 elseif i < 3 end
   });
 
   def({
-    name: "sink.22.splicing",
-    kind: "sink",
+    name: 'sink.22.splicing',
+    kind: 'sink',
     stdout: `aGHIJdef
 GH
 {1, 22, 33, 4, 5}
@@ -1037,7 +1037,7 @@ heo
 heLLo
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x, y, z
 
 x = 'abcdef'
@@ -1111,12 +1111,12 @@ say x # heLLo
   });
 
   def({
-    name: "sink.23.str-escape",
-    kind: "sink",
+    name: 'sink.23.str-escape',
+    kind: 'sink',
     stdout: `how's it going
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x = 'how''s it going'
 say x
 
@@ -1125,8 +1125,8 @@ say x
   });
 
   def({
-    name: "sink.24.large-slices",
-    kind: "sink",
+    name: 'sink.24.large-slices',
+    kind: 'sink',
     stdout: `lists
 5
 1
@@ -1241,7 +1241,7 @@ nil
 5
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 declare test
 
 # test for both lists and strings
@@ -1331,13 +1331,13 @@ end
   });
 
   def({
-    name: "sink.25.assign-self",
-    kind: "sink",
+    name: 'sink.25.assign-self',
+    kind: 'sink',
     stdout: `heLLo
 heLLo
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x = 'hello'
 x = x[0:2] ~ 'LL' ~ x[4:]
 say x # heLLo
@@ -1349,12 +1349,12 @@ say x # heLLo
   });
 
   def({
-    name: "sink.26.tail-call",
-    kind: "sink",
+    name: 'sink.26.tail-call',
+    kind: 'sink',
     stdout: `2
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def test a
   if a > 100
     return stacktrace
@@ -1368,8 +1368,8 @@ say &test 0
   });
 
   def({
-    name: "sink.27.range",
-    kind: "sink",
+    name: 'sink.27.range',
+    kind: 'sink',
     stdout: `0 0
 1 1
 2 2
@@ -1393,7 +1393,7 @@ say &test 0
 {0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for var v, i: range 3
   say v, i
   # 0 0
@@ -1438,8 +1438,8 @@ say range 0, 2.25, 0.25  # {0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2}
   });
 
   def({
-    name: "sink.28.str-split",
-    kind: "sink",
+    name: 'sink.28.str-split',
+    kind: 'sink',
     stdout: `{'crY', '', '', '', 'crY'}
 {'R8fx', 'R8fxDz8nR8fxDz8nR8fxDz8n'}
 {'', 'bsgp', '', 'bsgp'}
@@ -1464,7 +1464,7 @@ say range 0, 2.25, 0.25  # {0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2}
 {'1', '2', '3', '4'}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say str.split 'crYy2oy2oy2oy2ocrY', 'y2o'
 say str.split 'R8fxfPR8fxDz8nR8fxDz8nR8fxDz8n', 'fP'
 say str.split 'wmlTbsgpwmlTwmlTbsgp', 'wmlT'
@@ -1492,18 +1492,18 @@ say str.split '1234', ''
   });
 
   def({
-    name: "sink.29.no-newline",
-    kind: "sink",
+    name: 'sink.29.no-newline',
+    kind: 'sink',
     stdout: `hi
 `,
     files: {
-      "/root/main.sink": `say 'hi'`,
+      '/root/main.sink': `say 'hi'`,
     },
   });
 
   def({
-    name: "sink.30.list-sort",
-    kind: "sink",
+    name: 'sink.30.list-sort',
+    kind: 'sink',
     stdout: `-1
 -1
 -1
@@ -1546,7 +1546,7 @@ say str.split '1234', ''
 done
 `,
     files: {
-      "/root/main.sink": `say order nil, 0        # -1
+      '/root/main.sink': `say order nil, 0        # -1
 say order nil, ''       # -1
 say order nil, {}       # -1
 
@@ -1624,8 +1624,8 @@ say 'done'
   });
 
   def({
-    name: "sink.31.range-bug",
-    kind: "sink",
+    name: 'sink.31.range-bug',
+    kind: 'sink',
     stdout: `0
 1
 2
@@ -1643,7 +1643,7 @@ say 'done'
 8
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var y = 10
 for var x: range y
   say x
@@ -1660,8 +1660,8 @@ end
   });
 
   def({
-    name: "sink.32.num-ints",
-    kind: "sink",
+    name: 'sink.32.num-ints',
+    kind: 'sink',
     stdout: `0
 -1
 1
@@ -1685,7 +1685,7 @@ end
 4294967297
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say 0
 say -1
 say 1
@@ -1718,14 +1718,14 @@ say 4294967297
   });
 
   def({
-    name: "sink.33.str-replace",
-    kind: "sink",
+    name: 'sink.33.str-replace',
+    kind: 'sink',
     stdout: `heAAo worAd
 asdf
 BBB
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say str.replace 'hello world', 'l', 'A'
 say str.replace 'asdf', 'A', 'B'
 say str.replace 'AAAAAA', 'AA', 'B'
@@ -1734,8 +1734,8 @@ say str.replace 'AAAAAA', 'AA', 'B'
   });
 
   def({
-    name: "sink.34.str-beginsends",
-    kind: "sink",
+    name: 'sink.34.str-beginsends',
+    kind: 'sink',
     stdout: `1
 nil
 nil
@@ -1748,7 +1748,7 @@ nil
 1
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say str.begins 'hello world', 'hello'
 say str.begins 'hello world', 'hellO'
 say str.begins 'a', 'abcd'
@@ -1765,8 +1765,8 @@ say str.ends 'asdf', ''
   });
 
   def({
-    name: "sink.35.str-pad",
-    kind: "sink",
+    name: 'sink.35.str-pad',
+    kind: 'sink',
     stdout: `'  hello'
 'hello'
 'hello'
@@ -1778,7 +1778,7 @@ say str.ends 'asdf', ''
 'X '
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say "'\${str.pad 'hello', -7}'"
 say "'\${str.pad 'hello', -5}'"
 say "'\${str.pad 'hello', -1}'"
@@ -1794,8 +1794,8 @@ say "'\${str.pad 'X',  2.5}'"
   });
 
   def({
-    name: "sink.36.str-find",
-    kind: "sink",
+    name: 'sink.36.str-find',
+    kind: 'sink',
     stdout: `find
 nil
 0
@@ -1830,7 +1830,7 @@ nil
 nil
 `,
     files: {
-      "/root/main.sink": `say 'find'
+      '/root/main.sink': `say 'find'
 
 say str.find 'asdf', 'A'
 say str.find 'asdf', 'a'
@@ -1874,8 +1874,8 @@ say str.rfind 'abcdabcd', 'bc', -999
   });
 
   def({
-    name: "sink.37.str-case",
-    kind: "sink",
+    name: 'sink.37.str-case',
+    kind: 'sink',
     stdout: `{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 {16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31}
 {32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47}
@@ -1910,7 +1910,7 @@ say str.rfind 'abcdabcd', 'bc', -999
 {240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for var x: range 0, 256, 16
   say (range x, x + 16 | list.str | str.upper | str.list)
 end
@@ -1923,8 +1923,8 @@ end
   });
 
   def({
-    name: "sink.38.str-trimrevrep",
-    kind: "sink",
+    name: 'sink.38.str-trimrevrep',
+    kind: 'sink',
     stdout: `9 1
 10 1
 11 1
@@ -1941,7 +1941,7 @@ abcabcabc
 ""
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for var x: range 0, 256
   var s = list.str {x, x, x, 65, x}
   if (str.trim s) != s
@@ -1964,8 +1964,8 @@ say '"' ~ (str.trim '   ') ~ '"'
   });
 
   def({
-    name: "sink.39.str-hash",
-    kind: "sink",
+    name: 'sink.39.str-hash',
+    kind: 'sink',
     stdout: `0 0
 5 4185040151
 10 14207971054
@@ -1992,7 +1992,7 @@ say '"' ~ (str.trim '   ') ~ '"'
 {3421180703, 626138256, 2950103748, 755914226}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for var i: range 0, 100, 5
   var h = str.hash (str.rep 'x', i), i * 2
   say i, h[0] + h[1] + h[2] + h[3]
@@ -2013,12 +2013,12 @@ say str.hash s2
   });
 
   def({
-    name: "sink.40.utf8",
-    kind: "sink",
+    name: 'sink.40.utf8',
+    kind: 'sink',
     stdout: `pass
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for var test1: {
     # list of codepoints          are codepoints valid
     {{0, 0, 0                  },         1           },
@@ -2086,8 +2086,8 @@ say 'pass'
   });
 
   def({
-    name: "sink.41.struct",
-    kind: "sink",
+    name: 'sink.41.struct',
+    kind: 'sink',
     stdout: `AB
 {1111572801}
 {1094795586}
@@ -2105,7 +2105,7 @@ nil
 pass
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say struct.str {0x41, 0x42}, {struct.U8, struct.U8}
 say struct.list 'AAAB', {struct.UL32}
 say struct.list 'AAAB', {struct.UB32}
@@ -2139,12 +2139,12 @@ end
   });
 
   def({
-    name: "sink.42.circular",
-    kind: "sink",
+    name: 'sink.42.circular',
+    kind: 'sink',
     stdout: `{{1, 2, 3}, {1, 2, 3}}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x = {1, 2, 3}
 say {x, x}
 `,
@@ -2152,23 +2152,23 @@ say {x, x}
   });
 
   def({
-    name: "sink.43.include-err",
-    kind: "sink",
+    name: 'sink.43.include-err',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var x
 include x 'test'
 `,
-      "/root/test.sink": `
+      '/root/test.sink': `
 say 'test'
 `,
     },
   });
 
   def({
-    name: "sink.44.tonum",
-    kind: "sink",
+    name: 'sink.44.tonum',
+    kind: 'sink',
     stdout: `nil
 nil
 0
@@ -2219,7 +2219,7 @@ nil
 -0.5
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say +'      '
 say +'     -'
 say +'     0'
@@ -2273,27 +2273,27 @@ say +'-.5'
   });
 
   def({
-    name: "sink.45.include-def",
-    kind: "sink",
+    name: 'sink.45.include-def',
+    kind: 'sink',
     stdout: `1 + 2 = 3
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def foo a, b
   include 'test.sink'
 end
 
 foo 1, 2
 `,
-      "/root/test.sink": `
+      '/root/test.sink': `
 say "\$a + \$b = \${a + b}"
 `,
     },
   });
 
   def({
-    name: "sink.46.num-hex",
-    kind: "sink",
+    name: 'sink.46.num-hex',
+    kind: 'sink',
     stdout: `0x1
 0xFF
 0x100
@@ -2302,7 +2302,7 @@ say "\$a + \$b = \${a + b}"
 0c17
 `,
     files: {
-      "/root/main.sink": `say num.hex 1
+      '/root/main.sink': `say num.hex 1
 say num.hex 255
 say num.hex 256
 say num.hex {1, 2, 3, 254, 255, 256}
@@ -2313,11 +2313,11 @@ say num.oct 15
   });
 
   def({
-    name: "sink.47.valid-json",
-    kind: "sink",
+    name: 'sink.47.valid-json',
+    kind: 'sink',
     stdout: ``,
     files: {
-      "/root/main.sink": `def N a
+      '/root/main.sink': `def N a
   if (pickle.valid a) != nil
     say "fail: expecting invalid\\n> \\"\$a\\""
   end
@@ -2378,11 +2378,11 @@ Y '"\\u00eF"'
   });
 
   def({
-    name: "sink.48.valid-bin",
-    kind: "sink",
+    name: 'sink.48.valid-bin',
+    kind: 'sink',
     stdout: ``,
     files: {
-      "/root/main.sink": `def N a
+      '/root/main.sink': `def N a
   if (pickle.valid list.str a) != nil
     say "fail: expecting invalid\\n> \\"\$a\\""
   end
@@ -2446,8 +2446,8 @@ N { 0x01, 0x00, 0xF6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
   });
 
   def({
-    name: "sink.49.pickle-json",
-    kind: "sink",
+    name: 'sink.49.pickle-json',
+    kind: 'sink',
     stdout: `null
 0
 ""
@@ -2461,7 +2461,7 @@ N { 0x01, 0x00, 0xF6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
 [["hi"],[["hi"]],["hi"]]
 `,
     files: {
-      "/root/main.sink": `say pickle.json nil
+      '/root/main.sink': `say pickle.json nil
 say pickle.json 0
 say pickle.json ''
 say pickle.json {}
@@ -2481,15 +2481,15 @@ say pickle.json {a, {a}, a}
   });
 
   def({
-    name: "sink.50.pickle-bin",
-    kind: "sink",
+    name: 'sink.50.pickle-bin',
+    kind: 'sink',
     stdout: `0100F7
 01010161F902F800F800
 010201610461626364F904F800F901F000F801F800
 0100F902F901F106FA00
 `,
     files: {
-      "/root/main.sink": `def T obj
+      '/root/main.sink': `def T obj
   var out = {}
   for var p: pickle.bin obj | str.list
     list.push out, (num.hex p, 2)[2:]
@@ -2507,8 +2507,8 @@ T a
   });
 
   def({
-    name: "sink.51.pickle-copy",
-    kind: "sink",
+    name: 'sink.51.pickle-copy',
+    kind: 'sink',
     stdout: `1
 {1, 2, 3}
 {1, 2, 3}
@@ -2527,7 +2527,7 @@ nil
 1
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 var a = {1, 2, 3}
 say a == a
 
@@ -2559,14 +2559,14 @@ say c[0][3] == c[1][3]
   });
 
   def({
-    name: "sink.52.reassign",
-    kind: "sink",
+    name: 'sink.52.reassign',
+    kind: 'sink',
     stdout: `{1}
 1
 1
 `,
     files: {
-      "/root/main.sink": `var a = 1
+      '/root/main.sink': `var a = 1
 a = {a}
 say a
 
@@ -2579,8 +2579,8 @@ say b
   });
 
   def({
-    name: "sink.53.pickle-ref",
-    kind: "sink",
+    name: 'sink.53.pickle-ref',
+    kind: 'sink',
     stdout: `{1, 2, 3}
 nil nil
 {1, 2, 3, {circular}}
@@ -2595,7 +2595,7 @@ nil nil
 nil 1
 `,
     files: {
-      "/root/main.sink": `def T a
+      '/root/main.sink': `def T a
   say a
   say (pickle.circular a), (pickle.sibling a)
 end
@@ -2618,12 +2618,12 @@ T a
   });
 
   def({
-    name: "sink.54.pickle-val",
-    kind: "sink",
+    name: 'sink.54.pickle-val',
+    kind: 'sink',
     stdout: `done
 `,
     files: {
-      "/root/main.sink": `def JB a
+      '/root/main.sink': `def JB a
   var j = pickle.json a
   var b = pickle.bin a
   if (order (pickle.val j), a) != 0
@@ -2685,8 +2685,8 @@ say 'done'
   });
 
   def({
-    name: "sink.55.int-sizes",
-    kind: "sink",
+    name: 'sink.55.int-sizes',
+    kind: 'sink',
     stdout: `0 255
 -1 -256
 256 65535
@@ -2697,7 +2697,7 @@ say 'done'
 -4294967297
 `,
     files: {
-      "/root/main.sink": `say 0, 255
+      '/root/main.sink': `say 0, 255
 say -1, -256
 say 256, 65535
 say -257, -65536
@@ -2710,12 +2710,12 @@ say -4294967297
   });
 
   def({
-    name: "sink.56.all-args",
-    kind: "sink",
+    name: 'sink.56.all-args',
+    kind: 'sink',
     stdout: `{1, 2, 3}
 `,
     files: {
-      "/root/main.sink": `def test ...args
+      '/root/main.sink': `def test ...args
   say args
 end
 
@@ -2725,8 +2725,8 @@ test 1, 2, 3
   });
 
   def({
-    name: "sink.57.num-nans",
-    kind: "sink",
+    name: 'sink.57.num-nans',
+    kind: 'sink',
     stdout: `1 nan
 2 nan
 3 nan
@@ -2804,7 +2804,7 @@ test 1, 2, 3
 75 0
 `,
     files: {
-      "/root/main.sink": `say  1, -num.nan
+      '/root/main.sink': `say  1, -num.nan
 say  2, num.nan + 2
 say  3, 2 + num.nan
 say  4, num.nan - 2
@@ -2884,8 +2884,8 @@ say 75, int.bswap num.nan
   });
 
   def({
-    name: "sink.58.label-bug",
-    kind: "sink",
+    name: 'sink.58.label-bug',
+    kind: 'sink',
     stdout: `one
 two
 two
@@ -2899,7 +2899,7 @@ two
 two
 `,
     files: {
-      "/root/main.sink": `var i = 0
+      '/root/main.sink': `var i = 0
 label1:
 say 'one'
 label2:
@@ -2913,8 +2913,8 @@ end
   });
 
   def({
-    name: "sink.59.large-cat",
-    kind: "sink",
+    name: 'sink.59.large-cat',
+    kind: 'sink',
     stdout: `1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1
@@ -2932,7 +2932,7 @@ end
 1 1 1 1 1 1 1 1
 `,
     files: {
-      "/root/main.sink": `var i = 0
+      '/root/main.sink': `var i = 0
 say "\${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1}\\n" ~
   "\${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1}\\n" ~
   "\${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1}\\n" ~
@@ -2953,14 +2953,14 @@ say "\${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1} \${i+1}\\n" ~
   });
 
   def({
-    name: "sink.60.enums",
-    kind: "sink",
+    name: 'sink.60.enums',
+    kind: 'sink',
     stdout: `0 1 2 3
 5 6 7 8 10 11
 20
 `,
     files: {
-      "/root/main.sink": `enum zero, one, two, three
+      '/root/main.sink': `enum zero, one, two, three
 
 say zero, one, two, three
 
@@ -2975,14 +2975,14 @@ say twenty
   });
 
   def({
-    name: "sink.61.range-override",
-    kind: "sink",
+    name: 'sink.61.range-override',
+    kind: 'sink',
     stdout: `6
 7
 8
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 namespace test
   def range a, b, c
     return {6, 7, 8}
@@ -2996,8 +2996,8 @@ end
   });
 
   def({
-    name: "sink.62.for-novars",
-    kind: "sink",
+    name: 'sink.62.for-novars',
+    kind: 'sink',
     stdout: `hi
 hi
 hi
@@ -3008,7 +3008,7 @@ yo
 yo
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for: range 5
   say 'hi'
 end
@@ -3021,8 +3021,8 @@ end
   });
 
   def({
-    name: "sink.63.bitops",
-    kind: "sink",
+    name: 'sink.63.bitops',
+    kind: 'sink',
     stdout: `0x0012
 0x1234
 0xCC5D
@@ -3034,7 +3034,7 @@ end
 {'0x78563412', '0x0DCCBBAA', '0x4D3C2B1A'}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say num.hex (int.and 0x7777, 0x8FFF, 0xF89A, 0xFFFF), 4
 say num.hex (int.or  0x1000, 0x0200, 0x0030, 0x0004), 4
 say num.hex (int.xor 0x1234, 0x5678, 0x0011, 0x8800), 4
@@ -3051,8 +3051,8 @@ int.bswap {0x12345678, 0xAABBCC0D, 0x1A2B3C4D} | num.hex 8 | say
   });
 
   def({
-    name: "sink.64.include-plus",
-    kind: "sink",
+    name: 'sink.64.include-plus',
+    kind: 'sink',
     stdout: `included
 included
 included
@@ -3060,13 +3060,13 @@ included
 foo {1}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 include + './test.sink'
 include A './test.sink', B './test.sink', + './test.sink'
 
 foo 1
 `,
-      "/root/test.sink": `
+      '/root/test.sink': `
 say 'included'
 
 def foo ...args
@@ -3077,30 +3077,30 @@ end
   });
 
   def({
-    name: "sink.65.embed",
-    kind: "sink",
+    name: 'sink.65.embed',
+    kind: 'sink',
     stdout: `HELLO
 ydwoh
 `,
     files: {
-      "/root/data1.txt": `hello
+      '/root/data1.txt': `hello
 `,
-      "/root/main.sink": `
+      '/root/main.sink': `
 embed './data1.txt' | str.upper | str.trim | say
 
 include './test/index.sink'
 `,
-      "/root/test/data2.txt": `howdy
+      '/root/test/data2.txt': `howdy
 `,
-      "/root/test/index.sink": `
+      '/root/test/index.sink': `
 embed './data2.txt' | str.rev | str.trim | say
 `,
     },
   });
 
   def({
-    name: "sink.66.static-cat",
-    kind: "sink",
+    name: 'sink.66.static-cat',
+    kind: 'sink',
     stdout: `
 ab
 cd
@@ -3113,7 +3113,7 @@ abcd
 {1, 2, 3, 4}
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 say '' ~ ''
 say 'ab' ~ ''
 say '' ~ 'cd'
@@ -3130,8 +3130,8 @@ say {1} ~ {2} ~ {3} ~ {4}
   });
 
   def({
-    name: "sink.67.stacktrace",
-    kind: "sink",
+    name: 'sink.67.stacktrace',
+    kind: 'sink',
     stdout: `gt2 (/root/main.sink:5:14)
 gt1 (/root/main.sink:7:12)
 gettrace (/root/main.sink:9:23)
@@ -3141,7 +3141,7 @@ gettrace (/root/main.sink:9:28)
 /root/main.sink:12:12
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def gettrace a
   def gt1
     def gt2
@@ -3160,12 +3160,12 @@ end
   });
 
   def({
-    name: "sink.68.lookup-bug",
-    kind: "sink",
+    name: 'sink.68.lookup-bug',
+    kind: 'sink',
     stdout: `1
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 def a
 end
 def b.a
@@ -3177,12 +3177,12 @@ say b.a
   });
 
   def({
-    name: "sink.70.big-str-split",
-    kind: "sink",
+    name: 'sink.70.big-str-split',
+    kind: 'sink',
     stdout: `pass
 `,
     files: {
-      "/root/main.sink":
+      '/root/main.sink':
         `var s = '0123456789012345012345678901234501234567890123450123456789012345012345678901234501234567890123450123456789012345012345678901234501234567890123450123456789012345012345678901234501234567890123450123456789012345012345678901234501234567890123450123456789012345'
 var len = &str.split s, ''
 if len == 256
@@ -3196,13 +3196,13 @@ end
   });
 
   def({
-    name: "sink.71.var-reinit",
-    kind: "sink",
+    name: 'sink.71.var-reinit',
+    kind: 'sink',
     stdout: `nil nil nil nil nil nil nil nil
 nil nil nil nil nil nil nil nil
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 for: range 2
   var a, b, {c}, {d, ...e}
   var {f}
@@ -3222,21 +3222,21 @@ end
   });
 
   def({
-    name: "sink.72.no-def",
-    kind: "sink",
+    name: 'sink.72.no-def',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `declare foo
+      '/root/main.sink': `declare foo
 `,
     },
   });
 
   def({
-    name: "sink.73.no-label",
-    kind: "sink",
+    name: 'sink.73.no-label',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `def foo
+      '/root/main.sink': `def foo
   goto fail
 end
 `,
@@ -3244,30 +3244,30 @@ end
   });
 
   def({
-    name: "sink.74.d-error",
-    kind: "sink",
+    name: 'sink.74.d-error',
+    kind: 'sink',
 
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 include 'testinc'
 
 foo 1
 `,
-      "/root/testinc-d.sink": `
+      '/root/testinc-d.sink': `
 decalre foo 'bar'
 `,
     },
   });
 
   def({
-    name: "sink.75.rand-range",
-    kind: "sink",
+    name: 'sink.75.rand-range',
+    kind: 'sink',
     stdout: `0
 18
 15
 `,
     files: {
-      "/root/main.sink": `
+      '/root/main.sink': `
 rand.seed 0
 
 say rand.range 10

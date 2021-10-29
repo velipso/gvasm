@@ -111,13 +111,13 @@ export function isnil(v: val): v is null {
   return v === NIL;
 }
 export function isstr(v: val): v is str {
-  return typeof v === "string";
+  return typeof v === 'string';
 }
 export function islist(v: val): v is list {
-  return typeof v === "object" && v !== null;
+  return typeof v === 'object' && v !== null;
 }
 export function isnum(v: val): v is number {
-  return typeof v === "number";
+  return typeof v === 'number';
 }
 export function sink_typeof(v: val): type {
   if (isnil(v)) return type.NIL;
@@ -133,10 +133,10 @@ export function num_inf(): val {
   return Infinity;
 }
 export function num_isnan(v: val): boolean {
-  return typeof v === "number" && isNaN(v);
+  return typeof v === 'number' && isNaN(v);
 }
 export function num_isfinite(v: val): boolean {
-  return typeof v === "number" && isFinite(v);
+  return typeof v === 'number' && isFinite(v);
 }
 export function num_e(): number {
   return Math.E;
@@ -1151,75 +1151,75 @@ enum ks_enum {
 }
 
 function ks_char(c: string): ks_enum {
-  if (c === "+") return ks_enum.PLUS;
-  else if (c === "-") return ks_enum.MINUS;
-  else if (c === "%") return ks_enum.PERCENT;
-  else if (c === "*") return ks_enum.STAR;
-  else if (c === "/") return ks_enum.SLASH;
-  else if (c === "^") return ks_enum.CARET;
-  else if (c === "&") return ks_enum.AMP;
-  else if (c === "<") return ks_enum.LT;
-  else if (c === ">") return ks_enum.GT;
-  else if (c === "!") return ks_enum.BANG;
-  else if (c === "=") return ks_enum.EQU;
-  else if (c === "~") return ks_enum.TILDE;
-  else if (c === ":") return ks_enum.COLON;
-  else if (c === ",") return ks_enum.COMMA;
-  else if (c === ".") return ks_enum.PERIOD;
-  else if (c === "|") return ks_enum.PIPE;
-  else if (c === "(") return ks_enum.LPAREN;
-  else if (c === "[") return ks_enum.LBRACKET;
-  else if (c === "{") return ks_enum.LBRACE;
-  else if (c === ")") return ks_enum.RPAREN;
-  else if (c === "]") return ks_enum.RBRACKET;
-  else if (c === "}") return ks_enum.RBRACE;
+  if (c === '+') return ks_enum.PLUS;
+  else if (c === '-') return ks_enum.MINUS;
+  else if (c === '%') return ks_enum.PERCENT;
+  else if (c === '*') return ks_enum.STAR;
+  else if (c === '/') return ks_enum.SLASH;
+  else if (c === '^') return ks_enum.CARET;
+  else if (c === '&') return ks_enum.AMP;
+  else if (c === '<') return ks_enum.LT;
+  else if (c === '>') return ks_enum.GT;
+  else if (c === '!') return ks_enum.BANG;
+  else if (c === '=') return ks_enum.EQU;
+  else if (c === '~') return ks_enum.TILDE;
+  else if (c === ':') return ks_enum.COLON;
+  else if (c === ',') return ks_enum.COMMA;
+  else if (c === '.') return ks_enum.PERIOD;
+  else if (c === '|') return ks_enum.PIPE;
+  else if (c === '(') return ks_enum.LPAREN;
+  else if (c === '[') return ks_enum.LBRACKET;
+  else if (c === '{') return ks_enum.LBRACE;
+  else if (c === ')') return ks_enum.RPAREN;
+  else if (c === ']') return ks_enum.RBRACKET;
+  else if (c === '}') return ks_enum.RBRACE;
   return ks_enum.INVALID;
 }
 
 function ks_char2(c1: string, c2: string): ks_enum {
-  if (c1 === "+" && c2 === "=") return ks_enum.PLUSEQU;
-  else if (c1 === "-" && c2 === "=") return ks_enum.MINUSEQU;
-  else if (c1 === "%" && c2 === "=") return ks_enum.PERCENTEQU;
-  else if (c1 === "*" && c2 === "=") return ks_enum.STAREQU;
-  else if (c1 === "/" && c2 === "=") return ks_enum.SLASHEQU;
-  else if (c1 === "^" && c2 === "=") return ks_enum.CARETEQU;
-  else if (c1 === "<" && c2 === "=") return ks_enum.LTEQU;
-  else if (c1 === ">" && c2 === "=") return ks_enum.GTEQU;
-  else if (c1 === "!" && c2 === "=") return ks_enum.BANGEQU;
-  else if (c1 === "=" && c2 === "=") return ks_enum.EQU2;
-  else if (c1 === "~" && c2 === "=") return ks_enum.TILDEEQU;
-  else if (c1 === "&" && c2 === "&") return ks_enum.AMP2;
-  else if (c1 === "|" && c2 === "|") return ks_enum.PIPE2;
+  if (c1 === '+' && c2 === '=') return ks_enum.PLUSEQU;
+  else if (c1 === '-' && c2 === '=') return ks_enum.MINUSEQU;
+  else if (c1 === '%' && c2 === '=') return ks_enum.PERCENTEQU;
+  else if (c1 === '*' && c2 === '=') return ks_enum.STAREQU;
+  else if (c1 === '/' && c2 === '=') return ks_enum.SLASHEQU;
+  else if (c1 === '^' && c2 === '=') return ks_enum.CARETEQU;
+  else if (c1 === '<' && c2 === '=') return ks_enum.LTEQU;
+  else if (c1 === '>' && c2 === '=') return ks_enum.GTEQU;
+  else if (c1 === '!' && c2 === '=') return ks_enum.BANGEQU;
+  else if (c1 === '=' && c2 === '=') return ks_enum.EQU2;
+  else if (c1 === '~' && c2 === '=') return ks_enum.TILDEEQU;
+  else if (c1 === '&' && c2 === '&') return ks_enum.AMP2;
+  else if (c1 === '|' && c2 === '|') return ks_enum.PIPE2;
   return ks_enum.INVALID;
 }
 
 function ks_char3(c1: string, c2: string, c3: string): ks_enum {
-  if (c1 === "." && c2 === "." && c3 === ".") return ks_enum.PERIOD3;
-  else if (c1 === "|" && c2 === "|" && c3 === "=") return ks_enum.PIPE2EQU;
-  else if (c1 === "&" && c2 === "&" && c3 === "=") return ks_enum.AMP2EQU;
+  if (c1 === '.' && c2 === '.' && c3 === '.') return ks_enum.PERIOD3;
+  else if (c1 === '|' && c2 === '|' && c3 === '=') return ks_enum.PIPE2EQU;
+  else if (c1 === '&' && c2 === '&' && c3 === '=') return ks_enum.AMP2EQU;
   return ks_enum.INVALID;
 }
 
 function ks_str(s: string): ks_enum {
-  if (s === "break") return ks_enum.BREAK;
-  else if (s === "continue") return ks_enum.CONTINUE;
-  else if (s === "declare") return ks_enum.DECLARE;
-  else if (s === "def") return ks_enum.DEF;
-  else if (s === "do") return ks_enum.DO;
-  else if (s === "else") return ks_enum.ELSE;
-  else if (s === "elseif") return ks_enum.ELSEIF;
-  else if (s === "end") return ks_enum.END;
-  else if (s === "enum") return ks_enum.ENUM;
-  else if (s === "for") return ks_enum.FOR;
-  else if (s === "goto") return ks_enum.GOTO;
-  else if (s === "if") return ks_enum.IF;
-  else if (s === "include") return ks_enum.INCLUDE;
-  else if (s === "namespace") return ks_enum.NAMESPACE;
-  else if (s === "nil") return ks_enum.NIL;
-  else if (s === "return") return ks_enum.RETURN;
-  else if (s === "using") return ks_enum.USING;
-  else if (s === "var") return ks_enum.VAR;
-  else if (s === "while") return ks_enum.WHILE;
+  if (s === 'break') return ks_enum.BREAK;
+  else if (s === 'continue') return ks_enum.CONTINUE;
+  else if (s === 'declare') return ks_enum.DECLARE;
+  else if (s === 'def') return ks_enum.DEF;
+  else if (s === 'do') return ks_enum.DO;
+  else if (s === 'else') return ks_enum.ELSE;
+  else if (s === 'elseif') return ks_enum.ELSEIF;
+  else if (s === 'end') return ks_enum.END;
+  else if (s === 'enum') return ks_enum.ENUM;
+  else if (s === 'for') return ks_enum.FOR;
+  else if (s === 'goto') return ks_enum.GOTO;
+  else if (s === 'if') return ks_enum.IF;
+  else if (s === 'include') return ks_enum.INCLUDE;
+  else if (s === 'namespace') return ks_enum.NAMESPACE;
+  else if (s === 'nil') return ks_enum.NIL;
+  else if (s === 'return') return ks_enum.RETURN;
+  else if (s === 'using') return ks_enum.USING;
+  else if (s === 'var') return ks_enum.VAR;
+  else if (s === 'while') return ks_enum.WHILE;
   return ks_enum.INVALID;
 }
 
@@ -1494,7 +1494,7 @@ function tok_midPrecedence(tk: tok_st_KS): number {
   else if (k === ks_enum.TILDEEQU) return 20;
   else if (k === ks_enum.AMP2EQU) return 20;
   else if (k === ks_enum.PIPE2EQU) return 20;
-  throw new Error("Assertion failed");
+  throw new Error('Assertion failed');
 }
 
 function tok_isMidBeforeMid(lmid: tok_st_KS, rmid: tok_st_KS): boolean {
@@ -1512,19 +1512,19 @@ function tok_isMidBeforeMid(lmid: tok_st_KS, rmid: tok_st_KS): boolean {
 }
 
 function isSpace(c: string): boolean {
-  return c === " " || c === "\n" || c === "\r" || c === "\t";
+  return c === ' ' || c === '\n' || c === '\r' || c === '\t';
 }
 
 function isAlpha(c: string): boolean {
-  return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 function isNum(c: string): boolean {
-  return c >= "0" && c <= "9";
+  return c >= '0' && c <= '9';
 }
 
 function isIdentStart(c: string): boolean {
-  return isAlpha(c) || c === "_";
+  return isAlpha(c) || c === '_';
 }
 
 function isIdentBody(c: string): boolean {
@@ -1532,13 +1532,13 @@ function isIdentBody(c: string): boolean {
 }
 
 function isHex(c: string): boolean {
-  return isNum(c) || (c >= "a" && c <= "f") || (c >= "A" && c <= "F");
+  return isNum(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
 function toHex(c: string): number {
   if (isNum(c)) {
     return c.charCodeAt(0) - 48;
-  } else if (c >= "a") {
+  } else if (c >= 'a') {
     return c.charCodeAt(0) - 87;
   }
   return c.charCodeAt(0) - 55;
@@ -1646,8 +1646,8 @@ interface lex_st {
 function lex_reset(lx: lex_st): void {
   lx.state = lex_enum.START;
   lx.flpS = lx.flpR = lx.flp1 = lx.flp2 = lx.flp3 = lx.flp4 = FILEPOS_NULL;
-  lx.chR = lx.ch1 = lx.ch2 = lx.ch3 = lx.ch4 = "";
-  lx.str = "";
+  lx.chR = lx.ch1 = lx.ch2 = lx.ch3 = lx.ch4 = '';
+  lx.str = '';
   lx.braces = [0];
   lx.str_hexval = 0;
   lx.str_hexleft = 0;
@@ -1655,7 +1655,7 @@ function lex_reset(lx: lex_st): void {
 
 function lex_new(): lex_st {
   return {
-    str: "",
+    str: '',
     braces: [0],
     state: lex_enum.START,
     npi: numpart_new(),
@@ -1665,11 +1665,11 @@ function lex_new(): lex_st {
     flp2: FILEPOS_NULL,
     flp3: FILEPOS_NULL,
     flp4: FILEPOS_NULL,
-    chR: "",
-    ch1: "",
-    ch2: "",
-    ch3: "",
-    ch4: "",
+    chR: '',
+    ch1: '',
+    ch2: '',
+    ch3: '',
+    ch4: '',
     str_hexval: 0,
     str_hexleft: 0,
     numexp: false,
@@ -1692,7 +1692,7 @@ function lex_rev(lx: lex_st): void {
   lx.ch1 = lx.ch2;
   lx.ch2 = lx.ch3;
   lx.ch3 = lx.ch4;
-  lx.ch4 = "";
+  lx.ch4 = '';
   lx.flpR = lx.flp1;
   lx.flp1 = lx.flp2;
   lx.flp2 = lx.flp3;
@@ -1708,24 +1708,24 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
   switch (lx.state) {
     case lex_enum.START:
       lx.flpS = flp;
-      if (ch1 === "#") {
+      if (ch1 === '#') {
         lx.state = lex_enum.COMMENT_LINE;
         tks.push(tok_newline(flp, false));
       } else if (ks_char(ch1) !== ks_enum.INVALID) {
-        if (ch1 === "{") {
+        if (ch1 === '{') {
           lx.braces[lx.braces.length - 1]++;
-        } else if (ch1 === "}") {
+        } else if (ch1 === '}') {
           if (lx.braces[lx.braces.length - 1] > 0) {
             lx.braces[lx.braces.length - 1]--;
           } else if (lx.braces.length > 1) {
             lx.braces.pop();
-            lx.str = "";
+            lx.str = '';
             lx.state = lex_enum.STR_INTERP;
             tks.push(tok_ks(flp, ks_enum.RPAREN));
             tks.push(tok_ks(flp, ks_enum.TILDE));
             break;
           } else {
-            tks.push(tok_error(flp, "Mismatched brace"));
+            tks.push(tok_error(flp, 'Mismatched brace'));
           }
         }
         lx.state = lex_enum.SPECIAL1;
@@ -1740,73 +1740,73 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         } else {
           lx.state = lex_enum.NUM_BODY;
         }
-      } else if (ch1 === "'") {
-        lx.str = "";
+      } else if (ch1 === '\'') {
+        lx.str = '';
         lx.state = lex_enum.STR_BASIC;
       } else if (ch1 === '"') {
-        lx.str = "";
+        lx.str = '';
         lx.state = lex_enum.STR_INTERP;
         tks.push(tok_ks(flp, ks_enum.LPAREN));
-      } else if (ch1 === "\\") {
+      } else if (ch1 === '\\') {
         lx.state = lex_enum.BACKSLASH;
-      } else if (ch1 === "\r") {
+      } else if (ch1 === '\r') {
         lx.state = lex_enum.RETURN;
         tks.push(tok_newline(flp, false));
-      } else if (ch1 === "\n" || ch1 === ";") {
-        tks.push(tok_newline(flp, ch1 === ";"));
+      } else if (ch1 === '\n' || ch1 === ';') {
+        tks.push(tok_newline(flp, ch1 === ';'));
       } else if (!isSpace(ch1)) {
         tks.push(tok_error(flp, `Unexpected character: ${ch1}`));
       }
       break;
 
     case lex_enum.COMMENT_LINE:
-      if (ch1 === "\r") {
+      if (ch1 === '\r') {
         lx.state = lex_enum.RETURN;
-      } else if (ch1 === "\n") {
+      } else if (ch1 === '\n') {
         lx.state = lex_enum.START;
       }
       break;
 
     case lex_enum.BACKSLASH:
-      if (ch1 === "#") {
+      if (ch1 === '#') {
         lx.state = lex_enum.COMMENT_LINE;
-      } else if (ch1 === "/") {
+      } else if (ch1 === '/') {
         lx.state = lex_enum.BACKSLASH_COMMENT;
-      } else if (ch1 === "\r") {
+      } else if (ch1 === '\r') {
         lx.state = lex_enum.RETURN;
-      } else if (ch1 === "\n") {
+      } else if (ch1 === '\n') {
         lx.state = lex_enum.START;
       } else if (!isSpace(ch1)) {
-        tks.push(tok_error(flp, "Invalid character after backslash"));
+        tks.push(tok_error(flp, 'Invalid character after backslash'));
       }
       break;
 
     case lex_enum.BACKSLASH_COMMENT:
-      if (ch1 === "/") {
+      if (ch1 === '/') {
         lx.state = lex_enum.COMMENT_LINE;
       } else {
-        tks.push(tok_error(flp, "Invalid character after backslash"));
+        tks.push(tok_error(flp, 'Invalid character after backslash'));
       }
       break;
 
     case lex_enum.RETURN:
       lx.state = lex_enum.START;
-      if (ch1 !== "\n") {
+      if (ch1 !== '\n') {
         lex_process(lx, tks);
       }
       break;
 
     case lex_enum.COMMENT_BLOCK:
-      if (lx.ch2 === "*" && ch1 === "/") {
+      if (lx.ch2 === '*' && ch1 === '/') {
         lx.state = lex_enum.START;
       }
       break;
 
     case lex_enum.SPECIAL1:
       if (ks_char(ch1) !== ks_enum.INVALID) {
-        if (lx.ch2 === "/" && ch1 === "*") {
+        if (lx.ch2 === '/' && ch1 === '*') {
           lx.state = lex_enum.COMMENT_BLOCK;
-        } else if (lx.ch2 === "/" && ch1 === "/") {
+        } else if (lx.ch2 === '/' && ch1 === '/') {
           lx.state = lex_enum.COMMENT_LINE;
           tks.push(tok_newline(flp, false));
         } else {
@@ -1874,33 +1874,33 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       } else {
         lx.str += ch1;
         if (lx.str.length > 1024) {
-          tks.push(tok_error(flpS, "Identifier too long"));
+          tks.push(tok_error(flpS, 'Identifier too long'));
         }
       }
       break;
 
     case lex_enum.NUM_0:
-      if (ch1 === "b") {
+      if (ch1 === 'b') {
         lx.npi.base = 2;
         lx.state = lex_enum.NUM_2;
-      } else if (ch1 === "c") {
+      } else if (ch1 === 'c') {
         lx.npi.base = 8;
         lx.state = lex_enum.NUM_2;
-      } else if (ch1 === "x") {
+      } else if (ch1 === 'x') {
         lx.npi.base = 16;
         lx.state = lex_enum.NUM_2;
-      } else if (ch1 === "_") {
+      } else if (ch1 === '_') {
         lx.state = lex_enum.NUM_BODY;
-      } else if (ch1 === ".") {
+      } else if (ch1 === '.') {
         lx.state = lex_enum.NUM_FRAC;
-      } else if (ch1 === "e" || ch1 === "E") {
+      } else if (ch1 === 'e' || ch1 === 'E') {
         lx.state = lex_enum.NUM_EXP;
       } else if (!isIdentStart(ch1)) {
         tks.push(tok_num(flpS, 0));
         lx.state = lex_enum.START;
         lex_process(lx, tks);
       } else {
-        tks.push(tok_error(flpS, "Invalid number"));
+        tks.push(tok_error(flpS, 'Invalid number'));
       }
       break;
 
@@ -1908,27 +1908,27 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       if (isHex(ch1)) {
         lx.npi.val = toHex(ch1);
         if (lx.npi.val >= lx.npi.base) {
-          tks.push(tok_error(flpS, "Invalid number"));
+          tks.push(tok_error(flpS, 'Invalid number'));
         } else {
           lx.state = lex_enum.NUM_BODY;
         }
-      } else if (ch1 !== "_") {
-        tks.push(tok_error(flpS, "Invalid number"));
+      } else if (ch1 !== '_') {
+        tks.push(tok_error(flpS, 'Invalid number'));
       }
       break;
 
     case lex_enum.NUM_BODY:
-      if (ch1 === ".") {
+      if (ch1 === '.') {
         lx.state = lex_enum.NUM_FRAC;
       } else if (
-        (lx.npi.base === 10 && (ch1 === "e" || ch1 === "E")) ||
-        (lx.npi.base !== 10 && (ch1 === "p" || ch1 === "P"))
+        (lx.npi.base === 10 && (ch1 === 'e' || ch1 === 'E')) ||
+        (lx.npi.base !== 10 && (ch1 === 'p' || ch1 === 'P'))
       ) {
         lx.state = lex_enum.NUM_EXP;
       } else if (isHex(ch1)) {
         const v = toHex(ch1);
         if (v >= lx.npi.base) {
-          tks.push(tok_error(flpS, "Invalid number"));
+          tks.push(tok_error(flpS, 'Invalid number'));
         } else {
           lx.npi.val = lx.npi.val * lx.npi.base + v;
         }
@@ -1936,44 +1936,44 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         tks.push(tok_num(flpS, numpart_calc(lx.npi)));
         lx.state = lex_enum.START;
         lex_process(lx, tks);
-      } else if (ch1 !== "_") {
-        tks.push(tok_error(flpS, "Invalid number"));
+      } else if (ch1 !== '_') {
+        tks.push(tok_error(flpS, 'Invalid number'));
       }
       break;
 
     case lex_enum.NUM_FRAC:
       if (
-        (lx.npi.base === 10 && (ch1 === "e" || ch1 === "E")) ||
-        (lx.npi.base !== 10 && (ch1 === "p" || ch1 === "P"))
+        (lx.npi.base === 10 && (ch1 === 'e' || ch1 === 'E')) ||
+        (lx.npi.base !== 10 && (ch1 === 'p' || ch1 === 'P'))
       ) {
         lx.state = lex_enum.NUM_EXP;
       } else if (isHex(ch1)) {
         const v = toHex(ch1);
         if (v >= lx.npi.base) {
-          tks.push(tok_error(flpS, "Invalid number"));
+          tks.push(tok_error(flpS, 'Invalid number'));
         } else {
           lx.npi.frac = lx.npi.frac * lx.npi.base + v;
           lx.npi.flen++;
         }
       } else if (!isAlpha(ch1)) {
         if (lx.npi.flen <= 0) {
-          tks.push(tok_error(flpS, "Invalid number"));
+          tks.push(tok_error(flpS, 'Invalid number'));
         } else {
           tks.push(tok_num(flpS, numpart_calc(lx.npi)));
           lx.state = lex_enum.START;
           lex_process(lx, tks);
         }
-      } else if (ch1 !== "_") {
-        tks.push(tok_error(flpS, "Invalid number"));
+      } else if (ch1 !== '_') {
+        tks.push(tok_error(flpS, 'Invalid number'));
       }
       break;
 
     case lex_enum.NUM_EXP:
-      if (ch1 !== "_") {
-        lx.npi.esign = ch1 === "-" ? -1 : 1;
+      if (ch1 !== '_') {
+        lx.npi.esign = ch1 === '-' ? -1 : 1;
         lx.state = lex_enum.NUM_EXP_BODY;
         lx.numexp = false;
-        if (ch1 !== "+" && ch1 !== "-") {
+        if (ch1 !== '+' && ch1 !== '-') {
           lex_process(lx, tks);
         }
       }
@@ -1985,21 +1985,21 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         lx.numexp = true;
       } else if (!isAlpha(ch1)) {
         if (!lx.numexp) {
-          tks.push(tok_error(flpS, "Invalid number"));
+          tks.push(tok_error(flpS, 'Invalid number'));
         } else {
           tks.push(tok_num(flpS, numpart_calc(lx.npi)));
           lx.state = lex_enum.START;
           lex_process(lx, tks);
         }
-      } else if (ch1 !== "_") {
-        tks.push(tok_error(flpS, "Invalid number"));
+      } else if (ch1 !== '_') {
+        tks.push(tok_error(flpS, 'Invalid number'));
       }
       break;
 
     case lex_enum.STR_BASIC:
-      if (ch1 === "\r" || ch1 === "\n") {
-        tks.push(tok_error(lx.flp2, "Missing end of string"));
-      } else if (ch1 === "'") {
+      if (ch1 === '\r' || ch1 === '\n') {
+        tks.push(tok_error(lx.flp2, 'Missing end of string'));
+      } else if (ch1 === '\'') {
         lx.state = lex_enum.STR_BASIC_ESC;
       } else {
         lx.str += ch1;
@@ -2007,7 +2007,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.STR_BASIC_ESC:
-      if (ch1 === "'") {
+      if (ch1 === '\'') {
         lx.str += ch1;
         lx.state = lex_enum.STR_BASIC;
       } else {
@@ -2020,17 +2020,17 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.STR_INTERP:
-      if (ch1 === "\r" || ch1 === "\n") {
-        tks.push(tok_error(lx.flp2, "Missing end of string"));
+      if (ch1 === '\r' || ch1 === '\n') {
+        tks.push(tok_error(lx.flp2, 'Missing end of string'));
       } else if (ch1 === '"') {
         lx.state = lex_enum.START;
         tks.push(tok_str(flpS, lx.str));
         tks.push(tok_ks(flp, ks_enum.RPAREN));
-      } else if (ch1 === "$") {
+      } else if (ch1 === '$') {
         lx.state = lex_enum.STR_INTERP_DLR;
         tks.push(tok_str(flpS, lx.str));
         tks.push(tok_ks(flp, ks_enum.TILDE));
-      } else if (ch1 === "\\") {
+      } else if (ch1 === '\\') {
         lx.state = lex_enum.STR_INTERP_ESC;
       } else {
         lx.str += ch1;
@@ -2038,7 +2038,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.STR_INTERP_DLR:
-      if (ch1 === "{") {
+      if (ch1 === '{') {
         lx.braces.push(0);
         lx.state = lex_enum.START;
         tks.push(tok_ks(flp, ks_enum.LPAREN));
@@ -2047,21 +2047,21 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         lx.state = lex_enum.STR_INTERP_DLR_ID;
         lx.flpS = flp; // save start position of ident
       } else {
-        tks.push(tok_error(flp, "Invalid substitution"));
+        tks.push(tok_error(flp, 'Invalid substitution'));
       }
       break;
 
     case lex_enum.STR_INTERP_DLR_ID:
       if (!isIdentBody(ch1)) {
         if (ks_str(lx.str) !== ks_enum.INVALID) {
-          tks.push(tok_error(flpS, "Invalid substitution"));
+          tks.push(tok_error(flpS, 'Invalid substitution'));
         } else {
           tks.push(tok_ident(flpS, lx.str));
           if (ch1 === '"') {
             lx.state = lex_enum.START;
             tks.push(tok_ks(flp, ks_enum.RPAREN));
           } else {
-            lx.str = "";
+            lx.str = '';
             lx.state = lex_enum.STR_INTERP;
             tks.push(tok_ks(flp, ks_enum.TILDE));
             lex_process(lx, tks);
@@ -2070,43 +2070,43 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       } else {
         lx.str += ch1;
         if (lx.str.length > 1024) {
-          tks.push(tok_error(flpS, "Identifier too long"));
+          tks.push(tok_error(flpS, 'Identifier too long'));
         }
       }
       break;
 
     case lex_enum.STR_INTERP_ESC:
-      if (ch1 === "\r" || ch1 === "\n") {
-        tks.push(tok_error(lx.flp2, "Missing end of string"));
-      } else if (ch1 === "x") {
+      if (ch1 === '\r' || ch1 === '\n') {
+        tks.push(tok_error(lx.flp2, 'Missing end of string'));
+      } else if (ch1 === 'x') {
         lx.str_hexval = 0;
         lx.str_hexleft = 2;
         lx.state = lex_enum.STR_INTERP_ESC_HEX;
-      } else if (ch1 === "0") {
+      } else if (ch1 === '0') {
         lx.str += String.fromCharCode(0);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "b") {
+      } else if (ch1 === 'b') {
         lx.str += String.fromCharCode(8);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "t") {
+      } else if (ch1 === 't') {
         lx.str += String.fromCharCode(9);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "n") {
+      } else if (ch1 === 'n') {
         lx.str += String.fromCharCode(10);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "v") {
+      } else if (ch1 === 'v') {
         lx.str += String.fromCharCode(11);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "f") {
+      } else if (ch1 === 'f') {
         lx.str += String.fromCharCode(12);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "r") {
+      } else if (ch1 === 'r') {
         lx.str += String.fromCharCode(13);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "e") {
+      } else if (ch1 === 'e') {
         lx.str += String.fromCharCode(27);
         lx.state = lex_enum.STR_INTERP;
-      } else if (ch1 === "\\" || ch1 === "'" || ch1 === '"' || ch1 === "$") {
+      } else if (ch1 === '\\' || ch1 === '\'' || ch1 === '"' || ch1 === '$') {
         lx.str += ch1;
         lx.state = lex_enum.STR_INTERP;
       } else {
@@ -2124,7 +2124,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         }
       } else {
         tks.push(
-          tok_error(flp, "Invalid escape sequence; expecting hex value"),
+          tok_error(flp, 'Invalid escape sequence; expecting hex value'),
         );
       }
       break;
@@ -2138,7 +2138,7 @@ function lex_add(lx: lex_st, flp: filepos_st, ch: string, tks: tok_st[]): void {
 
 function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
   if (lx.braces.length > 1) {
-    tks.push(tok_error(flp, "Missing end of string"));
+    tks.push(tok_error(flp, 'Missing end of string'));
     return;
   }
   switch (lx.state) {
@@ -2149,11 +2149,11 @@ function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.BACKSLASH_COMMENT:
-      tks.push(tok_error(lx.flp1, "Invalid character after backslash"));
+      tks.push(tok_error(lx.flp1, 'Invalid character after backslash'));
       return;
 
     case lex_enum.COMMENT_BLOCK:
-      tks.push(tok_error(lx.flpS, "Missing end of block comment"));
+      tks.push(tok_error(lx.flpS, 'Missing end of block comment'));
       return;
 
     case lex_enum.SPECIAL1:
@@ -2188,7 +2188,7 @@ function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.NUM_2:
-      tks.push(tok_error(lx.flpS, "Invalid number"));
+      tks.push(tok_error(lx.flpS, 'Invalid number'));
       break;
 
     case lex_enum.NUM_BODY:
@@ -2197,19 +2197,19 @@ function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
 
     case lex_enum.NUM_FRAC:
       if (lx.npi.flen <= 0) {
-        tks.push(tok_error(lx.flpS, "Invalid number"));
+        tks.push(tok_error(lx.flpS, 'Invalid number'));
       } else {
         tks.push(tok_num(lx.flpS, numpart_calc(lx.npi)));
       }
       break;
 
     case lex_enum.NUM_EXP:
-      tks.push(tok_error(lx.flpS, "Invalid number"));
+      tks.push(tok_error(lx.flpS, 'Invalid number'));
       break;
 
     case lex_enum.NUM_EXP_BODY:
       if (!lx.numexp) {
-        tks.push(tok_error(lx.flpS, "Invalid number"));
+        tks.push(tok_error(lx.flpS, 'Invalid number'));
       } else {
         tks.push(tok_num(lx.flpS, numpart_calc(lx.npi)));
       }
@@ -2227,7 +2227,7 @@ function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
     case lex_enum.STR_INTERP_DLR_ID:
     case lex_enum.STR_INTERP_ESC:
     case lex_enum.STR_INTERP_ESC_HEX:
-      tks.push(tok_error(lx.flpS, "Missing end of string"));
+      tks.push(tok_error(lx.flpS, 'Missing end of string'));
       break;
   }
   tks.push(tok_newline(flp, false));
@@ -3142,7 +3142,7 @@ function prs_new(state: prs_enum, next: prs_st | null): prs_st {
     lvalues: null,
     lvaluesMode: lvm_enum.VAR,
     forVar: false,
-    str: "",
+    str: '',
     flpS: FILEPOS_NULL,
     flpL: FILEPOS_NULL,
     flpE: FILEPOS_NULL,
@@ -3203,7 +3203,7 @@ function parser_push(pr: parser_st, state: prs_enum): void {
 
 function parser_pop(pr: parser_st): void {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   pr.state = pr.state.next;
 }
@@ -3244,7 +3244,7 @@ function parser_infix(
     } else if (right.type === expr_enum.NAMES) {
       return pri_ok(expr_call(right.flp, right, expr_paren(left.flp, left)));
     }
-    return pri_error("Invalid pipe");
+    return pri_error('Invalid pipe');
   }
   return pri_ok(expr_infix(flp, k, left, right));
 }
@@ -3255,7 +3255,7 @@ function parser_lvalues(
   lvm: lvm_enum,
 ): void {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   pr.state.state = retstate;
   parser_push(pr, prs_enum.LVALUES);
@@ -3265,7 +3265,7 @@ function parser_lvalues(
 
 function parser_expr(pr: parser_st, retstate: prs_enum): void {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   pr.state.state = retstate;
   parser_push(pr, prs_enum.EXPR);
@@ -3273,7 +3273,7 @@ function parser_expr(pr: parser_st, retstate: prs_enum): void {
 
 function parser_start(pr: parser_st, flpS: filepos_st, state: prs_enum): null {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   pr.level++;
   pr.state.state = state;
@@ -3287,7 +3287,7 @@ function parser_statement(
   more: boolean,
 ): strnil {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   pr.level--;
   pr.state.state = prs_enum.STATEMENT_END;
@@ -3300,10 +3300,10 @@ function parser_lookup(
   retstate: prs_enum,
 ): null {
   if (pr.state === null) {
-    throw new Error("Parser state is null");
+    throw new Error('Parser state is null');
   }
   if (pr.tk1 === null || pr.tk1.type !== tok_enum.IDENT) {
-    throw new Error("Token must be an identifier");
+    throw new Error('Token must be an identifier');
   }
   pr.state.state = retstate;
   pr.state.flpL = flpL;
@@ -3315,10 +3315,10 @@ function parser_lookup(
 // returns null for success, or an error message
 function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
   if (pr.tk1 === null) {
-    throw new Error("Parser cannot process null token");
+    throw new Error('Parser cannot process null token');
   }
   if (pr.state === null) {
-    throw new Error("Parser cannot process null state");
+    throw new Error('Parser cannot process null state');
   }
   const tk1 = pr.tk1;
   let st = pr.state;
@@ -3367,16 +3367,16 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return parser_process(pr, stmts);
       } else if (tok_isMidStmt(tk1)) {
         if (st.next === null) {
-          return "Invalid statement";
+          return 'Invalid statement';
         }
         parser_pop(pr);
         return parser_process(pr, stmts);
       }
-      return "Invalid statement";
+      return 'Invalid statement';
 
     case prs_enum.STATEMENT_END:
       if (tk1.type !== tok_enum.NEWLINE) {
-        return "Missing newline or semicolon";
+        return 'Missing newline or semicolon';
       }
       st.state = prs_enum.STATEMENT;
       return null;
@@ -3384,7 +3384,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
     case prs_enum.LOOKUP:
       if (!tok_isKS(tk1, ks_enum.PERIOD)) {
         if (st.next === null) {
-          throw new Error("Parser expecting lookup to return state");
+          throw new Error('Parser expecting lookup to return state');
         }
         st.next.names = st.names;
         parser_pop(pr);
@@ -3395,10 +3395,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LOOKUP_IDENT:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting names to be list");
+        throw new Error('Parser expecting names to be list');
       }
       st.names.push(tk1.ident);
       st.state = prs_enum.LOOKUP;
@@ -3420,7 +3420,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
     case prs_enum.LVALUES:
       if (tk1.type === tok_enum.NEWLINE) {
         if (st.next === null) {
-          throw new Error("Parser expecting lvalues to return state");
+          throw new Error('Parser expecting lvalues to return state');
         }
         st.next.lvalues = st.lvalues;
         parser_pop(pr);
@@ -3436,7 +3436,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return parser_lookup(pr, flpT, prs_enum.LVALUES_TERM_LOOKUP);
       }
       if (st.lvaluesMode === lvm_enum.ENUM) {
-        return "Expecting enumerator name";
+        return 'Expecting enumerator name';
       }
       if (tok_isKS(tk1, ks_enum.LBRACE)) {
         st.state = prs_enum.LVALUES_TERM_LIST_DONE;
@@ -3452,14 +3452,14 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
           return null;
         }
       }
-      return "Expecting variable";
+      return 'Expecting variable';
 
     case prs_enum.LVALUES_TERM_LOOKUP:
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting names to be list of strings");
+        throw new Error('Parser expecting names to be list of strings');
       }
       st.next.exprTerm = expr_names(flpL, st.names);
       st.names = null;
@@ -3471,7 +3471,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       } else if (tok_isKS(tk1, ks_enum.RBRACE)) {
         if (st.next === null) {
-          throw new Error("Parser expecting lvalues to return state");
+          throw new Error('Parser expecting lvalues to return state');
         }
         st.next.exprTerm = st.exprTerm;
         parser_pop(pr);
@@ -3491,7 +3491,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.exprTerm = null;
       } else {
         if (st.exprTerm === null) {
-          throw new Error("Parser expression cannot be null");
+          throw new Error('Parser expression cannot be null');
         }
         st.exprTerm2 = expr_infix(
           st.exprTerm2.flp,
@@ -3503,7 +3503,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (tok_isKS(tk1, ks_enum.RBRACE)) {
         if (st.next === null) {
-          throw new Error("Parser expecting lvalues to return state");
+          throw new Error('Parser expecting lvalues to return state');
         }
         st.next.exprTerm = st.exprTerm2;
         st.exprTerm2 = null;
@@ -3514,11 +3514,11 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         pr.state.lvaluesMode = lvm_enum.LIST;
         return null;
       }
-      return "Invalid list";
+      return 'Invalid list';
 
     case prs_enum.LVALUES_TERM_LIST_TAIL:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.LVALUES_TERM_LIST_TAIL_LOOKUP);
 
@@ -3534,13 +3534,13 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LVALUES_TERM_LIST_TAIL_DONE:
       if (!tok_isKS(tk1, ks_enum.RBRACE)) {
-        return "Missing end of list";
+        return 'Missing end of list';
       }
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser lvalues should be list of strings");
+        throw new Error('Parser lvalues should be list of strings');
       }
       st.next.exprTerm = expr_prefix(
         flpL,
@@ -3553,10 +3553,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LVALUES_TERM_LIST_DONE:
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting lvalues expression");
+        throw new Error('Parser expecting lvalues expression');
       }
       st.next.exprTerm = expr_list(flpE, st.exprTerm);
       parser_pop(pr);
@@ -3564,13 +3564,13 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LVALUES_TERM_DONE:
       if (st.lvalues === null) {
-        throw new Error("Parser expecting lvalues as list of expressions");
+        throw new Error('Parser expecting lvalues as list of expressions');
       }
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting expression to be non-null");
+        throw new Error('Parser expecting expression to be non-null');
       }
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       if (tk1.type === tok_enum.NEWLINE) {
         st.lvalues.push(expr_infix(flpT, ks_enum.EQU, st.exprTerm, null));
@@ -3591,17 +3591,17 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.state = prs_enum.LVALUES_MORE;
         return null;
       }
-      return "Invalid declaration";
+      return 'Invalid declaration';
 
     case prs_enum.LVALUES_TERM_EXPR:
       if (st.lvalues === null) {
-        throw new Error("Parser expecting lvalues as list of expressions");
+        throw new Error('Parser expecting lvalues as list of expressions');
       }
       if (st.exprTerm2 === null) {
-        throw new Error("Parser expecting expression to be non-null");
+        throw new Error('Parser expecting expression to be non-null');
       }
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       st.lvalues.push(
         expr_infix(st.exprTerm2.flp, ks_enum.EQU, st.exprTerm2, st.exprTerm),
@@ -3616,7 +3616,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.state = prs_enum.LVALUES_MORE;
         return null;
       }
-      return "Invalid declaration";
+      return 'Invalid declaration';
 
     case prs_enum.LVALUES_MORE:
       if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
@@ -3629,28 +3629,28 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LVALUES_DEF_TAIL:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.LVALUES_DEF_TAIL_DONE);
 
     case prs_enum.LVALUES_DEF_TAIL_DONE:
       if (tk1.type !== tok_enum.NEWLINE) {
-        return "Missing newline or semicolon";
+        return 'Missing newline or semicolon';
       }
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       st.next.names = st.names;
       parser_pop(pr);
       st = pr.state;
       if (st.lvalues === null) {
-        throw new Error("Parser expecting lvalues to be list of expressions");
+        throw new Error('Parser expecting lvalues to be list of expressions');
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting names to be list of strings");
+        throw new Error('Parser expecting names to be list of strings');
       }
       if (st.next === null) {
-        throw new Error("Parser expecting lvalues to return state");
+        throw new Error('Parser expecting lvalues to return state');
       }
       st.lvalues.push(
         expr_prefix(flpL, ks_enum.PERIOD3, expr_names(flpL, st.names)),
@@ -3673,7 +3673,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.DECLARE_LOOKUP);
 
@@ -3683,7 +3683,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting declare lookup to return names");
+        throw new Error('Parser expecting declare lookup to return names');
       }
       stmts.push(ast_declare(flpS, decl_local(flpL, st.names)));
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -3694,10 +3694,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.DECLARE_STR:
       if (tk1.type !== tok_enum.STR) {
-        return "Expecting string constant";
+        return 'Expecting string constant';
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting declare lookup to return names");
+        throw new Error('Parser expecting declare lookup to return names');
       }
       stmts.push(ast_declare(flpS, decl_native(flpL, st.names, tk1.str)));
       st.state = prs_enum.DECLARE_STR2;
@@ -3705,7 +3705,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.DECLARE_STR2:
       if (!tok_isKS(tk1, ks_enum.RPAREN)) {
-        return "Expecting string constant";
+        return 'Expecting string constant';
       }
       st.state = prs_enum.DECLARE_STR3;
       return null;
@@ -3719,7 +3719,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.DEF:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.DEF_LOOKUP);
 
@@ -3729,13 +3729,13 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.DEF_LVALUES:
       if (tk1.type !== tok_enum.NEWLINE) {
-        return "Missing newline or semicolon";
+        return 'Missing newline or semicolon';
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser def expecting names");
+        throw new Error('Parser def expecting names');
       }
       if (st.lvalues === null) {
-        throw new Error("Parser def expecting lvalues");
+        throw new Error('Parser def expecting lvalues');
       }
       stmts.push(ast_def1(flpS, flpL, st.names, st.lvalues));
       st.state = prs_enum.DEF_BODY;
@@ -3744,7 +3744,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.DEF_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of def block";
+        return 'Missing `end` of def block';
       }
       stmts.push(ast_def2(flpT));
       return parser_statement(pr, stmts, true);
@@ -3764,7 +3764,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         stmts.push(ast_dowhile3(flpT));
         return parser_statement(pr, stmts, true);
       }
-      return "Missing `while` or `end` of do block";
+      return 'Missing `while` or `end` of do block';
 
     case prs_enum.DO_WHILE_EXPR:
       stmts.push(ast_dowhile2(flpS, st.exprTerm));
@@ -3777,11 +3777,11 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         stmts.push(ast_dowhile3(flpT));
         return parser_statement(pr, stmts, true);
       }
-      return "Missing newline or semicolon";
+      return 'Missing newline or semicolon';
 
     case prs_enum.DO_WHILE_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of do-while block";
+        return 'Missing `end` of do-while block';
       }
       stmts.push(ast_dowhile3(flpT));
       return parser_statement(pr, stmts, true);
@@ -3805,20 +3805,20 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.LOOP_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of for block";
+        return 'Missing `end` of for block';
       }
       stmts.push(ast_loop2(flpT));
       return parser_statement(pr, stmts, true);
 
     case prs_enum.FOR_VARS:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.FOR_VARS_LOOKUP);
 
     case prs_enum.FOR_VARS_LOOKUP:
       if (st.names === null || st.names === true) {
-        throw new Error("Parser `for` lookup expecting names");
+        throw new Error('Parser `for` lookup expecting names');
       }
       st.names2 = st.names;
       st.names = null;
@@ -3829,34 +3829,34 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.state = prs_enum.FOR_VARS_DONE;
         return null;
       }
-      return "Invalid for loop";
+      return 'Invalid for loop';
 
     case prs_enum.FOR_VARS2:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.FOR_VARS2_LOOKUP);
 
     case prs_enum.FOR_VARS2_LOOKUP:
       if (!tok_isKS(tk1, ks_enum.COLON)) {
-        return "Expecting `:`";
+        return 'Expecting `:`';
       }
       st.state = prs_enum.FOR_VARS_DONE;
       return null;
 
     case prs_enum.FOR_VARS_DONE:
       if (tk1.type === tok_enum.NEWLINE) {
-        return "Expecting expression in for statement";
+        return 'Expecting expression in for statement';
       }
       parser_expr(pr, prs_enum.FOR_EXPR);
       return parser_process(pr, stmts);
 
     case prs_enum.FOR_EXPR:
       if (st.names === true) {
-        throw new Error("Parser execting `for` names to be list of strings");
+        throw new Error('Parser execting `for` names to be list of strings');
       }
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting `for` expression");
+        throw new Error('Parser expecting `for` expression');
       }
       stmts.push(ast_for1(flpS, st.forVar, st.names2, st.names, st.exprTerm));
       st.names2 = null;
@@ -3870,18 +3870,18 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         stmts.push(ast_for2(flpT));
         return parser_statement(pr, stmts, true);
       }
-      return "Missing newline or semicolon";
+      return 'Missing newline or semicolon';
 
     case prs_enum.FOR_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of for block";
+        return 'Missing `end` of for block';
       }
       stmts.push(ast_for2(flpT));
       return parser_statement(pr, stmts, true);
 
     case prs_enum.GOTO:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       stmts.push(ast_goto(flpS, tk1.ident));
       return parser_statement(pr, stmts, true);
@@ -3893,14 +3893,14 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.IF2:
       if (tk1.type === tok_enum.NEWLINE) {
-        return "Missing conditional expression";
+        return 'Missing conditional expression';
       }
       parser_expr(pr, prs_enum.IF_EXPR);
       return parser_process(pr, stmts);
 
     case prs_enum.IF_EXPR:
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting `if` expression");
+        throw new Error('Parser expecting `if` expression');
       }
       stmts.push(ast_if2(flpS, st.exprTerm));
       st.exprTerm = null;
@@ -3921,7 +3921,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         stmts.push(ast_if4(flpT));
         return parser_statement(pr, stmts, true);
       }
-      return "Missing newline or semicolon";
+      return 'Missing newline or semicolon';
 
     case prs_enum.IF_BODY:
       if (tok_isKS(tk1, ks_enum.ELSEIF)) {
@@ -3937,11 +3937,11 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         stmts.push(ast_if4(flpT));
         return parser_statement(pr, stmts, true);
       }
-      return "Missing `elseif`, `else`, or `end` of if block";
+      return 'Missing `elseif`, `else`, or `end` of if block';
 
     case prs_enum.ELSE_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of if block";
+        return 'Missing `end` of if block';
       }
       stmts.push(ast_if4(flpT));
       return parser_statement(pr, stmts, true);
@@ -3955,10 +3955,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.ENUM_LVALUES:
       if (st.lvalues === null) {
-        throw new Error("Parser expecting `enum` lvalues");
+        throw new Error('Parser expecting `enum` lvalues');
       }
       if (st.lvalues.length <= 0) {
-        return "Invalid enumerator declaration";
+        return 'Invalid enumerator declaration';
       }
       stmts.push(ast_enum(flpS, st.lvalues));
       st.lvalues = null;
@@ -3977,18 +3977,18 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.state = prs_enum.INCLUDE_LOOKUP;
         return null;
       }
-      return "Expecting file as constant string literal";
+      return 'Expecting file as constant string literal';
 
     case prs_enum.INCLUDE_LOOKUP:
       if (!tok_isKS(tk1, ks_enum.LPAREN)) {
-        return "Expecting file as constant string literal";
+        return 'Expecting file as constant string literal';
       }
       st.state = prs_enum.INCLUDE_STR;
       return null;
 
     case prs_enum.INCLUDE_STR:
       if (tk1.type !== tok_enum.STR) {
-        return "Expecting file as constant string literal";
+        return 'Expecting file as constant string literal';
       }
       st.str = tk1.str;
       st.state = prs_enum.INCLUDE_STR2;
@@ -3996,7 +3996,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.INCLUDE_STR2:
       if (!tok_isKS(tk1, ks_enum.RPAREN)) {
-        return "Expecting file as constant string literal";
+        return 'Expecting file as constant string literal';
       }
       st.state = prs_enum.INCLUDE_STR3;
       return null;
@@ -4007,7 +4007,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       st.incls.push(incl_new(st.names, st.str));
       st.names = null;
-      st.str = "";
+      st.str = '';
       if (tok_isKS(tk1, ks_enum.COMMA)) {
         st.state = prs_enum.INCLUDE;
         return null;
@@ -4018,16 +4018,16 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.NAMESPACE:
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.NAMESPACE_LOOKUP);
 
     case prs_enum.NAMESPACE_LOOKUP:
       if (tk1.type !== tok_enum.NEWLINE) {
-        return "Missing newline or semicolon";
+        return 'Missing newline or semicolon';
       }
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting `namespace` names");
+        throw new Error('Parser expecting `namespace` names');
       }
       stmts.push(ast_namespace1(flpS, st.names));
       st.state = prs_enum.NAMESPACE_BODY;
@@ -4036,7 +4036,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.NAMESPACE_BODY:
       if (!tok_isKS(tk1, ks_enum.END)) {
-        return "Missing `end` of namespace block";
+        return 'Missing `end` of namespace block';
       }
       stmts.push(ast_namespace2(flpT));
       return parser_statement(pr, stmts, true);
@@ -4051,7 +4051,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.RETURN_DONE:
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting `return` expression");
+        throw new Error('Parser expecting `return` expression');
       }
       stmts.push(ast_return(flpS, st.exprTerm));
       st.exprTerm = null;
@@ -4062,13 +4062,13 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (tk1.type !== tok_enum.IDENT) {
-        return "Expecting identifier";
+        return 'Expecting identifier';
       }
       return parser_lookup(pr, flpT, prs_enum.USING_LOOKUP);
 
     case prs_enum.USING_LOOKUP:
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting `using` names");
+        throw new Error('Parser expecting `using` names');
       }
       stmts.push(ast_using(flpS, st.names));
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -4086,17 +4086,17 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.VAR_LVALUES:
       if (st.lvalues === null) {
-        throw new Error("Parser expecting `var` lvalues");
+        throw new Error('Parser expecting `var` lvalues');
       }
       if (st.lvalues.length <= 0) {
-        return "Invalid variable declaration";
+        return 'Invalid variable declaration';
       }
       stmts.push(ast_var(flpS, st.lvalues));
       return parser_statement(pr, stmts, false);
 
     case prs_enum.IDENTS:
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expecting list of strings for names");
+        throw new Error('Parser expecting list of strings for names');
       }
       if (st.names.length === 1 && tok_isKS(tk1, ks_enum.COLON)) {
         stmts.push(ast_label(st.flpS, st.names[0]));
@@ -4116,7 +4116,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.EVAL_EXPR:
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting expression");
+        throw new Error('Parser expecting expression');
       }
       stmts.push(ast_eval(flpS, st.exprTerm));
       st.exprTerm = null;
@@ -4159,7 +4159,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         pr.state.exprAllowTrailComma = true;
         return null;
       }
-      return "Invalid expression";
+      return 'Invalid expression';
 
     case prs_enum.EXPR_TERM_ISEMPTYLIST:
       if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
@@ -4178,7 +4178,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (!tok_isKS(tk1, ks_enum.RBRACE)) {
-        return "Expecting close brace";
+        return 'Expecting close brace';
       }
       st.exprTerm = expr_list(flpE, st.exprTerm);
       st.state = prs_enum.EXPR_POST;
@@ -4189,10 +4189,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (!tok_isKS(tk1, ks_enum.RPAREN)) {
-        return "Expecting close parenthesis";
+        return 'Expecting close parenthesis';
       }
       if (st.exprTerm === null) {
-        throw new Error("Parser expecting parenthesis to contain expression");
+        throw new Error('Parser expecting parenthesis to contain expression');
       }
       st.exprTerm = expr_paren(st.exprTerm.flp, st.exprTerm);
       st.state = prs_enum.EXPR_POST;
@@ -4200,7 +4200,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.EXPR_TERM_LOOKUP:
       if (st.names === null || st.names === true) {
-        throw new Error("Parser expression expecting names");
+        throw new Error('Parser expression expecting names');
       }
       st.exprTerm = expr_names(flpL, st.names);
       st.names = null;
@@ -4241,7 +4241,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
 
     case prs_enum.EXPR_POST_CALL:
       if (st.exprTerm2 === null || st.exprTerm === null) {
-        throw new Error("Parser call expecting expressions");
+        throw new Error('Parser call expecting expressions');
       }
       st.exprTerm = expr_call(st.exprTerm2.flp, st.exprTerm2, st.exprTerm);
       st.exprTerm2 = null;
@@ -4268,7 +4268,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (tok_isKS(tk1, ks_enum.RBRACKET)) {
         if (st.exprTerm === null) {
           throw new Error(
-            "Parser expression index expecting object for indexing",
+            'Parser expression index expecting object for indexing',
           );
         }
         st.exprTerm = expr_slice(flpT, st.exprTerm, null, null);
@@ -4285,11 +4285,11 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (!tok_isKS(tk1, ks_enum.RBRACKET)) {
-        return "Missing close bracket";
+        return 'Missing close bracket';
       }
       if (st.exprTerm2 === null || st.exprTerm === null) {
         throw new Error(
-          "Parser expression index expecting object for indexing",
+          'Parser expression index expecting object for indexing',
         );
       }
       st.exprTerm = expr_slice(
@@ -4311,11 +4311,11 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (!tok_isKS(tk1, ks_enum.RBRACKET)) {
-        return "Missing close bracket";
+        return 'Missing close bracket';
       }
       if (st.exprTerm2 === null || st.exprTerm === null) {
         throw new Error(
-          "Parser expression index expecting object for indexing",
+          'Parser expression index expecting object for indexing',
         );
       }
       st.exprTerm = expr_index(st.exprTerm.flp, st.exprTerm2, st.exprTerm);
@@ -4330,7 +4330,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (tok_isKS(tk1, ks_enum.RBRACKET)) {
         if (st.exprTerm === null || st.exprTerm2 === null) {
           throw new Error(
-            "Parser expression index expecting object for indexing",
+            'Parser expression index expecting object for indexing',
           );
         }
         st.exprTerm = expr_slice(
@@ -4353,12 +4353,12 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       if (!tok_isKS(tk1, ks_enum.RBRACKET)) {
-        return "Missing close bracket";
+        return 'Missing close bracket';
       }
       if (
         st.exprTerm3 === null || st.exprTerm2 === null || st.exprTerm === null
       ) {
-        throw new Error("Parser expression index expecting expressions");
+        throw new Error('Parser expression index expecting expressions');
       }
       st.exprTerm = expr_slice(
         st.exprTerm3.flp,
@@ -4382,7 +4382,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         parser_rev(pr);
         parser_process(pr, stmts);
         if (pr.tkR === null) {
-          throw new Error("Parser reverse should have set tkR");
+          throw new Error('Parser reverse should have set tkR');
         }
         parser_fwd(pr, pr.tkR);
         return parser_process(pr, stmts);
@@ -4406,7 +4406,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
             tk1.type !== tok_enum.KS || st.exprPreStack === null ||
             st.exprPreStack.tk.type !== tok_enum.KS
           ) {
-            throw new Error("Parser expression mid expecting keyword");
+            throw new Error('Parser expression mid expecting keyword');
           }
           if (!tok_isPreBeforeMid(st.exprPreStack.tk, tk1 as tok_st_KS)) {
             break;
@@ -4414,7 +4414,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
           // apply the Pre
           const ptk = st.exprPreStack.tk;
           if (st.exprTerm === null) {
-            throw new Error("Parser expression mid expecting expression");
+            throw new Error('Parser expression mid expecting expression');
           }
           st.exprTerm = expr_prefix(ptk.flp, ptk.k, st.exprTerm);
           st.exprPreStack = st.exprPreStack.next;
@@ -4428,10 +4428,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
           // apply the previous Mid
           const mtk = st.exprMidStack.tk as tok_st_KS;
           if (st.exprStack === null) {
-            throw new Error("Parser expression mid expecting expression stack");
+            throw new Error('Parser expression mid expecting expression stack');
           }
           if (st.exprTerm === null) {
-            throw new Error("Parser expression mid expecting expression");
+            throw new Error('Parser expression mid expecting expression');
           }
           const pri = parser_infix(
             mtk.flp,
@@ -4446,7 +4446,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
           st.exprStack = st.exprStack.next;
           if (st.exprPreStackStack === null) {
             throw new Error(
-              "Parser expression mid pre-stack-stack must be non-null",
+              'Parser expression mid pre-stack-stack must be non-null',
             );
           }
           st.exprPreStack = st.exprPreStackStack.e;
@@ -4466,7 +4466,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       );
       st.exprPreStack = null;
       if (st.exprTerm === null) {
-        throw new Error("Parser expression mid expecting expression");
+        throw new Error('Parser expression mid expecting expression');
       }
       st.exprStack = exs_new(st.exprTerm, st.exprStack);
       st.exprTerm = null;
@@ -4481,7 +4481,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         while (st.exprPreStack !== null) {
           const ptk = st.exprPreStack.tk;
           if (st.exprTerm === null) {
-            throw new Error("Parser expression end expecting expression");
+            throw new Error('Parser expression end expecting expression');
           }
           st.exprTerm = expr_prefix(ptk.flp, ptk.k, st.exprTerm);
           st.exprPreStack = st.exprPreStack.next;
@@ -4502,7 +4502,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
           // apply the Pre to the left side
           const ptk = st.exprPreStack.tk;
           if (st.exprStack === null) {
-            throw new Error("Parser expression end expecting expression stack");
+            throw new Error('Parser expression end expecting expression stack');
           }
           st.exprStack.ex = expr_prefix(ptk.flp, ptk.k, st.exprStack.ex);
           st.exprPreStack = st.exprPreStack.next;
@@ -4515,7 +4515,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         // apply the Mid
         const mtk = st.exprMidStack.tk;
         if (st.exprStack === null || st.exprTerm === null) {
-          throw new Error("Parser expression end expecting expression stack");
+          throw new Error('Parser expression end expecting expression stack');
         }
         const pri = parser_infix(mtk.flp, mtk.k, st.exprStack.ex, st.exprTerm);
         if (!pri.ok) {
@@ -4527,7 +4527,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       // everything has been applied, and exprTerm has been set!
       if (st.next === null) {
-        throw new Error("Parser expression expecting to return state");
+        throw new Error('Parser expression expecting to return state');
       }
       st.next.exprTerm = st.exprTerm;
       st.exprTerm = null;
@@ -4543,10 +4543,10 @@ function parser_add(pr: parser_st, tk: tok_st, stmts: ast_st[]): strnil {
 
 function parser_close(pr: parser_st): strnil {
   if (pr.state === null) {
-    throw new Error("Parser missing state");
+    throw new Error('Parser missing state');
   }
   if (pr.state.next !== null) {
-    return "Invalid end of file";
+    return 'Invalid end of file';
   }
   return null;
 }
@@ -4570,7 +4570,7 @@ function label_new(name: string): label_st {
 }
 
 function label_check(v: pgst_st): v is label_st {
-  return v !== null && "pos" in v && typeof v.pos === "number";
+  return v !== null && 'pos' in v && typeof v.pos === 'number';
 }
 
 function label_refresh(lbl: label_st, ops: number[], start: number): void {
@@ -4928,7 +4928,7 @@ function scope_addDeclare(
 ): void {
   sc.declares.push({
     lbl,
-    hint: names.join("."),
+    hint: names.join('.'),
     flp,
   });
 }
@@ -4941,7 +4941,7 @@ function scope_removeDeclare(sc: scope_st, lbl: label_st): void {
       return;
     }
   }
-  throw new Error("Failed to find previous declared object");
+  throw new Error('Failed to find previous declared object');
 }
 
 interface symtbl_st {
@@ -4996,7 +4996,7 @@ function symtbl_findNamespace(
           nsn = ns.names[i] = nsname_namespace(nsn.name, namespace_new(ns.fr));
         }
         if (nsn.type !== nsname_enumt.NAMESPACE) {
-          throw new Error("Symtbl namespace required");
+          throw new Error('Symtbl namespace required');
         }
         ns = nsn.ns;
         found = true;
@@ -5018,7 +5018,7 @@ function symtbl_pushNamespace(sym: symtbl_st, names: string[] | true): strnil {
     // create a unique namespace and use it (via `using`) immediately
     const nsp = sym.sc.ns;
     ns = namespace_new(nsp.fr);
-    nsp.names.push(nsname_namespace(".", ns));
+    nsp.names.push(nsname_namespace('.', ns));
     nsp.usings.push(ns);
   } else {
     // find (and create if non-existant) namespace
@@ -5106,13 +5106,13 @@ function symtbl_lookupfast(sym: symtbl_st, names: string[]): stl_st {
     }
     trysc = trysc.parent;
   }
-  return stl_error("");
+  return stl_error('');
 }
 
 function symtbl_lookup(sym: symtbl_st, names: string[]): stl_st {
   const res = symtbl_lookupfast(sym, names);
   if (!res.ok) {
-    res.msg = `Not found: ${names.join(".")}`;
+    res.msg = `Not found: ${names.join('.')}`;
   }
   return res;
 }
@@ -5143,7 +5143,7 @@ function symtbl_addTemp(sym: symtbl_st): sta_st {
     }
   }
   if (sym.fr.vars.length >= 256) {
-    return sta_error("Too many variables in frame");
+    return sta_error('Too many variables in frame');
   }
   sym.fr.vars.push(frame_enum.TEMP_INUSE);
   return sta_ok(varloc_new(sym.fr.level, sym.fr.vars.length - 1));
@@ -5151,7 +5151,7 @@ function symtbl_addTemp(sym: symtbl_st): sta_st {
 
 function symtbl_clearTemp(sym: symtbl_st, vlc: varloc_st): void {
   if (varloc_isnull(vlc)) {
-    throw new Error("Cannot clear a null variable");
+    throw new Error('Cannot clear a null variable');
   }
   if (
     vlc.frame === sym.fr.level &&
@@ -5192,7 +5192,7 @@ function symtbl_addVar(sym: symtbl_st, names: string[], slot: number): sta_st {
         sym.fr.vars.push(frame_enum.VAR);
       }
       if (slot >= 256) {
-        return sta_error("Too many variables in frame");
+        return sta_error('Too many variables in frame');
       }
       ns.names[i] = nsname_var(names[names.length - 1], sym.fr, slot);
       return sta_ok(varloc_new(sym.fr.level, slot));
@@ -5203,7 +5203,7 @@ function symtbl_addVar(sym: symtbl_st, names: string[], slot: number): sta_st {
     sym.fr.vars.push(frame_enum.VAR);
   }
   if (slot >= 256) {
-    return sta_error("Too many variables in frame");
+    return sta_error('Too many variables in frame');
   }
   ns.names.push(nsname_var(names[names.length - 1], sym.fr, slot));
   return sta_ok(varloc_new(sym.fr.level, slot));
@@ -5323,152 +5323,152 @@ enum struct_enum {
 }
 
 function symtbl_loadStdlib(sym: symtbl_st): void {
-  SAC(sym, "say", op_enum.SAY, -1);
-  SAC(sym, "exit", op_enum.EXIT, -1);
-  SAC(sym, "abort", op_enum.ABORT, -1);
-  SAC(sym, "isnum", op_enum.ISNUM, 1);
-  SAC(sym, "isstr", op_enum.ISSTR, 1);
-  SAC(sym, "islist", op_enum.ISLIST, 1);
-  SAC(sym, "range", op_enum.RANGE, 3);
-  SAC(sym, "order", op_enum.ORDER, 2);
-  SAC(sym, "pick", op_enum.PICK, 3);
-  SAC(sym, "embed", op_enum.EMBED, 1);
-  SAC(sym, "stacktrace", op_enum.STACKTRACE, 0);
-  symtbl_pushNamespace(sym, ["num"]);
-  SAC(sym, "abs", op_enum.NUM_ABS, 1);
-  SAC(sym, "sign", op_enum.NUM_SIGN, 1);
-  SAC(sym, "max", op_enum.NUM_MAX, -1);
-  SAC(sym, "min", op_enum.NUM_MIN, -1);
-  SAC(sym, "clamp", op_enum.NUM_CLAMP, 3);
-  SAC(sym, "floor", op_enum.NUM_FLOOR, 1);
-  SAC(sym, "ceil", op_enum.NUM_CEIL, 1);
-  SAC(sym, "round", op_enum.NUM_ROUND, 1);
-  SAC(sym, "trunc", op_enum.NUM_TRUNC, 1);
-  SAC(sym, "nan", op_enum.NUM_NAN, 0);
-  SAC(sym, "inf", op_enum.NUM_INF, 0);
-  SAC(sym, "isnan", op_enum.NUM_ISNAN, 1);
-  SAC(sym, "isfinite", op_enum.NUM_ISFINITE, 1);
-  SAE(sym, "e", num_e());
-  SAE(sym, "pi", num_pi());
-  SAE(sym, "tau", num_tau());
-  SAC(sym, "sin", op_enum.NUM_SIN, 1);
-  SAC(sym, "cos", op_enum.NUM_COS, 1);
-  SAC(sym, "tan", op_enum.NUM_TAN, 1);
-  SAC(sym, "asin", op_enum.NUM_ASIN, 1);
-  SAC(sym, "acos", op_enum.NUM_ACOS, 1);
-  SAC(sym, "atan", op_enum.NUM_ATAN, 1);
-  SAC(sym, "atan2", op_enum.NUM_ATAN2, 2);
-  SAC(sym, "log", op_enum.NUM_LOG, 1);
-  SAC(sym, "log2", op_enum.NUM_LOG2, 1);
-  SAC(sym, "log10", op_enum.NUM_LOG10, 1);
-  SAC(sym, "exp", op_enum.NUM_EXP, 1);
-  SAC(sym, "lerp", op_enum.NUM_LERP, 3);
-  SAC(sym, "hex", op_enum.NUM_HEX, 2);
-  SAC(sym, "oct", op_enum.NUM_OCT, 2);
-  SAC(sym, "bin", op_enum.NUM_BIN, 2);
+  SAC(sym, 'say', op_enum.SAY, -1);
+  SAC(sym, 'exit', op_enum.EXIT, -1);
+  SAC(sym, 'abort', op_enum.ABORT, -1);
+  SAC(sym, 'isnum', op_enum.ISNUM, 1);
+  SAC(sym, 'isstr', op_enum.ISSTR, 1);
+  SAC(sym, 'islist', op_enum.ISLIST, 1);
+  SAC(sym, 'range', op_enum.RANGE, 3);
+  SAC(sym, 'order', op_enum.ORDER, 2);
+  SAC(sym, 'pick', op_enum.PICK, 3);
+  SAC(sym, 'embed', op_enum.EMBED, 1);
+  SAC(sym, 'stacktrace', op_enum.STACKTRACE, 0);
+  symtbl_pushNamespace(sym, ['num']);
+  SAC(sym, 'abs', op_enum.NUM_ABS, 1);
+  SAC(sym, 'sign', op_enum.NUM_SIGN, 1);
+  SAC(sym, 'max', op_enum.NUM_MAX, -1);
+  SAC(sym, 'min', op_enum.NUM_MIN, -1);
+  SAC(sym, 'clamp', op_enum.NUM_CLAMP, 3);
+  SAC(sym, 'floor', op_enum.NUM_FLOOR, 1);
+  SAC(sym, 'ceil', op_enum.NUM_CEIL, 1);
+  SAC(sym, 'round', op_enum.NUM_ROUND, 1);
+  SAC(sym, 'trunc', op_enum.NUM_TRUNC, 1);
+  SAC(sym, 'nan', op_enum.NUM_NAN, 0);
+  SAC(sym, 'inf', op_enum.NUM_INF, 0);
+  SAC(sym, 'isnan', op_enum.NUM_ISNAN, 1);
+  SAC(sym, 'isfinite', op_enum.NUM_ISFINITE, 1);
+  SAE(sym, 'e', num_e());
+  SAE(sym, 'pi', num_pi());
+  SAE(sym, 'tau', num_tau());
+  SAC(sym, 'sin', op_enum.NUM_SIN, 1);
+  SAC(sym, 'cos', op_enum.NUM_COS, 1);
+  SAC(sym, 'tan', op_enum.NUM_TAN, 1);
+  SAC(sym, 'asin', op_enum.NUM_ASIN, 1);
+  SAC(sym, 'acos', op_enum.NUM_ACOS, 1);
+  SAC(sym, 'atan', op_enum.NUM_ATAN, 1);
+  SAC(sym, 'atan2', op_enum.NUM_ATAN2, 2);
+  SAC(sym, 'log', op_enum.NUM_LOG, 1);
+  SAC(sym, 'log2', op_enum.NUM_LOG2, 1);
+  SAC(sym, 'log10', op_enum.NUM_LOG10, 1);
+  SAC(sym, 'exp', op_enum.NUM_EXP, 1);
+  SAC(sym, 'lerp', op_enum.NUM_LERP, 3);
+  SAC(sym, 'hex', op_enum.NUM_HEX, 2);
+  SAC(sym, 'oct', op_enum.NUM_OCT, 2);
+  SAC(sym, 'bin', op_enum.NUM_BIN, 2);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["int"]);
-  SAC(sym, "new", op_enum.INT_NEW, 1);
-  SAC(sym, "not", op_enum.INT_NOT, 1);
-  SAC(sym, "and", op_enum.INT_AND, -1);
-  SAC(sym, "or", op_enum.INT_OR, -1);
-  SAC(sym, "xor", op_enum.INT_XOR, -1);
-  SAC(sym, "shl", op_enum.INT_SHL, 2);
-  SAC(sym, "shr", op_enum.INT_SHR, 2);
-  SAC(sym, "sar", op_enum.INT_SAR, 2);
-  SAC(sym, "add", op_enum.INT_ADD, 2);
-  SAC(sym, "sub", op_enum.INT_SUB, 2);
-  SAC(sym, "mul", op_enum.INT_MUL, 2);
-  SAC(sym, "div", op_enum.INT_DIV, 2);
-  SAC(sym, "mod", op_enum.INT_MOD, 2);
-  SAC(sym, "clz", op_enum.INT_CLZ, 1);
-  SAC(sym, "pop", op_enum.INT_POP, 1);
-  SAC(sym, "bswap", op_enum.INT_BSWAP, 1);
+  symtbl_pushNamespace(sym, ['int']);
+  SAC(sym, 'new', op_enum.INT_NEW, 1);
+  SAC(sym, 'not', op_enum.INT_NOT, 1);
+  SAC(sym, 'and', op_enum.INT_AND, -1);
+  SAC(sym, 'or', op_enum.INT_OR, -1);
+  SAC(sym, 'xor', op_enum.INT_XOR, -1);
+  SAC(sym, 'shl', op_enum.INT_SHL, 2);
+  SAC(sym, 'shr', op_enum.INT_SHR, 2);
+  SAC(sym, 'sar', op_enum.INT_SAR, 2);
+  SAC(sym, 'add', op_enum.INT_ADD, 2);
+  SAC(sym, 'sub', op_enum.INT_SUB, 2);
+  SAC(sym, 'mul', op_enum.INT_MUL, 2);
+  SAC(sym, 'div', op_enum.INT_DIV, 2);
+  SAC(sym, 'mod', op_enum.INT_MOD, 2);
+  SAC(sym, 'clz', op_enum.INT_CLZ, 1);
+  SAC(sym, 'pop', op_enum.INT_POP, 1);
+  SAC(sym, 'bswap', op_enum.INT_BSWAP, 1);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["rand"]);
-  SAC(sym, "seed", op_enum.RAND_SEED, 1);
-  SAC(sym, "seedauto", op_enum.RAND_SEEDAUTO, 0);
-  SAC(sym, "int", op_enum.RAND_INT, 0);
-  SAC(sym, "num", op_enum.RAND_NUM, 0);
-  SAC(sym, "range", op_enum.RAND_RANGE, 3);
-  SAC(sym, "getstate", op_enum.RAND_GETSTATE, 0);
-  SAC(sym, "setstate", op_enum.RAND_SETSTATE, 1);
-  SAC(sym, "pick", op_enum.RAND_PICK, 1);
-  SAC(sym, "shuffle", op_enum.RAND_SHUFFLE, 1);
+  symtbl_pushNamespace(sym, ['rand']);
+  SAC(sym, 'seed', op_enum.RAND_SEED, 1);
+  SAC(sym, 'seedauto', op_enum.RAND_SEEDAUTO, 0);
+  SAC(sym, 'int', op_enum.RAND_INT, 0);
+  SAC(sym, 'num', op_enum.RAND_NUM, 0);
+  SAC(sym, 'range', op_enum.RAND_RANGE, 3);
+  SAC(sym, 'getstate', op_enum.RAND_GETSTATE, 0);
+  SAC(sym, 'setstate', op_enum.RAND_SETSTATE, 1);
+  SAC(sym, 'pick', op_enum.RAND_PICK, 1);
+  SAC(sym, 'shuffle', op_enum.RAND_SHUFFLE, 1);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["str"]);
-  SAC(sym, "new", op_enum.STR_NEW, -1);
-  SAC(sym, "split", op_enum.STR_SPLIT, 2);
-  SAC(sym, "replace", op_enum.STR_REPLACE, 3);
-  SAC(sym, "begins", op_enum.STR_BEGINS, 2);
-  SAC(sym, "ends", op_enum.STR_ENDS, 2);
-  SAC(sym, "pad", op_enum.STR_PAD, 2);
-  SAC(sym, "find", op_enum.STR_FIND, 3);
-  SAC(sym, "rfind", op_enum.STR_RFIND, 3);
-  SAC(sym, "lower", op_enum.STR_LOWER, 1);
-  SAC(sym, "upper", op_enum.STR_UPPER, 1);
-  SAC(sym, "trim", op_enum.STR_TRIM, 1);
-  SAC(sym, "rev", op_enum.STR_REV, 1);
-  SAC(sym, "rep", op_enum.STR_REP, 2);
-  SAC(sym, "list", op_enum.STR_LIST, 1);
-  SAC(sym, "byte", op_enum.STR_BYTE, 2);
-  SAC(sym, "hash", op_enum.STR_HASH, 2);
+  symtbl_pushNamespace(sym, ['str']);
+  SAC(sym, 'new', op_enum.STR_NEW, -1);
+  SAC(sym, 'split', op_enum.STR_SPLIT, 2);
+  SAC(sym, 'replace', op_enum.STR_REPLACE, 3);
+  SAC(sym, 'begins', op_enum.STR_BEGINS, 2);
+  SAC(sym, 'ends', op_enum.STR_ENDS, 2);
+  SAC(sym, 'pad', op_enum.STR_PAD, 2);
+  SAC(sym, 'find', op_enum.STR_FIND, 3);
+  SAC(sym, 'rfind', op_enum.STR_RFIND, 3);
+  SAC(sym, 'lower', op_enum.STR_LOWER, 1);
+  SAC(sym, 'upper', op_enum.STR_UPPER, 1);
+  SAC(sym, 'trim', op_enum.STR_TRIM, 1);
+  SAC(sym, 'rev', op_enum.STR_REV, 1);
+  SAC(sym, 'rep', op_enum.STR_REP, 2);
+  SAC(sym, 'list', op_enum.STR_LIST, 1);
+  SAC(sym, 'byte', op_enum.STR_BYTE, 2);
+  SAC(sym, 'hash', op_enum.STR_HASH, 2);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["utf8"]);
-  SAC(sym, "valid", op_enum.UTF8_VALID, 1);
-  SAC(sym, "list", op_enum.UTF8_LIST, 1);
-  SAC(sym, "str", op_enum.UTF8_STR, 1);
+  symtbl_pushNamespace(sym, ['utf8']);
+  SAC(sym, 'valid', op_enum.UTF8_VALID, 1);
+  SAC(sym, 'list', op_enum.UTF8_LIST, 1);
+  SAC(sym, 'str', op_enum.UTF8_STR, 1);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["struct"]);
-  SAC(sym, "size", op_enum.STRUCT_SIZE, 1);
-  SAC(sym, "str", op_enum.STRUCT_STR, 2);
-  SAC(sym, "list", op_enum.STRUCT_LIST, 2);
-  SAC(sym, "isLE", op_enum.STRUCT_ISLE, 0);
-  SAE(sym, "U8", struct_enum.U8);
-  SAE(sym, "U16", struct_enum.U16);
-  SAE(sym, "UL16", struct_enum.UL16);
-  SAE(sym, "UB16", struct_enum.UB16);
-  SAE(sym, "U32", struct_enum.U32);
-  SAE(sym, "UL32", struct_enum.UL32);
-  SAE(sym, "UB32", struct_enum.UB32);
-  SAE(sym, "S8", struct_enum.S8);
-  SAE(sym, "S16", struct_enum.S16);
-  SAE(sym, "SL16", struct_enum.SL16);
-  SAE(sym, "SB16", struct_enum.SB16);
-  SAE(sym, "S32", struct_enum.S32);
-  SAE(sym, "SL32", struct_enum.SL32);
-  SAE(sym, "SB32", struct_enum.SB32);
-  SAE(sym, "F32", struct_enum.F32);
-  SAE(sym, "FL32", struct_enum.FL32);
-  SAE(sym, "FB32", struct_enum.FB32);
-  SAE(sym, "F64", struct_enum.F64);
-  SAE(sym, "FL64", struct_enum.FL64);
-  SAE(sym, "FB64", struct_enum.FB64);
+  symtbl_pushNamespace(sym, ['struct']);
+  SAC(sym, 'size', op_enum.STRUCT_SIZE, 1);
+  SAC(sym, 'str', op_enum.STRUCT_STR, 2);
+  SAC(sym, 'list', op_enum.STRUCT_LIST, 2);
+  SAC(sym, 'isLE', op_enum.STRUCT_ISLE, 0);
+  SAE(sym, 'U8', struct_enum.U8);
+  SAE(sym, 'U16', struct_enum.U16);
+  SAE(sym, 'UL16', struct_enum.UL16);
+  SAE(sym, 'UB16', struct_enum.UB16);
+  SAE(sym, 'U32', struct_enum.U32);
+  SAE(sym, 'UL32', struct_enum.UL32);
+  SAE(sym, 'UB32', struct_enum.UB32);
+  SAE(sym, 'S8', struct_enum.S8);
+  SAE(sym, 'S16', struct_enum.S16);
+  SAE(sym, 'SL16', struct_enum.SL16);
+  SAE(sym, 'SB16', struct_enum.SB16);
+  SAE(sym, 'S32', struct_enum.S32);
+  SAE(sym, 'SL32', struct_enum.SL32);
+  SAE(sym, 'SB32', struct_enum.SB32);
+  SAE(sym, 'F32', struct_enum.F32);
+  SAE(sym, 'FL32', struct_enum.FL32);
+  SAE(sym, 'FB32', struct_enum.FB32);
+  SAE(sym, 'F64', struct_enum.F64);
+  SAE(sym, 'FL64', struct_enum.FL64);
+  SAE(sym, 'FB64', struct_enum.FB64);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["list"]);
-  SAC(sym, "new", op_enum.LIST_NEW, 2);
-  SAC(sym, "shift", op_enum.LIST_SHIFT, 1);
-  SAC(sym, "pop", op_enum.LIST_POP, 1);
-  SAC(sym, "push", op_enum.LIST_PUSH, 2);
-  SAC(sym, "unshift", op_enum.LIST_UNSHIFT, 2);
-  SAC(sym, "append", op_enum.LIST_APPEND, 2);
-  SAC(sym, "prepend", op_enum.LIST_PREPEND, 2);
-  SAC(sym, "find", op_enum.LIST_FIND, 3);
-  SAC(sym, "rfind", op_enum.LIST_RFIND, 3);
-  SAC(sym, "join", op_enum.LIST_JOIN, 2);
-  SAC(sym, "rev", op_enum.LIST_REV, 1);
-  SAC(sym, "str", op_enum.LIST_STR, 1);
-  SAC(sym, "sort", op_enum.LIST_SORT, 1);
-  SAC(sym, "rsort", op_enum.LIST_RSORT, 1);
+  symtbl_pushNamespace(sym, ['list']);
+  SAC(sym, 'new', op_enum.LIST_NEW, 2);
+  SAC(sym, 'shift', op_enum.LIST_SHIFT, 1);
+  SAC(sym, 'pop', op_enum.LIST_POP, 1);
+  SAC(sym, 'push', op_enum.LIST_PUSH, 2);
+  SAC(sym, 'unshift', op_enum.LIST_UNSHIFT, 2);
+  SAC(sym, 'append', op_enum.LIST_APPEND, 2);
+  SAC(sym, 'prepend', op_enum.LIST_PREPEND, 2);
+  SAC(sym, 'find', op_enum.LIST_FIND, 3);
+  SAC(sym, 'rfind', op_enum.LIST_RFIND, 3);
+  SAC(sym, 'join', op_enum.LIST_JOIN, 2);
+  SAC(sym, 'rev', op_enum.LIST_REV, 1);
+  SAC(sym, 'str', op_enum.LIST_STR, 1);
+  SAC(sym, 'sort', op_enum.LIST_SORT, 1);
+  SAC(sym, 'rsort', op_enum.LIST_RSORT, 1);
   symtbl_popNamespace(sym);
-  symtbl_pushNamespace(sym, ["pickle"]);
-  SAC(sym, "json", op_enum.PICKLE_JSON, 1);
-  SAC(sym, "bin", op_enum.PICKLE_BIN, 1);
-  SAC(sym, "val", op_enum.PICKLE_VAL, 1);
-  SAC(sym, "valid", op_enum.PICKLE_VALID, 1);
-  SAC(sym, "sibling", op_enum.PICKLE_SIBLING, 1);
-  SAC(sym, "circular", op_enum.PICKLE_CIRCULAR, 1);
-  SAC(sym, "copy", op_enum.PICKLE_COPY, 1);
+  symtbl_pushNamespace(sym, ['pickle']);
+  SAC(sym, 'json', op_enum.PICKLE_JSON, 1);
+  SAC(sym, 'bin', op_enum.PICKLE_BIN, 1);
+  SAC(sym, 'val', op_enum.PICKLE_VAL, 1);
+  SAC(sym, 'valid', op_enum.PICKLE_VALID, 1);
+  SAC(sym, 'sibling', op_enum.PICKLE_SIBLING, 1);
+  SAC(sym, 'circular', op_enum.PICKLE_CIRCULAR, 1);
+  SAC(sym, 'copy', op_enum.PICKLE_COPY, 1);
   symtbl_popNamespace(sym);
 }
 
@@ -5549,7 +5549,7 @@ export function scr_autonative(
   scr: scr,
   name: string,
 ): void {
-  const names = name.split(".");
+  const names = name.split('.');
   const hash = native_hash(`autonative.${name}`);
   scr.autonative.push({ names, hash });
   if (scr.cmp) {
@@ -5564,25 +5564,25 @@ export function scr_autonative(
 function pathjoin(prev: string, next: string, posix: boolean): string {
   let p;
   if (posix) {
-    p = `${prev}/${next}`.split("/");
+    p = `${prev}/${next}`.split('/');
   } else {
     p = `${prev}\\${next}`.split(/\\|\//g);
   }
   const ret = [];
   for (let i = 0; i < p.length; i++) {
-    if ((i !== 0 && p[i] === "") || p[i] === ".") {
+    if ((i !== 0 && p[i] === '') || p[i] === '.') {
       continue;
     }
-    if (p[i] === "..") {
+    if (p[i] === '..') {
       ret.pop();
     } else {
       ret.push(p[i]);
     }
   }
   if (ret.length <= 0) {
-    return ".";
+    return '.';
   }
-  return ret.join(posix ? "/" : "\\");
+  return ret.join(posix ? '/' : '\\');
 }
 
 //
@@ -5618,14 +5618,14 @@ async function fileres_try(
     case fstype.DIR:
       return false;
   }
-  throw new Error("Bad file type");
+  throw new Error('Bad file type');
 }
 
 function isabs(file: string, posix: boolean): boolean {
-  return (posix && file.charAt(0) == "/") ||
+  return (posix && file.charAt(0) == '/') ||
     (!posix &&
-      (file.charAt(1) == ":" ||
-        (file.charAt(0) == "/" && file.charAt(1) == "/")));
+      (file.charAt(1) == ':' ||
+        (file.charAt(0) == '/' && file.charAt(1) == '/')));
 }
 
 async function fileres_read(
@@ -5700,7 +5700,7 @@ function program_addfile(prg: program_st, str: strnil): number {
 }
 
 function program_getdebugstr(prg: program_st, str: number): string {
-  return str < 0 || str >= prg.debugTable.length ? "" : prg.debugTable[str];
+  return str < 0 || str >= prg.debugTable.length ? '' : prg.debugTable[str];
 }
 
 function program_errormsg(
@@ -5717,9 +5717,7 @@ function program_errormsg(
   if (flp.basefile < 0) {
     return `${flp.line}:${flp.chr}: ${msg}`;
   }
-  return `${
-    program_getdebugstr(prg, flp.basefile)
-  }:${flp.line}:${flp.chr}: ${msg}`;
+  return `${program_getdebugstr(prg, flp.basefile)}:${flp.line}:${flp.chr}: ${msg}`;
 }
 
 function program_validate(prg: program_st): boolean {
@@ -6008,7 +6006,7 @@ interface prgch_st {
 function program_cmdhint(prg: program_st, names: string[] | null): void {
   const p: prgch_st = { pc: prg.ops.length, cmdhint: -1 };
   if (names !== null) {
-    p.cmdhint = program_adddebugstr(prg, names.join("."));
+    p.cmdhint = program_adddebugstr(prg, names.join('.'));
   }
   prg.cmdTable.push(p);
 }
@@ -6213,7 +6211,7 @@ function lval_addVars(sym: symtbl_st, ex: expr_st, slot: number): lvp_st {
     return lvp_ok(lvr_var(ex.flp, sr.vlc));
   } else if (ex.type === expr_enum.LIST) {
     if (ex.ex === null) {
-      return lvp_error(ex.flp, "Invalid assignment");
+      return lvp_error(ex.flp, 'Invalid assignment');
     }
     const body: lvr_st[] = [];
     let rest: lvr_st | null = null;
@@ -6252,7 +6250,7 @@ function lval_addVars(sym: symtbl_st, ex: expr_st, slot: number): lvp_st {
     }
     return lvp_ok(lvr_list(ex.flp, body, rest));
   }
-  return lvp_error(ex.flp, "Invalid assignment");
+  return lvp_error(ex.flp, 'Invalid assignment');
 }
 
 async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
@@ -6262,7 +6260,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
       return lvp_error(ex.flp, sl.msg);
     }
     if (sl.nsn.type !== nsname_enumt.VAR) {
-      return lvp_error(ex.flp, "Invalid assignment");
+      return lvp_error(ex.flp, 'Invalid assignment');
     }
     return lvp_ok(lvr_var(ex.flp, varloc_new(sl.nsn.fr.level, sl.nsn.index)));
   } else if (ex.type === expr_enum.INDEX) {
@@ -6272,7 +6270,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
     }
     const obj = pe.vlc;
     if (ex.type !== expr_enum.INDEX) {
-      throw new Error("Expression type must be index");
+      throw new Error('Expression type must be index');
     }
     pe = await program_eval(pgen, pem_enum.CREATE, VARLOC_NULL, ex.key);
     if (!pe.ok) {
@@ -6293,7 +6291,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
       }
       const obj = pe.vlc;
       if (ex.type !== expr_enum.SLICE || ex.obj.type !== expr_enum.INDEX) {
-        throw new Error("Expression type must be a slice index");
+        throw new Error('Expression type must be a slice index');
       }
       pe = await program_eval(pgen, pem_enum.CREATE, VARLOC_NULL, ex.obj.key);
       if (!pe.ok) {
@@ -6301,7 +6299,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
       }
       const key = pe.vlc;
       if (ex.type !== expr_enum.SLICE) {
-        throw new Error("Expression type must be slice");
+        throw new Error('Expression type must be slice');
       }
       const sr = await program_slice(pgen, ex);
       if (!sr.ok) {
@@ -6315,7 +6313,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
       }
       const obj = pe.vlc;
       if (ex.type !== expr_enum.SLICE) {
-        throw new Error("Expression type must be slice");
+        throw new Error('Expression type must be slice');
       }
       const sr = await program_slice(pgen, ex);
       if (!sr.ok) {
@@ -6327,7 +6325,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
     const body: lvr_st[] = [];
     let rest: lvr_st | null = null;
     if (ex.ex === null) {
-      return lvp_error(ex.flp, "Invalid assignment");
+      return lvp_error(ex.flp, 'Invalid assignment');
     } else if (ex.ex.type === expr_enum.GROUP) {
       for (let i = 0; i < ex.ex.group.length; i++) {
         const gex = ex.ex.group[i];
@@ -6366,7 +6364,7 @@ async function lval_prepare(pgen: pgen_st, ex: expr_st): Promise<lvp_st> {
     }
     return lvp_ok(lvr_list(ex.flp, body, rest));
   }
-  return lvp_error(ex.flp, "Invalid assignment");
+  return lvp_error(ex.flp, 'Invalid assignment');
 }
 
 function lval_clearTemps(lv: lvr_st, sym: symtbl_st): void {
@@ -6418,7 +6416,7 @@ function program_varInit(prg: program_st, lv: lvr_st): void {
       program_varInit(prg, lv.rest);
     }
   } else {
-    throw new Error("Unexpected variable initialization type");
+    throw new Error('Unexpected variable initialization type');
   }
 }
 
@@ -6696,7 +6694,7 @@ function program_lvalGet(
 
   switch (lv.type) {
     case lvr_enum.VAR:
-      throw new Error("Lvalue expected to be in variable already");
+      throw new Error('Lvalue expected to be in variable already');
 
     case lvr_enum.INDEX:
       op_getat(prg.ops, intoVlc, lv.obj, lv.key);
@@ -6809,7 +6807,7 @@ interface efu_st {
 
 function embed_begin(_file: string, efu: efu_st): boolean {
   // in order to capture the `scr_write`, we need to set `capture_write`
-  efu.pgen.scr.capture_write = "";
+  efu.pgen.scr.capture_write = '';
   return true;
 }
 
@@ -6821,7 +6819,7 @@ async function embed_end(
   if (success) {
     // convert the data into a string expression, then load it
     if (efu.pgen.scr.capture_write === null) {
-      throw new Error("Bad embed capture");
+      throw new Error('Bad embed capture');
     }
     const ex = expr_str(efu.flp, efu.pgen.scr.capture_write);
     efu.pe = await program_eval(efu.pgen, efu.mode, efu.intoVlc, ex);
@@ -6880,7 +6878,7 @@ async function program_evalCall(
     nsn.type !== nsname_enumt.CMD_NATIVE &&
     nsn.type !== nsname_enumt.CMD_OPCODE
   ) {
-    return per_error(flp, "Invalid call - not a command");
+    return per_error(flp, 'Invalid call - not a command');
   }
 
   // params can be NULL to indicate emptiness
@@ -6889,7 +6887,7 @@ async function program_evalCall(
       params === null || params.type !== expr_enum.GROUP ||
       params.group.length !== 3
     ) {
-      return per_error(flp, "Using `pick` requires exactly three arguments");
+      return per_error(flp, 'Using `pick` requires exactly three arguments');
     }
 
     let pe = await program_eval(
@@ -6909,14 +6907,14 @@ async function program_evalCall(
       intoVlc = ts.vlc;
     }
 
-    const pickfalse = label_new("^pickfalse");
-    const finish = label_new("^pickfinish");
+    const pickfalse = label_new('^pickfalse');
+    const finish = label_new('^pickfinish');
 
     label_jumpfalse(pickfalse, prg.ops, pe.vlc);
     symtbl_clearTemp(sym, pe.vlc);
 
     if (params === null || params.type !== expr_enum.GROUP) {
-      throw new Error("Bad params for pick");
+      throw new Error('Bad params for pick');
     }
     if (mode === pem_enum.EMPTY) {
       pe = await program_eval(pgen, pem_enum.EMPTY, intoVlc, params.group[1]);
@@ -6930,7 +6928,7 @@ async function program_evalCall(
 
     label_declare(pickfalse, prg.ops);
     if (params === null || params.type !== expr_enum.GROUP) {
-      throw new Error("Bad params for pick");
+      throw new Error('Bad params for pick');
     }
     if (mode === pem_enum.EMPTY) {
       pe = await program_eval(pgen, pem_enum.EMPTY, intoVlc, params.group[2]);
@@ -6951,7 +6949,7 @@ async function program_evalCall(
       file = file.ex;
     }
     if (file === null || file.type !== expr_enum.STR) {
-      return per_error(flp, "Expecting constant string for `embed`");
+      return per_error(flp, 'Expecting constant string for `embed`');
     }
     let cwd: strnil = null;
     const efu: efu_st = {
@@ -6964,7 +6962,7 @@ async function program_evalCall(
     if (pgen.from >= 0) {
       cwd = pathjoin(
         script_getfile(pgen.scr, pgen.from) as string,
-        "..",
+        '..',
         pgen.scr.posix,
       );
     }
@@ -7004,7 +7002,7 @@ async function program_evalCall(
         }
         const index = native_index(prg, sl.nsn.hash);
         if (index < 0) {
-          return per_error(flp, "Too many native commands");
+          return per_error(flp, 'Too many native commands');
         }
         op_isnative(prg.ops, intoVlc, index);
         return per_ok(intoVlc);
@@ -7012,7 +7010,7 @@ async function program_evalCall(
     }
     return per_error(
       flp,
-      "Expecting `isnative` to test against a declared native command",
+      'Expecting `isnative` to test against a declared native command',
     );
   } else if (
     nsn.type === nsname_enumt.CMD_OPCODE && nsn.opcode === op_enum.STR_HASH &&
@@ -7088,7 +7086,7 @@ async function program_evalCall(
   } else if (nsn.type === nsname_enumt.CMD_NATIVE) {
     const index = native_index(prg, nsn.hash);
     if (index < 0) {
-      return per_error(flp, "Too many native commands");
+      return per_error(flp, 'Too many native commands');
     }
     op_native(prg.ops, intoVlc, index, argcount[0]);
   } else { // nsname_enumt.CMD_OPCODE
@@ -7192,7 +7190,7 @@ function program_lvalCheckNil(
 
         op_numint(prg.ops, idx, 0);
 
-        const next = label_new("^condslicenext");
+        const next = label_new('^condslicenext');
 
         op_nil(prg.ops, t);
         op_binop(prg.ops, op_enum.EQU, t, t, len);
@@ -7204,7 +7202,7 @@ function program_lvalCheckNil(
 
         op_binop(prg.ops, op_enum.LT, t, idx, len);
 
-        const keep = label_new("^condslicekeep");
+        const keep = label_new('^condslicekeep');
         label_jumpfalse(inverted ? keep : skip, prg.ops, t);
 
         op_binop(prg.ops, op_enum.NUM_ADD, t, idx, start);
@@ -7226,7 +7224,7 @@ function program_lvalCheckNil(
 
     case lvr_enum.LIST:
       {
-        const keep = label_new("^condkeep");
+        const keep = label_new('^condkeep');
         for (let i = 0; i < lv.body.length; i++) {
           program_lvalCheckNil(
             pgen,
@@ -7271,7 +7269,7 @@ function program_lvalCondAssignPart(
         if (!pe.ok) {
           return pe;
         }
-        const skip = label_new("^condskippart");
+        const skip = label_new('^condskippart');
         if (jumpFalse) {
           label_jumpfalse(skip, prg.ops, pe.vlc);
         } else {
@@ -7334,7 +7332,7 @@ function program_lvalCondAssignPart(
 
         op_numint(prg.ops, idx, 0);
 
-        const next = label_new("^condpartslicenext");
+        const next = label_new('^condpartslicenext');
 
         op_nil(prg.ops, t);
         op_binop(prg.ops, op_enum.EQU, t, t, len);
@@ -7346,10 +7344,10 @@ function program_lvalCondAssignPart(
 
         op_binop(prg.ops, op_enum.LT, t, idx, len);
 
-        const done = label_new("^condpartslicedone");
+        const done = label_new('^condpartslicedone');
         label_jumpfalse(done, prg.ops, t);
 
-        const inc = label_new("^condpartsliceinc");
+        const inc = label_new('^condpartsliceinc');
         op_binop(prg.ops, op_enum.NUM_ADD, t, idx, start);
         op_getat(prg.ops, t2, obj, t);
         if (jumpFalse) {
@@ -7501,7 +7499,7 @@ async function program_eval(
       }
       if (!found) {
         if (index >= 0x7FFFFFFF) {
-          return per_error(ex.flp, "Too many string constants");
+          return per_error(ex.flp, 'Too many string constants');
         }
         prg.strTable.push(ex.str);
       }
@@ -7626,9 +7624,9 @@ async function program_eval(
           return program_evalCall(pgen, mode, intoVlc, ex.flp, sl.nsn, null);
 
         case nsname_enumt.NAMESPACE:
-          return per_error(ex.flp, "Invalid expression");
+          return per_error(ex.flp, 'Invalid expression');
       }
-      throw new Error("Invalid namespace entry");
+      throw new Error('Invalid namespace entry');
     }
 
     case expr_enum.PAREN:
@@ -7713,7 +7711,7 @@ async function program_eval(
     case expr_enum.PREFIX: {
       const unop = ks_toUnaryOp(ex.k);
       if (unop === op_enum.INVALID) {
-        return per_error(ex.flp, "Invalid unary operator");
+        return per_error(ex.flp, 'Invalid unary operator');
       }
       const pe = await program_eval(pgen, pem_enum.CREATE, VARLOC_NULL, ex.ex);
       if (!pe.ok) {
@@ -7747,7 +7745,7 @@ async function program_eval(
         }
 
         if (ex.k === ks_enum.AMP2EQU || ex.k === ks_enum.PIPE2EQU) {
-          const skip = label_new("^condsetskip");
+          const skip = label_new('^condsetskip');
 
           let pe = program_lvalCheckNil(
             pgen,
@@ -7761,7 +7759,7 @@ async function program_eval(
           }
 
           if (ex.right === null) {
-            throw new Error("Invalid infix operator (right is null)");
+            throw new Error('Invalid infix operator (right is null)');
           }
           pe = await program_eval(pgen, pem_enum.CREATE, VARLOC_NULL, ex.right);
           if (!pe.ok) {
@@ -7769,7 +7767,7 @@ async function program_eval(
           }
 
           if (!lp.ok) {
-            throw new Error("Invalid lvalue conditional assignment");
+            throw new Error('Invalid lvalue conditional assignment');
           }
           pe = program_lvalCondAssign(
             pgen,
@@ -7808,7 +7806,7 @@ async function program_eval(
 
         // special handling for basic variable assignment to avoid a temporary
         if (ex.right === null) {
-          throw new Error("Invalid assignment (right is null)");
+          throw new Error('Invalid assignment (right is null)');
         }
         if (ex.k === ks_enum.EQU && lp.lv.type === lvr_enum.VAR) {
           const pe = await program_eval(
@@ -7830,7 +7828,7 @@ async function program_eval(
             intoVlc = ts.vlc;
           }
           if (!lp.ok) {
-            throw new Error("Lvalue is an error in basic assignment");
+            throw new Error('Lvalue is an error in basic assignment');
           }
           op_move(prg.ops, intoVlc, lp.lv.vlc);
           return per_ok(intoVlc);
@@ -7846,7 +7844,7 @@ async function program_eval(
           return pe;
         }
         if (!lp.ok) {
-          throw new Error("Lvalue is an error in assignment");
+          throw new Error('Lvalue is an error in assignment');
         }
         return program_evalLval(
           pgen,
@@ -7880,7 +7878,7 @@ async function program_eval(
         }
         const left = pe.vlc;
         if (ex.right === null) {
-          throw new Error("Infix operator has null right");
+          throw new Error('Infix operator has null right');
         }
         pe = await program_eval(pgen, pem_enum.CREATE, VARLOC_NULL, ex.right);
         if (!pe.ok) {
@@ -7906,20 +7904,20 @@ async function program_eval(
           return pe;
         }
         const left = pe.vlc;
-        const useleft = label_new("^useleft");
+        const useleft = label_new('^useleft');
         if (ex.k === ks_enum.AMP2) {
           label_jumpfalse(useleft, prg.ops, left);
         } else {
           label_jumptrue(useleft, prg.ops, left);
         }
         if (ex.right === null) {
-          throw new Error("Infix conditional has null right expression");
+          throw new Error('Infix conditional has null right expression');
         }
         pe = await program_eval(pgen, pem_enum.INTO, intoVlc, ex.right);
         if (!pe.ok) {
           return pe;
         }
-        const finish = label_new("^finish");
+        const finish = label_new('^finish');
         label_jump(finish, prg.ops);
         label_declare(useleft, prg.ops);
         op_move(prg.ops, intoVlc, left);
@@ -7931,12 +7929,12 @@ async function program_eval(
         }
         return per_ok(intoVlc);
       }
-      return per_error(ex.flp, "Invalid operation");
+      return per_error(ex.flp, 'Invalid operation');
     }
 
     case expr_enum.CALL: {
       if (ex.cmd.type !== expr_enum.NAMES) {
-        return per_error(ex.flp, "Invalid call");
+        return per_error(ex.flp, 'Invalid call');
       }
       const sl = symtbl_lookup(sym, ex.cmd.names);
       if (!sl.ok) {
@@ -8015,7 +8013,7 @@ async function program_eval(
       return per_ok(intoVlc);
     }
   }
-  throw new Error("Invalid expression type");
+  throw new Error('Invalid expression type');
 }
 
 function program_exprToNum(pgen: pgen_st, ex: expr_st): pen_st {
@@ -8047,7 +8045,7 @@ function program_exprToNum(pgen: pgen_st, ex: expr_st): pen_st {
       return n1;
     }
     if (ex.right === null) {
-      throw new Error("Expression cannot have null right side");
+      throw new Error('Expression cannot have null right side');
     }
     const n2 = program_exprToNum(pgen, ex.right);
     if (!n2.ok) {
@@ -8063,7 +8061,7 @@ function program_exprToNum(pgen: pgen_st, ex: expr_st): pen_st {
       return pen_ok(Math.pow(n1.value, n2.value));
     }
   }
-  return pen_error("Enums must be a constant number");
+  return pen_error('Enums must be a constant number');
 }
 
 type pgst_st =
@@ -8144,7 +8142,7 @@ function pgs_dowhile_new(
 }
 
 function pgs_dowhile_check(v: pgst_st): v is pgs_dowhile_st {
-  return v !== null && "cond" in v && label_check(v.cond);
+  return v !== null && 'cond' in v && label_check(v.cond);
 }
 
 interface pgs_for_st {
@@ -8184,7 +8182,7 @@ function pgs_for_new(
 }
 
 function pgs_for_check(v: pgst_st): v is pgs_for_st {
-  return v !== null && "inc" in v && label_check(v.inc);
+  return v !== null && 'inc' in v && label_check(v.inc);
 }
 
 interface pgs_loop_st {
@@ -8197,7 +8195,7 @@ function pgs_loop_new(lcont: label_st, lbrk: label_st): pgs_loop_st {
 }
 
 function pgs_loop_check(v: pgst_st): v is pgs_loop_st {
-  return v !== null && "lcont" in v && label_check(v.lcont);
+  return v !== null && 'lcont' in v && label_check(v.lcont);
 }
 
 interface pgs_if_st {
@@ -8210,7 +8208,7 @@ function pgs_if_new(nextcond: label_st | null, ifdone: label_st): pgs_if_st {
 }
 
 function pgs_if_check(v: pgst_st): v is pgs_if_st {
-  return v !== null && "ifdone" in v && label_check(v.ifdone);
+  return v !== null && 'ifdone' in v && label_check(v.ifdone);
 }
 
 interface pfvs_res_st {
@@ -8224,9 +8222,7 @@ function program_forVarsSingle(
   names: string[] | null,
 ): pfvs_res_st {
   if (names === null || forVar) {
-    const ts = names === null
-      ? symtbl_addTemp(sym)
-      : symtbl_addVar(sym, names, -1);
+    const ts = names === null ? symtbl_addTemp(sym) : symtbl_addVar(sym, names, -1);
     if (!ts.ok) {
       return { vlc: VARLOC_NULL, err: ts.msg };
     }
@@ -8237,7 +8233,7 @@ function program_forVarsSingle(
       return { vlc: VARLOC_NULL, err: sl.msg };
     }
     if (sl.nsn.type !== nsname_enumt.VAR) {
-      return { vlc: VARLOC_NULL, err: "Cannot use non-variable in for loop" };
+      return { vlc: VARLOC_NULL, err: 'Cannot use non-variable in for loop' };
     }
     return { vlc: varloc_new(sl.nsn.fr.level, sl.nsn.index), err: null };
   }
@@ -8298,9 +8294,9 @@ function program_genForRange(
     op_binop(prg.ops, op_enum.NUM_DIV, p2, p2, p3);
   }
 
-  const top = label_new("^forR_top");
-  const inc = label_new("^forR_inc");
-  const finish = label_new("^forR_finish");
+  const top = label_new('^forR_top');
+  const inc = label_new('^forR_inc');
+  const finish = label_new('^forR_finish');
 
   const ts = symtbl_addTemp(sym);
   if (!ts.ok) {
@@ -8361,9 +8357,9 @@ async function program_genForGeneric(
   // clear the index
   op_numint(prg.ops, idx_vlc, 0);
 
-  const top = label_new("^forG_top");
-  const inc = label_new("^forG_inc");
-  const finish = label_new("^forG_finish");
+  const top = label_new('^forG_top');
+  const inc = label_new('^forG_inc');
+  const finish = label_new('^forG_finish');
 
   const ts = symtbl_addTemp(sym);
   if (!ts.ok) {
@@ -8410,7 +8406,7 @@ async function program_gen(
   switch (stmt.type) {
     case ast_enumt.BREAK: {
       if (sym.sc.lblBreak === null) {
-        return pgr_error(stmt.flp, "Invalid `break`");
+        return pgr_error(stmt.flp, 'Invalid `break`');
       }
       label_jump(sym.sc.lblBreak, prg.ops);
       return pgr_ok();
@@ -8418,7 +8414,7 @@ async function program_gen(
 
     case ast_enumt.CONTINUE: {
       if (sym.sc.lblContinue === null) {
-        return pgr_error(stmt.flp, "Invalid `continue`");
+        return pgr_error(stmt.flp, 'Invalid `continue`');
       }
       label_jump(sym.sc.lblContinue, prg.ops);
       return pgr_ok();
@@ -8427,7 +8423,7 @@ async function program_gen(
     case ast_enumt.DECLARE: {
       const dc = stmt.declare;
       if (dc.local) {
-        const lbl = label_new("^def");
+        const lbl = label_new('^def');
         sym.fr.lbls.push(lbl);
         const smsg = symtbl_addCmdLocal(sym, dc.names, lbl);
         if (smsg !== null) {
@@ -8436,7 +8432,7 @@ async function program_gen(
         scope_addDeclare(sym.sc, stmt.flp, dc.names, lbl);
       } else { // native
         if (dc.key === null) {
-          throw new Error("Expecting native declaration to have key");
+          throw new Error('Expecting native declaration to have key');
         }
         const smsg = symtbl_addCmdNative(sym, dc.names, native_hash(dc.key));
         if (smsg !== null) {
@@ -8456,11 +8452,11 @@ async function program_gen(
         } else if (!sym.repl) { // if already defined, error
           return pgr_error(
             stmt.flpN,
-            `Cannot redefine: ${stmt.names.join(".")}`,
+            `Cannot redefine: ${stmt.names.join('.')}`,
           );
         }
       } else {
-        lbl = label_new("^def");
+        lbl = label_new('^def');
         sym.fr.lbls.push(lbl);
         const smsg = symtbl_addCmdLocal(sym, stmt.names, lbl);
         if (smsg !== null) {
@@ -8470,12 +8466,12 @@ async function program_gen(
 
       const level = sym.fr.level + 1;
       if (level > 255) {
-        return pgr_error(stmt.flp, "Too many nested commands");
+        return pgr_error(stmt.flp, 'Too many nested commands');
       }
       let rest = 0xFF;
       const lvs = stmt.lvalues.length;
       if (lvs > 255) {
-        return pgr_error(stmt.flp, "Too many parameters");
+        return pgr_error(stmt.flp, 'Too many parameters');
       }
       if (lvs > 0) {
         const last_ex = stmt.lvalues[lvs - 1];
@@ -8487,7 +8483,7 @@ async function program_gen(
         }
       }
 
-      const skip = label_new("^after_def");
+      const skip = label_new('^after_def');
       label_jump(skip, prg.ops);
 
       label_declare(lbl, prg.ops);
@@ -8509,7 +8505,7 @@ async function program_gen(
           // check for initialization -- must happen before the symbols are added so that
           // `def a x = x` binds the seconds `x` to the outer scope
           if (ex.right !== null) {
-            const argset = label_new("^argset");
+            const argset = label_new('^argset');
             label_jumptrue(argset, prg.ops, arg);
             const pr = await program_eval(pgen, pem_enum.INTO, arg, ex.right);
             if (!pr.ok) {
@@ -8520,7 +8516,7 @@ async function program_gen(
 
           // now we can add the param symbols
           if (ex.type !== expr_enum.INFIX) {
-            throw new Error("Expecting parameter expression to be infix");
+            throw new Error('Expecting parameter expression to be infix');
           }
           const lr = lval_addVars(sym, ex.left, i);
           if (!lr.ok) {
@@ -8550,12 +8546,12 @@ async function program_gen(
           }
           if (lr.lv.type !== lvr_enum.VAR) {
             throw new Error(
-              "Assertion failed: `...rest` parameter must be identifier",
+              'Assertion failed: `...rest` parameter must be identifier',
             );
           }
         } else {
           throw new Error(
-            "Assertion failed: parameter must be infix expression",
+            'Assertion failed: parameter must be infix expression',
           );
         }
       }
@@ -8570,7 +8566,7 @@ async function program_gen(
         return pgr_error(stmt.flp, err);
       }
       if (!label_check(state)) {
-        throw new Error("Expecting state to be a label");
+        throw new Error('Expecting state to be a label');
       }
       const skip: label_st = state;
       label_declare(skip, prg.ops);
@@ -8578,9 +8574,9 @@ async function program_gen(
     }
 
     case ast_enumt.DOWHILE1: {
-      const top = label_new("^dowhile_top");
-      const cond = label_new("^dowhile_cond");
-      const finish = label_new("^dowhile_finish");
+      const top = label_new('^dowhile_top');
+      const cond = label_new('^dowhile_cond');
+      const finish = label_new('^dowhile_finish');
 
       symtbl_pushScope(sym);
       sym.sc.lblBreak = finish;
@@ -8592,7 +8588,7 @@ async function program_gen(
 
     case ast_enumt.DOWHILE2: {
       if (!pgs_dowhile_check(state)) {
-        throw new Error("Expecting state to be do-while structure");
+        throw new Error('Expecting state to be do-while structure');
       }
       const pst: pgs_dowhile_st = state;
 
@@ -8610,7 +8606,7 @@ async function program_gen(
           stmt.cond,
         );
         if (!pgs_dowhile_check(state)) {
-          throw new Error("Expecting state to be do-while structure");
+          throw new Error('Expecting state to be do-while structure');
         }
         const pst: pgs_dowhile_st = state;
         if (!pe.ok) {
@@ -8625,7 +8621,7 @@ async function program_gen(
 
     case ast_enumt.DOWHILE3: {
       if (!pgs_dowhile_check(state)) {
-        throw new Error("Expecting state to be do-while structure");
+        throw new Error('Expecting state to be do-while structure');
       }
       const pst: pgs_dowhile_st = state;
 
@@ -8645,7 +8641,7 @@ async function program_gen(
       for (let i = 0; i < stmt.lvalues.length; i++) {
         const ex = stmt.lvalues[i];
         if (ex.type !== expr_enum.INFIX) {
-          throw new Error("Enum expression must be infix");
+          throw new Error('Enum expression must be infix');
         }
         let v = last_val + 1;
         if (ex.right !== null) {
@@ -8658,7 +8654,7 @@ async function program_gen(
         if (ex.left.type !== expr_enum.NAMES) {
           return pgr_error(
             stmt.flp,
-            "Enum name must only consist of identifiers",
+            'Enum name must only consist of identifiers',
           );
         }
         last_val = v;
@@ -8724,7 +8720,7 @@ async function program_gen(
 
     case ast_enumt.FOR2: {
       if (!pgs_for_check(state)) {
-        throw new Error("Expecting state to be for structure");
+        throw new Error('Expecting state to be for structure');
       }
       const pst: pgs_for_st = state;
 
@@ -8754,8 +8750,8 @@ async function program_gen(
 
     case ast_enumt.LOOP1: {
       symtbl_pushScope(sym);
-      const lcont = label_new("^loop_continue");
-      const lbrk = label_new("^loop_break");
+      const lcont = label_new('^loop_continue');
+      const lbrk = label_new('^loop_break');
       sym.sc.lblContinue = lcont;
       sym.sc.lblBreak = lbrk;
       label_declare(lcont, prg.ops);
@@ -8764,7 +8760,7 @@ async function program_gen(
 
     case ast_enumt.LOOP2: {
       if (!pgs_loop_check(state)) {
-        throw new Error("Expecting state to be loop structure");
+        throw new Error('Expecting state to be loop structure');
       }
       const pst: pgs_loop_st = state;
 
@@ -8793,12 +8789,12 @@ async function program_gen(
     }
 
     case ast_enumt.IF1: {
-      return pgr_push(pgs_if_new(null, label_new("^ifdone")));
+      return pgr_push(pgs_if_new(null, label_new('^ifdone')));
     }
 
     case ast_enumt.IF2: {
       if (!pgs_if_check(state)) {
-        throw new Error("Expecting state to be if struture");
+        throw new Error('Expecting state to be if struture');
       }
       const pst: pgs_if_st = state;
 
@@ -8811,7 +8807,7 @@ async function program_gen(
 
         label_declare(pst.nextcond, prg.ops);
       }
-      pst.nextcond = label_new("^nextcond");
+      pst.nextcond = label_new('^nextcond');
       const pr = await program_eval(
         pgen,
         pem_enum.CREATE,
@@ -8819,7 +8815,7 @@ async function program_gen(
         stmt.cond,
       );
       if (!pgs_if_check(state)) {
-        throw new Error("Expecting state to be if struture");
+        throw new Error('Expecting state to be if struture');
       }
 
       if (!pr.ok) {
@@ -8827,7 +8823,7 @@ async function program_gen(
       }
 
       if (pst.nextcond === null) {
-        throw new Error("If2 nextcond must not be null");
+        throw new Error('If2 nextcond must not be null');
       }
       label_jumpfalse(pst.nextcond, prg.ops, pr.vlc);
       symtbl_clearTemp(sym, pr.vlc);
@@ -8838,7 +8834,7 @@ async function program_gen(
 
     case ast_enumt.IF3: {
       if (!pgs_if_check(state)) {
-        throw new Error("Expecting state to be if structure");
+        throw new Error('Expecting state to be if structure');
       }
       const pst: pgs_if_st = state;
 
@@ -8849,7 +8845,7 @@ async function program_gen(
       label_jump(pst.ifdone, prg.ops);
 
       if (pst.nextcond === null) {
-        throw new Error("Next condition label must exist");
+        throw new Error('Next condition label must exist');
       }
       label_declare(pst.nextcond, prg.ops);
       symtbl_pushScope(sym);
@@ -8858,7 +8854,7 @@ async function program_gen(
 
     case ast_enumt.IF4: {
       if (!pgs_if_check(state)) {
-        throw new Error("Expecting state to be if structure");
+        throw new Error('Expecting state to be if structure');
       }
       const pst: pgs_if_st = state;
 
@@ -8871,7 +8867,7 @@ async function program_gen(
     }
 
     case ast_enumt.INCLUDE: {
-      throw new Error("Cannot generate code for include statement");
+      throw new Error('Cannot generate code for include statement');
     }
 
     case ast_enumt.NAMESPACE1: {
@@ -8895,7 +8891,7 @@ async function program_gen(
       // check for tail call
       if (ex.type === expr_enum.CALL) {
         if (ex.cmd.type !== expr_enum.NAMES) {
-          return pgr_error(ex.flp, "Invalid call");
+          return pgr_error(ex.flp, 'Invalid call');
         }
         const sl = symtbl_lookup(sym, ex.cmd.names);
         if (!sl.ok) {
@@ -8930,7 +8926,7 @@ async function program_gen(
         if (!eb) {
           const pe0 = pe[0];
           if (pe0.ok) {
-            throw new Error("Expecting error message from evalCallArgcount");
+            throw new Error('Expecting error message from evalCallArgcount');
           }
           return pgr_error(pe0.flp, pe0.msg);
         }
@@ -8963,7 +8959,7 @@ async function program_gen(
         ns = sf.ns;
       } else {
         if (sl.nsn.type !== nsname_enumt.NAMESPACE) {
-          return pgr_error(stmt.flp, "Expecting namespace");
+          return pgr_error(stmt.flp, 'Expecting namespace');
         }
         ns = sl.nsn.ns;
       }
@@ -8977,7 +8973,7 @@ async function program_gen(
       for (let i = 0; i < stmt.lvalues.length; i++) {
         const ex1 = stmt.lvalues[i];
         if (ex1.type !== expr_enum.INFIX) {
-          throw new Error("Var expressions must be infix");
+          throw new Error('Var expressions must be infix');
         }
         const ex: expr_st_INFIX = ex1;
         let pr_vlc: varloc_st = VARLOC_NULL;
@@ -9061,13 +9057,13 @@ async function program_gen(
         sym.fr.lbls.push(lbl);
       }
       if (lbl === null) {
-        throw new Error("Label cannot be null");
+        throw new Error('Label cannot be null');
       }
       label_declare(lbl, prg.ops);
       return pgr_ok();
     }
   }
-  throw new Error("Invalid AST type");
+  throw new Error('Invalid AST type');
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9157,8 +9153,8 @@ function lxs_get(ctx: context_st, args: val[], next: lxs_st | null): lxs_st {
   // TODO: speed test to see if lxs_avail is a speed boost
   if (ctx.lxs_avail.length > 0) {
     const ls = ctx.lxs_avail.pop();
-    if (typeof ls === "undefined") {
-      throw new Error("No lxs structures available");
+    if (typeof ls === 'undefined') {
+      throw new Error('No lxs structures available');
     }
     ls.vals = args.concat();
     for (let i = args.length; i < 256; i++) {
@@ -9183,8 +9179,8 @@ function ccs_get(
 ): ccs_st {
   if (ctx.ccs_avail.length > 0) {
     const c = ctx.ccs_avail.pop();
-    if (typeof c === "undefined") {
-      throw new Error("No ccs structures available");
+    if (typeof c === 'undefined') {
+      throw new Error('No ccs structures available');
     }
     c.pc = pc;
     c.frame = frame;
@@ -9214,8 +9210,8 @@ function context_native(
         if (nat.f_native !== null) {
           // already defined, hash collision
           throw new Error(
-            "Hash collision; cannot redefine native command " +
-              "(did you call sink.ctx_native twice for the same command?)",
+            'Hash collision; cannot redefine native command ' +
+              '(did you call sink.ctx_native twice for the same command?)',
           );
         }
         nat.natuser = natuser;
@@ -9264,12 +9260,12 @@ function context_reset(ctx: context_st): void {
   // return to the top level
   while (ctx.call_stk.length > 0) {
     const s = ctx.call_stk.pop();
-    if (typeof s === "undefined") {
-      throw new Error("Cannot unwind call stack");
+    if (typeof s === 'undefined') {
+      throw new Error('Cannot unwind call stack');
     }
     const lx = ctx.lex_stk[ctx.lex_index];
     if (lx === null) {
-      throw new Error("Bad lexical stack");
+      throw new Error('Bad lexical stack');
     }
     ctx.lex_stk[ctx.lex_index] = lx.next;
     lxs_release(ctx, lx);
@@ -9445,25 +9441,25 @@ function opi_num_base(num: number, len: number, base: number): val {
   if (len > 256) {
     len = 256;
   }
-  const digits = "0123456789ABCDEF";
-  let buf = "";
+  const digits = '0123456789ABCDEF';
+  let buf = '';
 
   if (num < 0) {
-    buf = "-";
+    buf = '-';
     num = -num;
   }
 
   if (base === 16) {
-    buf += "0x";
+    buf += '0x';
   } else if (base === 8) {
-    buf += "0c";
+    buf += '0c';
   } else if (base === 2) {
-    buf += "0b";
+    buf += '0b';
   } else {
-    throw new Error("Bad base for number conversion");
+    throw new Error('Bad base for number conversion');
   }
 
-  let buf2 = "";
+  let buf2 = '';
   let bodysize = 0;
   let nint = Math.floor(num);
   let nfra = num - nint;
@@ -9474,17 +9470,17 @@ function opi_num_base(num: number, len: number, base: number): val {
   }
   let bi = 0;
   while (bodysize + bi < len && bodysize + bi < 32 && buf.length < 50) {
-    buf += "0";
+    buf += '0';
     bi++;
   }
   if (bodysize > 0) {
     buf += buf2;
   } else if (len <= 0) {
-    buf += "0";
+    buf += '0';
   }
 
   if (nfra > 0.00001) {
-    buf += ".";
+    buf += '.';
     let i = 0;
     while (nfra > 0.00001 && i < 16) {
       nfra *= base;
@@ -9545,7 +9541,7 @@ export function rand_range(
     return NIL;
   }
   if (step === 0) {
-    opi_abort(ctx, "Range step cannot be 0");
+    opi_abort(ctx, 'Range step cannot be 0');
     return NIL;
   }
   const count = Math.ceil((stop - start) / step);
@@ -9570,13 +9566,13 @@ export function rand_getstate(ctx: ctx): list {
 
 export function rand_setstate(ctx: ctx, a: val): void {
   if (!islist(a) || a.length < 2) {
-    opi_abort(ctx, "Expecting list of two integers");
+    opi_abort(ctx, 'Expecting list of two integers');
     return;
   }
   const A = a[0];
   const B = a[1];
   if (!isnum(A) || !isnum(B)) {
-    opi_abort(ctx, "Expecting list of two integers");
+    opi_abort(ctx, 'Expecting list of two integers');
     return;
   }
   ctx.rand_seed = A | 0;
@@ -9585,7 +9581,7 @@ export function rand_setstate(ctx: ctx, a: val): void {
 
 export function rand_pick(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list");
+    opi_abort(ctx, 'Expecting list');
     return NIL;
   }
   if (a.length <= 0) {
@@ -9596,7 +9592,7 @@ export function rand_pick(ctx: ctx, a: val): val {
 
 export function rand_shuffle(ctx: ctx, a: val): void {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list");
+    opi_abort(ctx, 'Expecting list');
     return;
   }
   let m = a.length;
@@ -9612,12 +9608,12 @@ export function rand_shuffle(ctx: ctx, a: val): void {
 }
 
 export function str_new(_ctx: ctx, vals: val[]): val {
-  return list_joinplain(vals, " ");
+  return list_joinplain(vals, ' ');
 }
 
 export function str_split(ctx: ctx, a: val, b: val): val {
   if ((!isstr(a) && !isnum(a)) || (!isstr(b) && !isnum(b))) {
-    opi_abort(ctx, "Expecting strings");
+    opi_abort(ctx, 'Expecting strings');
     return NIL;
   }
   const haystack = tostr(a);
@@ -9642,11 +9638,11 @@ export function str_find(ctx: ctx, a: val, b: val, c: val): val {
   } else if (isnum(c)) {
     hx = c;
   } else {
-    opi_abort(ctx, "Expecting number");
+    opi_abort(ctx, 'Expecting number');
     return NIL;
   }
   if ((!isstr(a) && !isnum(a)) || (!isstr(b) && !isnum(b))) {
-    opi_abort(ctx, "Expecting strings");
+    opi_abort(ctx, 'Expecting strings');
     return NIL;
   }
   const haystack = tostr(a);
@@ -9669,11 +9665,11 @@ export function str_rfind(ctx: ctx, a: val, b: val, c: val): val {
   if (isnum(c)) {
     hx = c;
   } else if (!isnil(c)) {
-    opi_abort(ctx, "Expecting number");
+    opi_abort(ctx, 'Expecting number');
     return NIL;
   }
   if ((!isstr(a) && !isnum(a)) || (!isstr(b) && !isnum(b))) {
-    opi_abort(ctx, "Expecting strings");
+    opi_abort(ctx, 'Expecting strings');
     return NIL;
   }
   const haystack = tostr(a);
@@ -9696,7 +9692,7 @@ export function str_rfind(ctx: ctx, a: val, b: val, c: val): val {
 
 export function str_begins(ctx: ctx, a: val, b: val): boolean {
   if ((!isstr(a) && !isnum(a)) || (!isstr(b) && !isnum(b))) {
-    opi_abort(ctx, "Expecting strings");
+    opi_abort(ctx, 'Expecting strings');
     return false;
   }
   const s1 = tostr(a);
@@ -9707,7 +9703,7 @@ export function str_begins(ctx: ctx, a: val, b: val): boolean {
 
 export function str_ends(ctx: ctx, a: val, b: val): boolean {
   if ((!isstr(a) && !isnum(a)) || (!isstr(b) && !isnum(b))) {
-    opi_abort(ctx, "Expecting strings");
+    opi_abort(ctx, 'Expecting strings');
     return false;
   }
   const s1 = tostr(a);
@@ -9718,7 +9714,7 @@ export function str_ends(ctx: ctx, a: val, b: val): boolean {
 
 export function str_pad(ctx: ctx, a: val, b: number): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
@@ -9728,18 +9724,18 @@ export function str_pad(ctx: ctx, a: val, b: number): val {
     if (s.length >= b) {
       return s;
     }
-    return (new Array(b - s.length + 1)).join(" ") + s;
+    return (new Array(b - s.length + 1)).join(' ') + s;
   } else { // right pad
     if (s.length >= b) {
       return s;
     }
-    return s + (new Array(b - s.length + 1)).join(" ");
+    return s + (new Array(b - s.length + 1)).join(' ');
   }
 }
 
 function opihelp_str_lower(ctx: ctx, a: val): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
@@ -9748,7 +9744,7 @@ function opihelp_str_lower(ctx: ctx, a: val): val {
 
 function opihelp_str_upper(ctx: ctx, a: val): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
@@ -9757,27 +9753,27 @@ function opihelp_str_upper(ctx: ctx, a: val): val {
 
 function opihelp_str_trim(ctx: ctx, a: val): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
   return s.replace(
     // deno-lint-ignore no-control-regex
     /^[\x09\x0A\x0B\x0C\x0D\x20]*|[\x09\x0A\x0B\x0C\x0D\x20]*$/g,
-    "",
+    '',
   );
 }
 
 function opihelp_str_rev(ctx: ctx, a: val): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
   if (s.length <= 0) {
     return a;
   }
-  return s.split("").reverse().join("");
+  return s.split('').reverse().join('');
 }
 
 function opi_str_unop(
@@ -9811,11 +9807,11 @@ export function str_rev(ctx: ctx, a: val): val {
 
 export function str_rep(ctx: ctx, a: val, rep: number): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   if (rep <= 0) {
-    return "";
+    return '';
   } else if (rep === 1) {
     return a;
   }
@@ -9825,7 +9821,7 @@ export function str_rep(ctx: ctx, a: val, rep: number): val {
   }
   const size = s.length * rep;
   if (size > 100000000) {
-    opi_abort(ctx, "Constructed string is too large");
+    opi_abort(ctx, 'Constructed string is too large');
     return NIL;
   }
   return (new Array(rep + 1)).join(s);
@@ -9833,7 +9829,7 @@ export function str_rep(ctx: ctx, a: val, rep: number): val {
 
 export function str_list(ctx: ctx, a: val): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
@@ -9846,7 +9842,7 @@ export function str_list(ctx: ctx, a: val): val {
 
 export function str_byte(ctx: ctx, a: val, b: number): val {
   if (!isstr(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   if (b < 0) {
@@ -9860,7 +9856,7 @@ export function str_byte(ctx: ctx, a: val, b: number): val {
 
 export function str_hash(ctx: ctx, a: val, seed: number): val {
   if (!isstr(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const s = tostr(a);
@@ -9938,7 +9934,7 @@ export function utf8_valid(_ctx: ctx, a: val): boolean {
 
 export function utf8_list(ctx: ctx, a: val): val {
   if (!isstr(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   const res = new list();
@@ -9951,7 +9947,7 @@ export function utf8_list(ctx: ctx, a: val): val {
       if (b < 0x80) { // 0x00 to 0x7F
         res.push(b);
       } else if (b < 0xC0) { // 0x80 to 0xBF
-        opi_abort(ctx, "Invalid UTF-8 string");
+        opi_abort(ctx, 'Invalid UTF-8 string');
         return NIL;
       } else if (b < 0xE0) { // 0xC0 to 0xDF
         codepoint = b & 0x1F;
@@ -9966,12 +9962,12 @@ export function utf8_list(ctx: ctx, a: val): val {
         min = 0x10000;
         state = 3;
       } else {
-        opi_abort(ctx, "Invalid UTF-8 string");
+        opi_abort(ctx, 'Invalid UTF-8 string');
         return NIL;
       }
     } else {
       if (b < 0x80 || b >= 0xC0) {
-        opi_abort(ctx, "Invalid UTF-8 string");
+        opi_abort(ctx, 'Invalid UTF-8 string');
         return NIL;
       }
       codepoint = (codepoint << 6) | (b & 0x3F);
@@ -9982,7 +9978,7 @@ export function utf8_list(ctx: ctx, a: val): val {
           codepoint >= 0x110000 || // no huge
           (codepoint >= 0xD800 && codepoint < 0xE000)
         ) { // no surrogates
-          opi_abort(ctx, "Invalid UTF-8 string");
+          opi_abort(ctx, 'Invalid UTF-8 string');
           return NIL;
         }
         res.push(codepoint);
@@ -9994,18 +9990,18 @@ export function utf8_list(ctx: ctx, a: val): val {
 
 export function utf8_str(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list");
+    opi_abort(ctx, 'Expecting list');
     return NIL;
   }
-  let bytes = "";
+  let bytes = '';
   for (let i = 0; i < a.length; i++) {
     const b = a[i];
     if (!opihelp_codepoint(b)) {
-      opi_abort(ctx, "Invalid list of codepoints");
+      opi_abort(ctx, 'Invalid list of codepoints');
       return NIL;
     }
-    if (typeof b !== "number") {
-      throw new Error("Expecting list of numbers for utf8.str");
+    if (typeof b !== 'number') {
+      throw new Error('Expecting list of numbers for utf8.str');
     }
     if (b < 0x80) {
       bytes += String.fromCharCode(b);
@@ -10112,21 +10108,21 @@ const LE = (() => { // detect native endianness
 
 export function struct_str(ctx: ctx, a: val, b: val): val {
   if (!islist(a) || !islist(b)) {
-    opi_abort(ctx, "Expecting list");
+    opi_abort(ctx, 'Expecting list');
     return NIL;
   }
   if (b.length <= 0 || a.length % b.length != 0) {
-    opi_abort(ctx, "Invalid conversion");
+    opi_abort(ctx, 'Invalid conversion');
     return NIL;
   }
   const arsize = a.length / b.length;
-  let res = "";
+  let res = '';
   for (let ar = 0; ar < arsize; ar++) {
     for (let i = 0; i < b.length; i++) {
       const d = a[i + ar * b.length];
       const t = b[i];
       if (!isnum(d) || !isnum(t)) {
-        opi_abort(ctx, "Invalid conversion");
+        opi_abort(ctx, 'Invalid conversion');
         return NIL;
       }
       if (t === struct_enum.U8 || t === struct_enum.S8) {
@@ -10196,7 +10192,7 @@ export function struct_str(ctx: ctx, a: val, b: val): val {
         res += String.fromCharCode(dview.getUint8(6));
         res += String.fromCharCode(dview.getUint8(7));
       } else {
-        opi_abort(ctx, "Invalid conversion");
+        opi_abort(ctx, 'Invalid conversion');
         return NIL;
       }
     }
@@ -10206,16 +10202,16 @@ export function struct_str(ctx: ctx, a: val, b: val): val {
 
 export function struct_list(ctx: ctx, a: val, b: val): val {
   if (!isstr(a)) {
-    opi_abort(ctx, "Expecting string");
+    opi_abort(ctx, 'Expecting string');
     return NIL;
   }
   if (!islist(b)) {
-    opi_abort(ctx, "Expecting list");
+    opi_abort(ctx, 'Expecting list');
     return NIL;
   }
   const size = struct_size(ctx, b);
   if (!isnum(size) || a.length % size !== 0) {
-    opi_abort(ctx, "Invalid conversion");
+    opi_abort(ctx, 'Invalid conversion');
     return NIL;
   }
   const res = new list();
@@ -10224,7 +10220,7 @@ export function struct_list(ctx: ctx, a: val, b: val): val {
     for (let i = 0; i < b.length; i++) {
       const t = b[i];
       if (!isnum(t)) {
-        opi_abort(ctx, "Invalid conversion");
+        opi_abort(ctx, 'Invalid conversion');
         return NIL;
       }
       if (t === struct_enum.U8) {
@@ -10306,7 +10302,7 @@ export function struct_list(ctx: ctx, a: val, b: val): val {
         dview.setUint8(7, a.charCodeAt(pos++));
         res.push(dview.getFloat64(0, false));
       } else {
-        opi_abort(ctx, "Invalid conversion");
+        opi_abort(ctx, 'Invalid conversion');
         return NIL;
       }
     }
@@ -10356,10 +10352,10 @@ function unop_tonum(a: val): val {
           } else {
             state = tonum_enum.BODY;
           }
-        } else if (ch === "-") {
+        } else if (ch === '-') {
           npi.sign = -1;
           state = tonum_enum.NEG;
-        } else if (ch === ".") {
+        } else if (ch === '.') {
           state = tonum_enum.FRAC;
         } else if (!isSpace(ch)) {
           return NIL;
@@ -10375,7 +10371,7 @@ function unop_tonum(a: val): val {
           } else {
             state = tonum_enum.BODY;
           }
-        } else if (ch === ".") {
+        } else if (ch === '.') {
           state = tonum_enum.FRAC;
         } else {
           return NIL;
@@ -10383,20 +10379,20 @@ function unop_tonum(a: val): val {
         break;
 
       case tonum_enum.N0:
-        if (ch === "b") {
+        if (ch === 'b') {
           npi.base = 2;
           state = tonum_enum.N2;
-        } else if (ch === "c") {
+        } else if (ch === 'c') {
           npi.base = 8;
           state = tonum_enum.N2;
-        } else if (ch === "x") {
+        } else if (ch === 'x') {
           npi.base = 16;
           state = tonum_enum.N2;
-        } else if (ch === "_") {
+        } else if (ch === '_') {
           state = tonum_enum.BODY;
-        } else if (ch === ".") {
+        } else if (ch === '.') {
           state = tonum_enum.FRAC;
-        } else if (ch === "e" || ch === "E") {
+        } else if (ch === 'e' || ch === 'E') {
           state = tonum_enum.EXP;
         } else if (isNum(ch)) {
           // number has a leading zero, so just ignore it
@@ -10415,17 +10411,17 @@ function unop_tonum(a: val): val {
             return 0;
           }
           state = tonum_enum.BODY;
-        } else if (ch !== "_") {
+        } else if (ch !== '_') {
           return 0;
         }
         break;
 
       case tonum_enum.BODY:
-        if (ch === ".") {
+        if (ch === '.') {
           state = tonum_enum.FRAC;
         } else if (
-          (npi.base === 10 && (ch === "e" || ch === "E")) ||
-          (npi.base !== 10 && (ch === "p" || ch === "P"))
+          (npi.base === 10 && (ch === 'e' || ch === 'E')) ||
+          (npi.base !== 10 && (ch === 'p' || ch === 'P'))
         ) {
           state = tonum_enum.EXP;
         } else if (isHex(ch)) {
@@ -10435,15 +10431,15 @@ function unop_tonum(a: val): val {
           } else {
             npi.val = npi.val * npi.base + v;
           }
-        } else if (ch !== "_") {
+        } else if (ch !== '_') {
           return numpart_calc(npi);
         }
         break;
 
       case tonum_enum.FRAC:
         if (
-          hasval && ((npi.base === 10 && (ch === "e" || ch === "E")) ||
-            (npi.base !== 10 && (ch === "p" || ch === "P")))
+          hasval && ((npi.base === 10 && (ch === 'e' || ch === 'E')) ||
+            (npi.base !== 10 && (ch === 'p' || ch === 'P')))
         ) {
           state = tonum_enum.EXP;
         } else if (isHex(ch)) {
@@ -10454,16 +10450,16 @@ function unop_tonum(a: val): val {
           }
           npi.frac = npi.frac * npi.base + v;
           npi.flen++;
-        } else if (ch !== "_") {
+        } else if (ch !== '_') {
           return numpart_calc(npi);
         }
         break;
 
       case tonum_enum.EXP:
-        if (ch !== "_") {
-          npi.esign = ch === "-" ? -1 : 1;
+        if (ch !== '_') {
+          npi.esign = ch === '-' ? -1 : 1;
           state = tonum_enum.EXP_BODY;
-          if (ch !== "+" && ch !== "-") {
+          if (ch !== '+' && ch !== '-') {
             i--;
           }
         }
@@ -10472,7 +10468,7 @@ function unop_tonum(a: val): val {
       case tonum_enum.EXP_BODY:
         if (isNum(ch)) {
           npi.eval = npi.eval * 10.0 + toHex(ch);
-        } else if (ch !== "_") {
+        } else if (ch !== '_') {
           return numpart_calc(npi);
         }
         break;
@@ -10490,9 +10486,7 @@ function unop_tonum(a: val): val {
 const unop_num_abs = Math.abs as (a: val) => val;
 
 function unop_num_sign(a: val): val {
-  return isNaN(a as number)
-    ? NAN
-    : ((a as number) < 0 ? -1 : ((a as number) > 0 ? 1 : 0));
+  return isNaN(a as number) ? NAN : ((a as number) < 0 ? -1 : ((a as number) > 0 ? 1 : 0));
 }
 
 const unop_num_floor = Math.floor as (a: val) => val;
@@ -10543,21 +10537,15 @@ const binop_num_pow = Math.pow as (a: val) => val;
 const binop_num_atan2 = Math.atan2 as (a: val) => val;
 
 function binop_num_hex(a: val, b: val): val {
-  return isNaN(a as number)
-    ? NAN
-    : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 16);
+  return isNaN(a as number) ? NAN : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 16);
 }
 
 function binop_num_oct(a: val, b: val): val {
-  return isNaN(a as number)
-    ? NAN
-    : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 8);
+  return isNaN(a as number) ? NAN : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 8);
 }
 
 function binop_num_bin(a: val, b: val): val {
-  return isNaN(a as number)
-    ? NAN
-    : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 2);
+  return isNaN(a as number) ? NAN : opi_num_base(a as number, isnil(b) ? 0 : (b as number), 2);
 }
 
 function triop_num_clamp(a: val, b: val, c: val): val {
@@ -10658,13 +10646,13 @@ export function size(ctx: ctx, a: val): number {
   } else if (isstr(a)) {
     return a.length;
   }
-  opi_abort(ctx, "Expecting string or list for size");
+  opi_abort(ctx, 'Expecting string or list for size');
   return 0;
 }
 
 export function tonum(ctx: ctx, a: val): val {
   if (!oper_typelist(a, LT_ALLOWNIL | LT_ALLOWNUM | LT_ALLOWSTR)) {
-    opi_abort(ctx, "Expecting string when converting to number");
+    opi_abort(ctx, 'Expecting string when converting to number');
     return NIL;
   }
   return oper_un(a, unop_tonum);
@@ -10674,7 +10662,7 @@ export function say(ctx: ctx, vals: val[]): Promise<val> {
   if (ctx.io.f_say) {
     return ctx.io.f_say(
       ctx,
-      list_joinplain(vals, " ") as string,
+      list_joinplain(vals, ' ') as string,
       ctx.io.user,
     );
   }
@@ -10685,7 +10673,7 @@ export function warn(ctx: ctx, vals: val[]): Promise<val> {
   if (ctx.io.f_warn) {
     return ctx.io.f_warn(
       ctx,
-      list_joinplain(vals, " ") as string,
+      list_joinplain(vals, ' ') as string,
       ctx.io.user,
     );
   }
@@ -10696,7 +10684,7 @@ export function ask(ctx: ctx, vals: val[]): Promise<val> {
   if (ctx.io.f_ask) {
     return ctx.io.f_ask(
       ctx,
-      list_joinplain(vals, " ") as string,
+      list_joinplain(vals, ' ') as string,
       ctx.io.user,
     );
   }
@@ -10916,7 +10904,7 @@ function opi_combop(
 }
 
 export function str_cat(_ctx: ctx, vals: val[]): val {
-  return list_joinplain(vals, "");
+  return list_joinplain(vals, '');
 }
 
 interface fix_slice_st {
@@ -10968,11 +10956,11 @@ function fix_slice(
 
 export function str_slice(ctx: ctx, a: val, b: val, c: val): val {
   if (!isstr(a)) {
-    opi_abort(ctx, "Expecting list or string when slicing");
+    opi_abort(ctx, 'Expecting list or string when slicing');
     return NIL;
   }
   if (!isnum(b) || (!isnil(c) && !isnum(c))) {
-    opi_abort(ctx, "Expecting slice values to be numbers");
+    opi_abort(ctx, 'Expecting slice values to be numbers');
     return NIL;
   }
   if (a.length <= 0) {
@@ -10980,22 +10968,22 @@ export function str_slice(ctx: ctx, a: val, b: val, c: val): val {
   }
   const sl = fix_slice(b, c, a.length);
   if (sl.len <= 0) {
-    return "";
+    return '';
   }
   return a.substr(sl.start, sl.len);
 }
 
 export function str_splice(ctx: ctx, a: val, b: val, c: val, d: val): val {
   if (!isstr(a)) {
-    opi_abort(ctx, "Expecting list or string when splicing");
+    opi_abort(ctx, 'Expecting list or string when splicing');
     return NIL;
   }
   if (!isnum(b) || (!isnil(c) && !isnum(c))) {
-    opi_abort(ctx, "Expecting splice values to be numbers");
+    opi_abort(ctx, 'Expecting splice values to be numbers');
     return NIL;
   }
   if (!isnil(d) && !isstr(d)) {
-    opi_abort(ctx, "Expecting spliced value to be a string");
+    opi_abort(ctx, 'Expecting spliced value to be a string');
     return NIL;
   }
   const sl = fix_slice(b, c, a.length);
@@ -11005,13 +10993,13 @@ export function str_splice(ctx: ctx, a: val, b: val, c: val, d: val): val {
     }
     const tot = a.length - sl.len;
     if (tot <= 0) {
-      return "";
+      return '';
     }
     return a.substr(0, sl.start) + a.substr(sl.start + sl.len);
   } else {
     const tot = a.length - sl.len + d.length;
     if (tot <= 0) {
-      return "";
+      return '';
     }
     return a.substr(0, sl.start) + d + a.substr(sl.start + sl.len);
   }
@@ -11019,7 +11007,7 @@ export function str_splice(ctx: ctx, a: val, b: val, c: val, d: val): val {
 
 export function list_new(ctx: ctx, a: val, b: val): val {
   if (!isnil(a) && !isnum(a)) {
-    opi_abort(ctx, "Expecting number for list.new");
+    opi_abort(ctx, 'Expecting number for list.new');
     return NIL;
   }
   const size = isnil(a) ? 0 : a;
@@ -11040,11 +11028,11 @@ function opi_list_cat(_ctx: ctx, vals: val[][]): val {
 
 export function list_slice(ctx: ctx, a: val, b: val, c: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list or string when slicing");
+    opi_abort(ctx, 'Expecting list or string when slicing');
     return NIL;
   }
   if (!isnum(b) || (!isnil(c) && !isnum(c))) {
-    opi_abort(ctx, "Expecting slice values to be numbers");
+    opi_abort(ctx, 'Expecting slice values to be numbers');
     return NIL;
   }
   const sl = fix_slice(b, c, a.length);
@@ -11060,15 +11048,15 @@ export function list_slice(ctx: ctx, a: val, b: val, c: val): val {
 
 export function list_splice(ctx: ctx, a: val, b: val, c: val, d: val): void {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list or string when splicing");
+    opi_abort(ctx, 'Expecting list or string when splicing');
     return;
   }
   if (!isnum(b) || (!isnil(c) && !isnum(c))) {
-    opi_abort(ctx, "Expecting splice values to be numbers");
+    opi_abort(ctx, 'Expecting splice values to be numbers');
     return;
   }
   if (!isnil(d) && !islist(d)) {
-    opi_abort(ctx, "Expecting spliced value to be a list");
+    opi_abort(ctx, 'Expecting spliced value to be a list');
     return;
   }
   const sl = fix_slice(b, c, a.length);
@@ -11085,7 +11073,7 @@ export function list_splice(ctx: ctx, a: val, b: val, c: val, d: val): void {
 
 export function list_shift(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list when shifting");
+    opi_abort(ctx, 'Expecting list when shifting');
     return NIL;
   }
   if (a.length <= 0) {
@@ -11096,7 +11084,7 @@ export function list_shift(ctx: ctx, a: val): val {
 
 export function list_pop(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list when popping");
+    opi_abort(ctx, 'Expecting list when popping');
     return NIL;
   }
   if (a.length <= 0) {
@@ -11107,7 +11095,7 @@ export function list_pop(ctx: ctx, a: val): val {
 
 export function list_push(ctx: ctx, a: val, b: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list when pushing");
+    opi_abort(ctx, 'Expecting list when pushing');
     return NIL;
   }
   a.push(b);
@@ -11116,7 +11104,7 @@ export function list_push(ctx: ctx, a: val, b: val): val {
 
 export function list_unshift(ctx: ctx, a: val, b: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list when unshifting");
+    opi_abort(ctx, 'Expecting list when unshifting');
     return NIL;
   }
   a.unshift(b);
@@ -11125,7 +11113,7 @@ export function list_unshift(ctx: ctx, a: val, b: val): val {
 
 export function list_append(ctx: ctx, a: val, b: val): val {
   if (!islist(a) || !islist(b)) {
-    opi_abort(ctx, "Expecting list when appending");
+    opi_abort(ctx, 'Expecting list when appending');
     return NIL;
   }
   if (b.length > 0) {
@@ -11136,7 +11124,7 @@ export function list_append(ctx: ctx, a: val, b: val): val {
 
 export function list_prepend(ctx: ctx, a: val, b: val): val {
   if (!islist(a) || !islist(b)) {
-    opi_abort(ctx, "Expecting list when prepending");
+    opi_abort(ctx, 'Expecting list when prepending');
     return NIL;
   }
   if (b.length > 0) {
@@ -11147,11 +11135,11 @@ export function list_prepend(ctx: ctx, a: val, b: val): val {
 
 export function list_find(ctx: ctx, a: val, b: val, c: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.find");
+    opi_abort(ctx, 'Expecting list for list.find');
     return NIL;
   }
   if (!isnil(c) && !isnum(c)) {
-    opi_abort(ctx, "Expecting number for list.find");
+    opi_abort(ctx, 'Expecting number for list.find');
     return NIL;
   }
   let pos = (isnil(c) || isNaN(c)) ? 0 : c;
@@ -11167,11 +11155,11 @@ export function list_find(ctx: ctx, a: val, b: val, c: val): val {
 
 export function list_rfind(ctx: ctx, a: val, b: val, c: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.rfind");
+    opi_abort(ctx, 'Expecting list for list.rfind');
     return NIL;
   }
   if (!isnil(c) && !isnum(c)) {
-    opi_abort(ctx, "Expecting number for list.rfind");
+    opi_abort(ctx, 'Expecting number for list.rfind');
     return NIL;
   }
   let pos = (isnil(c) || isNaN(c)) ? a.length - 1 : c;
@@ -11187,15 +11175,15 @@ export function list_rfind(ctx: ctx, a: val, b: val, c: val): val {
 
 export function list_join(ctx: ctx, a: val, b: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.join");
+    opi_abort(ctx, 'Expecting list for list.join');
     return NIL;
   }
-  return list_joinplain(a, isnil(b) ? "" : tostr(b));
+  return list_joinplain(a, isnil(b) ? '' : tostr(b));
 }
 
 export function list_rev(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.rev");
+    opi_abort(ctx, 'Expecting list for list.rev');
     return NIL;
   }
   a.reverse();
@@ -11204,14 +11192,14 @@ export function list_rev(ctx: ctx, a: val): val {
 
 export function list_str(ctx: ctx, a: val): val {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.str");
+    opi_abort(ctx, 'Expecting list for list.str');
     return NIL;
   }
-  let res = "";
+  let res = '';
   for (let i = 0; i < a.length; i++) {
     let b = a[i];
     if (!isnum(b)) {
-      opi_abort(ctx, "Expecting list of integers for list.str");
+      opi_abort(ctx, 'Expecting list of integers for list.str');
       return NIL;
     }
     if (b < 0) {
@@ -11258,7 +11246,7 @@ function sortboth(ctx: ctx, li: val[], a: val, b: val): number {
   }
   // otherwise, comparing two lists
   if (li.indexOf(a) >= 0 || li.indexOf(b) >= 0) {
-    opi_abort(ctx, "Cannot sort circular lists");
+    opi_abort(ctx, 'Cannot sort circular lists');
     return -1;
   }
   const ls1 = a as list;
@@ -11297,7 +11285,7 @@ function sortboth(ctx: ctx, li: val[], a: val, b: val): number {
 
 export function list_sort(ctx: ctx, a: val): void {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.sort");
+    opi_abort(ctx, 'Expecting list for list.sort');
     return;
   }
   const li: val[] = [];
@@ -11306,7 +11294,7 @@ export function list_sort(ctx: ctx, a: val): void {
 
 export function list_rsort(ctx: ctx, a: val): void {
   if (!islist(a)) {
-    opi_abort(ctx, "Expecting list for list.rsort");
+    opi_abort(ctx, 'Expecting list for list.rsort');
     return;
   }
   const li: val[] = [];
@@ -11327,12 +11315,12 @@ export function range(
     return new list();
   }
   if (step === 0) {
-    opi_abort(ctx, "Range step cannot be 0");
+    opi_abort(ctx, 'Range step cannot be 0');
     return NIL;
   }
   const count = Math.ceil((stop - start) / step);
   if (count > 10000000) {
-    opi_abort(ctx, "Range too large (maximum 10000000)");
+    opi_abort(ctx, 'Range too large (maximum 10000000)');
     return NIL;
   }
   const ret = new list();
@@ -11344,11 +11332,11 @@ export function range(
 
 function numtostr(num: number): string {
   if (isNaN(num)) {
-    return "nan";
+    return 'nan';
   } else if (num === Infinity) {
-    return "inf";
+    return 'inf';
   } else if (num === -Infinity) {
-    return "-inf";
+    return '-inf';
   }
   return `${num}`;
 }
@@ -11379,35 +11367,35 @@ function pk_isjson(s: str): boolean {
   let arrays = 0;
   for (let i = 0; i < s.length; i++) {
     const b = s.charAt(i);
-    const nb = i < s.length - 1 ? s.charAt(i + 1) : "";
+    const nb = i < s.length - 1 ? s.charAt(i + 1) : '';
     switch (state) {
       case pkv_enum.START: // start state
-        if (b === "n") {
-          if (nb !== "u") {
+        if (b === 'n') {
+          if (nb !== 'u') {
             return false;
           }
           state = pkv_enum.NULL1;
-        } else if (b === "0") {
-          if (nb === "." || nb === "e" || nb === "E") {
+        } else if (b === '0') {
+          if (nb === '.' || nb === 'e' || nb === 'E') {
             state = pkv_enum.NUM_0;
           } else {
             state = pkv_enum.ENDVAL;
           }
-        } else if (b === "-") {
+        } else if (b === '-') {
           state = pkv_enum.NUM_NEG;
         } else if (isNum(b)) {
           if (isNum(nb)) {
             state = pkv_enum.NUM_INT;
-          } else if (nb === "." || nb === "e" || nb === "E") {
+          } else if (nb === '.' || nb === 'e' || nb === 'E') {
             state = pkv_enum.NUM_0;
           } else {
             state = pkv_enum.ENDVAL;
           }
         } else if (b === '"') {
           state = pkv_enum.STR;
-        } else if (b === "[") {
+        } else if (b === '[') {
           arrays++;
-          if (isSpace(nb) || nb === "]") {
+          if (isSpace(nb) || nb === ']') {
             state = pkv_enum.ARRAY;
           }
         } else if (!isSpace(b)) {
@@ -11415,13 +11403,13 @@ function pk_isjson(s: str): boolean {
         }
         break;
       case pkv_enum.NULL1:
-        if (nb !== "l") {
+        if (nb !== 'l') {
           return false;
         }
         state = pkv_enum.NULL2;
         break;
       case pkv_enum.NULL2:
-        if (nb !== "l") {
+        if (nb !== 'l') {
           return false;
         }
         state = pkv_enum.NULL3;
@@ -11430,10 +11418,10 @@ function pk_isjson(s: str): boolean {
         state = pkv_enum.ENDVAL;
         break;
       case pkv_enum.NUM_0:
-        if (b === ".") {
+        if (b === '.') {
           state = pkv_enum.NUM_FRAC;
-        } else if (b === "e" || b === "E") {
-          if (nb === "+" || nb === "-") {
+        } else if (b === 'e' || b === 'E') {
+          if (nb === '+' || nb === '-') {
             i++;
           }
           state = pkv_enum.NUM_EXP;
@@ -11442,8 +11430,8 @@ function pk_isjson(s: str): boolean {
         }
         break;
       case pkv_enum.NUM_NEG:
-        if (b === "0") {
-          if (nb === "." || nb === "e" || nb === "E") {
+        if (b === '0') {
+          if (nb === '.' || nb === 'e' || nb === 'E') {
             state = pkv_enum.NUM_0;
           } else {
             state = pkv_enum.ENDVAL;
@@ -11451,7 +11439,7 @@ function pk_isjson(s: str): boolean {
         } else if (isNum(b)) {
           if (isNum(nb)) {
             state = pkv_enum.NUM_INT;
-          } else if (nb === "." || nb === "e" || nb === "E") {
+          } else if (nb === '.' || nb === 'e' || nb === 'E') {
             state = pkv_enum.NUM_0;
           } else {
             state = pkv_enum.ENDVAL;
@@ -11464,7 +11452,7 @@ function pk_isjson(s: str): boolean {
         if (!isNum(b)) {
           return false;
         }
-        if (nb === "." || nb === "e" || nb === "E") {
+        if (nb === '.' || nb === 'e' || nb === 'E') {
           state = pkv_enum.NUM_0;
         } else if (!isNum(nb)) {
           state = pkv_enum.ENDVAL;
@@ -11474,7 +11462,7 @@ function pk_isjson(s: str): boolean {
         if (!isNum(b)) {
           return false;
         }
-        if (nb === "e" || nb === "E") {
+        if (nb === 'e' || nb === 'E') {
           state = pkv_enum.NUM_FRACE;
         } else if (!isNum(nb)) {
           state = pkv_enum.ENDVAL;
@@ -11490,7 +11478,7 @@ function pk_isjson(s: str): boolean {
           } else {
             state = pkv_enum.ENDVAL;
           }
-        } else if (b === "+" || b === "-") {
+        } else if (b === '+' || b === '-') {
           state = pkv_enum.NUM_EXP;
         } else {
           return false;
@@ -11505,22 +11493,22 @@ function pk_isjson(s: str): boolean {
         }
         break;
       case pkv_enum.STR:
-        if (b === "\\") {
+        if (b === '\\') {
           state = pkv_enum.STR_ESC;
         } else if (b === '"') {
           state = pkv_enum.ENDVAL;
-        } else if (b < " ") {
+        } else if (b < ' ') {
           return false;
         }
         break;
       case pkv_enum.STR_ESC:
         if (
-          b === '"' || b === "\\" || b === "/" || b === "b" ||
-          b === "f" || b === "n" || b === "r" || b === "t"
+          b === '"' || b === '\\' || b === '/' || b === 'b' ||
+          b === 'f' || b === 'n' || b === 'r' || b === 't'
         ) {
           state = pkv_enum.STR;
-        } else if (b === "u") {
-          if (nb !== "0") {
+        } else if (b === 'u') {
+          if (nb !== '0') {
             return false;
           }
           state = pkv_enum.STR_U1;
@@ -11529,7 +11517,7 @@ function pk_isjson(s: str): boolean {
         }
         break;
       case pkv_enum.STR_U1:
-        if (nb !== "0") {
+        if (nb !== '0') {
           return false;
         }
         state = pkv_enum.STR_U2;
@@ -11550,17 +11538,17 @@ function pk_isjson(s: str): boolean {
         state = pkv_enum.STR;
         break;
       case pkv_enum.ARRAY:
-        if (b === "]") {
+        if (b === ']') {
           state = pkv_enum.ENDVAL;
-        } else if (!isSpace(nb) && nb !== "]") {
+        } else if (!isSpace(nb) && nb !== ']') {
           state = pkv_enum.START;
         }
         break;
       case pkv_enum.ENDVAL:
         if (arrays > 0) {
-          if (b === ",") {
+          if (b === ',') {
             state = pkv_enum.START;
-          } else if (b === "]") {
+          } else if (b === ']') {
             arrays--;
           } else if (!isSpace(b)) {
             return false;
@@ -11576,23 +11564,23 @@ function pk_isjson(s: str): boolean {
 
 function pk_tojson(a: val, li: val[]): strnil {
   if (a === null) {
-    return "null";
-  } else if (typeof a === "number") {
+    return 'null';
+  } else if (typeof a === 'number') {
     const s = numtostr(a);
     if (pk_isjson(s)) {
       return s;
     }
-    return "null";
-  } else if (typeof a === "string") {
+    return 'null';
+  } else if (typeof a === 'string') {
     return '"' +
       // deno-lint-ignore no-control-regex
       a.replace(/\\|"|[\x00-\x1F]|[\x80-\xFF]/g, (a) => {
-        if (a === "\\" || a === '"') return `\\${a}`;
-        else if (a === "\b") return "\\b";
-        else if (a === "\f") return "\\f";
-        else if (a === "\n") return "\\n";
-        else if (a === "\r") return "\\r";
-        else if (a === "\t") return "\\t";
+        if (a === '\\' || a === '"') return `\\${a}`;
+        else if (a === '\b') return '\\b';
+        else if (a === '\f') return '\\f';
+        else if (a === '\n') return '\\n';
+        else if (a === '\r') return '\\r';
+        else if (a === '\t') return '\\t';
         let s = a.charCodeAt(0).toString(16).toUpperCase();
         if (s.length <= 1) {
           s = `0${s}`;
@@ -11613,14 +11601,14 @@ function pk_tojson(a: val, li: val[]): strnil {
       res.push(s2);
     }
     li.pop();
-    return `[${res.join(",")}]`;
+    return `[${res.join(',')}]`;
   }
 }
 
 export function pickle_json(ctx: ctx, a: val): val {
   const res = pk_tojson(a, []);
   if (res === null) {
-    opi_abort(ctx, "Cannot pickle circular structure to JSON format");
+    opi_abort(ctx, 'Cannot pickle circular structure to JSON format');
     return NIL;
   }
   return res;
@@ -11642,7 +11630,7 @@ function pk_tobin_vint(body: number[], i: number): void {
 function pk_tobin(a: val, li: val[], strs: string[], body: number[]): void {
   if (a === null) {
     body.push(0xF7);
-  } else if (typeof a === "number") {
+  } else if (typeof a === 'number') {
     if (Math.floor(a) === a && a >= -4294967296 && a < 4294967296) {
       let num = a;
       if (num < 0) {
@@ -11691,7 +11679,7 @@ function pk_tobin(a: val, li: val[], strs: string[], body: number[]): void {
         dview.getUint8(7),
       );
     }
-  } else if (typeof a === "string") {
+  } else if (typeof a === 'string') {
     // search for a previous string
     let sidx = 0;
     let found = false;
@@ -11893,22 +11881,22 @@ function pk_fmjson(sp: pk_strpos): val | false {
   }
   let b = sp.s.charAt(sp.pos);
   sp.pos++;
-  if (b === "n") {
+  if (b === 'n') {
     if (sp.pos + 2 >= sp.s.length) {
       return false;
     }
     if (
-      sp.s.charAt(sp.pos + 0) !== "u" ||
-      sp.s.charAt(sp.pos + 1) !== "l" ||
-      sp.s.charAt(sp.pos + 2) !== "l"
+      sp.s.charAt(sp.pos + 0) !== 'u' ||
+      sp.s.charAt(sp.pos + 1) !== 'l' ||
+      sp.s.charAt(sp.pos + 2) !== 'l'
     ) {
       return false;
     }
     sp.pos += 3;
     return NIL;
-  } else if (isNum(b) || b === "-") {
+  } else if (isNum(b) || b === '-') {
     const npi = numpart_new();
-    if (b === "-") {
+    if (b === '-') {
       if (sp.pos >= sp.s.length) {
         return false;
       }
@@ -11919,14 +11907,14 @@ function pk_fmjson(sp: pk_strpos): val | false {
         return false;
       }
     }
-    if (b >= "1" && b <= "9") {
+    if (b >= '1' && b <= '9') {
       npi.val = b.charCodeAt(0) - 48;
       while (sp.pos < sp.s.length && isNum(sp.s.charAt(sp.pos))) {
         npi.val = 10 * npi.val + sp.s.charCodeAt(sp.pos) - 48;
         sp.pos++;
       }
     }
-    if (sp.s.charAt(sp.pos) === ".") {
+    if (sp.s.charAt(sp.pos) === '.') {
       sp.pos++;
       if (sp.pos >= sp.s.length || !isNum(sp.s.charAt(sp.pos))) {
         return false;
@@ -11937,13 +11925,13 @@ function pk_fmjson(sp: pk_strpos): val | false {
         sp.pos++;
       }
     }
-    if (sp.s.charAt(sp.pos) === "e" || sp.s.charAt(sp.pos) === "E") {
+    if (sp.s.charAt(sp.pos) === 'e' || sp.s.charAt(sp.pos) === 'E') {
       sp.pos++;
       if (sp.pos >= sp.s.length) {
         return false;
       }
-      if (sp.s.charAt(sp.pos) === "-" || sp.s.charAt(sp.pos) === "+") {
-        npi.esign = sp.s.charAt(sp.pos) === "-" ? -1 : 1;
+      if (sp.s.charAt(sp.pos) === '-' || sp.s.charAt(sp.pos) === '+') {
+        npi.esign = sp.s.charAt(sp.pos) === '-' ? -1 : 1;
         sp.pos++;
         if (sp.pos >= sp.s.length) {
           return false;
@@ -11959,35 +11947,35 @@ function pk_fmjson(sp: pk_strpos): val | false {
     }
     return numpart_calc(npi);
   } else if (b === '"') {
-    let str = "";
+    let str = '';
     while (sp.pos < sp.s.length) {
       b = sp.s.charAt(sp.pos);
       if (b === '"') {
         sp.pos++;
         return str;
-      } else if (b === "\\") {
+      } else if (b === '\\') {
         sp.pos++;
         if (sp.pos >= sp.s.length) {
           return false;
         }
         b = sp.s.charAt(sp.pos);
-        if (b === '"' || b === "\\") {
+        if (b === '"' || b === '\\') {
           str += b;
-        } else if (b === "b") {
-          str += "\b";
-        } else if (b === "f") {
-          str += "\f";
-        } else if (b === "n") {
-          str += "\n";
-        } else if (b === "r") {
-          str += "\r";
-        } else if (b === "t") {
-          str += "\t";
-        } else if (b === "u") {
+        } else if (b === 'b') {
+          str += '\b';
+        } else if (b === 'f') {
+          str += '\f';
+        } else if (b === 'n') {
+          str += '\n';
+        } else if (b === 'r') {
+          str += '\r';
+        } else if (b === 't') {
+          str += '\t';
+        } else if (b === 'u') {
           if (
             sp.pos + 4 >= sp.s.length ||
-            sp.s.charAt(sp.pos + 1) !== "0" ||
-            sp.s.charAt(sp.pos + 2) !== "0" ||
+            sp.s.charAt(sp.pos + 1) !== '0' ||
+            sp.s.charAt(sp.pos + 2) !== '0' ||
             !isHex(sp.s.charAt(sp.pos + 3)) || !isHex(sp.s.charAt(sp.pos + 4))
           ) {
             return false;
@@ -12000,7 +11988,7 @@ function pk_fmjson(sp: pk_strpos): val | false {
         } else {
           return false;
         }
-      } else if (b < " ") {
+      } else if (b < ' ') {
         return false;
       } else {
         str += b;
@@ -12008,7 +11996,7 @@ function pk_fmjson(sp: pk_strpos): val | false {
       sp.pos++;
     }
     return false;
-  } else if (b === "[") {
+  } else if (b === '[') {
     while (sp.pos < sp.s.length && isSpace(sp.s.charAt(sp.pos))) {
       sp.pos++;
     }
@@ -12016,7 +12004,7 @@ function pk_fmjson(sp: pk_strpos): val | false {
       return false;
     }
     const res = new list();
-    if (sp.s.charAt(sp.pos) === "]") {
+    if (sp.s.charAt(sp.pos) === ']') {
       sp.pos++;
       return res;
     }
@@ -12032,10 +12020,10 @@ function pk_fmjson(sp: pk_strpos): val | false {
       if (sp.pos >= sp.s.length) {
         return false;
       }
-      if (sp.s.charAt(sp.pos) === "]") {
+      if (sp.s.charAt(sp.pos) === ']') {
         sp.pos++;
         return res;
-      } else if (sp.s.charAt(sp.pos) === ",") {
+      } else if (sp.s.charAt(sp.pos) === ',') {
         sp.pos++;
       } else {
         return false;
@@ -12068,13 +12056,13 @@ export function pickle_valstr(s: str): val | false {
 
 export function pickle_val(ctx: ctx, a: val): val {
   if (!isstr(a) || a.length < 1) {
-    opi_abort(ctx, "Invalid pickle data");
+    opi_abort(ctx, 'Invalid pickle data');
     return NIL;
   }
   if (a.charCodeAt(0) === 0x01) { // binary decode
     const res = pickle_valstr(a);
     if (res === false) {
-      opi_abort(ctx, "Invalid pickle data");
+      opi_abort(ctx, 'Invalid pickle data');
       return NIL;
     }
     return res;
@@ -12083,12 +12071,12 @@ export function pickle_val(ctx: ctx, a: val): val {
   const sp = { s: a, pos: 0 };
   const res = pk_fmjson(sp);
   if (res === false) {
-    opi_abort(ctx, "Invalid pickle data");
+    opi_abort(ctx, 'Invalid pickle data');
     return NIL;
   }
   while (sp.pos < a.length) {
     if (!isSpace(a.charAt(sp.pos))) {
-      opi_abort(ctx, "Invalid pickle data");
+      opi_abort(ctx, 'Invalid pickle data');
       return NIL;
     }
     sp.pos++;
@@ -12246,7 +12234,7 @@ export function pickle_circular(_ctx: ctx, a: val): boolean {
 }
 
 function pk_copy(a: val, li_src: val[], li_tgt: val[]): val {
-  if (a === null || typeof a === "number" || typeof a === "string") {
+  if (a === null || typeof a === 'number' || typeof a === 'string') {
     return a;
   }
   const idxat = li_src.indexOf(a);
@@ -12267,43 +12255,43 @@ export function pickle_copy(_ctx: ctx, a: val): val {
 }
 
 // op descriptions for error messages
-const txt_num_neg = "negating";
-const txt_num_add = "adding";
-const txt_num_sub = "subtracting";
-const txt_num_mul = "multiplying";
-const txt_num_div = "dividing";
-const txt_num_mod = "taking modular";
-const txt_num_pow = "exponentiating";
-const txt_num_abs = "taking absolute value";
-const txt_num_sign = "taking sign";
-const txt_num_clamp = "clamping";
-const txt_num_floor = "taking floor";
-const txt_num_ceil = "taking ceil";
-const txt_num_round = "rounding";
-const txt_num_trunc = "truncating";
-const txt_num_isnan = "testing if NaN";
-const txt_num_isfinite = "testing if finite";
-const txt_num_sin = "taking sin";
-const txt_num_cos = "taking cos";
-const txt_num_tan = "taking tan";
-const txt_num_asin = "taking arc-sin";
-const txt_num_acos = "taking arc-cos";
-const txt_num_atan = "taking arc-tan";
-const txt_num_log = "taking logarithm";
-const txt_num_lerp = "lerping";
-const txt_num_hex = "converting to hex";
-const txt_num_oct = "converting to oct";
-const txt_num_bin = "converting to bin";
-const txt_int_new = "casting to int";
-const txt_int_not = "NOTing";
-const txt_int_and = "ANDing";
-const txt_int_or = "ORing";
-const txt_int_xor = "XORing";
-const txt_int_shl = "shifting left";
-const txt_int_shr = "shifting right";
-const txt_int_clz = "counting leading zeros";
-const txt_int_pop = "population count";
-const txt_int_bswap = "byte swaping";
+const txt_num_neg = 'negating';
+const txt_num_add = 'adding';
+const txt_num_sub = 'subtracting';
+const txt_num_mul = 'multiplying';
+const txt_num_div = 'dividing';
+const txt_num_mod = 'taking modular';
+const txt_num_pow = 'exponentiating';
+const txt_num_abs = 'taking absolute value';
+const txt_num_sign = 'taking sign';
+const txt_num_clamp = 'clamping';
+const txt_num_floor = 'taking floor';
+const txt_num_ceil = 'taking ceil';
+const txt_num_round = 'rounding';
+const txt_num_trunc = 'truncating';
+const txt_num_isnan = 'testing if NaN';
+const txt_num_isfinite = 'testing if finite';
+const txt_num_sin = 'taking sin';
+const txt_num_cos = 'taking cos';
+const txt_num_tan = 'taking tan';
+const txt_num_asin = 'taking arc-sin';
+const txt_num_acos = 'taking arc-cos';
+const txt_num_atan = 'taking arc-tan';
+const txt_num_log = 'taking logarithm';
+const txt_num_lerp = 'lerping';
+const txt_num_hex = 'converting to hex';
+const txt_num_oct = 'converting to oct';
+const txt_num_bin = 'converting to bin';
+const txt_int_new = 'casting to int';
+const txt_int_not = 'NOTing';
+const txt_int_and = 'ANDing';
+const txt_int_or = 'ORing';
+const txt_int_xor = 'XORing';
+const txt_int_shl = 'shifting left';
+const txt_int_shr = 'shifting right';
+const txt_int_clz = 'counting leading zeros';
+const txt_int_pop = 'population count';
+const txt_int_bswap = 'byte swaping';
 
 async function context_run(ctx: context_st): Promise<run> {
   function RUNDONE(result: run): run {
@@ -12482,7 +12470,7 @@ async function context_run(ctx: context_st): Promise<run> {
           X = var_get(ctx, A, B);
           if (!isnum(X)) {
             return RUNDONE(
-              opi_abort(ctx, "Expecting number when incrementing"),
+              opi_abort(ctx, 'Expecting number when incrementing'),
             );
           }
           var_set(ctx, A, B, X + 1);
@@ -12663,7 +12651,7 @@ async function context_run(ctx: context_st): Promise<run> {
           ) {
             var_set(ctx, A, B, bool(X < Y));
           } else {
-            return RUNDONE(opi_abort(ctx, "Expecting numbers or strings"));
+            return RUNDONE(opi_abort(ctx, 'Expecting numbers or strings'));
           }
         }
         break;
@@ -12679,7 +12667,7 @@ async function context_run(ctx: context_st): Promise<run> {
           ) {
             var_set(ctx, A, B, bool(X <= Y));
           } else {
-            return RUNDONE(opi_abort(ctx, "Expecting numbers or strings"));
+            return RUNDONE(opi_abort(ctx, 'Expecting numbers or strings'));
           }
         }
         break;
@@ -12708,12 +12696,12 @@ async function context_run(ctx: context_st): Promise<run> {
           X = var_get(ctx, C, D);
           if (!islist(X) && !isstr(X)) {
             return RUNDONE(
-              opi_abort(ctx, "Expecting list or string when indexing"),
+              opi_abort(ctx, 'Expecting list or string when indexing'),
             );
           }
           Y = var_get(ctx, E, F);
           if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting index to be number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting index to be number'));
           }
           I = Y;
           if (islist(X)) {
@@ -12762,11 +12750,11 @@ async function context_run(ctx: context_st): Promise<run> {
           LOAD_abcdef();
           X = var_get(ctx, A, B);
           if (!islist(X)) {
-            return RUNDONE(opi_abort(ctx, "Expecting list when setting index"));
+            return RUNDONE(opi_abort(ctx, 'Expecting list when setting index'));
           }
           Y = var_get(ctx, C, D);
           if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting index to be number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting index to be number'));
           }
           ls = X;
           A = Y;
@@ -12795,7 +12783,7 @@ async function context_run(ctx: context_st): Promise<run> {
             var_set(ctx, A, B, str_splice(ctx, X, Y, Z, W));
           } else {
             return RUNDONE(
-              opi_abort(ctx, "Expecting list or string when splicing"),
+              opi_abort(ctx, 'Expecting list or string when splicing'),
             );
           }
         }
@@ -12945,7 +12933,7 @@ async function context_run(ctx: context_st): Promise<run> {
             nat = ctx.natives[C];
           }
           if (nat === null || nat.f_native === null) {
-            return RUNDONE(opi_abort(ctx, "Native call not implemented"));
+            return RUNDONE(opi_abort(ctx, 'Native call not implemented'));
           }
           ctx.async = true;
           try {
@@ -13025,23 +13013,23 @@ async function context_run(ctx: context_st): Promise<run> {
           Y = var_get(ctx, E, F);
           Z = var_get(ctx, G, H);
           if (!isnum(X)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number for range"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number for range'));
           }
           if (isnum(Y)) {
             if (isnil(Z)) {
               Z = 1;
             }
             if (!isnum(Z)) {
-              return RUNDONE(opi_abort(ctx, "Expecting number for range step"));
+              return RUNDONE(opi_abort(ctx, 'Expecting number for range step'));
             }
             X = range(ctx, X, Y, Z);
           } else if (isnil(Y)) {
             if (!isnil(Z)) {
-              return RUNDONE(opi_abort(ctx, "Expecting number for range stop"));
+              return RUNDONE(opi_abort(ctx, 'Expecting number for range stop'));
             }
             X = range(ctx, 0, X, 1);
           } else {
-            return RUNDONE(opi_abort(ctx, "Expecting number for range stop"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number for range stop'));
           }
           var_set(ctx, A, B, X);
           if (ctx.failed) {
@@ -13151,7 +13139,7 @@ async function context_run(ctx: context_st): Promise<run> {
             F = ops[ctx.pc++];
             p.push(var_get(ctx, E, F));
           }
-          err = list_joinplain(p, " ") as string;
+          err = list_joinplain(p, ' ') as string;
         }
         return RUNDONE(opi_abort(ctx, err));
       }
@@ -13672,7 +13660,7 @@ async function context_run(ctx: context_st): Promise<run> {
           if (isnil(X)) {
             X = 0;
           } else if (!isnum(X)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number'));
           }
           rand_seed(ctx, X);
           var_set(ctx, A, B, NIL);
@@ -13708,7 +13696,7 @@ async function context_run(ctx: context_st): Promise<run> {
           Y = var_get(ctx, E, F);
           Z = var_get(ctx, G, H);
           if (!isnum(X)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number for rand.range"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number for rand.range'));
           }
           if (isnum(Y)) {
             if (isnil(Z)) {
@@ -13716,20 +13704,20 @@ async function context_run(ctx: context_st): Promise<run> {
             }
             if (!isnum(Z)) {
               return RUNDONE(
-                opi_abort(ctx, "Expecting number for rand.range step"),
+                opi_abort(ctx, 'Expecting number for rand.range step'),
               );
             }
             X = rand_range(ctx, X, Y, Z);
           } else if (isnil(Y)) {
             if (!isnil(Z)) {
               return RUNDONE(
-                opi_abort(ctx, "Expecting number for rand.range stop"),
+                opi_abort(ctx, 'Expecting number for rand.range stop'),
               );
             }
             X = rand_range(ctx, 0, X, 1);
           } else {
             return RUNDONE(
-              opi_abort(ctx, "Expecting number for rand.range stop"),
+              opi_abort(ctx, 'Expecting number for rand.range stop'),
             );
           }
           var_set(ctx, A, B, X);
@@ -13854,7 +13842,7 @@ async function context_run(ctx: context_st): Promise<run> {
           if (isnil(Y)) {
             Y = 0;
           } else if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number'));
           }
           X = str_pad(ctx, X, Y);
           if (ctx.failed) {
@@ -13948,7 +13936,7 @@ async function context_run(ctx: context_st): Promise<run> {
           if (isnil(Y)) {
             Y = 0;
           } else if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number'));
           }
           X = str_rep(ctx, X, Y);
           if (ctx.failed) {
@@ -13978,7 +13966,7 @@ async function context_run(ctx: context_st): Promise<run> {
           if (isnil(Y)) {
             Y = 0;
           } else if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number'));
           }
           X = str_byte(ctx, X, Y);
           if (ctx.failed) {
@@ -13996,7 +13984,7 @@ async function context_run(ctx: context_st): Promise<run> {
           if (isnil(Y)) {
             Y = 0;
           } else if (!isnum(Y)) {
-            return RUNDONE(opi_abort(ctx, "Expecting number"));
+            return RUNDONE(opi_abort(ctx, 'Expecting number'));
           }
           X = str_hash(ctx, X, Y);
           if (ctx.failed) {
@@ -14342,7 +14330,7 @@ async function context_run(ctx: context_st): Promise<run> {
             return RUNDONE(
               opi_abort(
                 ctx,
-                "Expecting one of gc.NONE, gc.DEFAULT, or gc.LOWMEM",
+                'Expecting one of gc.NONE, gc.DEFAULT, or gc.LOWMEM',
               ),
             );
           }
@@ -14504,7 +14492,7 @@ function compiler_begininc(
     const smsg = symtbl_pushNamespace(cmp.sym, names);
     if (smsg) {
       if (cmp.flpn.next === null) {
-        throw new Error("Expecting file position during include");
+        throw new Error('Expecting file position during include');
       }
       cmp.flpn = cmp.flpn.next;
       compiler_setmsg(cmp, smsg);
@@ -14531,7 +14519,7 @@ function compiler_endinc(cmp: compiler_st, ns: boolean): void {
     symtbl_popNamespace(cmp.sym);
   }
   if (cmp.flpn.next === null) {
-    throw new Error("Expecting file position when finishing include");
+    throw new Error('Expecting file position when finishing include');
   }
   cmp.flpn = cmp.flpn.next;
 }
@@ -14667,7 +14655,7 @@ async function compiler_process(cmp: compiler_st): Promise<strnil> {
             let cwd: strnil = null;
             const from = script_getfile(cmp.scr, stmt.flp.fullfile);
             if (from !== null) {
-              cwd = pathjoin(from, "..", cmp.scr.posix);
+              cwd = pathjoin(from, '..', cmp.scr.posix);
             }
             const found = await compiler_dynamicinc(cmp, inc.names, file, cwd);
             if (!found && cmp.msg === null) {
@@ -14712,7 +14700,7 @@ async function compiler_process(cmp: compiler_st): Promise<strnil> {
             return cmp.msg;
           case pgr_enum.FORVARS:
             // impossible
-            throw new Error("Program generator can't return FORVARS");
+            throw new Error('Program generator can\'t return FORVARS');
         }
       }
     }
@@ -14728,13 +14716,13 @@ function compiler_write(
   for (let i = 0; i < bytes.length; i++) {
     const b = bytes.charAt(i);
     lex_add(flpn.lx, filepos_copy(flpn.flp), b, flpn.tks);
-    if (b === "\n") {
+    if (b === '\n') {
       if (!flpn.wascr) {
         flpn.flp.line++;
         flpn.flp.chr = 1;
       }
       flpn.wascr = false;
-    } else if (b === "\r") {
+    } else if (b === '\r') {
       flpn.flp.line++;
       flpn.flp.chr = 1;
       flpn.wascr = true;
@@ -14815,7 +14803,7 @@ export function scr_new(
       ops_size: 0,
       left: 0,
       item: 0,
-      buf: "",
+      buf: '',
     },
     autonative: [],
   };
@@ -14870,10 +14858,10 @@ function binary_validate(sc: script_st): void {
   }
   if (sc.binstate.state === bis_enum.DONE) {
     if (!program_validate(sc.prg)) {
-      sc.err = "Error: Invalid program code";
+      sc.err = 'Error: Invalid program code';
     }
   } else {
-    sc.err = "Error: Invalid end of file";
+    sc.err = 'Error: Invalid end of file';
   }
 }
 
@@ -14980,7 +14968,7 @@ export async function scr_write(
       scr.mode = scriptmode_enum.BINARY;
       scr.binstate.state = bis_enum.HEADER;
       scr.binstate.left = BSZ_HEADER;
-      scr.binstate.buf = "";
+      scr.binstate.buf = '';
     } else {
       scr.mode = scriptmode_enum.TEXT;
       scr.cmp = compiler_new(
@@ -15022,7 +15010,7 @@ export async function scr_write(
       // full write to buf
       bs.buf += bytes;
       bs.left -= bytes.length;
-      bytes = "";
+      bytes = '';
     }
   }
 
@@ -15045,13 +15033,13 @@ export async function scr_write(
             bs.cmd_size = GETINT(20);
             bs.ops_size = GETINT(24);
             if (magic !== 0x016B53FC) {
-              scr.err = "Error: Invalid binary header";
+              scr.err = 'Error: Invalid binary header';
               return false;
             }
             bs.state = bis_enum.STR_HEAD;
             bs.left = BSZ_STR_HEAD;
             bs.item = 0;
-            bs.buf = "";
+            bs.buf = '';
           }
           break;
         case bis_enum.STR_HEAD:
@@ -15065,14 +15053,14 @@ export async function scr_write(
           if (bs.left === 0) {
             bs.state = bis_enum.STR_BODY;
             bs.left = GETINT(0);
-            bs.buf = "";
+            bs.buf = '';
           }
           break;
         case bis_enum.STR_BODY: // variable
           WRITE();
           if (bs.left === 0) {
             prg.strTable.push(bs.buf);
-            bs.buf = "";
+            bs.buf = '';
             bs.state = bis_enum.STR_HEAD;
             bs.left = BSZ_STR_HEAD;
             bs.item++;
@@ -15093,7 +15081,7 @@ export async function scr_write(
             prg.keyTable.push(key);
             bs.item++;
             bs.left = BSZ_KEY;
-            bs.buf = "";
+            bs.buf = '';
           }
           break;
         case bis_enum.DEBUG_HEAD:
@@ -15107,14 +15095,14 @@ export async function scr_write(
           if (bs.left === 0) {
             bs.state = bis_enum.DEBUG_BODY;
             bs.left = GETINT(0);
-            bs.buf = "";
+            bs.buf = '';
           }
           break;
         case bis_enum.DEBUG_BODY: // variable
           WRITE();
           if (bs.left === 0) {
             prg.debugTable.push(bs.buf);
-            bs.buf = "";
+            bs.buf = '';
             bs.state = bis_enum.DEBUG_HEAD;
             bs.left = BSZ_DEBUG_HEAD;
             bs.item++;
@@ -15139,7 +15127,7 @@ export async function scr_write(
               },
             };
             prg.posTable.push(p);
-            bs.buf = "";
+            bs.buf = '';
             bs.left = BSZ_POS;
             bs.item++;
             // silently validate basefile
@@ -15161,7 +15149,7 @@ export async function scr_write(
               cmdhint: GETINT(4),
             };
             prg.cmdTable.push(p);
-            bs.buf = "";
+            bs.buf = '';
             bs.left = BSZ_CMD;
             bs.item++;
             // silently validate cmdhint
@@ -15175,18 +15163,18 @@ export async function scr_write(
           if (bs.left === 0) {
             // validate terminating byte
             if (bs.buf.charCodeAt(bs.buf.length - 1) !== 0xFD) {
-              scr.err = "Error: Invalid binary file";
+              scr.err = 'Error: Invalid binary file';
               return false;
             }
             for (let i = 0; i < bs.buf.length - 1; i++) { // trim off terminating byte
               prg.ops.push(bs.buf.charCodeAt(i));
             }
-            bs.buf = "";
+            bs.buf = '';
             bs.state = bis_enum.DONE;
           }
           break;
         case bis_enum.DONE:
-          scr.err = "Error: Invalid data at end of file";
+          scr.err = 'Error: Invalid data at end of file';
           return false;
       }
     }
@@ -15238,7 +15226,7 @@ export function scr_dump(
   // 4 bytes: pos table size
   // 4 bytes: cmd table size
   // 4 bytes: opcode size
-  const header = "" +
+  const header = '' +
     String.fromCharCode(0xFC) +
     String.fromCharCode(0x53) +
     String.fromCharCode(0x6B) +
@@ -15274,7 +15262,7 @@ export function scr_dump(
   // N bytes: raw string bytes
   for (let i = 0; i < prg.strTable.length; i++) {
     const str = prg.strTable[i];
-    const sizeb = "" +
+    const sizeb = '' +
       String.fromCharCode((str.length) & 0xFF) +
       String.fromCharCode((str.length >> 8) & 0xFF) +
       String.fromCharCode((str.length >> 16) & 0xFF) +
@@ -15289,7 +15277,7 @@ export function scr_dump(
   // 8 bytes: hash identifier
   for (let i = 0; i < prg.keyTable.length; i++) {
     const id = prg.keyTable[i];
-    const idb = "" +
+    const idb = '' +
       String.fromCharCode((id[0]) & 0xFF) +
       String.fromCharCode((id[0] >> 8) & 0xFF) +
       String.fromCharCode((id[0] >> 16) & 0xFF) +
@@ -15308,14 +15296,14 @@ export function scr_dump(
     for (let i = 0; i < prg.debugTable.length; i++) {
       const str = prg.debugTable[i];
       const slen = str === null ? 4 : str.length;
-      const slenb = "" +
+      const slenb = '' +
         String.fromCharCode((slen) & 0xFF) +
         String.fromCharCode((slen >> 8) & 0xFF) +
         String.fromCharCode((slen >> 16) & 0xFF) +
         String.fromCharCode((slen >> 24) & 0xFF);
       f_dump(slenb, user);
       if (str === null) {
-        f_dump("eval", user);
+        f_dump('eval', user);
       } else if (slen > 0) {
         f_dump(str, user);
       }
@@ -15329,7 +15317,7 @@ export function scr_dump(
     for (let i = 0; i < prg.posTable.length; i++) {
       const p = prg.posTable[i];
       // find unique filename entry
-      const plcb = "" +
+      const plcb = '' +
         String.fromCharCode((p.pc) & 0xFF) +
         String.fromCharCode((p.pc >> 8) & 0xFF) +
         String.fromCharCode((p.pc >> 16) & 0xFF) +
@@ -15354,7 +15342,7 @@ export function scr_dump(
     // 4 bytes: hint debug string index
     for (let i = 0; i < prg.cmdTable.length; i++) {
       const p = prg.cmdTable[i];
-      const plcb = "" +
+      const plcb = '' +
         String.fromCharCode((p.pc) & 0xFF) +
         String.fromCharCode((p.pc >> 8) & 0xFF) +
         String.fromCharCode((p.pc >> 16) & 0xFF) +
@@ -15370,7 +15358,7 @@ export function scr_dump(
   // output ops
   // just the raw bytecode
   if (prg.ops.length > 0) {
-    let out = "";
+    let out = '';
     for (let i = 0; i < prg.ops.length; i++) {
       out += String.fromCharCode(prg.ops[i]);
     }
@@ -15539,24 +15527,24 @@ export function arg_user(
 
 function sinkhelp_tostr(li: val[], v: val): str {
   if (v === null) {
-    return "nil";
-  } else if (typeof v === "number") {
+    return 'nil';
+  } else if (typeof v === 'number') {
     if (v === Infinity) {
-      return "inf";
+      return 'inf';
     } else if (v === -Infinity) {
-      return "-inf";
+      return '-inf';
     }
     return numtostr(v);
-  } else if (typeof v === "string") {
-    return `'${v.replace(/'/g, "''")}'`;
+  } else if (typeof v === 'string') {
+    return `'${v.replace(/'/g, '\'\'')}'`;
   } else { // v is a list
     if (li.indexOf(v) >= 0) {
-      return "{circular}";
+      return '{circular}';
     }
-    let ret = "";
+    let ret = '';
     li.push(v);
     for (let i = 0; i < v.length; i++) {
-      ret += (i === 0 ? "" : ", ") + sinkhelp_tostr(li, v[i]);
+      ret += (i === 0 ? '' : ', ') + sinkhelp_tostr(li, v[i]);
     }
     li.pop();
     return `{${ret}}`;
@@ -15580,7 +15568,7 @@ export async function exit(ctx: ctx, vals: val[]): Promise<void> {
 export function abort(ctx: ctx, vals: val[]): void {
   let bytes: strnil = null;
   if (vals.length > 0) {
-    bytes = list_joinplain(vals, " ") as string;
+    bytes = list_joinplain(vals, ' ') as string;
   }
   opi_abort(ctx, bytes);
 }
@@ -16193,7 +16181,7 @@ export function list_setuser(
   user: unknown,
 ): void {
   if (!islist(ls)) {
-    throw new Error("Expecting list for sink.list_setuser");
+    throw new Error('Expecting list for sink.list_setuser');
   }
   ls.usertype = usertype;
   ls.user = user;
@@ -16210,7 +16198,7 @@ export function list_getuser(_ctx: ctx, ls: val): unknown {
 export function list_cat(ctx: ctx, vals: val[]): val {
   for (let i = 0; i < vals.length; i++) {
     if (!islist(vals[i])) {
-      opi_abort(ctx, "Cannot concatenate non-lists");
+      opi_abort(ctx, 'Cannot concatenate non-lists');
       return NIL;
     }
   }
@@ -16218,9 +16206,9 @@ export function list_cat(ctx: ctx, vals: val[]): val {
 }
 
 export function list_joinplain(vals: list | val[], sep: string): val {
-  let out = "";
+  let out = '';
   for (let i = 0; i < vals.length; i++) {
-    out += (i > 0 ? sep : "") + tostr(vals[i]);
+    out += (i > 0 ? sep : '') + tostr(vals[i]);
   }
   return out;
 }

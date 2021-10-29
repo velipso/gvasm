@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { fileExists } from "./deps.ts";
+import { fileExists } from './deps.ts';
 
 export interface IInitArgs {
   output: string;
@@ -71,8 +71,7 @@ export function generateInit(args: IInitArgs): string {
 }
 
 export async function init(args: IInitArgs): Promise<number> {
-  const { output, title, initials, maker, version, region, code, overwrite } =
-    args;
+  const { output, title, initials, maker, version, region, code, overwrite } = args;
   try {
     const checkSize = (
       hint: string,
@@ -82,7 +81,7 @@ export async function init(args: IInitArgs): Promise<number> {
     ) => {
       const size = new TextEncoder().encode(str).length;
       if (size < low || size > high) {
-        const ch = `character${high === 1 ? "" : "s"}`;
+        const ch = `character${high === 1 ? '' : 's'}`;
         if (low === high) {
           console.error(
             `Invalid ${hint}, must be ${high} ${ch}, but got: "${str}"`,
@@ -99,9 +98,9 @@ export async function init(args: IInitArgs): Promise<number> {
         throw false;
       }
     };
-    checkSize("title", title, 0, 12);
-    checkSize("initials", initials, 2, 2);
-    checkSize("maker", maker, 2, 2);
+    checkSize('title', title, 0, 12);
+    checkSize('initials', initials, 2, 2);
+    checkSize('maker', maker, 2, 2);
     if (
       isNaN(version) || Math.floor(version) !== version || version < 0 ||
       version > 255
@@ -109,8 +108,8 @@ export async function init(args: IInitArgs): Promise<number> {
       console.error(`Invalid version, must be 0..255, but got: ${version}`);
       throw false;
     }
-    checkSize("region", region, 1, 1);
-    checkSize("code", code, 1, 1);
+    checkSize('region', region, 1, 1);
+    checkSize('code', code, 1, 1);
 
     if (!overwrite && await fileExists(output)) {
       console.error(`Output file already exists, cannot overwrite: ${output}
@@ -130,7 +129,7 @@ Use --overwrite to stomp the file anyways`);
   } catch (e) {
     if (e !== false) {
       console.error(e);
-      console.error("Unknown fatal error");
+      console.error('Unknown fatal error');
     }
     return 1;
   }

@@ -5,22 +5,22 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { load as basicLoad } from "./itests/basic.ts";
-import { load as exprLoad } from "./itests/expr.ts";
-import { load as filesLoad } from "./itests/files.ts";
-import { load as armLoad } from "./itests/arm.ts";
-import { load as thumbLoad } from "./itests/thumb.ts";
-import { load as poolLoad } from "./itests/pool.ts";
-import { load as constLoad } from "./itests/const.ts";
-import { load as scopeLoad } from "./itests/scope.ts";
-import { load as printfLoad } from "./itests/printf.ts";
-import { load as ifLoad } from "./itests/if.ts";
-import { load as structLoad } from "./itests/struct.ts";
-import { load as scriptLoad } from "./itests/script.ts";
-import { load as sinkLoad } from "./itests/sink.ts";
-import { makeFromFile } from "./make.ts";
-import * as sink from "./sink.ts";
-import { assertNever } from "./util.ts";
+import { load as basicLoad } from './itests/basic.ts';
+import { load as exprLoad } from './itests/expr.ts';
+import { load as filesLoad } from './itests/files.ts';
+import { load as armLoad } from './itests/arm.ts';
+import { load as thumbLoad } from './itests/thumb.ts';
+import { load as poolLoad } from './itests/pool.ts';
+import { load as constLoad } from './itests/const.ts';
+import { load as scopeLoad } from './itests/scope.ts';
+import { load as printfLoad } from './itests/printf.ts';
+import { load as ifLoad } from './itests/if.ts';
+import { load as structLoad } from './itests/struct.ts';
+import { load as scriptLoad } from './itests/script.ts';
+import { load as sinkLoad } from './itests/sink.ts';
+import { makeFromFile } from './make.ts';
+import * as sink from './sink.ts';
+import { assertNever } from './util.ts';
 
 export interface IItestArgs {
   filters: string[];
@@ -29,7 +29,7 @@ export interface IItestArgs {
 interface ITestMake {
   name: string;
   desc: string;
-  kind: "make";
+  kind: 'make';
   error?: true;
   skipBytes?: true;
   stdout?: string[];
@@ -39,7 +39,7 @@ interface ITestMake {
 
 interface ITestSink {
   name: string;
-  kind: "sink";
+  kind: 'sink';
   stdout?: string;
   files: { [fiename: string]: string };
 }
@@ -48,26 +48,26 @@ export type ITest = ITestMake | ITestSink;
 
 function extractBytes(data: string): number[] {
   const bytes = data
-    .split("\n")
+    .split('\n')
     .map((line) => {
-      const c = line.indexOf("///");
+      const c = line.indexOf('///');
       if (c >= 0) {
-        return " " + line.substr(c + 3).replace(/\s+/g, " ").trim();
+        return ' ' + line.substr(c + 3).replace(/\s+/g, ' ').trim();
       } else {
-        return "";
+        return '';
       }
     })
-    .join("")
+    .join('')
     .trim();
-  return bytes === "" ? [] : bytes.split(" ").map((n) => parseInt(n, 16));
+  return bytes === '' ? [] : bytes.split(' ').map((n) => parseInt(n, 16));
 }
 
 async function itestMake(test: ITestMake): Promise<boolean> {
   const stdout: string[] = [];
   const res = await makeFromFile(
-    "/root/main",
+    '/root/main',
     true,
-    (filename) => filename.startsWith("/"),
+    (filename) => filename.startsWith('/'),
     (filename) => {
       if (filename in test.files) {
         return Promise.resolve(sink.fstype.FILE);
@@ -100,11 +100,11 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     },
     (str) => stdout.push(str),
   );
-  if ("errors" in res) {
+  if ('errors' in res) {
     if (test.error) {
       return true;
     }
-    console.error("");
+    console.error('');
     for (const err of res.errors) {
       console.error(err);
     }
@@ -132,14 +132,14 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     return true;
   }
 
-  const expected = extractBytes(test.files["/root/main"]);
+  const expected = extractBytes(test.files['/root/main']);
   if (expected.length !== res.result.length) {
     console.error(
       `\nExpected length is ${expected.length} bytes, but got ${res.result.length} bytes`,
     );
     return false;
   }
-  const hex = (n: number) => `${n < 16 ? "0" : ""}${n.toString(16)}`;
+  const hex = (n: number) => `${n < 16 ? '0' : ''}${n.toString(16)}`;
   for (let i = 0; i < expected.length; i++) {
     if (expected[i] !== res.result[i]) {
       console.error(`\nResult doesn't match expected:`);
@@ -152,9 +152,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
           console.error(` result[${s}] = ${hex(res.result[s])} // match`);
         } else {
           console.error(
-            ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${
-              hex(expected[s])
-            }`,
+            ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${hex(expected[s])}`,
           );
         }
       }
@@ -179,23 +177,23 @@ async function itestSink(test: ITestSink): Promise<boolean> {
       },
       f_fsread: async (_scr: sink.scr, file: string): Promise<boolean> => {
         const data = test.files[file];
-        if (typeof data === "undefined") {
+        if (typeof data === 'undefined') {
           return false;
         }
         await sink.scr_write(scr, data);
         return true;
       },
     },
-    "/root",
+    '/root',
     true,
     false,
   );
-  sink.scr_addpath(scr, ".");
-  sink.scr_autonative(scr, "testnative");
-  const res = await sink.scr_loadfile(scr, "main.sink");
+  sink.scr_addpath(scr, '.');
+  sink.scr_autonative(scr, 'testnative');
+  const res = await sink.scr_loadfile(scr, 'main.sink');
   const { stdout: correctStdout } = test;
   if (res) {
-    let stdout = "";
+    let stdout = '';
     const ctx = sink.ctx_new(scr, {
       f_say: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
         stdout += `${str}\n`;
@@ -204,28 +202,28 @@ async function itestSink(test: ITestSink): Promise<boolean> {
       f_warn: () => Promise.resolve(sink.NIL),
       f_ask: () => Promise.resolve(sink.NIL),
     });
-    sink.ctx_autonative(ctx, "testnative", null, () => Promise.resolve("test"));
+    sink.ctx_autonative(ctx, 'testnative', null, () => Promise.resolve('test'));
     const run = await sink.ctx_run(ctx);
     if (run !== sink.run.PASS) {
-      if (typeof correctStdout === "undefined") {
+      if (typeof correctStdout === 'undefined') {
         return true;
       }
       console.error(`\nFailed to run script: ${sink.ctx_geterr(ctx)}`);
       return false;
     }
-    if (typeof correctStdout === "undefined") {
-      console.error("\nScript succeeded but expected it to fail");
+    if (typeof correctStdout === 'undefined') {
+      console.error('\nScript succeeded but expected it to fail');
       return false;
     }
     if (stdout === test.stdout) {
       return true;
     }
     let done = 0;
-    stdout.split("\n").forEach((line, i) => {
+    stdout.split('\n').forEach((line, i) => {
       if (done >= 3) {
         return;
       }
-      const correctLine = correctStdout.split("\n")[i];
+      const correctLine = correctStdout.split('\n')[i];
       if (correctLine !== line) {
         console.error(
           `\nLine ${
@@ -238,7 +236,7 @@ async function itestSink(test: ITestSink): Promise<boolean> {
     });
     return false;
   } else {
-    if (typeof correctStdout === "undefined") {
+    if (typeof correctStdout === 'undefined') {
       return true;
     }
     console.log(`\nFailed to load script: ${sink.scr_geterr(scr)}`);
@@ -279,9 +277,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
     const { index, test: { name } } = test;
     if (
       filters.length > 0 &&
-      !filters.some((filter) =>
-        name.toLowerCase().indexOf(filter.toLowerCase()) >= 0
-      )
+      !filters.some((filter) => name.toLowerCase().indexOf(filter.toLowerCase()) >= 0)
     ) {
       // skip test
       skipped++;
@@ -297,10 +293,10 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
       // TODO: switch on different test types
       let pass;
       switch (test.test.kind) {
-        case "make":
+        case 'make':
           pass = await itestMake(test.test);
           break;
-        case "sink":
+        case 'sink':
           pass = await itestSink(test.test);
           break;
         default:
@@ -327,6 +323,6 @@ Passed:  ${passed}
 Failed:  ${failed}
 TOTAL:   ${skipped + passed + failed}
 
-${failed > 0 ? "FAILED!" : passed > 0 ? "All good!" : "No results"}`);
+${failed > 0 ? 'FAILED!' : passed > 0 ? 'All good!' : 'No results'}`);
   return failed > 0 ? 1 : 0;
 }

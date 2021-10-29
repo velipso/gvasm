@@ -5,15 +5,15 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
+import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "scope.const",
-    desc: "Scope usage with constants",
-    kind: "make",
+    name: 'scope.const',
+    desc: 'Scope usage with constants',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $one = 1
 .i8 $one             /// 01
 .def $$two = 2
@@ -35,12 +35,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.missing-const",
-    desc: "Constants are strictly local to scope",
-    kind: "make",
+    name: 'scope.missing-const',
+    desc: 'Constants are strictly local to scope',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $one = 1
 .i8 $one
 .def $$two = 2
@@ -61,12 +61,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.missing-begin",
-    desc: "Error if too many .end statements",
-    kind: "make",
+    name: 'scope.missing-begin',
+    desc: 'Error if too many .end statements',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .begin
   .begin
   .end
@@ -81,12 +81,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.missing-end",
-    desc: "Error if too many .begin statements",
-    kind: "make",
+    name: 'scope.missing-end',
+    desc: 'Error if too many .begin statements',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .begin
   .begin
   .end
@@ -99,12 +99,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.missing-label",
-    desc: "Local labels must exist at scope level",
-    kind: "make",
+    name: 'scope.missing-label',
+    desc: 'Local labels must exist at scope level',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 @@L:
 .i32 @@L
 .begin
@@ -119,11 +119,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.label",
-    desc: "Labels are strictly local to scope",
-    kind: "make",
+    name: 'scope.label',
+    desc: 'Labels are strictly local to scope',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 @@L:
 .i32 @@L      /// 00 00 00 08
 .begin
@@ -143,11 +143,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.arm-thumb",
-    desc: ".arm and .thumb should be scoped",
-    kind: "make",
+    name: 'scope.arm-thumb',
+    desc: '.arm and .thumb should be scoped',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .if $_arm
   .i32 1 /// 01 00 00 00
 .end
@@ -181,24 +181,24 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "scope.once",
-    desc: "Use .once to skip previously included code",
-    kind: "make",
+    name: 'scope.once',
+    desc: 'Use .once to skip previously included code',
+    kind: 'make',
     stdout: [
-      "inside test",
-      "first",
-      "inside test",
-      "not first",
-      "inside test",
-      "not first",
+      'inside test',
+      'first',
+      'inside test',
+      'not first',
+      'inside test',
+      'not first',
     ],
     files: {
-      "/root/main": `
+      '/root/main': `
 .include "test"
 .include "test"
 .include "test"
 `,
-      "/root/test": `
+      '/root/test': `
 .printf "inside test"
 .once
   .printf "first"

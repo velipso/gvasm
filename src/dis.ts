@@ -6,12 +6,12 @@
 //
 
 // deno-lint-ignore no-unused-vars
-import { Arm, Thumb } from "./ops.ts";
-import { assertNever, ranges } from "./util.ts";
+import { Arm, Thumb } from './ops.ts';
+import { assertNever, ranges } from './util.ts';
 
 export interface IDisArgs {
   input: string;
-  format: "gba" | "bin";
+  format: 'gba' | 'bin';
   output: string;
 }
 
@@ -30,10 +30,10 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
     for (const part of op.codeParts) {
       const v = (opcode >> bpos) & ((1 << part.s) - 1);
       switch (part.k) {
-        case "register":
+        case 'register':
           syms[part.sym] = { v, part };
           break;
-        case "value":
+        case 'value':
           if (v !== part.v) {
             error = `value at ${bpos} doesn't match: ${v} != ${part.v}`;
             break;
@@ -42,31 +42,31 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
             syms[part.sym] = { v, part };
           }
           break;
-        case "enum":
+        case 'enum':
           if (part.enum[v] === false) {
             error = `enum at ${bpos} is false at ${v}`;
             break;
           }
           syms[part.sym] = { v, part };
           break;
-        case "ignored":
-        case "immediate":
-        case "rotimm":
-        case "offset12":
-        case "pcoffset12":
-        case "reglist":
+        case 'ignored':
+        case 'immediate':
+        case 'rotimm':
+        case 'offset12':
+        case 'pcoffset12':
+        case 'reglist':
           if (part.sym) {
             syms[part.sym] = { v, part };
           }
           break;
-        case "word":
+        case 'word':
           syms[part.sym] = { v: v << 2, part };
           break;
-        case "offsetsplit":
-        case "pcoffsetsplit":
+        case 'offsetsplit':
+        case 'pcoffsetsplit':
           if (!(part.sym in syms)) {
             syms[part.sym] = { v, part };
-          } else if (syms[part.sym].part.k === "offsetsplit") {
+          } else if (syms[part.sym].part.k === 'offsetsplit') {
             if (part.sign) {
               if (v === 0) {
                 syms[part.sym].v = -syms[part.sym].v;
@@ -80,7 +80,7 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
             }
           } else {
             throw new Error(
-              "Invalid op data, offsetsplit cannot reference any other code part",
+              'Invalid op data, offsetsplit cannot reference any other code part',
             );
           }
           break;
@@ -101,12 +101,12 @@ function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
 }
 
 function pad(amount: number, code: string): string {
-  const space = code.indexOf(" ");
+  const space = code.indexOf(' ');
   if (space >= 0) {
     let left = code.substr(0, space + 1);
     const right = code.substr(space + 1);
     while (left.length < amount) {
-      left += " ";
+      left += ' ';
     }
     return left + right;
   }
@@ -114,10 +114,10 @@ function pad(amount: number, code: string): string {
 }
 
 function registerToString(v: number): string {
-  if (v === 12) return "ip";
-  if (v === 13) return "sp";
-  if (v === 14) return "lr";
-  if (v === 15) return "pc";
+  if (v === 12) return 'ip';
+  if (v === 13) return 'sp';
+  if (v === 14) return 'lr';
+  if (v === 15) return 'pc';
   return `r${v}`;
 }
 
@@ -150,16 +150,16 @@ export async function dis(
             }
             const { v, part } = syms[sym];
             switch (part.k) {
-              case "register":
+              case 'register':
                 return registerToString(v);
-              case "enum":
-                return (part.enum[v] || "").split("/")[0];
-              case "rotimm": {
+              case 'enum':
+                return (part.enum[v] || '').split('/')[0];
+              case 'rotimm': {
                 const rot = (v >> 8) * 2;
                 const imm = v & 0xff;
                 return `0x${((imm >> rot) | (imm << (32 - rot))).toString(16)}`;
               }
-              case "reglist": {
+              case 'reglist': {
                 const regs = [];
                 for (let bpos = 0; bpos < 16; bpos++) {
                   if (v & (1 << bpos)) {
@@ -167,20 +167,17 @@ export async function dis(
                   }
                 }
                 return ranges(regs).map(
-                  (r) =>
-                    r.low === r.high
-                      ? registerToString(r.low)
-                      : `r${r.low}-r${r.high}`,
-                ).join(", ");
+                  (r) => r.low === r.high ? registerToString(r.low) : `r${r.low}-r${r.high}`,
+                ).join(', ');
               }
-              case "value":
-              case "ignored":
-              case "immediate":
-              case "offset12":
-              case "pcoffset12":
-              case "word":
-              case "offsetsplit":
-              case "pcoffsetsplit":
+              case 'value':
+              case 'ignored':
+              case 'immediate':
+              case 'offset12':
+              case 'pcoffset12':
+              case 'word':
+              case 'offsetsplit':
+              case 'pcoffsetsplit':
                 throw new Error(`TODO: ${part.k}`);
               default:
                 assertNever(part);

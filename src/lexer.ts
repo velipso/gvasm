@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { isAlpha, isNum, isSpace } from "./util.ts";
+import { isAlpha, isNum, isSpace } from './util.ts';
 
 export interface IFilePos {
   filename: string;
@@ -48,11 +48,11 @@ interface ILex {
 }
 
 export enum TokEnum {
-  NEWLINE = "NEWLINE",
-  ID = "ID",
-  NUM = "NUM",
-  STR = "STR",
-  ERROR = "ERROR",
+  NEWLINE = 'NEWLINE',
+  ID = 'ID',
+  NUM = 'NUM',
+  STR = 'STR',
+  ERROR = 'ERROR',
 }
 
 interface ITokNewline {
@@ -113,7 +113,7 @@ function tokError(flp: IFilePos, msg: string): ITokError {
 }
 
 export function isIdentStart(c: string) {
-  return isAlpha(c) || c === "_";
+  return isAlpha(c) || c === '_';
 }
 
 export function isIdentBody(c: string) {
@@ -121,20 +121,20 @@ export function isIdentBody(c: string) {
 }
 
 function isHex(c: string) {
-  return isNum(c) || (c >= "a" && c <= "f") || (c >= "A" && c <= "F");
+  return isNum(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
 function toHex(c: string) {
   if (isNum(c)) {
     return c.charCodeAt(0) - 48;
-  } else if (c >= "a") {
+  } else if (c >= 'a') {
     return c.charCodeAt(0) - 87;
   }
   return c.charCodeAt(0) - 55;
 }
 
 const FILEPOS_NULL: IFilePos = Object.freeze({
-  filename: "",
+  filename: '',
   line: -1,
   chr: -1,
 });
@@ -153,12 +153,12 @@ export function lexNew(): ILex {
     flpS: FILEPOS_NULL,
     flp1: FILEPOS_NULL,
     flp2: FILEPOS_NULL,
-    ch1: "",
-    ch2: "",
+    ch1: '',
+    ch2: '',
     num: 0,
     numBase: 10,
-    quote: "",
-    str: "",
+    quote: '',
+    str: '',
     strHexval: 0,
     strHexleft: 0,
   };
@@ -179,9 +179,9 @@ function lexProcess(lx: ILex, tks: ITok[]) {
   switch (lx.state) {
     case LexEnum.START:
       lx.flpS = flp;
-      if ("~!@#$%^&*()-+={[}]|:<,>?/".indexOf(ch1) >= 0) {
+      if ('~!@#$%^&*()-+={[}]|:<,>?/'.indexOf(ch1) >= 0) {
         lx.state = LexEnum.SPECIAL;
-      } else if (isIdentStart(ch1) || ch1 === ".") {
+      } else if (isIdentStart(ch1) || ch1 === '.') {
         lx.str = ch1;
         lx.state = LexEnum.IDENT;
       } else if (isNum(ch1)) {
@@ -192,16 +192,16 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         } else {
           lx.state = LexEnum.NUM_BODY;
         }
-      } else if (ch1 === '"' || ch1 === "'") {
+      } else if (ch1 === '"' || ch1 === '\'') {
         lx.quote = ch1;
-        lx.str = "";
+        lx.str = '';
         lx.state = LexEnum.STR;
-      } else if (ch1 === "\r") {
+      } else if (ch1 === '\r') {
         lx.state = LexEnum.RETURN;
         tks.push(tokNewline(flp));
-      } else if (ch1 === "\n") {
+      } else if (ch1 === '\n') {
         tks.push(tokNewline(flp));
-      } else if (ch1 === "\\") {
+      } else if (ch1 === '\\') {
         lx.state = LexEnum.CONTINUE;
       } else if (!isSpace(ch1)) {
         tks.push(tokError(flp, `Unexpected character: ${ch1}`));
@@ -209,26 +209,26 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.COMMENT_LINE:
-      if (ch1 === "\r") {
+      if (ch1 === '\r') {
         lx.state = LexEnum.RETURN;
-      } else if (ch1 === "\n") {
+      } else if (ch1 === '\n') {
         lx.state = LexEnum.START;
       }
       break;
 
     case LexEnum.RETURN:
       lx.state = LexEnum.START;
-      if (ch1 !== "\n") {
+      if (ch1 !== '\n') {
         lexProcess(lx, tks);
       }
       break;
 
     case LexEnum.CONTINUE:
-      if (ch1 === "\r") {
+      if (ch1 === '\r') {
         lx.state = LexEnum.RETURN;
-      } else if (ch1 === "\n") {
+      } else if (ch1 === '\n') {
         lx.state = LexEnum.START;
-      } else if (ch1 === "/") {
+      } else if (ch1 === '/') {
         lx.state = LexEnum.CONTINUE_SLASH;
       } else if (!isSpace(ch1)) {
         lx.state = LexEnum.START;
@@ -237,9 +237,9 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.CONTINUE_SLASH:
-      if (ch1 === "/") {
+      if (ch1 === '/') {
         lx.state = LexEnum.COMMENT_LINE;
-      } else if (ch1 === "*") {
+      } else if (ch1 === '*') {
         lx.state = LexEnum.CONTINUE_COMMENT_BLOCK;
       } else {
         tks.push(tokError(lx.flp2, `Unexpected character after backslash: /`));
@@ -247,34 +247,34 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.CONTINUE_COMMENT_BLOCK:
-      if (lx.ch2 === "*" && ch1 === "/") {
+      if (lx.ch2 === '*' && ch1 === '/') {
         lx.state = LexEnum.CONTINUE;
       }
       break;
 
     case LexEnum.COMMENT_BLOCK:
-      if (lx.ch2 === "*" && ch1 === "/") {
+      if (lx.ch2 === '*' && ch1 === '/') {
         lx.state = LexEnum.START;
       }
       break;
 
     case LexEnum.SPECIAL: {
       const comb = lx.ch2 + ch1;
-      if (comb === "/*") {
+      if (comb === '/*') {
         lx.state = LexEnum.COMMENT_BLOCK;
-      } else if (comb === "//") {
+      } else if (comb === '//') {
         lx.state = LexEnum.COMMENT_LINE;
         tks.push(tokNewline(flp));
-      } else if (comb === ">>") {
+      } else if (comb === '>>') {
         lx.state = LexEnum.RSHIFT;
       } else if (
-        comb === "<<" ||
-        comb === "==" ||
-        comb === "!=" ||
-        comb === "<=" ||
-        comb === ">=" ||
-        comb === "&&" ||
-        comb === "||"
+        comb === '<<' ||
+        comb === '==' ||
+        comb === '!=' ||
+        comb === '<=' ||
+        comb === '>=' ||
+        comb === '&&' ||
+        comb === '||'
       ) {
         tks.push(tokId(flpS, comb));
         lx.state = LexEnum.START;
@@ -287,22 +287,22 @@ function lexProcess(lx: ILex, tks: ITok[]) {
     }
 
     case LexEnum.RSHIFT:
-      if (ch1 === ">") {
-        tks.push(tokId(flpS, ">>>"));
+      if (ch1 === '>') {
+        tks.push(tokId(flpS, '>>>'));
         lx.state = LexEnum.START;
       } else {
-        tks.push(tokId(flpS, ">>"));
+        tks.push(tokId(flpS, '>>'));
         lx.state = LexEnum.START;
         lexProcess(lx, tks);
       }
       break;
 
     case LexEnum.IDENT:
-      if (ch1 === "." && !lx.str.endsWith(".")) {
-        lx.str += ".";
+      if (ch1 === '.' && !lx.str.endsWith('.')) {
+        lx.str += '.';
       } else if (!isIdentBody(ch1)) {
-        if (lx.str.endsWith(".")) {
-          tks.push(tokError(flpS, "Identifier can't end with period"));
+        if (lx.str.endsWith('.')) {
+          tks.push(tokError(flpS, 'Identifier can\'t end with period'));
         } else {
           tks.push(tokId(flpS, lx.str));
         }
@@ -311,29 +311,29 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       } else {
         lx.str += ch1;
         if (lx.str.length > 1024) {
-          tks.push(tokError(flpS, "Identifier too long"));
+          tks.push(tokError(flpS, 'Identifier too long'));
         }
       }
       break;
 
     case LexEnum.NUM_0:
-      if (ch1 === "b") {
+      if (ch1 === 'b') {
         lx.numBase = 2;
         lx.state = LexEnum.NUM_2;
-      } else if (ch1 === "c") {
+      } else if (ch1 === 'c') {
         lx.numBase = 8;
         lx.state = LexEnum.NUM_2;
-      } else if (ch1 === "x") {
+      } else if (ch1 === 'x') {
         lx.numBase = 16;
         lx.state = LexEnum.NUM_2;
-      } else if (ch1 === "_") {
+      } else if (ch1 === '_') {
         lx.state = LexEnum.NUM_BODY;
       } else if (!isIdentStart(ch1)) {
         tks.push(tokNum(flpS, 0));
         lx.state = LexEnum.START;
         lexProcess(lx, tks);
       } else {
-        tks.push(tokError(flpS, "Invalid number"));
+        tks.push(tokError(flpS, 'Invalid number'));
       }
       break;
 
@@ -341,12 +341,12 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       if (isHex(ch1)) {
         lx.num = toHex(ch1);
         if (lx.num >= lx.numBase) {
-          tks.push(tokError(flpS, "Invalid number"));
+          tks.push(tokError(flpS, 'Invalid number'));
         } else {
           lx.state = LexEnum.NUM_BODY;
         }
-      } else if (ch1 !== "_") {
-        tks.push(tokError(flpS, "Invalid number"));
+      } else if (ch1 !== '_') {
+        tks.push(tokError(flpS, 'Invalid number'));
       }
       break;
 
@@ -354,28 +354,28 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       if (isHex(ch1)) {
         const v = toHex(ch1);
         if (v >= lx.numBase) {
-          tks.push(tokError(flpS, "Invalid number"));
+          tks.push(tokError(flpS, 'Invalid number'));
         } else {
           lx.num = lx.num * lx.numBase + v;
         }
-      } else if (ch1 === "_") {
+      } else if (ch1 === '_') {
         // do nothing
       } else if (!isAlpha(ch1)) {
         tks.push(tokNum(flpS, lx.num));
         lx.state = LexEnum.START;
         lexProcess(lx, tks);
       } else {
-        tks.push(tokError(flpS, "Invalid number"));
+        tks.push(tokError(flpS, 'Invalid number'));
       }
       break;
 
     case LexEnum.STR:
-      if (ch1 === "\r" || ch1 === "\n") {
-        tks.push(tokError(lx.flp2, "Missing end of string"));
+      if (ch1 === '\r' || ch1 === '\n') {
+        tks.push(tokError(lx.flp2, 'Missing end of string'));
       } else if (ch1 === lx.quote) {
         lx.state = LexEnum.START;
         tks.push(tokStr(flpS, lx.str));
-      } else if (ch1 === "\\") {
+      } else if (ch1 === '\\') {
         lx.state = LexEnum.STR_ESC;
       } else {
         lx.str += ch1;
@@ -383,37 +383,37 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       break;
 
     case LexEnum.STR_ESC:
-      if (ch1 === "\r" || ch1 === "\n") {
-        tks.push(tokError(lx.flp2, "Missing end of string"));
-      } else if (ch1 === "x") {
+      if (ch1 === '\r' || ch1 === '\n') {
+        tks.push(tokError(lx.flp2, 'Missing end of string'));
+      } else if (ch1 === 'x') {
         lx.strHexval = 0;
         lx.strHexleft = 2;
         lx.state = LexEnum.STR_HEX;
-      } else if (ch1 === "0") {
+      } else if (ch1 === '0') {
         lx.str += String.fromCharCode(0);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "b") {
+      } else if (ch1 === 'b') {
         lx.str += String.fromCharCode(8);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "t") {
+      } else if (ch1 === 't') {
         lx.str += String.fromCharCode(9);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "n") {
+      } else if (ch1 === 'n') {
         lx.str += String.fromCharCode(10);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "v") {
+      } else if (ch1 === 'v') {
         lx.str += String.fromCharCode(11);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "f") {
+      } else if (ch1 === 'f') {
         lx.str += String.fromCharCode(12);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "r") {
+      } else if (ch1 === 'r') {
         lx.str += String.fromCharCode(13);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "e") {
+      } else if (ch1 === 'e') {
         lx.str += String.fromCharCode(27);
         lx.state = LexEnum.STR;
-      } else if (ch1 === "\\" || ch1 === "'" || ch1 === '"') {
+      } else if (ch1 === '\\' || ch1 === '\'' || ch1 === '"') {
         lx.str += ch1;
         lx.state = LexEnum.STR;
       } else {
@@ -430,7 +430,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
           lx.state = LexEnum.STR;
         }
       } else {
-        tks.push(tokError(flp, "Invalid escape sequence; expecting hex value"));
+        tks.push(tokError(flp, 'Invalid escape sequence; expecting hex value'));
       }
       break;
   }
@@ -447,7 +447,7 @@ export function lexAddLine(
   line: number,
   data: string,
 ): ITok[] {
-  data += "\n";
+  data += '\n';
   const tks: ITok[] = [];
   for (let i = 0; i < data.length; i++) {
     lexAdd(lx, { filename, line, chr: i + 1 }, data.charAt(i), tks);

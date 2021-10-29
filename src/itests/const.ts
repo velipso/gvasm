@@ -5,16 +5,16 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ITest } from "../itest.ts";
-import { version } from "../main.ts";
+import { ITest } from '../itest.ts';
+import { version } from '../main.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: "const.basic",
-    desc: "Basic constant usage",
-    kind: "make",
+    name: 'const.basic',
+    desc: 'Basic constant usage',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $FOO = 1
 .def $BAR = 2
 .i8 $foo         /// 01
@@ -24,11 +24,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.parameters",
-    desc: "Constant with parameters",
-    kind: "make",
+    name: 'const.parameters',
+    desc: 'Constant with parameters',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $one         = 1
 .def $five        = 5
 .def $neg($a)     = -$a
@@ -45,12 +45,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.no-parameters",
-    desc: "Constant with no parameters",
-    kind: "make",
+    name: 'const.no-parameters',
+    desc: 'Constant with no parameters',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $add($a, $b) = $a + $b
 .i8 $add
 `,
@@ -58,12 +58,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.missing-parameters",
-    desc: "Constant with missing parameters",
-    kind: "make",
+    name: 'const.missing-parameters',
+    desc: 'Constant with missing parameters',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $add($a, $b) = $a + $b
 .i8 $add(1)
 `,
@@ -71,12 +71,12 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.extra-parameters",
-    desc: "Constant with extra parameters",
-    kind: "make",
+    name: 'const.extra-parameters',
+    desc: 'Constant with extra parameters',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `
+      '/root/main': `
 .def $add($a, $b) = $a + $b
 .i8 $add(1, 2, 3)
 `,
@@ -84,11 +84,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.label",
-    desc: "Constant dependent on label rewrites",
-    kind: "make",
+    name: 'const.label',
+    desc: 'Constant dependent on label rewrites',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .base 0
 @zero:
 .i8 1                    /// 01
@@ -142,11 +142,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.version",
-    desc: "Constant $_version is defined",
-    kind: "make",
+    name: 'const.version',
+    desc: 'Constant $_version is defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 /// ${(version & 0xff).toString(16)}
 /// ${((version >> 8) & 0xff).toString(16)}
 /// ${((version >> 16) & 0xff).toString(16)}
@@ -157,11 +157,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.arm-thumb",
-    desc: "Constants $_arm and $_thumb are defined",
-    kind: "make",
+    name: 'const.arm-thumb',
+    desc: 'Constants $_arm and $_thumb are defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .arm
 .i8 $_arm, $_thumb   /// 01 00
 .thumb
@@ -178,11 +178,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.main",
-    desc: "Constant $_main is defined",
-    kind: "make",
+    name: 'const.main',
+    desc: 'Constant $_main is defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .if $_main
   .i8 1          /// 01
   .script
@@ -196,7 +196,7 @@ export function load(def: (test: ITest) => void) {
   .include "two" /// 06 07
 .end
 `,
-      "/root/one": `
+      '/root/one': `
 .if $_main
   .i8 99
 .else
@@ -207,7 +207,7 @@ export function load(def: (test: ITest) => void) {
   .include "main"
 .end
 `,
-      "/root/two": `
+      '/root/two': `
 .if $_main
   .i8 99
 .else
@@ -221,11 +221,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.here",
-    desc: "Constant $_here is defined",
-    kind: "make",
+    name: 'const.here',
+    desc: 'Constant $_here is defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i32 $_here  /// 00 00 00 08
 .i32 $_here  /// 04 00 00 08
 .i32 $_here  /// 08 00 00 08
@@ -236,11 +236,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.pc",
-    desc: "Constant $_pc is defined",
-    kind: "make",
+    name: 'const.pc',
+    desc: 'Constant $_pc is defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .i32 $_pc  /// 08 00 00 08
 .i32 $_pc  /// 0c 00 00 08
 .thumb
@@ -251,11 +251,11 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.base",
-    desc: "Constant $_base is defined",
-    kind: "make",
+    name: 'const.base',
+    desc: 'Constant $_base is defined',
+    kind: 'make',
     files: {
-      "/root/main": `
+      '/root/main': `
 .base 0x04000000
 .i32 $_base  /// 00 00 00 04
 `,
@@ -263,22 +263,22 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: "const.reserved-name",
-    desc: "Prevent users from defining names starting with $_",
-    kind: "make",
+    name: 'const.reserved-name',
+    desc: 'Prevent users from defining names starting with $_',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `.def $_add($a, $b) = $a + $b`,
+      '/root/main': `.def $_add($a, $b) = $a + $b`,
     },
   });
 
   def({
-    name: "const.reserved-param",
-    desc: "Prevent users from defining parameters starting with $_",
-    kind: "make",
+    name: 'const.reserved-param',
+    desc: 'Prevent users from defining parameters starting with $_',
+    kind: 'make',
     error: true,
     files: {
-      "/root/main": `.def $add($_a, $b) = $_a + $b`,
+      '/root/main': `.def $add($_a, $b) = $_a + $b`,
     },
   });
 }

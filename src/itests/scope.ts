@@ -179,4 +179,33 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: "scope.once",
+    desc: "Use .once to skip previously included code",
+    kind: "make",
+    stdout: [
+      "inside test",
+      "first",
+      "inside test",
+      "not first",
+      "inside test",
+      "not first",
+    ],
+    files: {
+      "/root/main": `
+.include "test"
+.include "test"
+.include "test"
+`,
+      "/root/test": `
+.printf "inside test"
+.once
+  .printf "first"
+.else
+  .printf "not first"
+.end
+`,
+    },
+  });
 }

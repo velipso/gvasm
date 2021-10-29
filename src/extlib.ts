@@ -6,6 +6,7 @@
 //
 
 export const extlib = `
+.once
 @ext.init:
 
   mov pc, lr
@@ -877,4 +878,5 @@ export const extlib = `
   .i32 0x11111111
   .i32 0x11111111
   .i32 0x11111111
+.end // once
 `;

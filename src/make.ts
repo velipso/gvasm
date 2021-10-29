@@ -87,6 +87,7 @@ interface IParseState {
     startFile: string;
   };
   store: { [key: string]: string };
+  onceFound: Set<string>;
   posix: boolean;
   fileType(filename: string): Promise<sink.fstype>;
   readBinaryFile(filename: string): Promise<number[] | Uint8Array>;
@@ -1329,6 +1330,23 @@ function parseBlockStatement(
       }
       state.dotStack.push({ kind: "script", flp });
       return true;
+    case ".once": {
+      if (line.length > 0 && state.active) {
+        throw "Invalid .once statement";
+      }
+      const key = flpString(flp);
+      const isTrue = !state.onceFound.has(key);
+      state.onceFound.add(key);
+      state.dotStack.push({
+        kind: "if",
+        flp,
+        isTrue,
+        gotTrue: isTrue,
+        gotElse: false,
+      });
+      state.active = recalcActive(state);
+      return true;
+    }
     case ".if": {
       const v = parseNum(state, line, !state.active);
       if (line.length > 0 && state.active) {
@@ -1736,6 +1754,7 @@ export async function makeFromFile(
     dotStack: [],
     script: false,
     store: {},
+    onceFound: new Set(),
     posix,
     fileType,
     readBinaryFile,

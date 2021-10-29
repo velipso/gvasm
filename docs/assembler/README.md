@@ -481,6 +481,18 @@ Outputs the Nintendo logo, used in the GBA header.
 
 Macros (not implemented yet).
 
+### `.once` / `.end`
+
+Only include the block of code once.  Can also use `.elseif` and `.else` inside the block.
+
+Equivalent to:
+
+```
+.if this code hasn't been seen yet
+  ...
+.end
+```
+
 ### `.pool`
 
 Outputs a literal pool, for use with the `ldr rX, =constant` pseudo-instructions.

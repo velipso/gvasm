@@ -108,6 +108,7 @@ const regs: [number, string][] = [
 ];
 
 export const stdlib = `
+.once
 .def $REG_BASE = 0x04000000
 ${
   regs.map(([offset, name]) => `
@@ -115,4 +116,5 @@ ${
 .def $REG_${name} = ${0x04000000 + offset}
   `).join("\n")
 }
+.end // once
 `;

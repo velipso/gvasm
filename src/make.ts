@@ -1208,7 +1208,7 @@ function parseThumbPoolStatement(
       // convert to: add rd, pc, #offset
       const offset = ex - (address & 0xfffffffd) - 4;
       if (offset >= 0 && offset <= 1020 && (offset & 3) === 0) {
-        return 0xa800 | (rd << 8) | (offset >> 2);
+        return 0xa000 | (rd << 8) | (offset >> 2);
       }
       return false;
     },

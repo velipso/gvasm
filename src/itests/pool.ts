@@ -164,16 +164,15 @@ ldr r3, =200   /// 01 4b
     },
   });
 
-  // TODO: verify in emulator this is correct
   def({
     name: "pool.thumb.ldr-add",
     desc: "Thumb pool ldr is converted to add pc",
     kind: "make",
     files: {
       "/root/main": `.thumb
-ldr r3, =@here /// 03 ab
+ldr r3, =@here /// 03 a3
 .i16 0         /// 00 00
-ldr r3, =@here /// 02 ab
+ldr r3, =@here /// 02 a3
 .i16 0, 0, 0   /// 00 00 00 00 00 00
 .i32 0         /// 00 00 00 00
 @here:

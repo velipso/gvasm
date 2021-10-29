@@ -75,3 +75,9 @@ GBA Technical Docs
   * Error on PDF page 18 (labeled "Page 16"), it gives the incorrect encoding for CMN instruction
 * [CowBite Hardware Spec](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) ([mirror](https://cdn.githubraw.com/velipso/gvasm/main/mirror/cowbite.html))
 * [GBATEK No$GBA](http://problemkaputt.de/gbatek.htm) ([mirror](https://cdn.githubraw.com/velipso/gvasm/main/mirror/gbatek.html))
+
+Flash Cart Docs
+===============
+
+* [M29W128GH/M29W128GL](https://github.com/velipso/gvasm/blob/main/mirror/m29w128gx.pdf)
+* [S29GL128N/S29GL256N/S29GL512N](https://github.com/velipso/gvasm/blob/main/mirror/s29glxxxn.pdf)

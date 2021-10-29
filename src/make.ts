@@ -270,12 +270,21 @@ function parseDotStatement(
   | { extlib: true }
   | undefined {
   switch (cmd) {
-    case ".error":
-      if (line.length === 1 && line[0].kind === TokEnum.STR) {
-        throw line[0].str;
-      } else {
+    case ".error": {
+      const format = line.shift();
+      if (!format || format.kind !== TokEnum.STR) {
         throw "Invalid .error statement";
       }
+      const args: number[] = [];
+      while (isNextId(line, ",")) {
+        line.shift();
+        args.push(parseNum(state, line));
+      }
+      if (line.length > 0) {
+        throw "Invalid .error statement";
+      }
+      throw printf(format.str, ...args);
+    }
     case ".base": {
       const amount = parseNum(state, line);
       if (line.length > 0) {

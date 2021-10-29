@@ -414,7 +414,7 @@ str r1, [r0]           /// 00 10 80 e5
     kind: "make",
     error: true,
     files: {
-      "/root/main": `.error "This is an error"`,
+      "/root/main": `.error "This is an error %d", 5`,
     },
   });
 

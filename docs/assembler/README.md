@@ -72,7 +72,7 @@ address in memory that they point to.  Note that `.base` will affect this value 
 `0x08000000` for normal games).
 
 Labels can be used before they're known in certain circumstances, like for branching instructions or
-defined constants, but not for `.align`, `.base`, `.i8fill`, `.if`, or `.printf`.
+defined constants, but not for `.align`, `.base`, `.i8fill`, `.if`, `.printf`, or `.error`.
 
 Defined Constants
 -----------------
@@ -418,9 +418,9 @@ Defines a constant.
 
 Includes a binary file by outputting the bytes in `<filename>`.
 
-### `.error <message>`
+### `.error <format>[, <args...>]`
 
-Aborts the assembler with the error message provided.
+Aborts the assembler with the error message provided.  Allows same formatting as `.printf`.
 
 ### `.extlib` (WIP)
 
@@ -499,7 +499,28 @@ Outputs a literal pool, for use with the `ldr rX, =constant` pseudo-instructions
 
 ### `.printf <format>[, <args...>]`
 
-Prints data to the console during compilation.
+Prints data to the console during compilation, using similar formatting as C's `printf`.
+
+Formatting supported:
+
+`%<flag><width><format>`
+
+| Format     | Description                                    |
+|------------|------------------------------------------------|
+| `%b`       | Output binary number                           |
+| `%d`, `%i` | Output signed decimal number                   |
+| `%o`       | Output octal number                            |
+| `%u`       | Output unsigned decimal number                 |
+| `%x`, `%X` | Output hexadecimal number (lower or uppercase) |
+
+| Flag     | Description                                                   |
+|----------|---------------------------------------------------------------|
+| `#`      | Add prefix to binary/octal/hex numbers, ex: `%#x` => `0x1234` |
+| `-`, `+` | Always add `+` or `-` to number, ex: `%+d` => `+1234`         |
+| `0`      | Fill width using leading zeroes, ex: `%08x` => `0000abcd`     |
+
+If `width` is specified, then either leading spaces or leading zeroes will be added to enforce the
+character width.  Ex: `%10d` => `      1234`.
 
 ### `.script` / `.end`
 

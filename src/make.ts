@@ -19,7 +19,7 @@ import { assertNever, b16, b32, ILineStr, printf, splitLines } from './util.ts';
 import { Arm, Thumb } from './ops.ts';
 import { Expression, ExpressionBuilder } from './expr.ts';
 import { Bytes } from './bytes.ts';
-import { path } from './deps.ts';
+import { path, pathJoin } from './deps.ts';
 import { ConstTable } from './const.ts';
 import { version } from './main.ts';
 import { stdlib } from './stdlib.ts';
@@ -1858,7 +1858,7 @@ export async function makeFromFile(
               const { include } = includeEmbed;
               const full = isAbsolute(include)
                 ? include
-                : path.join(path.dirname(flp.filename), include);
+                : pathJoin(posix, path.dirname(flp.filename), include);
 
               const includeKey = `${flpString(flp)}:${full}`;
               if (alreadyIncluded.has(includeKey)) {
@@ -1880,7 +1880,9 @@ export async function makeFromFile(
               lineStrs.unshift(...splitLines(full, data2, false));
             } else if (includeEmbed && 'embed' in includeEmbed) {
               const { embed } = includeEmbed;
-              const full = isAbsolute(embed) ? embed : path.join(path.dirname(flp.filename), embed);
+              const full = isAbsolute(embed)
+                ? embed
+                : pathJoin(posix, path.dirname(flp.filename), embed);
 
               let data2;
               try {

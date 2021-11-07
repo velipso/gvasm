@@ -79,5 +79,5 @@ GBA Technical Docs
 Flash Cart Docs
 ===============
 
-* [M29W128GH/M29W128GL](https://github.com/velipso/gvasm/blob/main/mirror/m29w128gx.pdf)
-* [S29GL128N/S29GL256N/S29GL512N](https://github.com/velipso/gvasm/blob/main/mirror/s29glxxxn.pdf)
+* [M29W128GH/M29W128GL](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/parallel/m29w/m29w128g.pdf?rev=d22b70b2c0494a7187cd45dda03ceb9a) ([mirror](https://github.com/velipso/gvasm/blob/main/mirror/m29w128gx.pdf))
+* [S29GL128N/S29GL256N/S29GL512N](https://www.cypress.com/file/219941/download) ([mirror](https://github.com/velipso/gvasm/blob/main/mirror/s29glxxxn.pdf))

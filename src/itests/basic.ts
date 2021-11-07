@@ -319,7 +319,7 @@ str r1, [r0]           /// 00 10 80 e5
     files: {
       '/root/main': `
 .base 0
-@zero: .i32 @zero /// 00 00 00 00
+@zero: .i32 @zero  /// 00 00 00 00
 `,
     },
   });
@@ -330,28 +330,38 @@ str r1, [r0]           /// 00 10 80 e5
     kind: 'make',
     files: {
       '/root/main': `
-@main: .i32 @main /// 00 00 00 08
+@main: .i32 @main  /// 00 00 00 08
 `,
     },
   });
 
   def({
-    name: 'basic.base-after-labels',
-    desc: 'Can\'t use .base after labels',
+    name: 'basic.base-in-scope',
+    desc: 'Use .base inside a scope',
     kind: 'make',
-    error: true,
     files: {
-      '/root/main': `@main: .base 0`,
+      '/root/main': `
+.i32 $_base         /// 00 00 00 08
+.begin
+  .base 0x02000000
+  .i32 $_base       /// 00 00 00 02
+.end
+.i32 $_base         /// 00 00 00 08
+`,
     },
   });
 
   def({
-    name: 'basic.base-after-printf',
-    desc: 'Can\'t use .base after .printf',
+    name: 'basic.base-affects-adr',
+    desc: 'Using .base affects addresses in code',
     kind: 'make',
-    error: true,
     files: {
-      '/root/main': `.printf "hi"\n.base 0`,
+      '/root/main': `
+.thumb
+ldr r0, =0x08000004  /// 00 a0
+.base 0x02000000
+ldr r0, =0x02000004  /// 00 a0
+`,
     },
   });
 

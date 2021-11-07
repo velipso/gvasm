@@ -35,6 +35,7 @@ export interface IMakeArgs {
 interface IDotStackBegin {
   kind: 'begin';
   arm: boolean;
+  base: number;
   flp: IFilePos;
 }
 
@@ -70,10 +71,10 @@ type IDotStack =
 
 interface IParseState {
   arm: boolean;
+  base: number;
   main: boolean;
   bytes: Bytes;
   ctable: ConstTable;
-  blockBase: boolean;
   active: boolean;
   struct: false | {
     nextByte: number;
@@ -290,9 +291,7 @@ function parseDotStatement(
       if (line.length > 0) {
         throw 'Invalid .base statement';
       }
-      if (state.blockBase) {
-        throw 'Cannot use .base after other statements';
-      }
+      setBase(state, amount);
       state.bytes.setBase(amount);
       break;
     }
@@ -1283,7 +1282,7 @@ function parseBlockStatement(
         state.ctable.scopeBegin();
         state.bytes.scopeBegin();
       }
-      state.dotStack.push({ kind: 'begin', arm: isARM(state), flp });
+      state.dotStack.push({ kind: 'begin', arm: isARM(state), base: getBase(state), flp });
       return true;
     case '.script':
       if (line.length > 0 && state.active) {
@@ -1542,6 +1541,7 @@ function parseBlockStatement(
           // if we're switching Thumb <-> ARM due to .end, then realign
           state.bytes.align(ds.arm ? 2 : 4);
         }
+        state.bytes.setBase(getBase(state));
       } else if (ds.kind === 'if') {
         state.active = recalcActive(state);
       } else if (ds.kind === 'struct') {
@@ -1713,6 +1713,27 @@ function setARM(state: IParseState, arm: boolean) {
   state.arm = arm;
 }
 
+function getBase(state: IParseState): number {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === 'begin') {
+      return ds.base;
+    }
+  }
+  return state.base;
+}
+
+function setBase(state: IParseState, base: number) {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === 'begin') {
+      ds.base = base;
+      return;
+    }
+  }
+  state.base = base;
+}
+
 export async function makeFromFile(
   filename: string,
   posix: boolean,
@@ -1731,10 +1752,12 @@ export async function makeFromFile(
 
   const lineStrs = splitLines(filename, data, true);
   const lx = lexNew();
+  const bytes = new Bytes();
   const state: IParseState = {
     arm: true,
+    base: bytes.getBase(),
     main: true,
-    bytes: new Bytes(),
+    bytes,
     ctable: new ConstTable((cname) => {
       if (cname === '$_version') {
         return version;
@@ -1753,7 +1776,6 @@ export async function makeFromFile(
       }
       return false;
     }),
-    blockBase: false,
     active: true,
     struct: false,
     dotStack: [],
@@ -1848,7 +1870,6 @@ export async function makeFromFile(
           try {
             const includeEmbed = parseLine(state, tokens);
             tokens.splice(0, tokens.length); // remove all tokens
-            state.blockBase = true;
 
             if (includeEmbed && 'stdlib' in includeEmbed) {
               lineStrs.unshift(...splitLines('stdlib', stdlib, false));

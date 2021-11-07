@@ -65,13 +65,6 @@ export class Bytes {
   }
 
   public setBase(base: number) {
-    if (
-      this.array.length > 0 ||
-      Object.keys(this.globalLabels).length > 0 ||
-      this.localLabels.some((l) => Object.keys(l).length > 0)
-    ) {
-      throw 'Cannot use .base after other statements';
-    }
     this.base = base;
   }
 

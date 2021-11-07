@@ -15,6 +15,7 @@ Helpful Tidbits
 
 ```
   // Thumb code here
+  .align 4, nop
   bx pc
   .arm
   // ARM code here
@@ -25,6 +26,7 @@ Helpful Tidbits
 ```
   .thumb
 @subroutine.thumb:
+  .align 4, nop
   bx pc // change to ARM mode
   .arm
 @subroutine.arm:

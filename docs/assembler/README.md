@@ -344,6 +344,8 @@ Pads output with `<fill>` (default `0x00`) until the next address is aligned to 
 
 For examples, `.align 4` will output `0x00` until the next byte is aligned to the word boundary.
 
+Supports padding using a `nop` statement by setting `<fill>` to `nop`, ex: `.align 4, nop`.
+
 ### `.arm`
 
 Switches the assembler into ARM mode (default).  Automatically aligns to word boundary.
@@ -397,8 +399,18 @@ For example, `.b32fill 10` is equivalent to `.b32 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
 
 ### `.base <base>`
 
-Sets the base address of the ROM.  For regular GBA games, this is `0x08000000` (default).  Must be
-the first statement.
+Sets the base address of the following code.  For regular GBA games, this is `0x08000000` (default).
+
+Note that `.base` is scoped to the closest `.begin`/`.end` block:
+
+```
+.printf "%#08X", $_base   // 0x08000000
+.begin
+  .base 0x02000000
+  .printf "%#08X", $_base // 0x02000000
+.end
+.printf "%#08X", $_base   // 0x08000000
+```
 
 ### `.begin` / `.end`
 

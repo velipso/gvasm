@@ -103,6 +103,35 @@ export class Bytes {
     }
   }
 
+  public alignNop16(amount: number, nop0: number, nop1: number) {
+    let addr = this.nextAddress();
+    while ((addr % amount) !== 0) {
+      this.push((addr % 2) ? nop1 : nop0);
+      addr = this.nextAddress();
+    }
+  }
+
+  public alignNop32(amount: number, nop0: number, nop1: number, nop2: number, nop3: number) {
+    let addr = this.nextAddress();
+    while ((addr % amount) !== 0) {
+      switch (addr % 4) {
+        case 0:
+          this.push(nop0);
+          break;
+        case 1:
+          this.push(nop1);
+          break;
+        case 2:
+          this.push(nop2);
+          break;
+        case 3:
+          this.push(nop3);
+          break;
+      }
+      addr = this.nextAddress();
+    }
+  }
+
   private rewrite8(): (v: number) => void {
     const i = this.array.length;
     this.write8(0);

@@ -310,16 +310,29 @@ function parseDotStatement(
       setARM(state, false);
       break;
     case '.align': {
-      const [amount, fill] = parseNumCommas(
-        state,
-        line,
-        [false, 0],
-        'Invalid .align statement',
-      );
-      if (amount < 2 || amount > 0x02000000) {
+      const amount = parseNum(state, line);
+      let fill: number | 'nop' = 0;
+      if (isNextId(line, ',')) {
+        line.shift();
+        if (isNextId(line, 'nop')) {
+          line.shift();
+          fill = 'nop';
+        } else {
+          fill = parseNum(state, line) & 0xff;
+        }
+      }
+      if (line.length > 0 || amount < 2 || amount > 0x02000000) {
         throw 'Invalid .align statement';
       }
-      state.bytes.align(amount, fill & 0xff);
+      if (fill === 'nop') {
+        if (isARM(state)) {
+          state.bytes.alignNop32(amount, 0x00, 0x00, 0xa0, 0xe1);
+        } else {
+          state.bytes.alignNop16(amount, 0xc0, 0x46);
+        }
+      } else {
+        state.bytes.align(amount, fill);
+      }
       break;
     }
     case '.i8':

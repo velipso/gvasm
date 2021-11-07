@@ -394,6 +394,22 @@ ldr r0, =0x02000004  /// 00 a0
   });
 
   def({
+    name: 'basic.align-nop',
+    desc: 'Align using nop statements',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.base 0
+.i8 0, 0, 0     /// 00 00 00
+.align 12, nop  /// e1 00 00 a0 e1 00 00 a0 e1
+.thumb
+.i8 0, 0, 0     /// 00 00 00
+.align 12, nop  /// 46 c0 46 c0 46 c0 46 c0 46
+`,
+    },
+  });
+
+  def({
     name: 'basic.title',
     desc: 'Use .title command',
     kind: 'make',

@@ -1307,13 +1307,13 @@ function parseBlockStatement(
         const scr = sink.scr_new(
           {
             f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
-              if (file === flp.filename) {
+              if (file === startFile || file === flp.filename) {
                 return Promise.resolve(sink.fstype.FILE);
               }
               return state.fileType(file);
             },
             f_fsread: async (scr: sink.scr, file: string): Promise<boolean> => {
-              if (file === flp.filename) {
+              if (file === startFile || file === flp.filename) {
                 await sink.scr_write(
                   scr,
                   body.map((b) => b.data).join('\n'),

@@ -1303,17 +1303,18 @@ function parseBlockStatement(
       }
       if (state.active) {
         const body: ILineStr[] = [];
+        const resolvedStartFile = path.resolve(flp.filename);
         const startFile = path.basename(flp.filename);
         const scr = sink.scr_new(
           {
             f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
-              if (file === startFile || file === flp.filename) {
+              if (file === resolvedStartFile) {
                 return Promise.resolve(sink.fstype.FILE);
               }
               return state.fileType(file);
             },
             f_fsread: async (scr: sink.scr, file: string): Promise<boolean> => {
-              if (file === startFile || file === flp.filename) {
+              if (file === resolvedStartFile) {
                 await sink.scr_write(
                   scr,
                   body.map((b) => b.data).join('\n'),
@@ -1335,7 +1336,7 @@ function parseBlockStatement(
               return false;
             },
           },
-          path.dirname(flp.filename),
+          path.dirname(resolvedStartFile),
           state.posix,
           false,
         );

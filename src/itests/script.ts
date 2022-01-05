@@ -180,4 +180,19 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: 'script.large-put',
+    desc: 'Support a lot of puts',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script
+  for: range 200000
+    put "// hello"
+  end
+.end
+`,
+    },
+  });
 }

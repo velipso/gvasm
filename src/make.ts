@@ -1832,7 +1832,10 @@ export async function makeFromFile(
             loadLibIntoContext(ctx, put, state.store, lineStr.main);
             const run = await sink.ctx_run(ctx);
             if (run === sink.run.PASS) {
-              lineStrs.unshift(...put, lineStr);
+              lineStrs.unshift(lineStr);
+              for (let i = put.length - 1; i >= 0; i--) {
+                lineStrs.unshift(put[i]);
+              }
               state.script = false;
             } else {
               return {

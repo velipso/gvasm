@@ -41,3 +41,15 @@ export async function loadImage(bytes: Uint8Array): Promise<Image | null> {
 export function pathJoin(posix: boolean, ...paths: string[]): string {
   return posix ? path.posix.join(...paths) : path.win32.join(...paths);
 }
+
+export function pathDirname(posix: boolean, file: string): string {
+  return posix ? path.posix.dirname(file) : path.win32.dirname(file);
+}
+
+export function pathBasename(posix: boolean, file: string): string {
+  return posix ? path.posix.basename(file) : path.win32.basename(file);
+}
+
+export function pathResolve(posix: boolean, ...paths: string[]): string {
+  return posix ? path.posix.resolve(...paths) : path.win32.resolve(...paths);
+}

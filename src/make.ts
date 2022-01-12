@@ -19,7 +19,7 @@ import { assertNever, b16, b32, ILineStr, printf, splitLines } from './util.ts';
 import { Arm, Thumb } from './ops.ts';
 import { Expression, ExpressionBuilder } from './expr.ts';
 import { Bytes } from './bytes.ts';
-import { path, pathJoin } from './deps.ts';
+import { path, pathBasename, pathDirname, pathJoin, pathResolve } from './deps.ts';
 import { ConstTable } from './const.ts';
 import { version } from './main.ts';
 import { stdlib } from './stdlib.ts';
@@ -1303,8 +1303,8 @@ function parseBlockStatement(
       }
       if (state.active) {
         const body: ILineStr[] = [];
-        const resolvedStartFile = path.resolve(flp.filename);
-        const startFile = path.basename(flp.filename);
+        const resolvedStartFile = pathResolve(state.posix, flp.filename);
+        const startFile = pathBasename(state.posix, flp.filename);
         const scr = sink.scr_new(
           {
             f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
@@ -1336,7 +1336,7 @@ function parseBlockStatement(
               return false;
             },
           },
-          path.dirname(resolvedStartFile),
+          pathDirname(state.posix, resolvedStartFile),
           state.posix,
           false,
         );
@@ -1896,7 +1896,7 @@ export async function makeFromFile(
               const { include } = includeEmbed;
               const full = isAbsolute(include)
                 ? include
-                : pathJoin(posix, path.dirname(flp.filename), include);
+                : pathJoin(posix, pathDirname(posix, flp.filename), include);
 
               const includeKey = `${flpString(flp)}:${full}`;
               if (alreadyIncluded.has(includeKey)) {
@@ -1920,7 +1920,7 @@ export async function makeFromFile(
               const { embed } = includeEmbed;
               const full = isAbsolute(embed)
                 ? embed
-                : pathJoin(posix, path.dirname(flp.filename), embed);
+                : pathJoin(posix, pathDirname(posix, flp.filename), embed);
 
               let data2;
               try {

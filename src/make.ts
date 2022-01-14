@@ -18,7 +18,7 @@ import {
 import { assertNever, b16, b32, ILineStr, printf, splitLines } from './util.ts';
 import { Arm, Thumb } from './ops.ts';
 import { Expression, ExpressionBuilder } from './expr.ts';
-import { Bytes } from './bytes.ts';
+import { Bytes, IBase } from './bytes.ts';
 import { path, pathBasename, pathDirname, pathJoin, pathResolve } from './deps.ts';
 import { ConstTable } from './const.ts';
 import { version } from './main.ts';
@@ -35,7 +35,7 @@ export interface IMakeArgs {
 interface IDotStackBegin {
   kind: 'begin';
   arm: boolean;
-  base: number;
+  base: IBase;
   flp: IFilePos;
 }
 
@@ -71,8 +71,8 @@ type IDotStack =
 
 interface IParseState {
   arm: boolean;
-  base: number;
   main: boolean;
+  base: IBase;
   bytes: Bytes;
   ctable: ConstTable;
   active: boolean;
@@ -291,8 +291,9 @@ function parseDotStatement(
       if (line.length > 0) {
         throw 'Invalid .base statement';
       }
-      setBase(state, amount);
-      state.bytes.setBase(amount);
+      const base = state.bytes.makeBase(amount);
+      setBase(state, base);
+      state.bytes.setBase(base);
       break;
     }
     case '.arm':
@@ -1727,7 +1728,7 @@ function setARM(state: IParseState, arm: boolean) {
   state.arm = arm;
 }
 
-function getBase(state: IParseState): number {
+function getBase(state: IParseState): IBase {
   for (let i = state.dotStack.length - 1; i >= 0; i--) {
     const ds = state.dotStack[i];
     if (ds.kind === 'begin') {
@@ -1737,7 +1738,7 @@ function getBase(state: IParseState): number {
   return state.base;
 }
 
-function setBase(state: IParseState, base: number) {
+function setBase(state: IParseState, base: IBase) {
   for (let i = state.dotStack.length - 1; i >= 0; i--) {
     const ds = state.dotStack[i];
     if (ds.kind === 'begin') {
@@ -1786,7 +1787,7 @@ export async function makeFromFile(
       } else if (cname === '$_pc') {
         return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
       } else if (cname === '$_base') {
-        return state.bytes.getBase();
+        return state.bytes.getBase().value;
       }
       return false;
     }),

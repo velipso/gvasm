@@ -293,4 +293,20 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: 'expr.precedence-bug',
+    desc: 'Add/subtract should evaluate before greater than',
+    kind: 'make',
+    stdout: ['1', '1'],
+    files: {
+      '/root/main': `
+.def $a = 0x03000001
+.i32 0 /// 00 00 00 00
+@b:
+.printf "%d", @b - 0x08000000 + 0x03000000 > $a
+.printf "%d", $a < @b - 0x08000000 + 0x03000000
+`,
+    },
+  });
 }

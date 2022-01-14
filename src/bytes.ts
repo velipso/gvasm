@@ -39,8 +39,16 @@ interface IPendingExpr {
   rewriteInst(v: number): void;
 }
 
+export interface IBase {
+  value: number;
+  relativeTo: number;
+}
+
 export class Bytes {
-  private base = 0x08000000;
+  private base: IBase = {
+    value: 0x08000000,
+    relativeTo: 0,
+  };
   private array: number[] = [];
   private pendingExprs: IPendingExpr[] = [];
   private globalLabels: { [name: string]: number } = {};
@@ -64,12 +72,16 @@ export class Bytes {
     return this.base;
   }
 
-  public setBase(base: number) {
+  public makeBase(value: number) {
+    return { value, relativeTo: this.array.length };
+  }
+
+  public setBase(base: IBase) {
     this.base = base;
   }
 
   public nextAddress() {
-    return this.base + this.array.length;
+    return this.base.value + this.array.length - this.base.relativeTo;
   }
 
   private push(...v: number[]) {

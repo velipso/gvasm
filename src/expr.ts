@@ -462,26 +462,34 @@ export class ExpressionBuilder {
         return 10;
       };
 
+      const checkPrecedence = (
+        left: IExprWithParam,
+        op: BinaryOp,
+        right: IExprWithParam,
+      ): IExprBinaryWithParam => {
+        if (right.kind === 'binary') {
+          const inner = checkPrecedence(left, op, right.left);
+          if (precedence(inner.op) > precedence(right.op)) {
+            // inner.left inner.op (inner.right===right.left right.op right.right)
+            inner.right = right;
+            return inner;
+          } else {
+            // (inner.left inner.op inner.right===right.left) right.op right.right
+            right.left = inner;
+            return right;
+          }
+        } else {
+          // right isn't binary, so no conflict of precedence
+          return { kind: 'binary', op, left, right };
+        }
+      };
+
       // look for binary operators
       if (line.length > 0 && line[0].kind === TokEnum.ID) {
         const id = line[0].id;
         if (isBinaryOp(id)) {
           line.shift();
-          const right = term();
-          if (
-            right.kind === 'binary' && precedence(id) <= precedence(right.op)
-          ) {
-            // (result id right.left) right.kind right.right
-            result = {
-              kind: 'binary',
-              op: right.op,
-              left: { kind: 'binary', op: id, left: result, right: right.left },
-              right: right.right,
-            };
-          } else {
-            // result id (right.left right.kind right.right)
-            result = { kind: 'binary', op: id, left: result, right };
-          }
+          result = checkPrecedence(result, id, term());
         } else if (id === '?') {
           line.shift();
           const iftrue = term();

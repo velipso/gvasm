@@ -366,6 +366,24 @@ ldr r0, =0x02000004  /// 00 a0
   });
 
   def({
+    name: 'basic.base-relative-bug',
+    desc: 'Base should be relative to where it was declared',
+    kind: 'make',
+    files: {
+      '/root/main': `
+@a:
+.i32 0  /// 00 00 00 00
+.base 0x03000000
+.i32 0  /// 00 00 00 00
+@b:
+.i32 0  /// 00 00 00 00
+.i32 @a /// 00 00 00 08
+.i32 @b /// 04 00 00 03
+`,
+    },
+  });
+
+  def({
     name: 'basic.align',
     desc: 'Use .align command',
     kind: 'make',

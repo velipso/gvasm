@@ -33,7 +33,7 @@ export function loadLibIntoContext(
       for (const arg of args) {
         out.push(sink.tostr(arg));
       }
-      put.push(...splitLines(flp.filename, out.join('\n'), main, flp.line));
+      put.push(...splitLines(flp.filename, out.join(' '), main, flp.line));
       return Promise.resolve(sink.NIL);
     },
   );

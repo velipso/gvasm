@@ -195,4 +195,17 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: 'script.put-space',
+    desc: 'Put with multiple arguments should join with space',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script
+  put ".i8 ", 0xff /// ff
+.end
+`,
+    },
+  });
 }

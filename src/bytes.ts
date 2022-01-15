@@ -106,7 +106,9 @@ export class Bytes {
   }
 
   public writeArray(v: number[] | Uint8Array) {
-    this.push(...v);
+    for (let i = 0; i < v.length; i++) {
+      this.push(v[i]);
+    }
   }
 
   public align(amount: number, fill = 0) {

@@ -1729,7 +1729,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
           }
         }
         lx.state = lex_enum.SPECIAL1;
-      } else if (isIdentStart(ch1)) {
+      } else if (isIdentStart(ch1) || ch1 === '$') {
         lx.str = ch1;
         lx.state = lex_enum.IDENT;
       } else if (isNum(ch1)) {
@@ -1862,7 +1862,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.IDENT:
-      if (!isIdentBody(ch1)) {
+      if (!(isIdentBody(ch1) || (lx.str === '$' && ch1 === '$'))) {
         const ksk = ks_str(lx.str);
         if (ksk !== ks_enum.INVALID) {
           tks.push(tok_ks(flpS, ksk));
@@ -1872,7 +1872,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         lx.state = lex_enum.START;
         lex_process(lx, tks);
       } else {
-        lx.str += ch1;
+        lx.str += lx.str.startsWith('$') ? ch1.toLowerCase() : ch1;
         if (lx.str.length > 1024) {
           tks.push(tok_error(flpS, 'Identifier too long'));
         }
@@ -3312,6 +3312,10 @@ function parser_lookup(
   return null;
 }
 
+function hasInvalidNames(names: string[]) {
+  return names.some((n) => n.startsWith('$'));
+}
+
 // returns null for success, or an error message
 function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
   if (pr.tk1 === null) {
@@ -3461,6 +3465,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting names to be list of strings');
       }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name';
+      }
       st.next.exprTerm = expr_names(flpL, st.names);
       st.names = null;
       parser_pop(pr);
@@ -3525,6 +3532,12 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
     case prs_enum.LVALUES_TERM_LIST_TAIL_LOOKUP:
       if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
         return null;
+      }
+      if (st.names === null || st.names === true) {
+        throw new Error('Parser expecting lvalue tail lookup to return names');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name';
       }
       st.state = prs_enum.LVALUES_TERM_LIST_TAIL_DONE;
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -3640,6 +3653,12 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.next === null) {
         throw new Error('Parser expecting lvalues to return state');
       }
+      if (st.names === null || st.names === true) {
+        throw new Error('Parser expecting def tail lookup to return names');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name in def';
+      }
       st.next.names = st.names;
       parser_pop(pr);
       st = pr.state;
@@ -3685,6 +3704,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting declare lookup to return names');
       }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name in declare';
+      }
       stmts.push(ast_declare(flpS, decl_local(flpL, st.names)));
       if (tok_isKS(tk1, ks_enum.COMMA)) {
         st.state = prs_enum.DECLARE;
@@ -3698,6 +3720,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting declare lookup to return names');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name in declare';
       }
       stmts.push(ast_declare(flpS, decl_native(flpL, st.names, tk1.str)));
       st.state = prs_enum.DECLARE_STR2;
@@ -3736,6 +3761,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.lvalues === null) {
         throw new Error('Parser def expecting lvalues');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name used in def';
       }
       stmts.push(ast_def1(flpS, flpL, st.names, st.lvalues));
       st.state = prs_enum.DEF_BODY;
@@ -3820,6 +3848,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser `for` lookup expecting names');
       }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name used in for loop';
+      }
       st.names2 = st.names;
       st.names = null;
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -3840,6 +3871,12 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
     case prs_enum.FOR_VARS2_LOOKUP:
       if (!tok_isKS(tk1, ks_enum.COLON)) {
         return 'Expecting `:`';
+      }
+      if (st.names === null || st.names === true) {
+        throw new Error('Parser `for` lookup expecting names');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name used in for loop';
       }
       st.state = prs_enum.FOR_VARS_DONE;
       return null;
@@ -3983,6 +4020,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (!tok_isKS(tk1, ks_enum.LPAREN)) {
         return 'Expecting file as constant string literal';
       }
+      if (st.names !== null && st.names !== true && hasInvalidNames(st.names)) {
+        return 'Invalid name in include';
+      }
       st.state = prs_enum.INCLUDE_STR;
       return null;
 
@@ -4029,6 +4069,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting `namespace` names');
       }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name used in namespace';
+      }
       stmts.push(ast_namespace1(flpS, st.names));
       st.state = prs_enum.NAMESPACE_BODY;
       parser_push(pr, prs_enum.BODY);
@@ -4069,6 +4112,9 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
     case prs_enum.USING_LOOKUP:
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting `using` names');
+      }
+      if (hasInvalidNames(st.names)) {
+        return 'Invalid name in using';
       }
       stmts.push(ast_using(flpS, st.names));
       if (tok_isKS(tk1, ks_enum.COMMA)) {

@@ -35,9 +35,11 @@ export class ConstTable {
   private globals: IConstTable = {};
   private locals: IConstTable[] = [{}];
   private macroParams: IMacroParamTable[] = [{}];
+  private nativeConsts: string[];
   private lookupNative: (cname: string) => number | false;
 
-  constructor(lookupNative: (cname: string) => number | false) {
+  constructor(nativeConsts: string[], lookupNative: (cname: string) => number | false) {
+    this.nativeConsts = nativeConsts;
     this.lookupNative = lookupNative;
   }
 
@@ -113,5 +115,13 @@ export class ConstTable {
       }
     }
     throw `Unknown constant: ${cname}`;
+  }
+
+  public listScope(): string[] {
+    return [
+      ...this.nativeConsts,
+      ...Object.keys(this.globals),
+      ...Object.keys(this.locals[0]),
+    ];
   }
 }

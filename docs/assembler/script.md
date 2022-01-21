@@ -735,6 +735,21 @@ var ls = {1, 2} | list.push 3 | list.unshift 0 | list.rev
 say ls  // {3, 2, 1, 0}
 ```
 
+Predefined Commands
+-------------------
+
+Scripts inherit commands and values from the outer assembler scope:
+
+```
+.def $FOO = 1
+.def $lerp($a, $b, $t) = $a + ($b - $a) * 100 / $t
+
+.script
+  say $FOO // outputs 1
+  say $lerp 5, 10, 20 // outputs 6
+.end
+```
+
 Namespaces
 ----------
 

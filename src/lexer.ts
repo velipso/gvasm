@@ -454,3 +454,22 @@ export function lexAddLine(
   }
   return tks;
 }
+
+export function lexKeyValue(line: string): { key: string; value: number } | false {
+  const lx = lexNew();
+  const tks = lexAddLine(lx, '', 1, line);
+  const tk1 = tks.shift();
+  const tk2 = tks.shift();
+  const tk3 = tks.shift();
+  const tk4 = tks.shift();
+  if (
+    tk1 && tk2 && tk3 && tk4 && tks.length === 0 &&
+    tk1.kind === TokEnum.ID && tk1.id.length >= 1 && isAlpha(tk1.id.charAt(0)) &&
+    tk2.kind === TokEnum.ID && tk2.id === '=' &&
+    tk3.kind === TokEnum.NUM &&
+    tk4.kind === TokEnum.NEWLINE
+  ) {
+    return { key: tk1.id, value: tk3.num };
+  }
+  return false;
+}

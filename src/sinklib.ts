@@ -8,13 +8,17 @@
 import { ILineStr, splitLines } from './util.ts';
 import { loadImage } from './deps.ts';
 import * as sink from './sink.ts';
+import { ConstTable } from './const.ts';
 
-export function loadLibIntoScript(scr: sink.scr) {
+export function loadLibIntoScript(scr: sink.scr, ctable: ConstTable) {
   sink.scr_autonative(scr, 'put');
   sink.scr_autonative(scr, 'store.set');
   sink.scr_autonative(scr, 'store.get');
   sink.scr_autonative(scr, 'store.has');
   sink.scr_autonative(scr, 'image.load');
+  for (const c of ctable.listScope()) {
+    sink.scr_autonative(scr, c);
+  }
 }
 
 export function loadLibIntoContext(
@@ -22,6 +26,7 @@ export function loadLibIntoContext(
   put: ILineStr[],
   store: { [key: string]: string },
   main: boolean,
+  ctable: ConstTable,
 ) {
   sink.ctx_autonative(
     ctx,
@@ -90,24 +95,24 @@ export function loadLibIntoContext(
     null,
     async (_ctx: sink.ctx, args: sink.val[]) => {
       if (args.length <= 0) {
-        return Promise.reject('Expecting string or list for argument 1');
+        throw 'Expecting string or list for argument 1';
       }
       let data = args[0];
       if (typeof data === 'string') {
         data = data.split('').map((a) => a.charCodeAt(0)) as sink.list;
       }
       if (!Array.isArray(data)) {
-        return Promise.reject('Expecting string or list for argument 1');
+        throw 'Expecting string or list for argument 1';
       }
       const img = await loadImage(new Uint8Array(data as number[])).catch(() => null);
       if (img === null) {
-        return Promise.reject('Unknown image format');
+        throw 'Unknown image format';
       }
       if (
         img.width <= 0 || img.height <= 0 ||
         img.width * img.height * 4 !== img.data.length
       ) {
-        return Promise.reject('Unsupported color format, please use RGBA');
+        throw 'Unsupported color format, please use RGBA';
       }
       const ret = new sink.list();
       for (let y = 0, k = 0; y < img.height; y++) {
@@ -127,4 +132,26 @@ export function loadLibIntoContext(
       return ret;
     },
   );
+  for (const c of ctable.listScope()) {
+    sink.ctx_autonative(
+      ctx,
+      c,
+      null,
+      (_ctx: sink.ctx, args: sink.val[]) => {
+        if (args.some((a) => typeof a !== 'number')) {
+          return Promise.reject(`Only number arguments allowed for $c`);
+        }
+        const params = (args as number[]).map((a) => Math.floor(a) | 0);
+        const builder = ctable.lookup(c);
+        if (builder.kind !== 'expr') {
+          return Promise.reject(`Constant $c is not an expression`);
+        }
+        const v = builder.expr.build(params).value();
+        if (v === false) {
+          return Promise.reject(`Can't determine value of $c at this time`);
+        }
+        return Promise.resolve(v);
+      },
+    );
+  }
 }

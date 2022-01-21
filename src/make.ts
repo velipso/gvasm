@@ -30,6 +30,7 @@ import * as sink from './sink.ts';
 export interface IMakeArgs {
   input: string;
   output: string;
+  defines: { key: string; value: number }[];
 }
 
 interface IDotStackBegin {
@@ -1342,7 +1343,7 @@ function parseBlockStatement(
           false,
         );
         sink.scr_addpath(scr, '.');
-        loadLibIntoScript(scr);
+        loadLibIntoScript(scr, state.ctable);
         state.script = { scr, startFile, body };
       } else {
         state.script = true; // we're in a script, but we're ignoring it
@@ -1751,6 +1752,7 @@ function setBase(state: IParseState, base: IBase) {
 
 export async function makeFromFile(
   filename: string,
+  defines: { key: string; value: number }[],
   posix: boolean,
   isAbsolute: (filename: string) => boolean,
   fileType: (filename: string) => Promise<sink.fstype>,
@@ -1773,24 +1775,35 @@ export async function makeFromFile(
     base: bytes.getBase(),
     main: true,
     bytes,
-    ctable: new ConstTable((cname) => {
-      if (cname === '$_version') {
-        return version;
-      } else if (cname === '$_arm') {
-        return isARM(state) ? 1 : 0;
-      } else if (cname === '$_thumb') {
-        return !isARM(state) ? 1 : 0;
-      } else if (cname === '$_main') {
-        return state.main ? 1 : 0;
-      } else if (cname === '$_here') {
-        return state.bytes.nextAddress();
-      } else if (cname === '$_pc') {
-        return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
-      } else if (cname === '$_base') {
-        return state.bytes.getBase().value;
-      }
-      return false;
-    }),
+    ctable: new ConstTable(
+      [
+        '$_version',
+        '$_arm',
+        '$_thumb',
+        '$_main',
+        '$_here',
+        '$_pc',
+        '$_base',
+      ],
+      (cname) => {
+        if (cname === '$_version') {
+          return version;
+        } else if (cname === '$_arm') {
+          return isARM(state) ? 1 : 0;
+        } else if (cname === '$_thumb') {
+          return !isARM(state) ? 1 : 0;
+        } else if (cname === '$_main') {
+          return state.main ? 1 : 0;
+        } else if (cname === '$_here') {
+          return state.bytes.nextAddress();
+        } else if (cname === '$_pc') {
+          return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
+        } else if (cname === '$_base') {
+          return state.bytes.getBase().value;
+        }
+        return false;
+      },
+    ),
     active: true,
     struct: false,
     dotStack: [],
@@ -1802,6 +1815,14 @@ export async function makeFromFile(
     readBinaryFile,
     log,
   };
+
+  for (const def of defines) {
+    try {
+      state.ctable.defNum(`\$${def.key.toLowerCase()}`, def.value);
+    } catch (e) {
+      return { errors: [e] };
+    }
+  }
 
   const alreadyIncluded = new Set<string>();
   const tokens: ITok[] = [];
@@ -1830,7 +1851,7 @@ export async function makeFromFile(
               f_warn: () => Promise.resolve(sink.NIL),
               f_ask: () => Promise.resolve(sink.NIL),
             });
-            loadLibIntoContext(ctx, put, state.store, lineStr.main);
+            loadLibIntoContext(ctx, put, state.store, lineStr.main, state.ctable);
             const run = await sink.ctx_run(ctx);
             if (run === sink.run.PASS) {
               lineStrs.unshift(lineStr);
@@ -1968,10 +1989,11 @@ export async function makeFromFile(
   return { result };
 }
 
-export async function make({ input, output }: IMakeArgs): Promise<number> {
+export async function make({ input, output, defines }: IMakeArgs): Promise<number> {
   try {
     const result = await makeFromFile(
       input,
+      defines,
       path.sep === '/',
       path.isAbsolute,
       async (file: string) => {

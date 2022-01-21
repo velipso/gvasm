@@ -10,8 +10,9 @@ import { IMakeArgs, make } from './make.ts';
 import { dis, IDisArgs } from './dis.ts';
 import { IItestArgs, itest } from './itest.ts';
 import { argParse, path } from './deps.ts';
+import { lexKeyValue } from './lexer.ts';
 
-export const version = 1002022;
+export const version = 1003000;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -154,18 +155,21 @@ function parseInitArgs(args: string[]): number | IInitArgs {
 }
 
 function printMakeHelp() {
-  console.log(`gvasm make <input> [-o <output>]
+  console.log(`gvasm make <input> [-o <output>] [-d NAME=value]
 
-<input>      The input .gvasm file
--o <output>  The output file (default: input with .gba extension)`);
+<input>        The input .gvasm file
+-o <output>    The output file (default: input with .gba extension)
+-d NAME=value  Define the global \$NAME, set to value (integer), ex:
+               -d FOO=1         is equivalent to:
+               .def \$FOO = 1`);
 }
 
 function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['output'],
+    string: ['output', 'define'],
     boolean: ['help'],
-    alias: { h: 'help', o: 'output' },
+    alias: { h: 'help', o: 'output', d: 'define' },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -192,10 +196,21 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   }
   const input = a._[0] as string;
   const output = a.output;
+  const defines: { key: string; value: number }[] = [];
+  const defs: string[] = typeof a.define === 'string' ? [a.define] : a.define ?? [];
+  for (const def of defs) {
+    const kv = lexKeyValue(def);
+    if (kv === false) {
+      console.error(`Invalid define: ${def}`);
+      return 1;
+    }
+    defines.push(kv);
+  }
   return {
     input,
     output: output ??
       path.format({ ...path.parse(input), base: undefined, ext: '.gba' }),
+    defines,
   };
 }
 

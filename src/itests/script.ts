@@ -208,4 +208,162 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: 'script.def-available',
+    desc: 'Defined constants are available in scripts',
+    kind: 'make',
+    stdout: ['1', '2', '175'],
+    files: {
+      '/root/main': `
+.def $FOO = 1
+.def $$BAR = 2
+.def $lerp($a, $b, $t) = $a + ($b - $a) * $t / 100
+.script
+  say $FOO
+  say $$BAR
+  say $lerp 100, 200, 75
+.end
+`,
+    },
+  });
+
+  function defLines(name: string, desc: string, lines: string[]) {
+    let i = 1;
+    for (const line of lines) {
+      def({
+        name: `${name}-${i}`,
+        desc,
+        kind: 'make',
+        error: true,
+        files: {
+          '/root/main': `
+.script
+  ${line}
+.end
+`,
+          '/root/inc.sink': '',
+        },
+      });
+      i++;
+    }
+  }
+
+  defLines(
+    'script.no-const-var',
+    'Don\'t allow consts in vars',
+    [
+      'var $foo = 1',
+      'var $$foo = 1',
+      'var a.$foo = 2',
+      'var a.$$foo = 2',
+      'var $bar.z = 3',
+      'var $$bar.z = 3',
+      'var {...$foo} = {1}',
+      'var {...$$foo} = {1}',
+      'var {...a.$foo} = {2}',
+      'var {...a.$$foo} = {2}',
+      'var {...$bar.z} = {3}',
+      'var {...$$bar.z} = {3}',
+    ],
+  );
+
+  defLines(
+    'script.no-const-for',
+    'Don\'t allow consts in for loops',
+    [
+      'for var $foo: range 0; end',
+      'for var x, $foo: range 0; end',
+      'for var $$foo: range 0; end',
+      'for var x, $$foo: range 0; end',
+      'for var a.$foo: range 0; end',
+      'for var x, a.$foo: range 0; end',
+      'for var a.$$foo: range 0; end',
+      'for var $bar.z: range 0; end',
+      'for var $$bar.z: range 0; end',
+    ],
+  );
+
+  defLines(
+    'script.no-const-def',
+    'Don\'t allow consts in defs',
+    [
+      'def $foo; end',
+      'def $$foo; end',
+      'def a.$foo; end',
+      'def a.$$foo; end',
+      'def $bar.z; end',
+      'def $$bar.z; end',
+      'def x $foo; end',
+      'def x $$foo; end',
+      'def x a.$foo; end',
+      'def x a.$$foo; end',
+      'def x $bar.z; end',
+      'def x $$bar.z; end',
+      'def x ...$foo; end',
+      'def x ...$$foo; end',
+      'def x ...a.$foo; end',
+      'def x ...a.$$foo; end',
+      'def x ...$bar.z; end',
+      'def x ...$$bar.z; end',
+    ],
+  );
+
+  defLines(
+    'script.no-const-namespace',
+    'Don\'t allow consts in namespaces',
+    [
+      'namespace $foo; end',
+      'namespace $$foo; end',
+      'namespace a.$foo; end',
+      'namespace a.$$foo; end',
+      'namespace $bar.z; end',
+      'namespace $$bar.z; end',
+    ],
+  );
+
+  defLines(
+    'script.no-const-using',
+    'Don\'t allow consts in using',
+    [
+      'using $foo',
+      'using $$foo',
+      'using a.$foo',
+      'using a.$$foo',
+      'using $bar.z',
+      'using $$bar.z',
+    ],
+  );
+
+  defLines(
+    'script.no-const-include',
+    'Don\'t allow consts in include',
+    [
+      'include $foo "inc.sink"',
+      'include $$foo "inc.sink"',
+      'include a.$foo "inc.sink"',
+      'include a.$$foo "inc.sink"',
+      'include $bar.z "inc.sink"',
+      'include $$bar.z "inc.sink"',
+    ],
+  );
+
+  defLines(
+    'script.no-const-declare',
+    'Don\'t allow consts in declare',
+    [
+      'declare $foo "inc.sink"',
+      'declare $$foo "inc.sink"',
+      'declare a.$foo "inc.sink"',
+      'declare a.$$foo "inc.sink"',
+      'declare $bar.z "inc.sink"',
+      'declare $$bar.z "inc.sink"',
+      'declare $foo',
+      'declare $$foo',
+      'declare a.$foo',
+      'declare a.$$foo',
+      'declare $bar.z',
+      'declare $$bar.z',
+    ],
+  );
 }

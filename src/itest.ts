@@ -66,6 +66,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   const stdout: string[] = [];
   const res = await makeFromFile(
     '/root/main',
+    [{ key: 'defined123', value: 123 }],
     true,
     (filename) => filename.startsWith('/'),
     (filename) => {

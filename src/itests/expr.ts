@@ -309,4 +309,15 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: 'expr.predefined',
+    desc: 'Predefined values',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.i8 $DEFINED123  /// 7b
+`,
+    },
+  });
 }

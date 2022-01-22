@@ -294,6 +294,12 @@ ${op}lo r3, r9, r14, lsl #0    /// 0e 30 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, lsl #0   /// 0e 30 ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsl #0   /// 0e 30 ${b1}9 3${a0}
 
+${op} r3, r9, r14, asl #0      /// 0e 30 ${b0}9 e${a0}
+${op}s r3, r9, r14, asl #0     /// 0e 30 ${b1}9 e${a0}
+${op}lo r3, r9, r14, asl #0    /// 0e 30 ${b0}9 3${a0}
+${op}slo r3, r9, r14, asl #0   /// 0e 30 ${b1}9 3${a0}
+${op}los r3, r9, r14, asl #0   /// 0e 30 ${b1}9 3${a0}
+
 ${op} r3, r9, r14, lsr #0      /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr #0     /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, lsr #0    /// 0e 30 ${b0}9 3${a0}
@@ -355,28 +361,36 @@ ${op}slo r3, r14, rrx          /// 6e 30 ${b1}3 3${a0}
 ${op}los r3, r14, rrx          /// 6e 30 ${b1}3 3${a0}
 
 ${op} r3, r9, r14, lsl #5      /// 8e 32 ${b0}9 e${a0}
+${op} r3, r9, r14, asl #5      /// 8e 32 ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr #10    /// 2e 35 ${b1}9 e${a0}
 ${op}lo r3, r9, r14, asr #15   /// ce 37 ${b0}9 3${a0}
 ${op}slo r3, r9, r14, ror #20  /// 6e 3a ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsl #25  /// 8e 3c ${b1}9 3${a0}
+${op}los r3, r9, r14, asl #25  /// 8e 3c ${b1}9 3${a0}
 
 ${op} r3, r14, lsl #5          /// 8e 32 ${b0}3 e${a0}
+${op} r3, r14, asl #5          /// 8e 32 ${b0}3 e${a0}
 ${op}s r3, r14, lsr #10        /// 2e 35 ${b1}3 e${a0}
 ${op}lo r3, r14, asr #15       /// ce 37 ${b0}3 3${a0}
 ${op}slo r3, r14, ror #20      /// 6e 3a ${b1}3 3${a0}
 ${op}los r3, r14, lsl #25      /// 8e 3c ${b1}3 3${a0}
+${op}los r3, r14, asl #25      /// 8e 3c ${b1}3 3${a0}
 
 ${op} r3, r9, r14, lsl r10     /// 1e 3a ${b0}9 e${a0}
+${op} r3, r9, r14, asl r10     /// 1e 3a ${b0}9 e${a0}
 ${op}s r3, r9, r14, lsr r10    /// 3e 3a ${b1}9 e${a0}
 ${op}lo r3, r9, r14, asr r10   /// 5e 3a ${b0}9 3${a0}
 ${op}slo r3, r9, r14, ror r10  /// 7e 3a ${b1}9 3${a0}
 ${op}los r3, r9, r14, lsl r10  /// 1e 3a ${b1}9 3${a0}
+${op}los r3, r9, r14, asl r10  /// 1e 3a ${b1}9 3${a0}
 
 ${op} r3, r14, lsl r10         /// 1e 3a ${b0}3 e${a0}
+${op} r3, r14, asl r10         /// 1e 3a ${b0}3 e${a0}
 ${op}s r3, r14, lsr r10        /// 3e 3a ${b1}3 e${a0}
 ${op}lo r3, r14, asr r10       /// 5e 3a ${b0}3 3${a0}
 ${op}slo r3, r14, ror r10      /// 7e 3a ${b1}3 3${a0}
 ${op}los r3, r14, lsl r10      /// 1e 3a ${b1}3 3${a0}
+${op}los r3, r14, asl r10      /// 1e 3a ${b1}3 3${a0}
 
 ${op} r3, r9, #0x34000000      /// 0d 33 ${b0}9 e${a2}
 ${op}s r3, r9, #0x560000       /// 56 38 ${b1}9 e${a2}
@@ -393,6 +407,107 @@ ${op}los r3, #0x50             /// 05 3e ${b1}3 3${a2}
       },
     });
   }
+
+  for (
+    const { op, desc, code } of [
+      { op: 'lsl', desc: 'Logical shift left', code: 0 },
+      { op: 'asl', desc: 'Logical shift left', code: 0 },
+      { op: 'lsr', desc: 'Logical shift right', code: 1 },
+      { op: 'asr', desc: 'Arithmetic shift right', code: 2 },
+      { op: 'ror', desc: 'Rotate right', code: 3 },
+    ]
+  ) {
+    const a0 = ((code << 1) | 0).toString(16);
+    const a1 = ((code << 1) | 1).toString(16);
+    const a8 = ((code << 1) | 8).toString(16);
+    const b = op === 'lsr' ? '2' : '4';
+    def({
+      name: `arm.${op}`,
+      desc,
+      kind: 'make',
+      files: {
+        '/root/main': `
+${op} r3, r14, #0       /// 0e 30 a0 e1
+${op}s r3, r14, #0      /// 0e 30 b0 e1
+${op}mi r3, r14, #0     /// 0e 30 a0 41
+${op}smi r3, r14, #0    /// 0e 30 b0 41
+${op}s.mi r3, r14, #0   /// 0e 30 b0 41
+${op}mis r3, r14, #0    /// 0e 30 b0 41
+
+${op} r3, #0            /// 03 30 a0 e1
+${op}s r3, #0           /// 03 30 b0 e1
+${op}mi r3, #0          /// 03 30 a0 41
+${op}smi r3, #0         /// 03 30 b0 41
+${op}s.mi r3, #0        /// 03 30 b0 41
+${op}mis r3, #0         /// 03 30 b0 41
+
+${
+          op === 'lsr' || op === 'asr'
+            ? `
+${op} r3, r14, #32      /// ${b}e 30 a0 e1
+${op}s r3, r14, #32     /// ${b}e 30 b0 e1
+${op}mi r3, r14, #32    /// ${b}e 30 a0 41
+${op}smi r3, r14, #32   /// ${b}e 30 b0 41
+${op}s.mi r3, r14, #32  /// ${b}e 30 b0 41
+${op}mis r3, r14, #32   /// ${b}e 30 b0 41
+
+${op} r3, #32           /// ${b}3 30 a0 e1
+${op}s r3, #32          /// ${b}3 30 b0 e1
+${op}mi r3, #32         /// ${b}3 30 a0 41
+${op}smi r3, #32        /// ${b}3 30 b0 41
+${op}s.mi r3, #32       /// ${b}3 30 b0 41
+${op}mis r3, #32        /// ${b}3 30 b0 41
+`
+            : ''
+        }
+
+${op} r3, r14, #5       /// ${a8}e 32 a0 e1
+${op}s r3, r14, #10     /// ${a0}e 35 b0 e1
+${op}mi r3, r14, #15    /// ${a8}e 37 a0 41
+${op}smi r3, r14, #20   /// ${a0}e 3a b0 41
+${op}s.mi r3, r14, #25  /// ${a8}e 3c b0 41
+${op}mis r3, r14, #30   /// ${a0}e 3f b0 41
+
+${op} r3, r14, r10      /// ${a1}e 3a a0 e1
+${op}s r3, r14, r10     /// ${a1}e 3a b0 e1
+${op}mi r3, r14, r10    /// ${a1}e 3a a0 41
+${op}smi r3, r14, r10   /// ${a1}e 3a b0 41
+${op}s.mi r3, r14, r10  /// ${a1}e 3a b0 41
+${op}mis r3, r14, r10   /// ${a1}e 3a b0 41
+
+${op} r3, r10           /// ${a1}3 3a a0 e1
+${op}s r3, r10          /// ${a1}3 3a b0 e1
+${op}mi r3, r10         /// ${a1}3 3a a0 41
+${op}smi r3, r10        /// ${a1}3 3a b0 41
+${op}s.mi r3, r10       /// ${a1}3 3a b0 41
+${op}mis r3, r10        /// ${a1}3 3a b0 41
+`,
+      },
+    });
+  }
+
+  def({
+    name: 'arm.rrx',
+    desc: 'Rotate right extended',
+    kind: 'make',
+    files: {
+      '/root/main': `
+rrx r3, r14      /// 6e 30 a0 e1
+rrxs r3, r14     /// 6e 30 b0 e1
+rrxmi r3, r14    /// 6e 30 a0 41
+rrxsmi r3, r14   /// 6e 30 b0 41
+rrxs.mi r3, r14  /// 6e 30 b0 41
+rrxmis r3, r14   /// 6e 30 b0 41
+
+rrx r3           /// 63 30 a0 e1
+rrxs r3          /// 63 30 b0 e1
+rrxmi r3         /// 63 30 a0 41
+rrxsmi r3        /// 63 30 b0 41
+rrxs.mi r3       /// 63 30 b0 41
+rrxmis r3        /// 63 30 b0 41
+`,
+    },
+  });
 
   def({
     name: 'arm.mrs',

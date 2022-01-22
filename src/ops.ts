@@ -290,6 +290,321 @@ export namespace Arm {
     },
 
     //
+    // DATA PROCESSING (SHIFTS AS MOV)
+    //
+
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'lsl$s$cond $Rd, #0',
+        'asl$s$cond $Rd, #0',
+        'lsr$s$cond $Rd, #0',
+        'asr$s$cond $Rd, #0',
+        'ror$s$cond $Rd, #0',
+        'lsl$s.$cond $Rd, #0',
+        'asl$s.$cond $Rd, #0',
+        'lsr$s.$cond $Rd, #0',
+        'asr$s.$cond $Rd, #0',
+        'ror$s.$cond $Rd, #0',
+        'lsl$cond$s $Rd, #0',
+        'asl$cond$s $Rd, #0',
+        'lsr$cond$s $Rd, #0',
+        'asr$cond$s $Rd, #0',
+        'ror$cond$s $Rd, #0',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'lsl$s$cond $Rd, $Rm, #0',
+        'asl$s$cond $Rd, $Rm, #0',
+        'lsr$s$cond $Rd, $Rm, #0',
+        'asr$s$cond $Rd, $Rm, #0',
+        'ror$s$cond $Rd, $Rm, #0',
+        'lsl$s.$cond $Rd, $Rm, #0',
+        'asl$s.$cond $Rd, $Rm, #0',
+        'lsr$s.$cond $Rd, $Rm, #0',
+        'asr$s.$cond $Rd, $Rm, #0',
+        'ror$s.$cond $Rd, $Rm, #0',
+        'lsl$cond$s $Rd, $Rm, #0',
+        'asl$cond$s $Rd, $Rm, #0',
+        'lsr$cond$s $Rd, $Rm, #0',
+        'asr$cond$s $Rd, $Rm, #0',
+        'ror$cond$s $Rd, $Rm, #0',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 1 }, // shift = lsr
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'lsr$s$cond $Rd, #32',
+        'lsr$s.$cond $Rd, #32',
+        'lsr$cond$s $Rd, #32',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 1 }, // shift = lsr
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'lsr$s$cond $Rd, $Rm, #32',
+        'lsr$s.$cond $Rd, $Rm, #32',
+        'lsr$cond$s $Rd, $Rm, #32',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 2 }, // shift = asr
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'asr$s$cond $Rd, #32',
+        'asr$s.$cond $Rd, #32',
+        'asr$cond$s $Rd, #32',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 2 }, // shift = asr
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'asr$s$cond $Rd, $Rm, #32',
+        'asr$s.$cond $Rd, $Rm, #32',
+        'asr$cond$s $Rd, $Rm, #32',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 3 }, // shift = ror
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'rrx$s$cond $Rd',
+        'rrx$s.$cond $Rd',
+        'rrx$cond$s $Rd',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 3 }, // shift = ror
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'rrx$s$cond $Rd, $Rm',
+        'rrx$s.$cond $Rd, $Rm',
+        'rrx$cond$s $Rd, $Rm',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        {
+          s: 2,
+          k: 'enum',
+          sym: 'shift',
+          enum: ['lsl/asl', 'lsr', 'asr', 'ror'],
+        },
+        { s: 5, k: 'immediate', sym: 'amount' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$shift$s$cond $Rd, #$amount',
+        '$shift$s.$cond $Rd, #$amount',
+        '$shift$cond$s $Rd, #$amount',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        {
+          s: 2,
+          k: 'enum',
+          sym: 'shift',
+          enum: ['lsl/asl', 'lsr', 'asr', 'ror'],
+        },
+        { s: 5, k: 'immediate', sym: 'amount' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$shift$s$cond $Rd, $Rm, #$amount',
+        '$shift$s.$cond $Rd, $Rm, #$amount',
+        '$shift$cond$s $Rd, $Rm, #$amount',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 1 }, // register specified shift amount
+        {
+          s: 2,
+          k: 'enum',
+          sym: 'shift',
+          enum: ['lsl/asl', 'lsr', 'asr', 'ror'],
+        },
+        { s: 1, k: 'value', v: 0 },
+        { s: 4, k: 'register', sym: 'Rs' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$shift$s$cond $Rd, $Rs',
+        '$shift$s.$cond $Rd, $Rs',
+        '$shift$cond$s $Rd, $Rs',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rm' },
+        { s: 1, k: 'value', v: 1 }, // register specified shift amount
+        {
+          s: 2,
+          k: 'enum',
+          sym: 'shift',
+          enum: ['lsl/asl', 'lsr', 'asr', 'ror'],
+        },
+        { s: 1, k: 'value', v: 0 },
+        { s: 4, k: 'register', sym: 'Rs' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$shift$s$cond $Rd, $Rm, $Rs',
+        '$shift$s.$cond $Rd, $Rm, $Rs',
+        '$shift$cond$s $Rd, $Rm, $Rs',
+      ],
+    },
+
+    //
     // DATA PROCESSING
     //
     // 1. mov/mvn                                     OR
@@ -2693,13 +3008,30 @@ export namespace Thumb {
       category: 'Format 1: Move Shifted Register',
       codeParts: [
         { s: 3, k: 'register', sym: 'Rd' },
+        { s: 3, k: 'register', sym: 'Rd' },
+        { s: 5, k: 'immediate', sym: 'shift' },
+        {
+          s: 2,
+          k: 'enum',
+          sym: 'oper',
+          enum: ['lsls/lsl/asls/asl', 'lsrs/lsr', 'asrs/asr', false],
+        },
+        { s: 3, k: 'value', v: 0 },
+      ],
+      syntax: ['$oper $Rd, #$shift'],
+    },
+    {
+      ref: '5.1',
+      category: 'Format 1: Move Shifted Register',
+      codeParts: [
+        { s: 3, k: 'register', sym: 'Rd' },
         { s: 3, k: 'register', sym: 'Rs' },
         { s: 5, k: 'immediate', sym: 'shift' },
         {
           s: 2,
           k: 'enum',
           sym: 'oper',
-          enum: ['lsls/lsl', 'lsrs/lsr', 'asrs/asr', false],
+          enum: ['lsls/lsl/asls/asl', 'lsrs/lsr', 'asrs/asr', false],
         },
         { s: 3, k: 'value', v: 0 },
       ],
@@ -2804,7 +3136,7 @@ export namespace Thumb {
           enum: [
             'ands/and',
             'eors/eor',
-            'lsls/lsl',
+            'lsls/lsl/asls/asl',
             'lsrr/lsr',
             'asrs/asr',
             'adcs/adc',

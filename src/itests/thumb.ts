@@ -17,9 +17,21 @@ export function load(def: (test: ITest) => void) {
 // move and shift
 lsl r3, r5, #10  /// ab 02
 lsl r7, r7, #31  /// ff 07
+// move and shift
+lsl r3, #10      /// 9b 02
+lsl r7, #31      /// ff 07
 // just shift
 lsl r3, r5       /// ab 40
 lsl r7, r7       /// bf 40
+// move and shift
+asl r3, r5, #10  /// ab 02
+asl r7, r7, #31  /// ff 07
+// move and shift
+asl r3, #10      /// 9b 02
+asl r7, #31      /// ff 07
+// just shift
+asl r3, r5       /// ab 40
+asl r7, r7       /// bf 40
 `,
     },
   });
@@ -43,6 +55,9 @@ lsl r7, r7       /// bf 40
 // move and shift
 lsr r3, r5, #10  /// ab 0a
 lsr r7, r7, #31  /// ff 0f
+// move and shift
+lsr r3, #10      /// 9b 0a
+lsr r7, #31      /// ff 0f
 // just shift
 lsr r3, r5       /// eb 40
 lsr r7, r7       /// ff 40
@@ -59,6 +74,9 @@ lsr r7, r7       /// ff 40
 // move and shift
 asr r3, r5, #10  /// ab 12
 asr r7, r7, #31  /// ff 17
+// move and shift
+asr r3, #10      /// 9b 12
+asr r7, #31      /// ff 17
 // just shift
 asr r3, r5       /// 2b 41
 asr r7, r7       /// 3f 41

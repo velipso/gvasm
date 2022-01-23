@@ -290,9 +290,27 @@ export namespace Arm {
     },
 
     //
-    // DATA PROCESSING (SHIFTS AS MOV)
+    // DATA PROCESSING (NOP + SHIFTS AS MOV)
     //
 
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 4, k: 'value', sym: 'Rm', v: 0 }, // Rm = r0
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'value', sym: 'Rd', v: 0 }, // Rn = r0
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov
+        { s: 1, k: 'value', sym: 's', v: 0 }, // s = false
+        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        { s: 4, k: 'value', sym: 'cond', v: 14 }, // cond = always
+      ],
+      syntax: ['nop'],
+    },
     {
       ref: '4.5,4.5.2,4.5.8.1',
       category: 'Data Processing',
@@ -619,26 +637,8 @@ export namespace Arm {
     //    Rm, <shiftname> <register>                  OR
     //    <#expression>
     //
-    // There should be 4 * 7 = 28 entries in this section (plus one for "nop")
+    // There should be 4 * 7 = 28 entries in this section
 
-    {
-      ref: '4.5,4.5.2,4.5.8.1',
-      category: 'Data Processing',
-      codeParts: [
-        { s: 4, k: 'value', sym: 'Rm', v: 0 }, // Rm = r0
-        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
-        { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
-        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
-        { s: 4, k: 'value', sym: 'Rd', v: 0 }, // Rn = r0
-        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov
-        { s: 1, k: 'value', sym: 's', v: 0 }, // s = false
-        { s: 4, k: 'value', sym: 'oper', v: 13 }, // oper = mov
-        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
-        { s: 2, k: 'value', v: 0 },
-        { s: 4, k: 'value', sym: 'cond', v: 14 }, // cond = always
-      ],
-      syntax: ['nop'],
-    },
     // mov/mvn
     {
       ref: '4.5,4.5.2,4.5.8.1',

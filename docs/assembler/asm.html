@@ -674,6 +674,8 @@ main {
           <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
           <li>Assembler also allows <span class="op">asr</span> for this instruction</li>
+          <li>If <span class="reg">Rd</span> = <span class="reg">Rs</span>, then
+            <span class="reg">Rs</span> can be omitted</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
@@ -688,6 +690,7 @@ main {
                   <span class="com">// contents of r5 by 27 and store the</span>
                   <span class="com">// result in r2.  Set conditions</span>
                   <span class="com">// codes on the result.</span>
+<span class="op">asrs</span> <span class="reg">r3</span>, #<span class="imm">12</span>      <span class="com">// same as: asrs r3, r3, #12
 </pre>
       </main>
     </section>
@@ -2213,7 +2216,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-lsls-reg" data-filter="alu lsls lsl">
+    <section id="thumb-lsls-reg" data-filter="alu lsls lsl asls asl">
       <header>
         <div class="format">
           <span class="text">
@@ -2240,7 +2243,8 @@ main {
           <li>Sets CPSR condition codes</li>
           <li><span class="reg">Rd</span> and <span class="reg">Rs</span> must range from
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
-          <li>Assembler also allows <span class="op">lsr</span> for this instruction</li>
+          <li>Assembler also allows <span class="op">lsl</span>, <span class="op">asls</span>, or
+            <span class="op">asl</span> for this instruction</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
@@ -2257,7 +2261,7 @@ main {
       </main>
     </section>
 
-    <section id="thumb-lsls-imm" data-filter="alu lsls lsl">
+    <section id="thumb-lsls-imm" data-filter="alu lsls lsl asls asl">
       <header>
         <div class="format">
           <span class="text">
@@ -2287,7 +2291,10 @@ main {
             <span class="reg">r0</span> to <span class="reg">r7</span></li>
           <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
-          <li>Assembler also allows <span class="op">lsl</span> for this instruction</li>
+          <li>Assembler also allows <span class="op">lsl</span>, <span class="op">asls</span>, or
+            <span class="op">asl</span> for this instruction</li>
+          <li>If <span class="reg">Rd</span> = <span class="reg">Rs</span>, then
+            <span class="reg">Rs</span> can be omitted</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
@@ -2302,6 +2309,7 @@ main {
                   <span class="com">// r5 by 27 and store the result in</span>
                   <span class="com">// r2.  Set conditions codes on the</span>
                   <span class="com">// result.</span>
+<span class="op">lsls</span> <span class="reg">r3</span>, #<span class="imm">12</span>      <span class="com">// same as: lsls r3, r3, #12
 </pre>
       </main>
     </section>
@@ -2381,6 +2389,8 @@ main {
           <li><span class="imm">Value</span> must range from <span class="imm">0</span> to
             <span class="imm">31</span></li>
           <li>Assembler also allows <span class="op">lsr</span> for this instruction</li>
+          <li>If <span class="reg">Rd</span> = <span class="reg">Rs</span>, then
+            <span class="reg">Rs</span> can be omitted</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
@@ -2395,6 +2405,7 @@ main {
                   <span class="com">// of r5 by 27 and store the result</span>
                   <span class="com">// in r2.  Set conditions codes on</span>
                   <span class="com">// the result.</span>
+<span class="op">lsrs</span> <span class="reg">r3</span>, #<span class="imm">12</span>      <span class="com">// same as: lsrs r3, r3, #12
 </pre>
       </main>
     </section>

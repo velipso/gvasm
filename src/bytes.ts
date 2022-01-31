@@ -291,19 +291,23 @@ export class Bytes {
   public addLabel(label: string) {
     const isLocal = label.startsWith('@@');
     const scope = isLocal ? this.localLabels[0] : this.globalLabels;
-    if (label in scope) {
+    if (label.startsWith('@') && label in scope) {
       throw `Cannot redefine label: ${label}`;
     }
 
     // add label knowledge
     const v = this.nextAddress();
-    scope[label] = v;
-    for (const pex of this.pendingExprs) {
-      // only add label to this expression if they're the same scope level
-      if (!isLocal || (pex.scopeLevel === this.localLabels.length)) {
-        for (const expr of Object.values(pex.exprs)) {
-          if (expr instanceof Expression) {
-            expr.addLabel(label, v);
+    if (!label.startsWith('+')) { // don't store forward reference labels
+      scope[label] = v;
+    }
+    if (!label.startsWith('-')) { // don't back-propagate backward reference labels
+      for (const pex of this.pendingExprs) {
+        // only add label to this expression if they're the same scope level
+        if (!isLocal || (pex.scopeLevel === this.localLabels.length)) {
+          for (const expr of Object.values(pex.exprs)) {
+            if (expr instanceof Expression) {
+              expr.addLabel(label, v);
+            }
           }
         }
       }

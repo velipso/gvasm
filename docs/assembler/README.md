@@ -56,8 +56,19 @@ Strings copy C, enclosed with double quotes, and using `\` for escape sequences.
 Labels
 ------
 
-Labels can start any line, and must be prefixed with either `@` for global labels, or `@@` for local
-labels.  Local labels will be removed upon processing an `.end` that matches a `.begin`.
+Labels can start any line.
+
+Labels are effectively 32-bit numbers like everything else.  Their value is the next absolute
+address in memory that they point to.  Note that `.base` will affect this value (defaults to
+`0x08000000` for normal games).
+
+Labels can be used before they're known in certain circumstances, like for branching instructions or
+defined constants, but not for `.align`, `.base`, `.i8fill`, `.if`, `.printf`, or `.error`.
+
+### Named Labels
+
+Named labels must be prefixed with either `@` for global labels, or `@@` for local labels.  Local
+labels will be removed upon processing an `.end` that matches a `.begin`.
 
 ```
 @main:     // global label
@@ -67,12 +78,37 @@ labels.  Local labels will be removed upon processing an `.end` that matches a `
 // @@main is no longer accessible
 ```
 
-Labels are effectively 32-bit numbers like everything else.  Their value is the next absolute
-address in memory that they point to.  Note that `.base` will affect this value (defaults to
-`0x08000000` for normal games).
+### Anonymous Labels
 
-Labels can be used before they're known in certain circumstances, like for branching instructions or
-defined constants, but not for `.align`, `.base`, `.i8fill`, `.if`, `.printf`, or `.error`.
+Anonymous labels are strings of `-` or `+`.  For example, `-`, `--`, `---`, or `+`, `++`, `+++`,
+etc.
+
+Use `-` for backward jumps and `+` for forward jumps.
+
+```
+   // jump backwards in a loop
+   mov r0, #0
+-  add r0, #1
+   cmp r0, #50
+   blt -
+
+   // jump forwards over an instruction
+   cmp r1, #20
+   bgt +
+   sub r1, #20
++  add r1, #1
+
+   // double loop using - for outer loop, and -- for inner loop
+   mov r4, #0
+-  mov r5, #0
+-- bl  @routine
+   add r5, #1
+   cmp r5, #10
+   blt --
+   add r4, #1
+   cmp r4, #10
+   blt -
+```
 
 Defined Constants
 -----------------
@@ -169,8 +205,8 @@ Note: `assert` is useful to verify values at compile-time, for example:
 Structs
 -------
 
-The assembler supports `.struct` in order to define constants incrementally.  Use `.s8`, `.s16`, or
-`.s32` inside a struct to reference a new member.
+The assembler supports `.struct` in order to define constants incrementally.  Use `.s0`, `.s8`,
+`.s16`, or `.s32` inside a struct to reference a new member.
 
 ```
 .struct $Player

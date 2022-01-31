@@ -91,7 +91,7 @@ interface IExprFuncWithParam {
 }
 
 type UnaryOp =
-  | 'neg'
+  | '-'
   | '~'
   | '!'
   | '(';
@@ -302,12 +302,13 @@ export class ExpressionBuilder {
     };
     const term = (): IExprWithParam => {
       // collect all unary operators
-      const unary: ('neg' | '~' | '!')[] = [];
+      const unary: ('+' | '-' | '~' | '!')[] = [];
       while (true) {
         if (isNextId(line, '+')) {
+          unary.push('+');
           line.shift();
         } else if (isNextId(line, '-')) {
-          unary.push('neg');
+          unary.push('-');
           line.shift();
         } else if (isNextId(line, '~')) {
           unary.push('~');
@@ -322,13 +323,10 @@ export class ExpressionBuilder {
 
       // get the terminal
       const t = line.shift();
-      if (!t) {
-        throw 'Invalid expression';
-      }
       let result: IExprWithParam | undefined;
-      if (t.kind === TokEnum.NUM) {
+      if (t && t.kind === TokEnum.NUM) {
         result = { kind: 'num', value: t.num };
-      } else if (t.kind === TokEnum.ID) {
+      } else if (t && t.kind === TokEnum.ID) {
         if (t.id in functions) {
           const params: IExprWithParam[] = [];
           readParams(params);
@@ -412,13 +410,26 @@ export class ExpressionBuilder {
         }
       }
       if (!result) {
-        throw 'Invalid expression';
+        // maybe we parsed a terminal as a unary operator incorrectly...
+        if (
+          unary.length > 0 && (unary[unary.length - 1] === '+' || unary[unary.length - 1] === '-')
+        ) {
+          // interpret the tail of the unary array as an anonymous label
+          let label = unary.pop() as string; // verified above
+          while (unary.length > 0 && unary[unary.length - 1] === label.charAt(0)) {
+            label += unary.pop();
+          }
+          labelsNeed.add(label);
+          result = { kind: 'label', label };
+        } else {
+          throw 'Invalid expression';
+        }
       }
 
       // apply unary operators to the terminal
       while (true) {
         const op = unary.pop();
-        if (op) {
+        if (op && op !== '+') {
           result = { kind: 'unary', op, value: result };
         } else {
           break;
@@ -646,7 +657,7 @@ export class Expression {
         }
         case 'unary':
           switch (ex.op) {
-            case 'neg':
+            case '-':
               return -get(ex.value);
             case '~':
               return ~get(ex.value);

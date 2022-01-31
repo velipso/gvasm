@@ -1274,6 +1274,24 @@ function parseLabel(line: ITok[]): string | false {
     }
     return prefix + name;
   }
+
+  // check for runs of '---' or '+++'
+  let name = '';
+  while (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '-') {
+    name += '-';
+    line.shift();
+  }
+  if (name !== '') {
+    return name;
+  }
+  while (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '+') {
+    name += '+';
+    line.shift();
+  }
+  if (name !== '') {
+    return name;
+  }
+
   return false;
 }
 
@@ -1466,6 +1484,7 @@ function parseBlockStatement(
       }
       return true;
     }
+    case '.s0':
     case '.s8':
     case '.s16':
     case '.s32': {
@@ -1519,10 +1538,12 @@ function parseBlockStatement(
         }
       }
 
-      const size = cmd === '.s8' ? 1 : cmd === '.s16' ? 2 : 4;
+      const size = cmd === '.s0' ? 0 : cmd === '.s8' ? 1 : cmd === '.s16' ? 2 : 4;
       for (const [name, array] of names) {
-        while ((state.struct.nextByte % size) !== 0) {
-          state.struct.nextByte++;
+        if (size > 0) {
+          while ((state.struct.nextByte % size) !== 0) {
+            state.struct.nextByte++;
+          }
         }
         state.struct.defines.push({
           name: [...state.struct.prefix, name].join('.'),
@@ -1606,16 +1627,18 @@ function parseLine(
         }
       }
       if (label !== false) {
-        if (
-          line.length <= 0 || line[0].kind !== TokEnum.ID || line[0].id !== ':'
-        ) {
-          if (state.active) {
-            throw 'Missing colon after label';
-          } else {
-            return;
+        if (label.startsWith('@')) {
+          if (
+            line.length <= 0 || line[0].kind !== TokEnum.ID || line[0].id !== ':'
+          ) {
+            if (state.active) {
+              throw 'Missing colon after label';
+            } else {
+              return;
+            }
           }
+          line.shift();
         }
-        line.shift();
         if (state.active) {
           state.bytes.addLabel(label);
         }

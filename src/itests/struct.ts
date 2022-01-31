@@ -18,12 +18,16 @@ export function load(def: (test: ITest) => void) {
   .s8 one, two
   .s16 three
   .s32 four
+  .s0 five
+  .s32 six
 .end
 
 .i8 $s.one    /// 00
 .i8 $s.two    /// 01
 .i8 $s.three  /// 02
 .i8 $s.four   /// 04
+.i8 $s.five   /// 08
+.i8 $s.six    /// 08
 `,
     },
   });

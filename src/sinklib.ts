@@ -63,7 +63,7 @@ export function loadLibIntoContext(
       return Promise.resolve(sink.NIL);
     },
   );
-  const i8 = (_ctx: sink.ctx, args: sink.val[]) => {
+  const i8 = async (ctx: sink.ctx, args: sink.val[]) => {
     const data: number[] = [];
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
@@ -73,15 +73,24 @@ export function loadLibIntoContext(
         for (const n of new TextEncoder().encode(arg)) {
           data.push(n);
         }
+      } else if (sink.islist(arg)) {
+        if ((arg as { gvasmSeen?: true }).gvasmSeen) {
+          throw 'Invalid circular lists';
+        }
+        (arg as { gvasmSeen?: true }).gvasmSeen = true;
+        put.push({ kind: 'bytes', data });
+        data.splice(0, data.length);
+        await i8(ctx, arg);
+        delete (arg as { gvasmSeen?: true }).gvasmSeen;
       } else {
-        return Promise.reject(`Expecting number or string for argument ${i + 1}`);
+        throw `Expecting number or string for argument ${i + 1}`;
       }
     }
     put.push({ kind: 'bytes', data });
-    return Promise.resolve(sink.NIL);
+    return sink.NIL;
   };
   const ib16 = (isB: boolean) =>
-    (_ctx: sink.ctx, args: sink.val[]) => {
+    async (ctx: sink.ctx, args: sink.val[]) => {
       const data: number[] = [];
       for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -89,15 +98,24 @@ export function loadLibIntoContext(
           const v = isB ? b16(arg) : arg;
           data.push(v & 0xff);
           data.push((v >>> 8) & 0xff);
+        } else if (sink.islist(arg)) {
+          if ((arg as { gvasmSeen?: true }).gvasmSeen) {
+            throw 'Invalid circular lists';
+          }
+          (arg as { gvasmSeen?: true }).gvasmSeen = true;
+          put.push({ kind: 'bytes', data });
+          data.splice(0, data.length);
+          await ib16(isB)(ctx, arg);
+          delete (arg as { gvasmSeen?: true }).gvasmSeen;
         } else {
-          return Promise.reject(`Expecting number for argument ${i + 1}`);
+          throw `Expecting number for argument ${i + 1}`;
         }
       }
       put.push({ kind: 'bytes', data });
-      return Promise.resolve(sink.NIL);
+      return sink.NIL;
     };
   const ib32 = (isB: boolean) =>
-    (_ctx: sink.ctx, args: sink.val[]) => {
+    async (ctx: sink.ctx, args: sink.val[]) => {
       const data: number[] = [];
       for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -107,12 +125,21 @@ export function loadLibIntoContext(
           data.push((v >>> 8) & 0xff);
           data.push((v >>> 16) & 0xff);
           data.push((v >>> 24) & 0xff);
+        } else if (sink.islist(arg)) {
+          if ((arg as { gvasmSeen?: true }).gvasmSeen) {
+            throw 'Invalid circular lists';
+          }
+          (arg as { gvasmSeen?: true }).gvasmSeen = true;
+          put.push({ kind: 'bytes', data });
+          data.splice(0, data.length);
+          await ib32(isB)(ctx, arg);
+          delete (arg as { gvasmSeen?: true }).gvasmSeen;
         } else {
-          return Promise.reject(`Expecting number for argument ${i + 1}`);
+          throw `Expecting number for argument ${i + 1}`;
         }
       }
       put.push({ kind: 'bytes', data });
-      return Promise.resolve(sink.NIL);
+      return sink.NIL;
     };
   const parseFill = (args: sink.val[]) => {
     if (args.length <= 0 || typeof args[0] !== 'number') {

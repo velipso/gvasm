@@ -33,6 +33,26 @@ Globals
 | `embed 'file'`    | At compile-time, load the contents of `'file'` as a string              |
 | `stacktrace`      | Return a list of strings with stacktrace information                    |
 
+There are also global commands that match the behavior of some of the assembler's dot statements.
+Using these are more efficient than using the `put` equivalents.
+
+| Function            | Description                                                           |
+|---------------------|-----------------------------------------------------------------------|
+| `printf "msg", ...` | Same as `put ".printf '$msg', ..."`                                   |
+| `error "msg", ...`  | Same as `put ".error '$msg', ..."`                                    |
+| `i8 a, ...`         | Same as `put ".i8 $a, ..."`                                           |
+| `i16 a, ...`        | Same as `put ".i16 $a, ..."`                                          |
+| `i32 a, ...`        | Same as `put ".i32 $a, ..."`                                          |
+| `i8fill a, v`       | Same as `put ".i8fill $a, $v"`                                        |
+| `i16fill a, v`      | Same as `put ".i16fill $a, $v"`                                       |
+| `i32fill a, v`      | Same as `put ".i32fill $a, $v"`                                       |
+| `b8 a, ...`         | Same as `put ".b8 $a, ..."`                                           |
+| `b16 a, ...`        | Same as `put ".b16 $a, ..."`                                          |
+| `b32 a, ...`        | Same as `put ".b32 $a, ..."`                                          |
+| `b8fill a, v`       | Same as `put ".b8fill $a, $v"`                                        |
+| `b16fill a, v`      | Same as `put ".b16fill $a, $v"`                                       |
+| `b32fill a, v`      | Same as `put ".b32fill $a, $v"`                                       |
+
 Number
 ------
 

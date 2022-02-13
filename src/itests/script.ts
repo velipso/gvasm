@@ -366,4 +366,67 @@ include "../one.sink" /// 01 02
       'declare $$bar.z',
     ],
   );
+
+  def({
+    name: 'script.dot-bytes',
+    desc: 'Use dot statement commands inside .script',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script
+  i8 0, 1, 2, 3       /// 00 01 02 03
+  b8 0, 1, 2, 3       /// 00 01 02 03
+  i8 1.5              /// 01
+  i16 0x0100, 0x0302  /// 00 01 02 03
+  b16 0x0001, 0x0203  /// 00 01 02 03
+  i16 1.5             /// 01 00
+  i32 0x03020100      /// 00 01 02 03
+  b32 0x00010203      /// 00 01 02 03
+  i32 1.5             /// 01 00 00 00
+  i8fill 4            /// 00 00 00 00
+  i8fill 4, 3         /// 03 03 03 03
+  b8fill 4            /// 00 00 00 00
+  b8fill 4, 3         /// 03 03 03 03
+  i16fill 2           /// 00 00 00 00
+  i16fill 2, 9        /// 09 00 09 00
+  b16fill 2           /// 00 00 00 00
+  b16fill 2, 9        /// 00 09 00 09
+  i32fill 2           /// 00 00 00 00 00 00 00 00
+  i32fill 2, 9        /// 09 00 00 00 09 00 00 00
+  b32fill 2           /// 00 00 00 00 00 00 00 00
+  b32fill 2, 9        /// 00 00 00 09 00 00 00 09
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'script.printf',
+    desc: 'Use printf command',
+    kind: 'make',
+    stdout: [
+      'hello 5',
+    ],
+    files: {
+      '/root/main': `
+.script
+  printf 'hello %d', 5
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'script.error',
+    desc: 'Use error command',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.script
+  error 'oh no'
+.end
+`,
+    },
+  });
 }

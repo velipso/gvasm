@@ -5,13 +5,34 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { ILineStr, splitLines } from './util.ts';
+import { b16, b32, ILineStr, printf, splitLines } from './util.ts';
 import { loadImage } from './deps.ts';
 import * as sink from './sink.ts';
 import { ConstTable } from './const.ts';
 
+export interface ILineBytes {
+  kind: 'bytes';
+  data: number[];
+}
+
+export type ILinePut = ILineStr | ILineBytes;
+
 export function loadLibIntoScript(scr: sink.scr, ctable: ConstTable) {
   sink.scr_autonative(scr, 'put');
+  sink.scr_autonative(scr, 'i8');
+  sink.scr_autonative(scr, 'i16');
+  sink.scr_autonative(scr, 'i32');
+  sink.scr_autonative(scr, 'i8fill');
+  sink.scr_autonative(scr, 'i16fill');
+  sink.scr_autonative(scr, 'i32fill');
+  sink.scr_autonative(scr, 'b8');
+  sink.scr_autonative(scr, 'b16');
+  sink.scr_autonative(scr, 'b32');
+  sink.scr_autonative(scr, 'b8fill');
+  sink.scr_autonative(scr, 'b16fill');
+  sink.scr_autonative(scr, 'b32fill');
+  sink.scr_autonative(scr, 'error');
+  sink.scr_autonative(scr, 'printf');
   sink.scr_autonative(scr, 'store.set');
   sink.scr_autonative(scr, 'store.get');
   sink.scr_autonative(scr, 'store.has');
@@ -23,7 +44,7 @@ export function loadLibIntoScript(scr: sink.scr, ctable: ConstTable) {
 
 export function loadLibIntoContext(
   ctx: sink.ctx,
-  put: ILineStr[],
+  put: ILinePut[],
   store: { [key: string]: string },
   main: boolean,
   ctable: ConstTable,
@@ -42,6 +63,158 @@ export function loadLibIntoContext(
       return Promise.resolve(sink.NIL);
     },
   );
+  const i8 = (_ctx: sink.ctx, args: sink.val[]) => {
+    const data: number[] = [];
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (typeof arg === 'number') {
+        data.push(Math.floor(arg) | 0);
+      } else if (typeof arg === 'string') {
+        for (const n of new TextEncoder().encode(arg)) {
+          data.push(n);
+        }
+      } else {
+        return Promise.reject(`Expecting number or string for argument ${i + 1}`);
+      }
+    }
+    put.push({ kind: 'bytes', data });
+    return Promise.resolve(sink.NIL);
+  };
+  const ib16 = (isB: boolean) =>
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      const data: number[] = [];
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (typeof arg === 'number') {
+          const v = isB ? b16(arg) : arg;
+          data.push(v & 0xff);
+          data.push((v >>> 8) & 0xff);
+        } else {
+          return Promise.reject(`Expecting number for argument ${i + 1}`);
+        }
+      }
+      put.push({ kind: 'bytes', data });
+      return Promise.resolve(sink.NIL);
+    };
+  const ib32 = (isB: boolean) =>
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      const data: number[] = [];
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+        if (typeof arg === 'number') {
+          const v = isB ? b32(arg) : arg;
+          data.push(v & 0xff);
+          data.push((v >>> 8) & 0xff);
+          data.push((v >>> 16) & 0xff);
+          data.push((v >>> 24) & 0xff);
+        } else {
+          return Promise.reject(`Expecting number for argument ${i + 1}`);
+        }
+      }
+      put.push({ kind: 'bytes', data });
+      return Promise.resolve(sink.NIL);
+    };
+  const parseFill = (args: sink.val[]) => {
+    if (args.length <= 0 || typeof args[0] !== 'number') {
+      return Promise.reject(`Expecting number for argument 1`);
+    }
+    const amount = args[0];
+    let value = 0;
+    if (args.length >= 2) {
+      if (typeof args[1] !== 'number') {
+        return Promise.reject(`Expecting number for argument 2`);
+      }
+      value = Math.floor(args[1]) | 0;
+    }
+    if (args.length >= 3) {
+      return Promise.reject('Expecting 1 or 2 arguments');
+    }
+    return Promise.resolve({ amount, value });
+  };
+  const i8fill = async (_ctx: sink.ctx, args: sink.val[]) => {
+    const { amount, value } = await parseFill(args);
+    const data: number[] = [];
+    for (let i = 0; i < amount; i++) {
+      data.push(value);
+    }
+    put.push({ kind: 'bytes', data });
+    return sink.NIL;
+  };
+  const ib16fill = (isB: boolean) =>
+    async (_ctx: sink.ctx, args: sink.val[]) => {
+      const { amount, value } = await parseFill(args);
+      const v = isB ? b16(value) : value;
+      const v1 = v & 0xff;
+      const v2 = (v >>> 8) & 0xff;
+      const data: number[] = [];
+      for (let i = 0; i < amount; i++) {
+        data.push(v1);
+        data.push(v2);
+      }
+      put.push({ kind: 'bytes', data });
+      return sink.NIL;
+    };
+  const ib32fill = (isB: boolean) =>
+    async (_ctx: sink.ctx, args: sink.val[]) => {
+      const { amount, value } = await parseFill(args);
+      const v = isB ? b32(value) : value;
+      const v1 = v & 0xff;
+      const v2 = (v >>> 8) & 0xff;
+      const v3 = (v >>> 16) & 0xff;
+      const v4 = (v >>> 24) & 0xff;
+      const data: number[] = [];
+      for (let i = 0; i < amount; i++) {
+        data.push(v1);
+        data.push(v2);
+        data.push(v3);
+        data.push(v4);
+      }
+      put.push({ kind: 'bytes', data });
+      return sink.NIL;
+    };
+  sink.ctx_autonative(ctx, 'i8', null, i8);
+  sink.ctx_autonative(ctx, 'b8', null, i8);
+  sink.ctx_autonative(ctx, 'i16', null, ib16(false));
+  sink.ctx_autonative(ctx, 'b16', null, ib16(true));
+  sink.ctx_autonative(ctx, 'i32', null, ib32(false));
+  sink.ctx_autonative(ctx, 'b32', null, ib32(true));
+  sink.ctx_autonative(ctx, 'i8fill', null, i8fill);
+  sink.ctx_autonative(ctx, 'b8fill', null, i8fill);
+  sink.ctx_autonative(ctx, 'i16fill', null, ib16fill(false));
+  sink.ctx_autonative(ctx, 'b16fill', null, ib16fill(true));
+  sink.ctx_autonative(ctx, 'i32fill', null, ib32fill(false));
+  sink.ctx_autonative(ctx, 'b32fill', null, ib32fill(true));
+  sink.ctx_autonative(ctx, 'printf', null, (ctx: sink.ctx, args: sink.val[]) => {
+    if (args.length <= 0) {
+      return Promise.reject('Expecting string for argument 1');
+    }
+    const fmt = sink.tostr(args[0]);
+    const values: number[] = [];
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
+      if (typeof arg !== 'number') {
+        return Promise.reject(`Expecting number for argument ${i + 1}`);
+      }
+      values.push(Math.floor(arg) | 0);
+    }
+    return sink.say(ctx, [printf(fmt, ...values)]);
+  });
+  sink.ctx_autonative(ctx, 'error', null, (ctx: sink.ctx, args: sink.val[]) => {
+    if (args.length <= 0) {
+      return Promise.reject('Expecting string for argument 1');
+    }
+    const fmt = sink.tostr(args[0]);
+    const values: number[] = [];
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
+      if (typeof arg !== 'number') {
+        return Promise.reject(`Expecting number for argument ${i + 1}`);
+      }
+      values.push(Math.floor(arg) | 0);
+    }
+    sink.abort(ctx, [printf(fmt, ...values)]);
+    return Promise.resolve(sink.NIL);
+  });
   sink.ctx_autonative(
     ctx,
     'store.set',

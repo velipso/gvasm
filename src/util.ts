@@ -59,6 +59,7 @@ export function b32(v: number) {
 }
 
 export interface ILineStr {
+  kind: 'str';
   filename: string;
   line: number;
   data: string;
@@ -75,7 +76,7 @@ export function splitLines(
     lines.split('\r\n')
       .flatMap((a) => a.split('\r'))
       .flatMap((a) => a.split('\n'))
-      .map((data, i) => ({ filename, line: startLine + i, data, main }))
+      .map((data, i) => ({ kind: 'str', filename, line: startLine + i, data, main }))
   );
 }
 

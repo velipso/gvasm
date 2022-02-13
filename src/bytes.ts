@@ -107,7 +107,7 @@ export class Bytes {
 
   public writeArray(v: number[] | Uint8Array) {
     for (let i = 0; i < v.length; i++) {
-      this.push(v[i]);
+      this.push(v[i] & 0xff);
     }
   }
 

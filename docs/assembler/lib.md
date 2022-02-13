@@ -34,7 +34,7 @@ Globals
 | `stacktrace`      | Return a list of strings with stacktrace information                    |
 
 There are also global commands that match the behavior of some of the assembler's dot statements.
-Using these are more efficient than using the `put` equivalents.
+Using these is more efficient than using the `put` equivalents.
 
 | Function            | Description                                                           |
 |---------------------|-----------------------------------------------------------------------|

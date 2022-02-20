@@ -4,9 +4,10 @@ Helpful Tidbits
 ### Go from ARM -> Thumb
 
 ```
+  .arm
   // ARM code here
-  add ip, pc, #1
-  bx ip
+  add   ip, pc, #1
+  bx    ip
   .thumb
   // Thumb code here
 ```
@@ -14,9 +15,10 @@ Helpful Tidbits
 ### Go from Thumb -> ARM
 
 ```
+  .thumb
   // Thumb code here
   .align 4, nop
-  bx pc
+  bx    pc
   .arm
   // ARM code here
 ```
@@ -24,57 +26,87 @@ Helpful Tidbits
 ### Generic ARM subroutine
 
 ```
-  .thumb
 @subroutine.thumb:
-  .align 4, nop
-  bx pc // change to ARM mode
-  .arm
+  .begin
+    .thumb
+    .align 4, nop
+    bx    pc // change to ARM mode
+  .end
 @subroutine.arm:
   .begin
-  // ARM code here
+    .arm
+    // ARM code here
+    bx    lr // returns
   .end
-  bx lr // returns
 ```
 
 Calling from ARM:
 
 ```
   .arm
-  bl @subroutine.arm
+  bl    @subroutine.arm
 ```
 
 Calling from Thumb:
 
 ```
   .thumb
-  bl @subroutine.thumb
+  bl    @subroutine.thumb
 ```
 
 ### Generic Thumb subroutine
 
 ```
-  .arm
 @subroutine.arm:
-  add ip, pc, #1
-  bx ip // change to Thumb mode
-  .thumb
+  .begin
+    .arm
+    add   ip, pc, #1
+    bx    ip // change to Thumb mode
+  .end
 @subroutine.thumb:
   .begin
-  // Thumb code here
+    .thumb
+    // Thumb code here
+    bx    lr // returns
   .end
-  bx lr // returns
 ```
 
 Calling from ARM:
 
 ```
   .arm
-  bl @subroutine.arm
+  bl    @subroutine.arm
 ```
 
 Calling from Thumb:
 
 ```
   .thumb
-  bl @subroutine.thumb
+  bl    @subroutine.thumb
+```
+
+### Using the stack for local variables
+
+```
+.begin
+  .struct $$S
+    .s32 temp1
+    .s32 temp2
+    .s0  size
+  .end
+  sub   sp, #$$S.size
+
+  // write to the local variables
+  ldr   r0, =0
+  str   r0, [sp, #$$S.temp1]
+  str   r0, [sp, #$$S.temp2]
+
+  // read from the local variables
+  ldr   r0, [sp, #$$S.temp1]
+  ldr   r1, [sp, #$$S.temp2]
+
+  add   sp, #$$S.size
+  bx    lr
+  .pool
+.end
 ```

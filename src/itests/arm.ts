@@ -551,6 +551,15 @@ msr spsr_flg, r13            /// 0d f0 68 e1
 msrvc cpsr_flg, r13          /// 0d f0 28 71
 msrvc spsr_flg, r13          /// 0d f0 68 71
 
+mov cpsr, #0xf0000000        /// 0f f2 29 e3
+mov spsr, #0xf0000000        /// 0f f2 69 e3
+movvc cpsr, #0x50000000      /// 05 f2 29 73
+movvc spsr, #0xf0000000      /// 0f f2 69 73
+msr cpsr, #0xf0000000        /// 0f f2 29 e3
+msr spsr, #0xf0000000        /// 0f f2 69 e3
+msrvc cpsr, #0x50000000      /// 05 f2 29 73
+msrvc spsr, #0xf0000000      /// 0f f2 69 73
+
 mov cpsr_flg, #0xf0000000    /// 0f f2 28 e3
 mov spsr_flg, #0xf0000000    /// 0f f2 68 e3
 movvc cpsr_flg, #0x50000000  /// 05 f2 28 73

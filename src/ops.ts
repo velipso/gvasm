@@ -1982,17 +1982,17 @@ export namespace Arm {
       codeParts: [
         { s: 12, k: 'rotimm', sym: 'expression' },
         { s: 10, k: 'value', v: 671 },
-        { s: 1, k: 'enum', sym: 'psrf', enum: ['cpsr', 'spsr'] },
+        { s: 1, k: 'enum', sym: 'psr', enum: ['cpsr', 'spsr'] },
         { s: 2, k: 'value', v: 2 },
         { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
         { s: 2, k: 'value', v: 0 },
         condition,
       ],
       syntax: [
-        'mov$cond $psrf, #$expression',
-        'msr$cond $psrf, #$expression',
-        'mov.$cond $psrf, #$expression',
-        'msr.$cond $psrf, #$expression',
+        'mov$cond $psr, #$expression',
+        'msr$cond $psr, #$expression',
+        'mov.$cond $psr, #$expression',
+        'msr.$cond $psr, #$expression',
       ],
     },
     {

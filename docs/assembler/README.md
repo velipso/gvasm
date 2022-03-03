@@ -530,7 +530,7 @@ Outputs the Nintendo logo, used in the GBA header.
 
 Macros (not implemented yet).
 
-### `.once` / `.end`
+### `.once` / `.elseif <condition>` / `.else` / `.end`
 
 Only include the block of code once.  Can also use `.elseif` and `.else` inside the block.
 
@@ -583,7 +583,7 @@ Includes the standard library, which defines useful constants like `$REG_DISPCNT
 
 ### `.struct <prefix>` / `.end`
 
-Defines constants as offsets from zero, using `.s8`, `.s16`, and `.s32`.
+Defines constants as offsets from zero, using `.s0`, `.s8`, `.s16`, and `.s32`.
 
 ### `.thumb`
 

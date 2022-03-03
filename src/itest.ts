@@ -18,6 +18,7 @@ import { load as ifLoad } from './itests/if.ts';
 import { load as structLoad } from './itests/struct.ts';
 import { load as scriptLoad } from './itests/script.ts';
 import { load as sinkLoad } from './itests/sink.ts';
+import { load as stdlibLoad } from './itests/stdlib.ts';
 import { makeFromFile } from './make.ts';
 import * as sink from './sink.ts';
 import { assertNever } from './util.ts';
@@ -268,6 +269,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   structLoad(def);
   scriptLoad(def);
   sinkLoad(def);
+  stdlibLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

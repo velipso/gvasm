@@ -134,7 +134,7 @@ export async function dis(
 
     // TODO: if format is gba, then parse the GBA header
 
-    for (let i = 0; i < 200; i += 4) {
+    for (let i = 0; i < 200 && i < view.byteLength - 3; i += 4) {
       const opcode = view.getUint32(i, true);
       const res = parseArm(opcode);
       if (res) {

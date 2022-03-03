@@ -56,13 +56,13 @@ export class Bytes {
 
   public get(): readonly number[] {
     for (const pex of this.pendingExprs) {
-      if (pex.pool) {
-        throw `${pex.hint}, missing .pool statement to hold constant`;
-      }
       for (const expr of Object.values(pex.exprs)) {
         if (expr instanceof Expression) {
           expr.validateNoLabelsNeeded(pex.hint);
         }
+      }
+      if (pex.pool) {
+        throw `${pex.hint}, missing .pool statement to hold constant`;
       }
     }
     return this.array;

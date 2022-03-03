@@ -1807,6 +1807,7 @@ export async function makeFromFile(
         '$_here',
         '$_pc',
         '$_base',
+        '$_bytes',
       ],
       (cname) => {
         if (cname === '$_version') {
@@ -1823,6 +1824,8 @@ export async function makeFromFile(
           return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
         } else if (cname === '$_base') {
           return state.bytes.getBase().value;
+        } else if (cname === '$_bytes') {
+          return state.bytes.length();
         }
         return false;
       },

@@ -68,6 +68,10 @@ export class Bytes {
     return this.array;
   }
 
+  public length() {
+    return this.array.length;
+  }
+
   public getBase() {
     return this.base;
   }

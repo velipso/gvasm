@@ -141,13 +141,14 @@ The following constants are always defined and depend on the assembler state:
 
 | Constant    | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
 | `$_arm`     | True if in ARM mode (`.arm`)                                                |
-| `$_thumb`   | True if in Thumb mode (`.thumb`)                                            |
-| `$_main`    | True if the current file is the start file, not included from another       |
-| `$_here`    | The next address to be output                                               |
-| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for Thumb) |
 | `$_base`    | The base value (set by `.base <base>`)                                      |
+| `$_bytes`   | The length of the output so far, in bytes                                   |
+| `$_here`    | The next address to be output                                               |
+| `$_main`    | True if the current file is the start file, not included from another       |
+| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for Thumb) |
+| `$_thumb`   | True if in Thumb mode (`.thumb`)                                            |
+| `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
 
 Constant Expressions
 --------------------

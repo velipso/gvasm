@@ -273,6 +273,7 @@ function parseDotStatement(
   state: IParseState,
   cmd: string,
   line: ITok[],
+  cmdFlp: IFilePos,
 ):
   | { include: string }
   | { embed: string }
@@ -321,66 +322,70 @@ function parseDotStatement(
       break;
     case '.regs': {
       const regs: string[] = [];
-      while (line.length > 0) {
-        const name1 = parseName(line);
-        if (name1 === false) {
-          throw 'Invalid .regs statement; bad name';
-        }
-        if (isNextId(line, '-')) {
-          line.shift();
-          const name2 = parseName(line);
-          if (name2 === false) {
+      if (line.length <= 0) {
+        state.log(errorString(cmdFlp, `Registers: ${getRegs(state).join(', ')}`));
+      } else {
+        while (line.length > 0) {
+          const name1 = parseName(line);
+          if (name1 === false) {
             throw 'Invalid .regs statement; bad name';
           }
-          const m1 = name1.match(/[0-9]+$/);
-          const m2 = name2.match(/[0-9]+$/);
-          if (m1 === null || m2 === null) {
-            throw `Invalid range in .regs statement; names must end with numbers: ${name1}-${name2}`;
-          }
-          const prefix1 = name1.substr(0, name1.length - m1[0].length);
-          const prefix2 = name2.substr(0, name2.length - m2[0].length);
-          if (prefix1 !== prefix2) {
-            throw `Invalid range in .regs statement; prefix mismatch: ${name1}-${name2}`;
-          }
-          const n1 = parseFloat(m1[0]);
-          const n2 = parseFloat(m2[0]);
-          if (n2 < n1) {
-            if (n1 - n2 + 1 > 12) {
-              throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
+          if (isNextId(line, '-')) {
+            line.shift();
+            const name2 = parseName(line);
+            if (name2 === false) {
+              throw 'Invalid .regs statement; bad name';
             }
-            for (let i = n1; i >= n2; i--) {
-              regs.push(`${prefix1}${i}`);
+            const m1 = name1.match(/[0-9]+$/);
+            const m2 = name2.match(/[0-9]+$/);
+            if (m1 === null || m2 === null) {
+              throw `Invalid range in .regs statement; names must end with numbers: ${name1}-${name2}`;
+            }
+            const prefix1 = name1.substr(0, name1.length - m1[0].length);
+            const prefix2 = name2.substr(0, name2.length - m2[0].length);
+            if (prefix1 !== prefix2) {
+              throw `Invalid range in .regs statement; prefix mismatch: ${name1}-${name2}`;
+            }
+            const n1 = parseFloat(m1[0]);
+            const n2 = parseFloat(m2[0]);
+            if (n2 < n1) {
+              if (n1 - n2 + 1 > 12) {
+                throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
+              }
+              for (let i = n1; i >= n2; i--) {
+                regs.push(`${prefix1}${i}`);
+              }
+            } else {
+              if (n2 - n1 + 1 > 12) {
+                throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
+              }
+              for (let i = n1; i <= n2; i++) {
+                regs.push(`${prefix1}${i}`);
+              }
             }
           } else {
-            if (n2 - n1 + 1 > 12) {
-              throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
-            }
-            for (let i = n1; i <= n2; i++) {
-              regs.push(`${prefix1}${i}`);
-            }
+            regs.push(name1);
           }
-        } else {
-          regs.push(name1);
+          if (line.length > 0) {
+            parseComma(line, `Invalid ${cmd} statement`);
+          }
         }
-        if (line.length > 0) {
-          parseComma(line, `Invalid ${cmd} statement`);
+        if (regs.length !== 12) {
+          if (regs.length > 0) {
+            throw `Invalid .regs statement; expecting 12 names but got ${regs.length}: ${
+              regs.join(', ')
+            }`;
+          } else {
+            throw 'Invalid .regs statement; missing register names';
+          }
         }
+        for (let i = 0; i < regs.length; i++) {
+          if (reservedRegs.indexOf(regs[i]) >= 0) {
+            throw `Invalid .regs statement; can't use reserved name: ${regs[i]}`;
+          }
+        }
+        setRegs(state, regs);
       }
-      if (regs.length !== 12) {
-        if (regs.length > 0) {
-          throw `Invalid .regs statement; expecting 12 names but got ${regs.length}: ${
-            regs.join(', ')
-          }`;
-        } else {
-          throw 'Invalid .regs statement; missing register names';
-        }
-      }
-      for (let i = 0; i < regs.length; i++) {
-        if (reservedRegs.indexOf(regs[i]) >= 0) {
-          throw `Invalid .regs statement; can't use reserved name: ${regs[i]}`;
-        }
-      }
-      setRegs(state, regs);
       break;
     }
     case '.align': {
@@ -1754,7 +1759,7 @@ function parseLine(
   }
 
   if (cmd.startsWith('.')) {
-    return parseDotStatement(state, cmd, line);
+    return parseDotStatement(state, cmd, line, cmdTok.flp);
   } else if (isARM(state)) {
     const pool = parsePoolStatement(state, [...line], state.ctable);
     if (pool) {

@@ -184,4 +184,19 @@ mov r0, #0        /// 00 00 a0 e3
 `,
     },
   });
+
+  def({
+    name: 'regs.print',
+    desc: 'Print the register names',
+    kind: 'make',
+    stdout: [
+      '/root/main:3:1: Registers: temp0, temp1, temp2, temp3, foo, bar, baz10, baz9, baz8, qux, r5, r20',
+    ],
+    files: {
+      '/root/main': `
+.regs TEMP0-temp3, foo, bar, baz10-BAZ8, Qux, R5, r20-r20
+.regs
+`,
+    },
+  });
 }

@@ -403,6 +403,12 @@ cmp  r2, #13
 // r2 contains the value 13
 ```
 
+Current register names can be printed to the console via:
+
+```
+.regs
+```
+
 Dot Statements
 --------------
 
@@ -602,10 +608,12 @@ Formatting supported:
 If `width` is specified, then either leading spaces or leading zeroes will be added to enforce the
 character width.  Ex: `%10d` => `      1234`.
 
-### `.regs <r0-r11>`
+### `.regs [<r0-r11>]`
 
-Rename the first 12 registers.  Must specify names for all 12 registers.  See section above on
+Renames the first 12 registers.  Must specify names for all 12 registers.  See section above on
 register renaming.
+
+If no names are provided, then the current register names are printed to the console.
 
 ### `.script` / `.end`
 

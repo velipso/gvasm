@@ -37,6 +37,7 @@ interface IDotStackBegin {
   kind: 'begin';
   arm: boolean;
   base: IBase;
+  regs: string[];
   flp: IFilePos;
 }
 
@@ -73,6 +74,7 @@ type IDotStack =
 interface IParseState {
   arm: boolean;
   main: boolean;
+  regs: string[];
   base: IBase;
   bytes: Bytes;
   ctable: ConstTable;
@@ -98,19 +100,24 @@ interface IParseState {
 
 type ISyms = { [sym: string]: Expression | number };
 
-function decodeRegister(id: string): number {
-  if (id === 'ip') {
-    return 12;
-  } else if (id === 'sp') {
-    return 13;
-  } else if (id === 'lr') {
-    return 14;
-  } else if (id === 'pc') {
-    return 15;
-  } else if (/^r([0-9]|(1[0-5]))$/.test(id)) {
-    return parseInt(id.substr(1), 10);
+const defaultRegs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11'];
+const reservedRegs = ['r12', 'ip', 'r13', 'sp', 'r14', 'lr', 'r15', 'pc'];
+
+function decodeRegister(state: IParseState, id: string): number {
+  const r = reservedRegs.indexOf(id);
+  if (r >= 0) {
+    return 12 + (r >> 1);
   }
-  return -1;
+  const regs = getRegs(state);
+  const i = regs.indexOf(id);
+  if (i < 0) {
+    // attempt to provide friendly error message
+    const d = defaultRegs.indexOf(id);
+    if (d >= 0) {
+      throw `Invalid register name; ${id} has been renamed to: ${regs[d]}`;
+    }
+  }
+  return i;
 }
 
 export function isNextId(line: ITok[], id: string): boolean {
@@ -155,6 +162,7 @@ function parseExpr(line: ITok[], ctable: ConstTable): Expression {
 }
 
 function parseReglist(
+  pstate: IParseState,
   line: ITok[],
   width: 8 | 16,
   extra?: number,
@@ -176,8 +184,8 @@ function parseReglist(
         if (t.kind === TokEnum.ID && t.id === '}') {
           line.splice(0, i + 1); // remove tokens
           return result;
-        } else if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
-          lastRegister = decodeRegister(t.id);
+        } else if (t.kind === TokEnum.ID && decodeRegister(pstate, t.id) >= 0) {
+          lastRegister = decodeRegister(pstate, t.id);
           if (lastRegister >= width && lastRegister !== extra) {
             return false;
           }
@@ -210,8 +218,8 @@ function parseReglist(
         }
         break;
       case 3: // reading end of range
-        if (t.kind === TokEnum.ID && decodeRegister(t.id) >= 0) {
-          const end = decodeRegister(t.id);
+        if (t.kind === TokEnum.ID && decodeRegister(pstate, t.id) >= 0) {
+          const end = decodeRegister(pstate, t.id);
           if (end >= width) {
             return false;
           }
@@ -311,6 +319,70 @@ function parseDotStatement(
       state.bytes.align(2);
       setARM(state, false);
       break;
+    case '.regs': {
+      const regs: string[] = [];
+      while (line.length > 0) {
+        const name1 = parseName(line);
+        if (name1 === false) {
+          throw 'Invalid .regs statement; bad name';
+        }
+        if (isNextId(line, '-')) {
+          line.shift();
+          const name2 = parseName(line);
+          if (name2 === false) {
+            throw 'Invalid .regs statement; bad name';
+          }
+          const m1 = name1.match(/[0-9]+$/);
+          const m2 = name2.match(/[0-9]+$/);
+          if (m1 === null || m2 === null) {
+            throw `Invalid range in .regs statement; names must end with numbers: ${name1}-${name2}`;
+          }
+          const prefix1 = name1.substr(0, name1.length - m1[0].length);
+          const prefix2 = name2.substr(0, name2.length - m2[0].length);
+          if (prefix1 !== prefix2) {
+            throw `Invalid range in .regs statement; prefix mismatch: ${name1}-${name2}`;
+          }
+          const n1 = parseFloat(m1[0]);
+          const n2 = parseFloat(m2[0]);
+          if (n2 < n1) {
+            if (n1 - n2 + 1 > 12) {
+              throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
+            }
+            for (let i = n1; i >= n2; i--) {
+              regs.push(`${prefix1}${i}`);
+            }
+          } else {
+            if (n2 - n1 + 1 > 12) {
+              throw `Invalid range in .regs statement; range too large: ${name1}-${name2}`;
+            }
+            for (let i = n1; i <= n2; i++) {
+              regs.push(`${prefix1}${i}`);
+            }
+          }
+        } else {
+          regs.push(name1);
+        }
+        if (line.length > 0) {
+          parseComma(line, `Invalid ${cmd} statement`);
+        }
+      }
+      if (regs.length !== 12) {
+        if (regs.length > 0) {
+          throw `Invalid .regs statement; expecting 12 names but got ${regs.length}: ${
+            regs.join(', ')
+          }`;
+        } else {
+          throw 'Invalid .regs statement; missing register names';
+        }
+      }
+      for (let i = 0; i < regs.length; i++) {
+        if (reservedRegs.indexOf(regs[i]) >= 0) {
+          throw `Invalid .regs statement; can't use reserved name: ${regs[i]}`;
+        }
+      }
+      setRegs(state, regs);
+      break;
+    }
     case '.align': {
       const amount = parseNum(state, line);
       let fill: number | 'nop' = 0;
@@ -628,6 +700,7 @@ function validateSymExpr(
 }
 
 function validateSymRegister(
+  state: IParseState,
   syms: ISyms,
   partSym: string,
   line: ITok[],
@@ -638,7 +711,7 @@ function validateSymRegister(
   if (!t || t.kind !== TokEnum.ID) {
     return false;
   }
-  const reg = decodeRegister(t.id);
+  const reg = decodeRegister(state, t.id);
   if (reg >= low && reg <= high) {
     syms[partSym] = reg;
     return true;
@@ -746,7 +819,7 @@ function parseArmStatement(
             }
             break;
           case 'register':
-            if (!validateSymRegister(syms, part.sym, line, 0, 15)) {
+            if (!validateSymRegister(state, syms, part.sym, line, 0, 15)) {
               return false;
             }
             break;
@@ -756,7 +829,7 @@ function parseArmStatement(
             }
             break;
           case 'reglist': {
-            const v = parseReglist(line, 16);
+            const v = parseReglist(state, line, 16);
             if (v === false) {
               return false;
             }
@@ -876,14 +949,14 @@ interface IPool {
   ex: Expression;
 }
 
-function parsePoolStatement(line: ITok[], ctable: ConstTable): IPool | false {
+function parsePoolStatement(state: IParseState, line: ITok[], ctable: ConstTable): IPool | false {
   // pool statements have a specific format:
   //   op register, =constant
   const trd = line.shift();
   if (!trd || trd.kind !== TokEnum.ID) {
     return false;
   }
-  const rd = decodeRegister(trd.id);
+  const rd = decodeRegister(state, trd.id);
   if (rd < 0) {
     return false;
   }
@@ -1079,12 +1152,12 @@ function parseThumbStatement(
             }
             break;
           case 'register':
-            if (!validateSymRegister(syms, part.sym, line, 0, 7)) {
+            if (!validateSymRegister(state, syms, part.sym, line, 0, 7)) {
               return false;
             }
             break;
           case 'registerhigh':
-            if (!validateSymRegister(syms, part.sym, line, 8, 15)) {
+            if (!validateSymRegister(state, syms, part.sym, line, 8, 15)) {
               return false;
             }
             break;
@@ -1094,7 +1167,7 @@ function parseThumbStatement(
             }
             break;
           case 'reglist': {
-            const v = parseReglist(line, 8, codePart.extra);
+            const v = parseReglist(state, line, 8, codePart.extra);
             if (v === false) {
               return false;
             }
@@ -1315,7 +1388,13 @@ function parseBlockStatement(
         state.ctable.scopeBegin();
         state.bytes.scopeBegin();
       }
-      state.dotStack.push({ kind: 'begin', arm: isARM(state), base: getBase(state), flp });
+      state.dotStack.push({
+        kind: 'begin',
+        arm: isARM(state),
+        base: getBase(state),
+        regs: getRegs(state),
+        flp,
+      });
       return true;
     case '.script':
       if (line.length > 0 && state.active) {
@@ -1677,7 +1756,7 @@ function parseLine(
   if (cmd.startsWith('.')) {
     return parseDotStatement(state, cmd, line);
   } else if (isARM(state)) {
-    const pool = parsePoolStatement([...line], state.ctable);
+    const pool = parsePoolStatement(state, [...line], state.ctable);
     if (pool) {
       parseArmPoolStatement(state, cmdTok.flp, cmd, pool);
     } else {
@@ -1703,7 +1782,7 @@ function parseLine(
       }
     }
   } else {
-    const pool = parsePoolStatement([...line], state.ctable);
+    const pool = parsePoolStatement(state, [...line], state.ctable);
     if (pool) {
       parseThumbPoolStatement(state, cmdTok.flp, cmd, pool);
     } else {
@@ -1773,6 +1852,27 @@ function setBase(state: IParseState, base: IBase) {
   state.base = base;
 }
 
+function getRegs(state: IParseState): string[] {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === 'begin') {
+      return ds.regs;
+    }
+  }
+  return state.regs;
+}
+
+function setRegs(state: IParseState, regs: string[]) {
+  for (let i = state.dotStack.length - 1; i >= 0; i--) {
+    const ds = state.dotStack[i];
+    if (ds.kind === 'begin') {
+      ds.regs = regs;
+      return;
+    }
+  }
+  state.regs = regs;
+}
+
 export async function makeFromFile(
   filename: string,
   defines: { key: string; value: number }[],
@@ -1797,6 +1897,7 @@ export async function makeFromFile(
     arm: true,
     base: bytes.getBase(),
     main: true,
+    regs: defaultRegs,
     bytes,
     ctable: new ConstTable(
       [

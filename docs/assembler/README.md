@@ -350,8 +350,8 @@ ldrh r0, =rgb(12, 31, 5)
 
 Notice that the infinite loop prevents the pool data from being wrongly executed.
 
-Registers
----------
+Register Names
+--------------
 
 ARM7TDMI has 37 registers, but less are visible depending on the processor operating mode.
 
@@ -371,6 +371,37 @@ the intra-procedure register (which can be used for anything).
 
 Thumb mode restricts the registers further, usually limiting them from `r0` to `r7`, with special
 cases for `sp` and `pc`.  However, `add`, `mov`, `cmp`, and `bx` can access `r8` to `r15`.
+
+### Renaming
+
+Use the `.regs` statement to rename the first 12 registers:
+
+```
+.regs base, offset, temp0-temp3, posX, posY, r8-r11
+```
+
+There must be exactly 12 names specified, with support for ranged names.
+
+Names are replaced, so in the above example, `r0` is no longer a valid name - register 0 can only be
+accessed via the name `base`.
+
+Names can be reset via:
+
+```
+.regs r0-r11
+```
+
+Or by leaving the current scope:
+
+```
+.regs r0-r11
+.begin
+  .regs temp0-temp11
+  movs  temp2, #13
+.end
+cmp  r2, #13
+// r2 contains the value 13
+```
 
 Dot Statements
 --------------
@@ -570,6 +601,11 @@ Formatting supported:
 
 If `width` is specified, then either leading spaces or leading zeroes will be added to enforce the
 character width.  Ex: `%10d` => `      1234`.
+
+### `.regs <r0-r11>`
+
+Rename the first 12 registers.  Must specify names for all 12 registers.  See section above on
+register renaming.
 
 ### `.script` / `.end`
 

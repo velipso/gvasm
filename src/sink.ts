@@ -5580,6 +5580,7 @@ interface script_st {
   mode: scriptmode_enum;
   binstate: binstate_st;
   autonative: { names: string[]; hash: u64 }[];
+  autoenum: { name: string; value: number }[];
   user: unknown;
 }
 
@@ -5600,6 +5601,20 @@ export function scr_autonative(
   scr.autonative.push({ names, hash });
   if (scr.cmp) {
     symtbl_addCmdNative(scr.cmp.sym, names, hash);
+  }
+}
+
+export function scr_autoenum(
+  scr: scr,
+  names: string[],
+): void {
+  for (let i = 0; i < names.length; i++) {
+    scr.autoenum.push({ name: names[i], value: i });
+  }
+  if (scr.cmp) {
+    for (let i = 0; i < names.length; i++) {
+      symtbl_addEnum(scr.cmp.sym, names[i].split('.'), i);
+    }
   }
 }
 
@@ -10597,8 +10612,9 @@ function binop_num_bin(a: val, b: val): val {
 function triop_num_clamp(a: val, b: val, c: val): val {
   return isNaN(a as number) || isNaN(b as number) || isNaN(c as number)
     ? NAN
-    : ((a as number) < (b as number) ? (b as number)
-    : ((a as number) > (c as number) ? (c as number) : (a as number)));
+    : ((a as number) < (b as number)
+      ? (b as number)
+      : ((a as number) > (c as number) ? (c as number) : (a as number)));
 }
 
 function triop_num_lerp(a: val, b: val, c: val): val {
@@ -14852,6 +14868,7 @@ export function scr_new(
       buf: '',
     },
     autonative: [],
+    autoenum: [],
   };
   return sc;
 }
@@ -15028,6 +15045,9 @@ export async function scr_write(
       );
       for (const { names, hash } of scr.autonative) {
         symtbl_addCmdNative(scr.cmp.sym, names, hash);
+      }
+      for (const { name, value } of scr.autoenum) {
+        symtbl_addEnum(scr.cmp.sym, name.split('.'), value);
       }
     }
   }

@@ -5,6 +5,8 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
+// deno-lint-ignore-file no-explicit-any
+
 import { b16, b32, ILineStr, printf, splitLines } from './util.ts';
 import { loadImage } from './deps.ts';
 import * as sink from './sink.ts';
@@ -37,6 +39,23 @@ export function loadLibIntoScript(scr: sink.scr, ctable: ConstTable) {
   sink.scr_autonative(scr, 'store.get');
   sink.scr_autonative(scr, 'store.has');
   sink.scr_autonative(scr, 'image.load');
+  sink.scr_autonative(scr, 'json.load');
+  sink.scr_autonative(scr, 'json.type');
+  sink.scr_autonative(scr, 'json.boolean');
+  sink.scr_autonative(scr, 'json.number');
+  sink.scr_autonative(scr, 'json.string');
+  sink.scr_autonative(scr, 'json.array');
+  sink.scr_autonative(scr, 'json.object');
+  sink.scr_autonative(scr, 'json.size');
+  sink.scr_autonative(scr, 'json.get');
+  sink.scr_autoenum(scr, [
+    'json.NULL',
+    'json.BOOLEAN',
+    'json.NUMBER',
+    'json.STRING',
+    'json.ARRAY',
+    'json.OBJECT',
+  ]);
   for (const c of ctable.listScope()) {
     sink.scr_autonative(scr, c);
   }
@@ -330,6 +349,193 @@ export function loadLibIntoContext(
         }
       }
       return ret;
+    },
+  );
+  const jsonType = sink.ctx_addusertype(ctx, 'json');
+  function jsonTypeOf(v: any): string {
+    switch (typeof v) {
+      case 'object':
+        if (v === null) {
+          return 'null';
+        } else if (Array.isArray(v)) {
+          return 'array';
+        }
+        return 'object';
+      case 'boolean':
+      case 'number':
+      case 'string':
+        return typeof v;
+    }
+    return 'unknown';
+  }
+  sink.ctx_autonative(
+    ctx,
+    'json.load',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0) {
+        return Promise.reject('Expecting string for argument 1');
+      }
+      const data = args[0];
+      if (typeof data !== 'string') {
+        return Promise.reject('Expecting string for argument 1');
+      }
+      try {
+        return Promise.resolve(sink.user_new(ctx, jsonType, JSON.parse(data)));
+      } catch (e) {
+        return Promise.reject('Invalid JSON data: ' + e);
+      }
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.type',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      const type = ['null', 'boolean', 'number', 'string', 'array', 'object'].indexOf(
+        jsonTypeOf(json),
+      );
+      if (type < 0) {
+        return Promise.reject('Unknown JSON type: ' + typeof json);
+      }
+      return Promise.resolve(type);
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.boolean',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (typeof json !== 'boolean') {
+        return Promise.reject(`Expecting JSON to be boolean, but instead got ${jsonTypeOf(json)}`);
+      }
+      return Promise.resolve(json ? 1 : sink.NIL);
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.number',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (typeof json !== 'number') {
+        return Promise.reject(`Expecting JSON to be number, but instead got ${jsonTypeOf(json)}`);
+      }
+      return Promise.resolve(json);
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.string',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (typeof json !== 'string') {
+        return Promise.reject(`Expecting JSON to be string, but instead got ${jsonTypeOf(json)}`);
+      }
+      return Promise.resolve(json);
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.array',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (!Array.isArray(json)) {
+        return Promise.reject(`Expecting JSON to be array, but instead got ${jsonTypeOf(json)}`);
+      }
+      return Promise.resolve(json.map((v) => sink.user_new(ctx, jsonType, v)) as sink.list);
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.object',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (jsonTypeOf(json) !== 'object') {
+        return Promise.reject(`Expecting JSON to be object, but instead got ${jsonTypeOf(json)}`);
+      }
+      return Promise.resolve(
+        Object.entries(json as Record<never, never>).map((
+          [k, v],
+        ) => [k as string, sink.user_new(ctx, jsonType, v)]) as sink.list,
+      );
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.size',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      if (jsonTypeOf(json) === 'object') {
+        return Promise.resolve(Object.keys(json as Record<never, never>).length);
+      } else if (jsonTypeOf(json) === 'array') {
+        return Promise.resolve((json as Array<any>).length);
+      }
+      return Promise.reject(
+        `Expecting JSON to be array or object, but instead got ${jsonTypeOf(json)}`,
+      );
+    },
+  );
+  sink.ctx_autonative(
+    ctx,
+    'json.get',
+    null,
+    (_ctx: sink.ctx, args: sink.val[]) => {
+      if (args.length <= 0 || !sink.list_hasuser(ctx, args[0], jsonType)) {
+        return Promise.reject('Expecting JSON object for argument 1');
+      }
+      if (args.length <= 1 || (typeof args[1] !== 'string' && typeof args[1] !== 'number')) {
+        return Promise.reject('Expecting string or number for argument 2');
+      }
+      const json = sink.list_getuser(ctx, args[0]);
+      let key = args[1] as number;
+      if (typeof key === 'string') {
+        if (jsonTypeOf(json) !== 'object') {
+          return Promise.reject(`Expecting JSON to be object, but instead got ${jsonTypeOf(json)}`);
+        }
+        if (key in (json as Record<never, never>)) {
+          return Promise.resolve(sink.user_new(ctx, jsonType, (json as Record<never, never>)[key]));
+        }
+        return Promise.resolve(sink.NIL);
+      }
+      // otherwise, key is number
+      if (jsonTypeOf(json) !== 'array') {
+        return Promise.reject(`Expecting JSON to be array, but instead got ${jsonTypeOf(json)}`);
+      }
+      if (key < 0) {
+        key += (json as Array<any>).length;
+      }
+      if (key < 0 || key >= (json as Array<any>).length) {
+        return Promise.resolve(sink.NIL);
+      }
+      return Promise.resolve(sink.user_new(ctx, jsonType, (json as Array<any>)[key]));
     },
   );
   for (const c of ctable.listScope()) {

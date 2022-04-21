@@ -451,4 +451,112 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: 'script.json',
+    desc: 'Use json.* commands',
+    kind: 'make',
+    stdout: [
+      '0',
+      '0',
+      '1',
+      '1',
+      '1',
+      '2',
+      '2',
+      '3',
+      '3',
+      '4',
+      '4',
+      '5',
+      '5',
+      '1',
+      'nil',
+      '123',
+      '-45',
+      'hi',
+      'yo',
+      '{{\'json\'}, {\'json\'}}',
+      '{{\'hello\', {\'json\'}}}',
+      ' object:',
+      ' [one] 1',
+      ' [empty] null',
+      ' [ar] array:',
+      ' [ar] [0] 1',
+      ' [ar] [1] 2',
+      ' [ar] [2] 3',
+      ' [ar2] array:',
+      ' [ar2] [0] object:',
+      ' [ar2] [0] [one] 1',
+      ' [ar2] [1] object:',
+      ' [ar2] [1] [two] 2',
+      '3',
+      '200',
+      '300',
+      'world',
+    ],
+    files: {
+      '/root/main': `
+.script
+  'null'              | json.load | json.type | say
+  say json.NULL
+  'true'              | json.load | json.type | say
+  'false'             | json.load | json.type | say
+  say json.BOOLEAN
+  '123.45'            | json.load | json.type | say
+  say json.NUMBER
+  '"hello, world"'    | json.load | json.type | say
+  say json.STRING
+  '[1, 2, 3]'         | json.load | json.type | say
+  say json.ARRAY
+  '{"hello":"world"}' | json.load | json.type | say
+  say json.OBJECT
+
+  'true'  | json.load | json.boolean | say
+  'false' | json.load | json.boolean | say
+
+  '123' | json.load | json.number | say
+  '-45' | json.load | json.number | say
+
+  '"hi"' | json.load | json.string | say
+  '"yo"' | json.load | json.string | say
+
+  '[123, 456]' | json.load | json.array | say
+
+  '{"hello":"world"}' | json.load | json.object | say
+
+  def print_json prefix, data
+    var type = json.type data
+    if type == json.NULL
+      say "$prefix null"
+    elseif type == json.BOOLEAN
+      say "$prefix \${pick (json.boolean data), "true", "false"}"
+    elseif type == json.NUMBER
+      say "$prefix \${json.number data}"
+    elseif type == json.STRING
+      say "$prefix \${json.string data}"
+    elseif type == json.ARRAY
+      say "$prefix array:"
+      for var element, i: json.array data
+        print_json "$prefix [$i]", element
+      end
+    elseif type == json.OBJECT
+      say "$prefix object:"
+      for var kv, i: json.object data
+        var {key, value} = kv
+        print_json "$prefix [$key]", value
+      end
+    end
+  end
+
+  print_json '', json.load '{"one":1,"empty":null,"ar":[1,2,3],"ar2":[{"one":1},{"two":2}]}'
+
+  '[1, 2, 3]' | json.load | json.size | say
+  '[100, 200, 300]' | json.load | json.get 1 | json.number | say
+  '[100, 200, 300]' | json.load | json.get -1 | json.number | say
+  '{"hello":"world"}' | json.load | json.get 'hello' | json.string | say
+.end
+`,
+    },
+  });
 }

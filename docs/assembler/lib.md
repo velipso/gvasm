@@ -14,6 +14,7 @@ Scripting Standard Library
 | [Pickle](#pickle)                   | `pickle.*` |
 | [Store](#store)                     | `store.*`  |
 | [Image](#image)                     | `image.*`  |
+| [JSON](#json)                       | `json.*`   |
 
 Globals
 -------
@@ -375,4 +376,72 @@ for var row, y: sprite
     // each component ranges from 0-255
   end
 end
+```
+
+JSON
+----
+
+| Function             | Description                                                                  |
+|----------------------|------------------------------------------------------------------------------|
+| `json.load data`     | Load JSON data into memory                                                   |
+| `json.type obj`      | Returns the type of the JSON data                                            |
+| `json.boolean obj`   | Validates `obj` is a boolean, then returns `1` for true, and `nil` for false |
+| `json.number obj`    | Validates `obj` is a number, then returns the number                         |
+| `json.string obj`    | Validates `obj` is a string, then returns the string                         |
+| `json.array obj`     | Validates `obj` is an array, then returns the list of JSON values            |
+| `json.object obj`    | Validates `obj` is an object, then returns a list of `{key, value}` pairs    |
+| `json.size obj`      | Validates `obj` is an array or object, then returns the number of elements in it |
+| `json.get obj, key`  | Validates `obj` is an array or object, then returns the JSON value at `key`  |
+
+JSON types:
+
+| Type           |
+|----------------|
+| `json.NULL`    |
+| `json.BOOLEAN` |
+| `json.NUMBER`  |
+| `json.STRING`  |
+| `json.ARRAY`   |
+| `json.OBJECT`  |
+
+JSON data is not immediately accessible because the scripting language cannot represent boolean or
+objects directly.  Therefore, first you must load the JSON into memory, then use the approriate
+`json.*` commands to read the values.
+
+For example, this will read a key in a JSON object:
+
+```
+var data = json.load '{"hello":"world"}'
+var world = json.string (json.get data, "hello")
+say "hello, $world"
+```
+
+Here's another example.  This will iterate over a JSON object and print the structure:
+
+```
+def print_json prefix, data
+  var type = json.type data
+  if type == json.NULL
+    say "$prefix null"
+  elseif type == json.BOOLEAN
+    say "$prefix ${pick (json.boolean data), "true", "false"}"
+  elseif type == json.NUMBER
+    say "$prefix ${json.number data}"
+  elseif type == json.STRING
+    say "$prefix ${json.string data}"
+  elseif type == json.ARRAY
+    say "$prefix array:"
+    for var element, i: json.array data
+      print_json "$prefix [$i]", element
+    end
+  elseif type == json.OBJECT
+    say "$prefix object:"
+    for var kv, i: json.object data
+      var {key, value} = kv
+      print_json "$prefix [$key]", value
+    end
+  end
+end
+
+print_json '', json.load embed './data.json'
 ```

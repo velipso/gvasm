@@ -64,7 +64,7 @@ References
 ==========
 
 * [Assembler Manual](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md)
-* [GBA Instruction Set](https://ghcdn.rawgit.org/velipso/gvasm/36eb5665bacf8e14890fae658793faf8a1960557/docs/assembler/asm.html)
+* [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/main/docs/assembler/asm.html)
 
 GBA Technical Docs
 ==================

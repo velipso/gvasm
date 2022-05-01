@@ -137,6 +137,20 @@ include "../one.sink" /// 01 02
   });
 
   def({
+    name: 'script.store-default',
+    desc: 'Store get default',
+    kind: 'make',
+    stdout: ['nil'],
+    files: {
+      '/root/main': `
+.script
+  say store.get 'foo'
+.end
+`,
+    },
+  });
+
+  def({
     name: 'script.image.load',
     desc: 'Load images',
     kind: 'make',

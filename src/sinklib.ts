@@ -288,7 +288,7 @@ export function loadLibIntoContext(
         return Promise.reject('Expecting string for argument 1');
       }
       const key = args[0] as string;
-      const def = args.length < 1 ? sink.NIL : args[1];
+      const def = args.length < 2 ? sink.NIL : args[1];
       if (key in store) {
         const res = sink.pickle_valstr(store[key]);
         return Promise.resolve(res === false ? def : res);

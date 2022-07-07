@@ -60,7 +60,11 @@ export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | fals
           }
           break;
         case 'word':
-          syms[part.sym] = { v: v << 2, part };
+          if (v & (1 << (part.s - 1))) {
+            syms[part.sym] = { v: ((-1 << part.s) + v) << 2, part };
+          } else {
+            syms[part.sym] = { v: v << 2, part };
+          }
           break;
         case 'offsetsplit':
         case 'pcoffsetsplit':

@@ -289,6 +289,20 @@ export namespace ARM {
         'b$link$cond $offset',
         'b$link.$cond $offset',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const link = !!sym('link');
+        const cond = sym('cond');
+        const offset = sym('offset');
+
+        if (cpu.test(cond)) {
+          if (link) {
+            throw `Not implemented: bl`;
+          }
+          cpu.bx(cpu.reg(15) + offset);
+        } else {
+          cpu.next();
+        }
+      },
     },
 
     //
@@ -1311,6 +1325,27 @@ export namespace ARM {
         '$oper$cond $Rn, #$expression',
         '$oper.$cond $Rn, #$expression',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const cond = sym('cond');
+        const Rn = sym('Rn');
+        const expression = sym('expression');
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 8: // tst
+              throw `Not implemented: tst`;
+            case 9: // teq
+              throw `Not implemented: teq`;
+            case 10: // cmp
+              cpu.sub(cpu.reg(Rn), expression, true);
+              break;
+            case 11: // cmn
+              throw `Not implemented: cmn`;
+          }
+        }
+        cpu.next();
+      },
     },
     // and,eor,sub,rsb,add,adc,sbc,rsc,orr,bic
     {
@@ -1921,6 +1956,36 @@ export namespace ARM {
         '$oper$s.$cond $Rd, $Rn, #$expression',
         '$oper$cond$s $Rd, $Rn, #$expression',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const s = !!sym('s');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const Rn = sym('Rn');
+        const expression = sym('expression');
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 0: // and
+            case 1: // eor
+            case 12: // orr
+            case 14: // bic
+              throw `Not implemented: and/eor/orr/bic`;
+
+            case 2: // sub
+              cpu.mov(Rd, cpu.sub(cpu.reg(Rn), expression, s));
+              break;
+
+            case 3: // rsb
+            case 4: // add
+            case 5: // adc
+            case 6: // sbc
+            case 7: // rsc
+              throw `Not implemented: rsb/add/adc/sbc/rsc`;
+          }
+        }
+        cpu.next();
+      },
     },
     {
       ref: '4.5,4.5.3,4.5.8.3',

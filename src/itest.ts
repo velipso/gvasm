@@ -20,7 +20,9 @@ import { load as scriptLoad } from './itests/script.ts';
 import { load as sinkLoad } from './itests/sink.ts';
 import { load as stdlibLoad } from './itests/stdlib.ts';
 import { load as regsLoad } from './itests/regs.ts';
+import { load as runLoad } from './itests/run.ts';
 import { makeFromFile } from './make.ts';
+import { runResult } from './run.ts';
 import * as sink from './sink.ts';
 import { assertNever } from './util.ts';
 
@@ -39,6 +41,14 @@ interface ITestMake {
   files: { [filename: string]: string };
 }
 
+interface ITestRun {
+  name: string;
+  desc: string;
+  kind: 'run';
+  stdout: string[];
+  files: { [filename: string]: string };
+}
+
 interface ITestSink {
   name: string;
   kind: 'sink';
@@ -46,7 +56,7 @@ interface ITestSink {
   files: { [fiename: string]: string };
 }
 
-export type ITest = ITestMake | ITestSink;
+export type ITest = ITestMake | ITestRun | ITestSink;
 
 function extractBytes(data: string): number[] {
   const bytes = data
@@ -165,6 +175,69 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   return true;
 }
 
+async function itestRun(test: ITestRun): Promise<boolean> {
+  const stdout: string[] = [];
+  const res = await makeFromFile(
+    '/root/main',
+    [{ key: 'defined123', value: 123 }],
+    true,
+    (filename) => filename.startsWith('/'),
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(sink.fstype.FILE);
+      } else if (
+        Object.keys(test.files).some((f) => f.startsWith(`${filename}/`))
+      ) {
+        return Promise.resolve(sink.fstype.DIR);
+      }
+      return Promise.resolve(sink.fstype.NONE);
+    },
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(test.files[filename]);
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    (filename) => {
+      if (filename in test.files) {
+        return Promise.resolve(extractBytes(test.files[filename]));
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    () => {},
+  );
+  if ('errors' in res) {
+    console.error('');
+    for (const err of res.errors) {
+      console.error(err);
+    }
+    return false;
+  }
+
+  runResult(
+    res.result,
+    res.base,
+    res.arm,
+    res.debug,
+    (str: string) => stdout.push(str),
+  );
+
+  for (let i = 0; i < Math.max(test.stdout.length, stdout.length); i++) {
+    const exp = test.stdout[i];
+    const got = stdout[i];
+    if (exp !== got) {
+      console.error(`\nStdout doesn't match as expected on line ${i + 1}`);
+      console.error(`  expected: ${JSON.stringify(exp)}`);
+      console.error(`  got:      ${JSON.stringify(got)}`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function itestSink(test: ITestSink): Promise<boolean> {
   const scr = sink.scr_new(
     {
@@ -272,6 +345,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   sinkLoad(def);
   stdlibLoad(def);
   regsLoad(def);
+  runLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));
@@ -300,6 +374,9 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
       switch (test.test.kind) {
         case 'make':
           pass = await itestMake(test.test);
+          break;
+        case 'run':
+          pass = await itestRun(test.test);
           break;
         case 'sink':
           pass = await itestSink(test.test);

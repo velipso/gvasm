@@ -118,7 +118,7 @@ export class CPU {
   public bx(addr: number) {
     this.regs[16] = (this.regs[16] & 0xffffffdf) | ((addr & 1) << 5);
     this.regs[15] = addr & 0xfffffffe;
-    this.regs[15] += this.isARM() ? 4 : 2;
+    this.regs[15] += this.isARM() ? 8 : 4;
   }
 
   public isARM(): boolean {
@@ -126,35 +126,36 @@ export class CPU {
   }
 
   public test(cond: number): boolean {
+    const status = this.regs[16];
     switch (cond) {
       case 0: // eq
-        return !!(this.regs[16] & Z);
+        return !!(status & Z);
       case 1: // ne
-        return !(this.regs[16] & Z);
+        return !(status & Z);
       case 2: // cs
-        return !!(this.regs[16] & C);
+        return !!(status & C);
       case 3: // cc
-        return !(this.regs[16] & C);
+        return !(status & C);
       case 4: // mi
-        return !!(this.regs[16] & N);
+        return !!(status & N);
       case 5: // pl
-        return !(this.regs[16] & N);
+        return !(status & N);
       case 6: // vs
-        return !!(this.regs[16] & V);
+        return !!(status & V);
       case 7: // vc
-        return !(this.regs[16] & V);
+        return !(status & V);
       case 8: // hi
-        return !!(this.regs[16] & C) && !(this.regs[16] & Z);
+        return !!(status & C) && !(status & Z);
       case 9: // ls
-        return !(this.regs[16] & C) && !!(this.regs[16] & Z);
+        return !(status & C) && !!(status & Z);
       case 10: // ge
-        return !(this.regs[16] & N) === !(this.regs[16] & V);
+        return !(status & N) === !(status & V);
       case 11: // lt
-        return !(this.regs[16] & N) !== !(this.regs[16] & V);
+        return !(status & N) !== !(status & V);
       case 12: // gt
-        return !(this.regs[16] & Z) && !(this.regs[16] & N) === !(this.regs[16] & V);
+        return !(status & Z) && !(status & N) === !(status & V);
       case 13: // le
-        return !!(this.regs[16] & Z) || !(this.regs[16] & N) !== !(this.regs[16] & V);
+        return !!(status & Z) || !(status & N) !== !(status & V);
       case 14:
         return true;
       default:
@@ -167,31 +168,35 @@ export class CPU {
   }
 
   public setV(flag: boolean): CPU {
-    if (flag) this.regs[16] = this.regs[16] & ~V;
-    else this.regs[16] |= V;
+    if (flag) this.regs[16] |= V;
+    else this.regs[16] = this.regs[16] & ~V;
     return this;
   }
 
   public setC(flag: boolean): CPU {
-    if (flag) this.regs[16] = this.regs[16] & ~C;
-    else this.regs[16] |= C;
+    if (flag) this.regs[16] |= C;
+    else this.regs[16] = this.regs[16] & ~C;
     return this;
   }
 
   public setZ(flag: boolean): CPU {
-    if (flag) this.regs[16] = this.regs[16] & ~Z;
-    else this.regs[16] |= Z;
+    if (flag) this.regs[16] |= Z;
+    else this.regs[16] = this.regs[16] & ~Z;
     return this;
   }
 
   public setN(flag: boolean): CPU {
-    if (flag) this.regs[16] = this.regs[16] & ~N;
-    else this.regs[16] |= N;
+    if (flag) this.regs[16] |= N;
+    else this.regs[16] = this.regs[16] & ~N;
     return this;
   }
 
   public setZNFromReg(reg: number) {
     this.setZ(this.regs[reg] === 0).setN(this.regs[reg] < 0);
+  }
+
+  public setZNFromValue(v: number) {
+    this.setZ(v === 0).setN(v < 0);
   }
 
   public mov(reg: number, value: number) {
@@ -201,13 +206,24 @@ export class CPU {
   public next() {
     this.regs[15] += this.isARM() ? 4 : 2;
   }
+
+  public sub(a: number, b: number, setStatus: boolean): number {
+    const result = a - b;
+    if (setStatus) {
+      this.setZNFromValue(result);
+      this.setC(a >= b);
+      this.setV(!!(((a ^ b) & (a ^ result)) >> 31));
+    }
+    return result;
+  }
 }
 
-function runResult(
+export function runResult(
   bytes: readonly number[],
   base: number,
   arm: boolean,
   debug: IDebugStatement[],
+  log: (str: string) => void,
 ) {
   const cpu = new CPU();
   cpu.addROM(base, bytes);
@@ -221,7 +237,7 @@ function runResult(
   cpu.bx(base + (arm ? 0 : 1));
 
   while (true) {
-    const pc = cpu.isARM() ? cpu.pc() - 4 : cpu.pc() - 2;
+    const pc = cpu.isARM() ? cpu.pc() - 8 : cpu.pc() - 4;
 
     // run debug statements here
     for (const dbg of debug) {
@@ -235,7 +251,7 @@ function runResult(
               }
               return v;
             });
-            console.log(printf(dbg.format, ...args));
+            log(printf(dbg.format, ...args));
             break;
           }
           default:
@@ -283,7 +299,13 @@ export async function run({ input, defines }: IRunArgs): Promise<number> {
       throw false;
     }
 
-    runResult(result.result, result.base, result.arm, result.debug);
+    runResult(
+      result.result,
+      result.base,
+      result.arm,
+      result.debug,
+      (str: string) => console.log(str),
+    );
 
     return 0;
   } catch (e) {

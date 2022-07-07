@@ -54,6 +54,8 @@ export class Bytes {
   private globalLabels: { [name: string]: number } = {};
   private localLabels: { [name: string]: number }[] = [{}];
 
+  public firstBase = 0x08000000;
+
   public get(): readonly number[] {
     for (const pex of this.pendingExprs) {
       for (const expr of Object.values(pex.exprs)) {
@@ -81,6 +83,9 @@ export class Bytes {
   }
 
   public setBase(base: IBase) {
+    if (this.array.length <= 0) {
+      this.firstBase = base.value;
+    }
     this.base = base;
   }
 

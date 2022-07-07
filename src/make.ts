@@ -16,7 +16,7 @@ import {
   TokEnum,
 } from './lexer.ts';
 import { assertNever, b16, b32, ILineStr, printf, splitLines } from './util.ts';
-import { Arm, Thumb } from './ops.ts';
+import { ARM, Thumb } from './ops.ts';
 import { Expression, ExpressionBuilder } from './expr.ts';
 import { Bytes, IBase } from './bytes.ts';
 import { path, pathBasename, pathDirname, pathJoin, pathResolve } from './deps.ts';
@@ -32,6 +32,10 @@ export interface IMakeArgs {
   output: string;
   defines: { key: string; value: number }[];
 }
+
+export type IMakeResult =
+  | { result: readonly number[]; base: number; arm: boolean; debug: IDebugStatement[] }
+  | { errors: string[] };
 
 interface IDotStackBegin {
   kind: 'begin';
@@ -71,12 +75,23 @@ type IDotStack =
   | IDotStackScript
   | IDotStackMacro;
 
+interface IDebugStatementLog {
+  kind: 'log';
+  addr: number;
+  format: string;
+  args: Expression[];
+}
+
+export type IDebugStatement = IDebugStatementLog;
+
 interface IParseState {
+  firstARM: boolean;
   arm: boolean;
   main: boolean;
   regs: string[];
   base: IBase;
   bytes: Bytes;
+  debug: IDebugStatement[];
   ctable: ConstTable;
   active: boolean;
   struct: false | {
@@ -103,12 +118,14 @@ type ISyms = { [sym: string]: Expression | number };
 const defaultRegs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11'];
 const reservedRegs = ['r12', 'ip', 'r13', 'sp', 'r14', 'lr', 'r15', 'pc'];
 
-function decodeRegister(state: IParseState, id: string): number {
+export function decodeRegister(regs: string[], id: string, allowCpsr = false): number {
+  if (allowCpsr && id === 'cpsr') {
+    return 16;
+  }
   const r = reservedRegs.indexOf(id);
   if (r >= 0) {
     return 12 + (r >> 1);
   }
-  const regs = getRegs(state);
   const i = regs.indexOf(id);
   if (i < 0) {
     // attempt to provide friendly error message
@@ -184,8 +201,8 @@ function parseReglist(
         if (t.kind === TokEnum.ID && t.id === '}') {
           line.splice(0, i + 1); // remove tokens
           return result;
-        } else if (t.kind === TokEnum.ID && decodeRegister(pstate, t.id) >= 0) {
-          lastRegister = decodeRegister(pstate, t.id);
+        } else if (t.kind === TokEnum.ID && decodeRegister(getRegs(pstate), t.id) >= 0) {
+          lastRegister = decodeRegister(getRegs(pstate), t.id);
           if (lastRegister >= width && lastRegister !== extra) {
             return false;
           }
@@ -218,8 +235,8 @@ function parseReglist(
         }
         break;
       case 3: // reading end of range
-        if (t.kind === TokEnum.ID && decodeRegister(pstate, t.id) >= 0) {
-          const end = decodeRegister(pstate, t.id);
+        if (t.kind === TokEnum.ID && decodeRegister(getRegs(pstate), t.id) >= 0) {
+          const end = decodeRegister(getRegs(pstate), t.id);
           if (end >= width) {
             return false;
           }
@@ -650,6 +667,43 @@ function parseDotStatement(
   }
 }
 
+function parseDebugStatement(
+  state: IParseState,
+  cmd: string,
+  line: ITok[],
+) {
+  switch (cmd) {
+    case 'x.log': {
+      const format = line.shift();
+      if (!format || format.kind !== TokEnum.STR) {
+        throw 'Invalid x.log statement';
+      }
+      const args: Expression[] = [];
+      const regs = getRegs(state);
+      while (isNextId(line, ',')) {
+        line.shift();
+        const expr = ExpressionBuilder.parse(line, [], state.ctable, regs);
+        if (expr === false) {
+          throw 'Invalid expression in x.log statement';
+        }
+        args.push(expr.build([]));
+      }
+      if (line.length > 0) {
+        throw 'Invalid x.log statement';
+      }
+      state.debug.push({
+        kind: 'log',
+        addr: state.bytes.nextAddress(),
+        format: format.str,
+        args,
+      });
+      break;
+    }
+    default:
+      throw `Unknown debug statement: ${cmd}`;
+  }
+}
+
 function validateStr(partStr: string, line: ITok[]): boolean {
   if (partStr === '') {
     return true;
@@ -716,7 +770,7 @@ function validateSymRegister(
   if (!t || t.kind !== TokEnum.ID) {
     return false;
   }
-  const reg = decodeRegister(state, t.id);
+  const reg = decodeRegister(getRegs(state), t.id);
   if (reg >= low && reg <= high) {
     syms[partSym] = reg;
     return true;
@@ -789,10 +843,10 @@ function calcRotImm(v: number): number | false {
   return (((16 - r) & 0xf) << 8) | (v & 0xff);
 }
 
-function parseArmStatement(
+function parseARMStatement(
   state: IParseState,
   flp: IFilePos,
-  pb: Arm.IParsedBody,
+  pb: ARM.IParsedBody,
   line: ITok[],
 ) {
   const syms: ISyms = { ...pb.syms };
@@ -961,7 +1015,7 @@ function parsePoolStatement(state: IParseState, line: ITok[], ctable: ConstTable
   if (!trd || trd.kind !== TokEnum.ID) {
     return false;
   }
-  const rd = decodeRegister(state, trd.id);
+  const rd = decodeRegister(getRegs(state), trd.id);
   if (rd < 0) {
     return false;
   }
@@ -983,7 +1037,7 @@ function parsePoolStatement(state: IParseState, line: ITok[], ctable: ConstTable
   }
 }
 
-function parseArmPoolStatement(
+function parseARMPoolStatement(
   state: IParseState,
   flp: IFilePos,
   cmd: string,
@@ -992,8 +1046,8 @@ function parseArmPoolStatement(
   let cmdSize = -1;
   let cmdSigned = false;
   let cond = -1;
-  for (let ci = 0; ci < Arm.conditionEnum.length && cond < 0; ci++) {
-    const ce = Arm.conditionEnum[ci];
+  for (let ci = 0; ci < ARM.conditionEnum.length && cond < 0; ci++) {
+    const ce = ARM.conditionEnum[ci];
     if (ce !== false) {
       for (const cs of ce.split('/')) {
         if (cmd === `ldr${cs}` || (cs !== '' && cmd === `ldr.${cs}`)) {
@@ -1760,12 +1814,18 @@ function parseLine(
 
   if (cmd.startsWith('.')) {
     return parseDotStatement(state, cmd, line, cmdTok.flp);
+  } else if (cmd.startsWith('x.')) {
+    parseDebugStatement(state, cmd, line);
+    return;
   } else if (isARM(state)) {
+    if (state.bytes.length() <= 0) {
+      state.firstARM = true;
+    }
     const pool = parsePoolStatement(state, [...line], state.ctable);
     if (pool) {
-      parseArmPoolStatement(state, cmdTok.flp, cmd, pool);
+      parseARMPoolStatement(state, cmdTok.flp, cmd, pool);
     } else {
-      const ops = Arm.parsedOps[cmd];
+      const ops = ARM.parsedOps[cmd];
       if (!ops) {
         throw `Unknown arm statement: ${cmd}`;
       }
@@ -1773,7 +1833,7 @@ function parseLine(
       if (
         !ops.some((op) => {
           try {
-            return parseArmStatement(state, cmdTok.flp, op, [...line]);
+            return parseARMStatement(state, cmdTok.flp, op, [...line]);
           } catch (e) {
             if (typeof e === 'string') {
               lastError = e;
@@ -1787,6 +1847,9 @@ function parseLine(
       }
     }
   } else {
+    if (state.bytes.length() <= 0) {
+      state.firstARM = false;
+    }
     const pool = parsePoolStatement(state, [...line], state.ctable);
     if (pool) {
       parseThumbPoolStatement(state, cmdTok.flp, cmd, pool);
@@ -1887,7 +1950,7 @@ export async function makeFromFile(
   readTextFile: (filename: string) => Promise<string>,
   readBinaryFile: (filename: string) => Promise<number[] | Uint8Array>,
   log: (str: string) => void,
-): Promise<{ result: readonly number[] } | { errors: string[] }> {
+): Promise<IMakeResult> {
   let data;
   try {
     data = await readTextFile(filename);
@@ -1899,11 +1962,13 @@ export async function makeFromFile(
   const lx = lexNew();
   const bytes = new Bytes();
   const state: IParseState = {
+    firstARM: true,
     arm: true,
     base: bytes.getBase(),
     main: true,
     regs: defaultRegs,
     bytes,
+    debug: [],
     ctable: new ConstTable(
       [
         '$_version',
@@ -2128,31 +2193,38 @@ export async function makeFromFile(
     }
     throw e;
   }
-  return { result };
+  return { result, base: state.bytes.firstBase, arm: state.firstARM, debug: state.debug };
+}
+
+export function makeResult(
+  input: string,
+  defines: { key: string; value: number }[],
+): Promise<IMakeResult> {
+  return makeFromFile(
+    input,
+    defines,
+    path.sep === '/',
+    path.isAbsolute,
+    async (file: string) => {
+      const st = await Deno.stat(file);
+      if (st !== null) {
+        if (st.isFile) {
+          return sink.fstype.FILE;
+        } else if (st.isDirectory) {
+          return sink.fstype.DIR;
+        }
+      }
+      return sink.fstype.NONE;
+    },
+    Deno.readTextFile,
+    Deno.readFile,
+    (str) => console.log(str),
+  );
 }
 
 export async function make({ input, output, defines }: IMakeArgs): Promise<number> {
   try {
-    const result = await makeFromFile(
-      input,
-      defines,
-      path.sep === '/',
-      path.isAbsolute,
-      async (file: string) => {
-        const st = await Deno.stat(file);
-        if (st !== null) {
-          if (st.isFile) {
-            return sink.fstype.FILE;
-          } else if (st.isDirectory) {
-            return sink.fstype.DIR;
-          }
-        }
-        return sink.fstype.NONE;
-      },
-      Deno.readTextFile,
-      Deno.readFile,
-      (str) => console.log(str),
-    );
+    const result = await makeResult(input, defines);
 
     if ('errors' in result) {
       for (const e of result.errors) {

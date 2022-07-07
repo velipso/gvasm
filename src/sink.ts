@@ -1645,8 +1645,19 @@ interface lex_st {
 
 function lex_reset(lx: lex_st): void {
   lx.state = lex_enum.START;
-  lx.flpS = lx.flpR = lx.flp1 = lx.flp2 = lx.flp3 = lx.flp4 = FILEPOS_NULL;
-  lx.chR = lx.ch1 = lx.ch2 = lx.ch3 = lx.ch4 = '';
+  lx.flpS =
+    lx.flpR =
+    lx.flp1 =
+    lx.flp2 =
+    lx.flp3 =
+    lx.flp4 =
+      FILEPOS_NULL;
+  lx.chR =
+    lx.ch1 =
+    lx.ch2 =
+    lx.ch3 =
+    lx.ch4 =
+      '';
   lx.str = '';
   lx.braces = [0];
   lx.str_hexval = 0;

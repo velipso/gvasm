@@ -6,6 +6,7 @@
 //
 
 import { assertNever, isAlpha, isNum, isSpace } from './util.ts';
+import { CPU, SymReader } from './run.ts';
 
 type IEnum = string | false;
 
@@ -115,7 +116,7 @@ export interface IParsedOpsGeneric<T, U> {
 }
 
 // deno-lint-ignore no-namespace
-export namespace Arm {
+export namespace ARM {
   interface ICodePartRegister {
     s: 4;
     k: 'register';
@@ -229,6 +230,7 @@ export namespace Arm {
     doubleInstruction?: true;
     codeParts: ICodePart[];
     syntax: [string, ...string[]];
+    run?(cpu: CPU, sym: SymReader): void;
   }
 
   export const conditionEnum: Enum16 = [
@@ -310,6 +312,7 @@ export namespace Arm {
         { s: 4, k: 'value', sym: 'cond', v: 14 }, // cond = always
       ],
       syntax: ['nop'],
+      run: () => {},
     },
     {
       ref: '4.5,4.5.2,4.5.8.1',
@@ -967,6 +970,31 @@ export namespace Arm {
         '$oper$s.$cond $Rd, #$expression',
         '$oper$cond$s $Rd, #$expression',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const s = sym('s');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const expression = sym('expression');
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 13: // mov
+              cpu.mov(Rd, expression);
+              break;
+            case 15: // mvn
+              cpu.mov(Rd, ~expression);
+              break;
+          }
+          if (s) {
+            if (Rd === 15) {
+              throw `Not implemented: set status when Rd is r15`;
+            }
+            cpu.setZNFromReg(Rd);
+          }
+        }
+        cpu.next();
+      },
     },
     // tst/teq/cmp/cmn
     {
@@ -3768,8 +3796,8 @@ function parseSyntaxIntoParts(syntax: string): (string[] | number)[] {
 }
 
 function parseOps<
-  T extends Arm.IOp | Thumb.IOp,
-  U extends Arm.ICodePart | Thumb.ICodePart,
+  T extends ARM.IOp | Thumb.IOp,
+  U extends ARM.ICodePart | Thumb.ICodePart,
 >(ops: readonly T[]): IParsedOpsGeneric<T, U> {
   const result: IParsedOpsGeneric<T, U> = {};
   for (const op of ops) {

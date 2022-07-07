@@ -7,12 +7,13 @@
 
 import { IInitArgs, init } from './init.ts';
 import { IMakeArgs, make } from './make.ts';
+import { IRunArgs, run } from './run.ts';
 import { dis, IDisArgs } from './dis.ts';
 import { IItestArgs, itest } from './itest.ts';
 import { argParse, path } from './deps.ts';
 import { lexKeyValue } from './lexer.ts';
 
-export const version = 1008001;
+export const version = 1009000;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -31,6 +32,7 @@ function printHelp() {
 Command Summary:
   init      Create a skeleton project
   make      Compile a project into a .gba file
+  run       Run a .gvasm file in debug mode
   dis       Disassemble a .gba file into a source
   itest     Run internal tests to verify correct behavior
 
@@ -164,6 +166,20 @@ function printMakeHelp() {
                .def \$FOO = 1`);
 }
 
+function parseDefines(define: string | string[]): { key: string; value: number }[] | false {
+  const defines: { key: string; value: number }[] = [];
+  const defs: string[] = typeof define === 'string' ? [define] : define ?? [];
+  for (const def of defs) {
+    const kv = lexKeyValue(def);
+    if (kv === false) {
+      console.error(`Invalid define: ${def}`);
+      return false;
+    }
+    defines.push(kv);
+  }
+  return defines;
+}
+
 function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
@@ -196,15 +212,9 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   }
   const input = a._[0] as string;
   const output = a.output;
-  const defines: { key: string; value: number }[] = [];
-  const defs: string[] = typeof a.define === 'string' ? [a.define] : a.define ?? [];
-  for (const def of defs) {
-    const kv = lexKeyValue(def);
-    if (kv === false) {
-      console.error(`Invalid define: ${def}`);
-      return 1;
-    }
-    defines.push(kv);
+  const defines = parseDefines(a.define);
+  if (defines === false) {
+    return 1;
   }
   return {
     input,
@@ -212,6 +222,53 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
       path.format({ ...path.parse(input), base: undefined, ext: '.gba' }),
     defines,
   };
+}
+
+function printRunHelp() {
+  console.log(`gvasm run <input> [-d NAME=value]
+
+<input>        The input .gvasm file
+-d NAME=value  Define the global \$NAME, set to value (integer), ex:
+               -d FOO=1         is equivalent to:
+               .def \$FOO = 1`);
+}
+
+function parseRunArgs(args: string[]): number | IRunArgs {
+  let badArgs = false;
+  const a = argParse(args, {
+    string: ['define'],
+    boolean: ['help'],
+    alias: { h: 'help', d: 'define' },
+    unknown: (_arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
+    printRunHelp();
+    return 0;
+  }
+  if (a._.length <= 0) {
+    console.error('Missing input file');
+    return 1;
+  }
+  if (a._.length > 1) {
+    console.error('Can only have one input file');
+    return 1;
+  }
+  const input = a._[0] as string;
+  const defines = parseDefines(a.define);
+  if (defines === false) {
+    return 1;
+  }
+  return { input, defines };
 }
 
 function printDisHelp() {
@@ -321,6 +378,12 @@ export async function main(args: string[]): Promise<number> {
       return makeArgs;
     }
     return await make(makeArgs);
+  } else if (args[0] === 'run') {
+    const runArgs = parseRunArgs(args.slice(1));
+    if (typeof runArgs === 'number') {
+      return runArgs;
+    }
+    return await run(runArgs);
   } else if (args[0] === 'dis') {
     const disArgs = parseDisArgs(args.slice(1));
     if (typeof disArgs === 'number') {

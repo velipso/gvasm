@@ -7,8 +7,9 @@
 
 import { assertNever } from './util.ts';
 import { ITok, TokEnum } from './lexer.ts';
-import { isNextId, parseName } from './make.ts';
+import { decodeRegister, isNextId, parseName } from './make.ts';
 import { ConstTable } from './const.ts';
+import { CPU } from './run.ts';
 
 interface IFunctions {
   [name: string]: {
@@ -42,6 +43,11 @@ const functions: IFunctions = Object.freeze({
 interface IExprNum {
   kind: 'num';
   value: number;
+}
+
+interface IExprRegister {
+  kind: 'register';
+  index: number;
 }
 
 interface IExprLabel {
@@ -183,6 +189,7 @@ interface IExprTernaryWithParam {
 
 type IExpr =
   | IExprNum
+  | IExprRegister
   | IExprLabel
   | IExprAssert
   | IExprBuild
@@ -194,6 +201,7 @@ type IExpr =
 type IExprWithParam =
   | IExprParam
   | IExprNum
+  | IExprRegister
   | IExprLabel
   | IExprAssertWithParam
   | IExprBuildWithParam
@@ -257,6 +265,7 @@ export class ExpressionBuilder {
     line: ITok[],
     paramNames: string[],
     ctable: ConstTable,
+    regs: false | string[] = false,
   ): ExpressionBuilder | false {
     const labelsNeed: Set<string> = new Set();
     if (
@@ -273,7 +282,8 @@ export class ExpressionBuilder {
               line[0].id === '~' ||
               line[0].id === '@' ||
               line[0].id === '$' ||
-              line[0].id === '!'
+              line[0].id === '!' ||
+              (regs && decodeRegister(regs, line[0].id, true) >= 0)
             )
           ) ||
           line[0].kind === TokEnum.NUM
@@ -407,6 +417,8 @@ export class ExpressionBuilder {
               throw `Constant cannot be called as an expression: ${cname}`;
             }
           }
+        } else if (regs && decodeRegister(regs, t.id, true) >= 0) {
+          result = { kind: 'register', index: decodeRegister(regs, t.id, true) };
         }
       }
       if (!result) {
@@ -541,6 +553,7 @@ export class ExpressionBuilder {
             value: params[ex.index],
           };
         case 'num':
+        case 'register':
         case 'label':
           return ex;
         case 'assert':
@@ -617,7 +630,7 @@ export class Expression {
     }
   }
 
-  public value(): number | false {
+  public value(cpu?: CPU): number | false {
     if (this.labelsNeed.size > 0) {
       return false;
     }
@@ -625,6 +638,11 @@ export class Expression {
       switch (ex.kind) {
         case 'num':
           return ex.value;
+        case 'register':
+          if (!cpu) {
+            throw 'Cannot have register in expression at compile-time';
+          }
+          return cpu.reg(ex.index);
         case 'label':
           if (ex.label in this.labelsHave) {
             return this.labelsHave[ex.label];

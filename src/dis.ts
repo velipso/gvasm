@@ -6,7 +6,7 @@
 //
 
 // deno-lint-ignore no-unused-vars
-import { Arm, Thumb } from './ops.ts';
+import { ARM, Thumb } from './ops.ts';
 import { assertNever, ranges } from './util.ts';
 
 export interface IDisArgs {
@@ -15,18 +15,18 @@ export interface IDisArgs {
   output: string;
 }
 
-interface IArmSyms {
+interface IARMSyms {
   [sym: string]: {
     v: number;
-    part: Arm.ICodePart;
+    part: ARM.ICodePart;
   };
 }
 
-function parseArm(opcode: number): { op: Arm.IOp; syms: IArmSyms } | false {
-  for (const op of Arm.ops) {
+export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | false {
+  for (const op of ARM.ops) {
     let error: string | undefined;
     let bpos = 0;
-    const syms: IArmSyms = {};
+    const syms: IARMSyms = {};
     for (const part of op.codeParts) {
       const v = (opcode >> bpos) & ((1 << part.s) - 1);
       switch (part.k) {
@@ -136,7 +136,7 @@ export async function dis(
 
     for (let i = 0; i < 200 && i < view.byteLength - 3; i += 4) {
       const opcode = view.getUint32(i, true);
-      const res = parseArm(opcode);
+      const res = parseARM(opcode);
       if (res) {
         const { op, syms } = res;
         console.log(pad(

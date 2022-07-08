@@ -326,9 +326,6 @@ export namespace ARM {
         { s: 4, k: 'value', sym: 'cond', v: 14 }, // cond = always
       ],
       syntax: ['nop'],
-      run: (cpu: CPU) => {
-        cpu.next();
-      },
     },
     {
       ref: '4.5,4.5.2,4.5.8.1',
@@ -895,6 +892,43 @@ export namespace ARM {
         '$oper$s.$cond $Rd, $Rm, $shift #$amount',
         '$oper$cond$s $Rd, $Rm, $shift #$amount',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const s = !!sym('s');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const Rm = sym('Rm');
+        const shift = sym('shift');
+        const amount = sym('amount');
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 13: // mov
+              switch (shift) {
+                case 0: // lsl
+                  if (amount === 0) {
+                    cpu.mov(Rd, cpu.reg(Rm));
+                    if (s) {
+                      cpu.setZNFromReg(Rd);
+                    }
+                  } else {
+                    throw 'Not implemented: mov Rd, Rm, lsl #amount';
+                  }
+                  break;
+                case 1: // lsr
+                  throw 'Not implemented: mov Rd, Rm, lsr #amount';
+                case 2: // asr
+                  throw 'Not implemented: mov Rd, Rm, asr #amount';
+                case 3: // ror
+                  throw 'Not implemented: mov Rd, Rm, ror #amount';
+              }
+              break;
+            case 15: // mvn
+              throw 'Not implemented: mvn';
+          }
+        }
+        cpu.next();
+      },
     },
     {
       ref: '4.5,4.5.2,4.5.8.1',
@@ -1343,7 +1377,8 @@ export namespace ARM {
               cpu.sub(cpu.reg(Rn), expression, true);
               break;
             case 11: // cmn
-              throw `Not implemented: cmn`;
+              cpu.add(cpu.reg(Rn), expression, true);
+              break;
           }
         }
         cpu.next();
@@ -1924,6 +1959,47 @@ export namespace ARM {
       codeParts: [
         { s: 12, k: 'rotimm', sym: 'expression' },
         { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        {
+          s: 4,
+          k: 'enum',
+          sym: 'oper',
+          enum: [
+            'and',
+            'eor',
+            'sub',
+            'rsb',
+            'add',
+            'adc',
+            'sbc',
+            'rsc',
+            false,
+            false,
+            false,
+            false,
+            'orr',
+            false,
+            'bic',
+            false,
+          ],
+        },
+        { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$oper$s$cond $Rd, #$expression',
+        '$oper$s.$cond $Rd, #$expression',
+        '$oper$cond$s $Rd, #$expression',
+      ],
+    },
+    {
+      ref: '4.5,4.5.3,4.5.8.3',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 12, k: 'rotimm', sym: 'expression' },
+        { s: 4, k: 'register', sym: 'Rd' },
         { s: 4, k: 'register', sym: 'Rn' },
         { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
         {
@@ -1977,58 +2053,21 @@ export namespace ARM {
             case 2: // sub
               cpu.mov(Rd, cpu.sub(cpu.reg(Rn), expression, s));
               break;
-
             case 3: // rsb
+              cpu.mov(Rd, cpu.sub(expression, cpu.reg(Rn), s));
+              break;
             case 4: // add
+              cpu.mov(Rd, cpu.add(cpu.reg(Rn), expression, s));
+              break;
+
             case 5: // adc
             case 6: // sbc
             case 7: // rsc
-              throw `Not implemented: rsb/add/adc/sbc/rsc`;
+              throw `Not implemented: adc/sbc/rsc`;
           }
         }
         cpu.next();
       },
-    },
-    {
-      ref: '4.5,4.5.3,4.5.8.3',
-      category: 'Data Processing',
-      codeParts: [
-        { s: 12, k: 'rotimm', sym: 'expression' },
-        { s: 4, k: 'register', sym: 'Rd' },
-        { s: 4, k: 'register', sym: 'Rd' },
-        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
-        {
-          s: 4,
-          k: 'enum',
-          sym: 'oper',
-          enum: [
-            'and',
-            'eor',
-            'sub',
-            'rsb',
-            'add',
-            'adc',
-            'sbc',
-            'rsc',
-            false,
-            false,
-            false,
-            false,
-            'orr',
-            false,
-            'bic',
-            false,
-          ],
-        },
-        { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
-        { s: 2, k: 'value', v: 0 },
-        condition,
-      ],
-      syntax: [
-        '$oper$s$cond $Rd, #$expression',
-        '$oper$s.$cond $Rd, #$expression',
-        '$oper$cond$s $Rd, #$expression',
-      ],
     },
 
     //
@@ -2226,26 +2265,6 @@ export namespace ARM {
         '$oper$b.$cond $Rd, [$Rn]',
         '$oper$cond$b $Rd, [$Rn]',
       ],
-      run: (cpu: CPU, sym: SymReader) => {
-        const oper = sym('oper');
-        const b = sym('b');
-        const cond = sym('cond');
-        const Rd = sym('Rd');
-        const Rn = sym('Rn');
-
-        if (cpu.test(cond)) {
-          switch (oper) {
-            case 0: // str
-              throw `Not implemented: str`;
-            case 1: { // ldr
-              const addr = cpu.reg(Rn);
-              cpu.mov(Rd, b ? cpu.read8(addr) : cpu.read32(addr));
-              break;
-            }
-          }
-        }
-        cpu.next();
-      },
     },
     {
       ref: '4.9,4.9.8.2.2',

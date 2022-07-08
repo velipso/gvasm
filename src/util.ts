@@ -9,6 +9,10 @@ export function assertNever(value: never) {
   throw new Error(`Unexpected value: ${value}`);
 }
 
+export function hex32(n: number) {
+  return `0x${`0000000${n.toString(16)}`.substr(-8)}`;
+}
+
 export interface IRange {
   low: number;
   high: number;

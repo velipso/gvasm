@@ -22,8 +22,9 @@ interface IARMSyms {
   };
 }
 
-export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | false {
+export function parseARM(opcode: number, runOnly = false): { op: ARM.IOp; syms: IARMSyms } | false {
   for (const op of ARM.ops) {
+    if (runOnly && !op.run) continue;
     let error: string | undefined;
     let bpos = 0;
     const syms: IARMSyms = {};
@@ -81,7 +82,7 @@ export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | fals
         case 'pcoffsetsplit':
           if (!(part.sym in syms)) {
             syms[part.sym] = { v, part };
-          } else if (syms[part.sym].part.k === 'offsetsplit') {
+          } else if (syms[part.sym].part.k === part.k) {
             if (part.sign) {
               if (v === 0) {
                 syms[part.sym].v = -syms[part.sym].v;
@@ -110,6 +111,7 @@ export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | fals
     if (error) {
       continue;
     }
+    // TODO: remove eventually: if (runOnly && !op.run){ console.log(op); continue; }
     return { op, syms };
   }
   return false;

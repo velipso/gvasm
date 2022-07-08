@@ -18,6 +18,11 @@ export function load(def: (test: ITest) => void) {
       'r0 = 3',
       'r0 = 2',
       'r0 = 1',
+      'r0 = 0',
+      'r0 = 1',
+      'r0 = 2',
+      'r0 = 3',
+      'r0 = 4',
       'done',
     ],
     files: {
@@ -27,6 +32,11 @@ movs  r0, #5
 _log  "r0 = %d", r0
 subs  r0, #1
 bne   @again
+@again2:
+_log  "r0 = %d", r0
+add   r0, #1
+cmp   r0, #5
+blt   @again2
 _log  "done"
 _exit
 _log  "shouldn't run"

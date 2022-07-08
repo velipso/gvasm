@@ -7,7 +7,7 @@
 
 import { IDebugStatement, makeResult } from './make.ts';
 import { parseARM } from './dis.ts';
-import { assertNever, printf } from './util.ts';
+import { assertNever, hex32, printf } from './util.ts';
 
 export interface IRunArgs {
   input: string;
@@ -189,12 +189,22 @@ export class CPU {
     this.regs[15] += this.isARM() ? 4 : 2;
   }
 
+  public add(a: number, b: number, setStatus: boolean): number {
+    const result = (a + b) | 0;
+    if (setStatus) {
+      this.setZNFromValue(result);
+      this.setC(result < a);
+      this.setV(!!((~(a ^ b) & (b ^ result)) >>> 31));
+    }
+    return result;
+  }
+
   public sub(a: number, b: number, setStatus: boolean): number {
-    const result = a - b;
+    const result = (a - b) | 0;
     if (setStatus) {
       this.setZNFromValue(result);
       this.setC(a >= b);
-      this.setV(!!(((a ^ b) & (a ^ result)) >> 31));
+      this.setV(!!(((a ^ b) & (a ^ result)) >>> 31));
     }
     return result;
   }
@@ -256,21 +266,20 @@ export function runResult(
     // run code here
     const opcode = cpu.isARM() ? cpu.read32(pc) : cpu.read16(pc);
     if (cpu.isARM()) {
-      const dis = parseARM(opcode);
+      const dis = parseARM(opcode, true);
       if (!dis) {
-        throw `Failed to disassemble op at 0x${`0000000${pc.toString(16)}`.substr(-8)}`;
+        throw `Failed to disassemble op at ${hex32(pc)}: ${hex32(opcode)}`;
       }
       const { op, syms } = dis;
-      if (op.run) {
-        op.run(cpu, (name: string): number => {
-          if (name in syms) {
-            return syms[name].v;
-          }
-          throw `Unknown symbol: ${name}`;
-        });
-      } else {
-        throw `Not implemented: ${op.category} / ${op.ref}`;
+      if (!op.run) {
+        throw new Error('parseARM must return op with run function');
       }
+      op.run(cpu, (name: string): number => {
+        if (name in syms) {
+          return syms[name].v;
+        }
+        throw new Error(`Unknown symbol: ${name}`);
+      });
     } else {
       throw 'Not implemented: Don\'t know how to run Thumb code yet :-(';
     }

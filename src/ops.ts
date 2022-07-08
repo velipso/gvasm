@@ -326,7 +326,9 @@ export namespace ARM {
         { s: 4, k: 'value', sym: 'cond', v: 14 }, // cond = always
       ],
       syntax: ['nop'],
-      run: () => {},
+      run: (cpu: CPU) => {
+        cpu.next();
+      },
     },
     {
       ref: '4.5,4.5.2,4.5.8.1',
@@ -2224,6 +2226,26 @@ export namespace ARM {
         '$oper$b.$cond $Rd, [$Rn]',
         '$oper$cond$b $Rd, [$Rn]',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const b = sym('b');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const Rn = sym('Rn');
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 0: // str
+              throw `Not implemented: str`;
+            case 1: { // ldr
+              const addr = cpu.reg(Rn);
+              cpu.mov(Rd, b ? cpu.read8(addr) : cpu.read32(addr));
+              break;
+            }
+          }
+        }
+        cpu.next();
+      },
     },
     {
       ref: '4.9,4.9.8.2.2',
@@ -2246,6 +2268,31 @@ export namespace ARM {
         '$oper$b.$cond $Rd, [#$offset]$w',
         '$oper$cond$b $Rd, [#$offset]$w',
       ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const b = sym('b');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const offset = sym('offset');
+        const w = sym('w');
+
+        if (w) {
+          throw 'Not implemented: write back';
+        }
+
+        if (cpu.test(cond)) {
+          switch (oper) {
+            case 0: // str
+              throw `Not implemented: str`;
+            case 1: { // ldr
+              const addr = cpu.reg(15) + offset;
+              cpu.mov(Rd, b ? cpu.read8(addr) : cpu.read32(addr));
+              break;
+            }
+          }
+        }
+        cpu.next();
+      },
     },
     {
       ref: '4.9,4.9.8.2.2',

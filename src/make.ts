@@ -82,7 +82,12 @@ interface IDebugStatementLog {
   args: Expression[];
 }
 
-export type IDebugStatement = IDebugStatementLog;
+interface IDebugStatementExit {
+  kind: 'exit';
+  addr: number;
+}
+
+export type IDebugStatement = IDebugStatementLog | IDebugStatementExit;
 
 interface IParseState {
   firstARM: boolean;
@@ -673,10 +678,10 @@ function parseDebugStatement(
   line: ITok[],
 ) {
   switch (cmd) {
-    case 'x.log': {
+    case '_log': {
       const format = line.shift();
       if (!format || format.kind !== TokEnum.STR) {
-        throw 'Invalid x.log statement';
+        throw 'Invalid _log statement';
       }
       const args: Expression[] = [];
       const regs = getRegs(state);
@@ -684,12 +689,12 @@ function parseDebugStatement(
         line.shift();
         const expr = ExpressionBuilder.parse(line, [], state.ctable, regs);
         if (expr === false) {
-          throw 'Invalid expression in x.log statement';
+          throw 'Invalid expression in _log statement';
         }
         args.push(expr.build([]));
       }
       if (line.length > 0) {
-        throw 'Invalid x.log statement';
+        throw 'Invalid _log statement';
       }
       state.debug.push({
         kind: 'log',
@@ -699,6 +704,15 @@ function parseDebugStatement(
       });
       break;
     }
+    case '_exit':
+      if (line.length > 0) {
+        throw 'Invalid _exit statement';
+      }
+      state.debug.push({
+        kind: 'exit',
+        addr: state.bytes.nextAddress(),
+      });
+      break;
     default:
       throw `Unknown debug statement: ${cmd}`;
   }
@@ -1814,7 +1828,7 @@ function parseLine(
 
   if (cmd.startsWith('.')) {
     return parseDotStatement(state, cmd, line, cmdTok.flp);
-  } else if (cmd.startsWith('x.')) {
+  } else if (cmd.startsWith('_')) {
     parseDebugStatement(state, cmd, line);
     return;
   } else if (isARM(state)) {

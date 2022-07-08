@@ -30,26 +30,8 @@ const N = 0x80000000;
 
 export class CPU {
   private memory: IMemoryRegion[] = [];
-  private regs: number[] = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-  ];
+  // deno-fmt-ignore
+  private regs: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   public reg(n: number) {
     return this.regs[n];
@@ -236,7 +218,8 @@ export function runResult(
 
   cpu.bx(base + (arm ? 0 : 1));
 
-  while (true) {
+  let done = false;
+  while (!done) {
     const pc = cpu.isARM() ? cpu.pc() - 8 : cpu.pc() - 4;
 
     // run debug statements here
@@ -254,15 +237,21 @@ export function runResult(
             log(printf(dbg.format, ...args));
             break;
           }
+          case 'exit':
+            done = true;
+            break;
           default:
-            assertNever(dbg.kind);
+            assertNever(dbg);
         }
       }
+      if (done) break;
     }
 
     if (pc === base + bytes.length) {
-      break;
+      done = true;
     }
+
+    if (done) break;
 
     // run code here
     const opcode = cpu.isARM() ? cpu.read32(pc) : cpu.read16(pc);
@@ -280,7 +269,7 @@ export function runResult(
           throw `Unknown symbol: ${name}`;
         });
       } else {
-        throw `Not implemented: ${op.category}`;
+        throw `Not implemented: ${op.category} / ${op.ref}`;
       }
     } else {
       throw 'Not implemented: Don\'t know how to run Thumb code yet :-(';

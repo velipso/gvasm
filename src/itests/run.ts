@@ -24,10 +24,40 @@ export function load(def: (test: ITest) => void) {
       '/root/main': `
 movs  r0, #5
 @again:
-x.log "r0 = %d", r0
+_log  "r0 = %d", r0
 subs  r0, #1
 bne   @again
-x.log "done"
+_log  "done"
+_exit
+_log  "shouldn't run"
+`,
+    },
+  });
+
+  def({
+    name: 'run.arm.ldr-pool',
+    desc: 'ARM ldr from pool',
+    kind: 'run',
+    stdout: [
+      '12345678',
+      '7856',
+      '12345678',
+      '7856',
+    ],
+    files: {
+      '/root/main': `
+ldr   r0, =@data
+nop
+nop
+_log  "%08x", [r0]
+_log  "%04x", b16[r0]
+ldr   r0, =@data
+_log  "%08x", [r0]
+_log  "%04x", b16[r0]
+_exit
+@data:
+.i32  0x12345678
+.pool
 `,
     },
   });

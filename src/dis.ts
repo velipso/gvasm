@@ -49,11 +49,22 @@ export function parseARM(opcode: number): { op: ARM.IOp; syms: IARMSyms } | fals
           }
           syms[part.sym] = { v, part };
           break;
+        case 'pcoffset12':
+          if (part.sym) {
+            if (part.sign) {
+              if (v === 0) {
+                // negate offset
+                syms[part.sym].v = -syms[part.sym].v;
+              }
+            } else {
+              syms[part.sym] = { v, part };
+            }
+          }
+          break;
         case 'ignored':
         case 'immediate':
         case 'rotimm':
         case 'offset12':
-        case 'pcoffset12':
         case 'reglist':
           if (part.sym) {
             syms[part.sym] = { v, part };

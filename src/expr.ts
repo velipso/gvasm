@@ -5,7 +5,7 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-import { assertNever } from './util.ts';
+import { assertNever, b16, b32 } from './util.ts';
 import { ITok, TokEnum } from './lexer.ts';
 import { decodeRegister, isNextId, parseName } from './make.ts';
 import { ConstTable } from './const.ts';
@@ -55,6 +55,12 @@ interface IExprLabel {
   label: string;
 }
 
+interface IExprRead {
+  kind: 'read';
+  size: 'i8' | 'i16' | 'i32' | 'b8' | 'b16' | 'b32';
+  addr: IExpr;
+}
+
 interface IExprParam {
   kind: 'param';
   index: number;
@@ -64,6 +70,12 @@ interface IExprAssert {
   kind: 'assert';
   hint: string;
   value: IExpr;
+}
+
+interface IExprReadWithParam {
+  kind: 'read';
+  size: 'i8' | 'i16' | 'i32' | 'b8' | 'b16' | 'b32';
+  addr: IExprWithParam;
 }
 
 interface IExprAssertWithParam {
@@ -191,6 +203,7 @@ type IExpr =
   | IExprNum
   | IExprRegister
   | IExprLabel
+  | IExprRead
   | IExprAssert
   | IExprBuild
   | IExprFunc
@@ -203,6 +216,7 @@ type IExprWithParam =
   | IExprNum
   | IExprRegister
   | IExprLabel
+  | IExprReadWithParam
   | IExprAssertWithParam
   | IExprBuildWithParam
   | IExprFuncWithParam
@@ -283,7 +297,16 @@ export class ExpressionBuilder {
               line[0].id === '@' ||
               line[0].id === '$' ||
               line[0].id === '!' ||
-              (regs && decodeRegister(regs, line[0].id, true) >= 0)
+              (regs && (
+                decodeRegister(regs, line[0].id, true) >= 0 ||
+                line[0].id === '[' ||
+                line[0].id === 'i8' ||
+                line[0].id === 'i16' ||
+                line[0].id === 'i32' ||
+                line[0].id === 'b8' ||
+                line[0].id === 'b16' ||
+                line[0].id === 'b32'
+              ))
             )
           ) ||
           line[0].kind === TokEnum.NUM
@@ -419,6 +442,33 @@ export class ExpressionBuilder {
           }
         } else if (regs && decodeRegister(regs, t.id, true) >= 0) {
           result = { kind: 'register', index: decodeRegister(regs, t.id, true) };
+        } else if (regs && t.id === '[') {
+          const addr = term();
+          if (!isNextId(line, ']')) {
+            throw 'Expecting \']\' at end of memory read';
+          }
+          line.shift();
+          result = { kind: 'read', size: 'i32', addr };
+        } else if (
+          regs && (
+            t.id === 'i8' ||
+            t.id === 'i16' ||
+            t.id === 'i32' ||
+            t.id === 'b8' ||
+            t.id === 'b16' ||
+            t.id === 'b32'
+          )
+        ) {
+          if (!isNextId(line, '[')) {
+            throw 'Expecting \'[\' at start of memory read';
+          }
+          line.shift();
+          const addr = term();
+          if (!isNextId(line, ']')) {
+            throw 'Expecting \']\' at end of memory read';
+          }
+          line.shift();
+          result = { kind: 'read', size: t.id, addr };
         }
       }
       if (!result) {
@@ -556,6 +606,12 @@ export class ExpressionBuilder {
         case 'register':
         case 'label':
           return ex;
+        case 'read':
+          return {
+            kind: 'read',
+            size: ex.size,
+            addr: walk(ex.addr),
+          };
         case 'assert':
           return {
             kind: 'assert',
@@ -648,6 +704,28 @@ export class Expression {
             return this.labelsHave[ex.label];
           }
           throw new Error(`Should have label ${ex.label} but it's missing`);
+        case 'read': {
+          if (!cpu) {
+            throw 'Cannot have memory read in expression at compile-time';
+          }
+          const addr = get(ex.addr);
+          switch (ex.size) {
+            case 'i8':
+            case 'b8':
+              return cpu.read8(addr);
+            case 'i16':
+              return cpu.read16(addr);
+            case 'b16':
+              return b16(cpu.read16(addr));
+            case 'i32':
+              return cpu.read32(addr);
+            case 'b32':
+              return b32(cpu.read32(addr));
+            default:
+              assertNever(ex.size);
+          }
+          return 0;
+        }
         case 'assert':
           if (get(ex.value) === 0) {
             throw `Failed assertion: ${ex.hint}`;

@@ -5,7 +5,6 @@
 // Project Home: https://github.com/velipso/gvasm
 //
 
-// deno-lint-ignore no-unused-vars
 import { ARM, Thumb } from './ops.ts';
 import { assertNever, ranges } from './util.ts';
 
@@ -112,6 +111,117 @@ export function parseARM(opcode: number, runOnly = false): { op: ARM.IOp; syms: 
       continue;
     }
     // TODO: remove eventually: if (runOnly && !op.run){ console.log(op); continue; }
+    return { op, syms };
+  }
+  return false;
+}
+
+interface IThumbSyms {
+  [sym: string]: {
+    v: number;
+    part: Thumb.ICodePart;
+  };
+}
+
+export function parseThumb(
+  opcode16: number,
+  opcode32: number,
+  runOnly = false,
+): { op: Thumb.IOp; syms: IThumbSyms } | false {
+  for (const op of Thumb.ops) {
+    if (runOnly && !op.run) continue;
+    const opcode = op.doubleInstruction ? opcode32 : opcode16;
+    let error: string | undefined;
+    let bpos = 0;
+    const syms: IThumbSyms = {};
+    for (const part of op.codeParts) {
+      const v = (opcode >> bpos) & ((1 << part.s) - 1);
+      switch (part.k) {
+        case 'register':
+          syms[part.sym] = { v, part };
+          break;
+        case 'registerhigh':
+          syms[part.sym] = { v: v + 8, part };
+          break;
+        case 'value':
+          if (v !== part.v) {
+            error = `value at ${bpos} doesn't match: ${v} != ${part.v}`;
+            break;
+          }
+          if (part.sym) {
+            syms[part.sym] = { v, part };
+          }
+          break;
+        case 'enum':
+          if (part.enum[v] === false) {
+            error = `enum at ${bpos} is false at ${v}`;
+            break;
+          }
+          syms[part.sym] = { v, part };
+          break;
+        case 'ignored':
+        case 'immediate':
+        case 'reglist':
+          if (part.sym) {
+            syms[part.sym] = { v, part };
+          }
+          break;
+        case 'word':
+          if (v & (1 << (part.s - 1))) {
+            syms[part.sym] = { v: ((-1 << part.s) + v) << 2, part };
+          } else {
+            syms[part.sym] = { v: v << 2, part };
+          }
+          break;
+        case 'negword': {
+          const vv = -v;
+          if (vv & (1 << (part.s - 1))) {
+            syms[part.sym] = { v: ((-1 << part.s) + vv) << 2, part };
+          } else {
+            syms[part.sym] = { v: vv << 2, part };
+          }
+          break;
+        }
+        case 'halfword':
+          syms[part.sym] = { v: v << 1, part };
+          break;
+        case 'shalfword':
+          if (v & (1 << (part.s - 1))) {
+            syms[part.sym] = { v: ((-1 << part.s) + v) << 1, part };
+          } else {
+            syms[part.sym] = { v: v << 1, part };
+          }
+          break;
+        case 'pcoffset':
+          syms[part.sym] = { v: v << 2, part };
+          break;
+        case 'offsetsplit':
+          if (!(part.sym in syms)) {
+            syms[part.sym] = { v, part };
+          } else if (syms[part.sym].part.k === part.k) {
+            if (part.low) {
+              syms[part.sym].v = (syms[part.sym].v << 11) | v;
+            } else {
+              syms[part.sym].v = (v << 11) | syms[part.sym].v;
+            }
+          } else {
+            throw new Error(
+              'Invalid op data, offsetsplit cannot reference any other code part',
+            );
+          }
+          break;
+        default:
+          assertNever(part);
+      }
+      bpos += part.s;
+      if (error) {
+        break;
+      }
+    }
+    if (error) {
+      continue;
+    }
+    // TODO: remove eventually: if (runOnly && !op.run) { console.log(op); continue; }
     return { op, syms };
   }
   return false;

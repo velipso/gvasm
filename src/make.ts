@@ -1347,7 +1347,7 @@ function parseThumbStatement(
   );
 
   const es = errorString(flp, 'Invalid statement');
-  if ('doubleInstruction' in pb.op) {
+  if (pb.op.doubleInstruction) {
     // double instructions are 32-bits instead of 16-bits
     state.bytes.expr32(es, syms, false, writer(32));
   } else {

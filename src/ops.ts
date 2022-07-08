@@ -227,7 +227,6 @@ export namespace ARM {
       | 'Block Data Transfer'
       | 'Single Data Swap'
       | 'Software Interrupt';
-    doubleInstruction?: true;
     codeParts: ICodePart[];
     syntax: [string, ...string[]];
     run?(cpu: CPU, sym: SymReader): void;
@@ -293,7 +292,6 @@ export namespace ARM {
         const link = !!sym('link');
         const cond = sym('cond');
         const offset = sym('offset');
-
         if (cpu.test(cond)) {
           if (link) {
             throw `Not implemented: bl`;
@@ -900,7 +898,6 @@ export namespace ARM {
         const Rm = sym('Rm');
         const shift = sym('shift');
         const amount = sym('amount');
-
         if (cpu.test(cond)) {
           switch (oper) {
             case 13: // mov
@@ -1026,7 +1023,6 @@ export namespace ARM {
         const cond = sym('cond');
         const Rd = sym('Rd');
         const expression = sym('expression');
-
         if (cpu.test(cond)) {
           switch (oper) {
             case 13: // mov
@@ -1366,7 +1362,6 @@ export namespace ARM {
         const cond = sym('cond');
         const Rn = sym('Rn');
         const expression = sym('expression');
-
         if (cpu.test(cond)) {
           switch (oper) {
             case 8: // tst
@@ -2041,7 +2036,6 @@ export namespace ARM {
         const Rd = sym('Rd');
         const Rn = sym('Rn');
         const expression = sym('expression');
-
         if (cpu.test(cond)) {
           switch (oper) {
             case 0: // and
@@ -2294,11 +2288,9 @@ export namespace ARM {
         const Rd = sym('Rd');
         const offset = sym('offset');
         const w = sym('w');
-
         if (w) {
           throw 'Not implemented: write back';
         }
-
         if (cpu.test(cond)) {
           switch (oper) {
             case 0: // str
@@ -3172,8 +3164,10 @@ export namespace Thumb {
       | 'Format 17: Software Interrupt'
       | 'Format 18: Unconditional Branch'
       | 'Format 19: Long Branch With Link';
+    doubleInstruction?: true;
     codeParts: ICodePart[];
     syntax: [string, ...string[]];
+    run?(cpu: CPU, sym: SymReader): void;
   }
 
   export const ops: readonly IOp[] = Object.freeze([
@@ -3245,6 +3239,21 @@ export namespace Thumb {
         { s: 5, k: 'value', v: 3 },
       ],
       syntax: ['$oper $Rd, $Rs, $Rn'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const Rd = sym('Rd');
+        const Rs = sym('Rs');
+        const Rn = sym('Rn');
+        switch (oper) {
+          case 0: // adds
+            cpu.mov(Rd, cpu.add(cpu.reg(Rs), cpu.reg(Rn), true));
+            break;
+          case 1: // subs
+            cpu.mov(Rd, cpu.sub(cpu.reg(Rs), cpu.reg(Rn), true));
+            break;
+        }
+        cpu.next();
+      },
     },
     {
       ref: '5.2',
@@ -3274,6 +3283,21 @@ export namespace Thumb {
         { s: 5, k: 'value', v: 3 },
       ],
       syntax: ['$oper $Rd, $Rs, #$amount'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const Rd = sym('Rd');
+        const Rs = sym('Rs');
+        const amount = sym('amount');
+        switch (oper) {
+          case 0: // adds
+            cpu.mov(Rd, cpu.add(cpu.reg(Rs), amount, true));
+            break;
+          case 1: // subs
+            cpu.mov(Rd, cpu.sub(cpu.reg(Rs), amount, true));
+            break;
+        }
+        cpu.next();
+      },
     },
 
     //
@@ -3295,6 +3319,27 @@ export namespace Thumb {
         { s: 3, k: 'value', v: 1 },
       ],
       syntax: ['$oper $Rd, #$amount'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const Rd = sym('Rd');
+        const amount = sym('amount');
+        switch (oper) {
+          case 0: // movs
+            cpu.mov(Rd, amount);
+            cpu.setZNFromReg(Rd);
+            break;
+          case 1: // cmp
+            cpu.sub(cpu.reg(Rd), amount, true);
+            break;
+          case 2: // adds
+            cpu.mov(Rd, cpu.add(cpu.reg(Rd), amount, true));
+            break;
+          case 3: // subs
+            cpu.mov(Rd, cpu.sub(cpu.reg(Rd), amount, true));
+            break;
+        }
+        cpu.next();
+      },
     },
 
     //
@@ -3315,7 +3360,7 @@ export namespace Thumb {
             'ands/and',
             'eors/eor',
             'lsls/lsl/asls/asl',
-            'lsrr/lsr',
+            'lsrs/lsr',
             'asrs/asr',
             'adcs/adc',
             'sbcs/sbc',
@@ -3333,6 +3378,49 @@ export namespace Thumb {
         { s: 6, k: 'value', v: 16 },
       ],
       syntax: ['$oper $Rd, $Rs'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const Rd = sym('Rd');
+        const Rs = sym('Rs');
+        switch (oper) {
+          case 0: // ands
+            throw 'Not implemented: ands';
+          case 1: // eors
+            throw 'Not implemented: eors';
+          case 2: // lsls
+            throw 'Not implemented: lsls';
+          case 3: // lsrs
+            throw 'Not implemented: lsrs';
+          case 4: // asrs
+            throw 'Not implemented: asrs';
+          case 5: // adcs
+            throw 'Not implemented: adcs';
+          case 6: // sbcs
+            throw 'Not implemented: sbcs';
+          case 7: // rors
+            throw 'Not implemented: rors';
+          case 8: // tst
+            throw 'Not implemented: tst';
+          case 9: // negs
+            throw 'Not implemented: negs';
+          case 10: // cmp
+            throw 'Not implemented: cmp';
+          case 11: // cmn
+            throw 'Not implemented: cmn';
+          case 12: // orrs
+            throw 'Not implemented: orrs';
+          case 13: // muls
+            cpu.mov(Rd, Math.imul(cpu.reg(Rd), cpu.reg(Rs)));
+            cpu.setZNFromReg(Rd);
+            cpu.setC(false);
+            break;
+          case 14: // bics
+            throw 'Not implemented: bics';
+          case 15: // mvns
+            throw 'Not implemented: mvns';
+        }
+        cpu.next();
+      },
     },
 
     //
@@ -3616,6 +3704,20 @@ export namespace Thumb {
         { s: 4, k: 'value', v: 9 },
       ],
       syntax: ['$oper $Rd, [sp, #$offset]'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const oper = sym('oper');
+        const Rd = sym('Rd');
+        const offset = sym('offset');
+        switch (oper) {
+          case 0: // str
+            cpu.write32(cpu.reg(13) + offset, cpu.reg(Rd));
+            break;
+          case 1: // ldr
+            cpu.mov(Rd, cpu.read32(cpu.reg(13) + offset));
+            break;
+        }
+        cpu.next();
+      },
     },
 
     //
@@ -3799,6 +3901,15 @@ export namespace Thumb {
         { s: 4, k: 'value', v: 13 },
       ],
       syntax: ['b$cond $offset'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const cond = sym('cond');
+        const offset = sym('offset');
+        if (cpu.test(cond)) {
+          cpu.bx(cpu.reg(15) + offset + 1);
+        } else {
+          cpu.next();
+        }
+      },
     },
 
     //

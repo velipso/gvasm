@@ -6,8 +6,8 @@
 //
 
 import { IDebugStatement, makeResult } from './make.ts';
-import { parseARM } from './dis.ts';
-import { assertNever, hex32, printf } from './util.ts';
+import { parseARM, parseThumb } from './dis.ts';
+import { assertNever, hex16, hex32, printf } from './util.ts';
 
 export interface IRunArgs {
   input: string;
@@ -95,6 +95,18 @@ export class CPU {
         return;
       }
     }
+  }
+
+  public write16(addr: number, value: number) {
+    this.write8(addr, value & 0xff);
+    this.write8(addr + 2, (value >>> 8) & 0xff);
+  }
+
+  public write32(addr: number, value: number) {
+    this.write8(addr, value & 0xff);
+    this.write8(addr + 2, (value >>> 8) & 0xff);
+    this.write8(addr + 4, (value >>> 16) & 0xff);
+    this.write8(addr + 6, (value >>> 24) & 0xff);
   }
 
   public bx(addr: number) {
@@ -264,11 +276,12 @@ export function runResult(
     if (done) break;
 
     // run code here
-    const opcode = cpu.isARM() ? cpu.read32(pc) : cpu.read16(pc);
+    const opcode16 = cpu.read16(pc);
+    const opcode32 = cpu.read32(pc);
     if (cpu.isARM()) {
-      const dis = parseARM(opcode, true);
+      const dis = parseARM(opcode32, true);
       if (!dis) {
-        throw `Failed to disassemble op at ${hex32(pc)}: ${hex32(opcode)}`;
+        throw `Failed to disassemble ARM op at ${hex32(pc)}: ${hex32(opcode32)}`;
       }
       const { op, syms } = dis;
       if (!op.run) {
@@ -281,7 +294,20 @@ export function runResult(
         throw new Error(`Unknown symbol: ${name}`);
       });
     } else {
-      throw 'Not implemented: Don\'t know how to run Thumb code yet :-(';
+      const dis = parseThumb(opcode16, opcode32, true);
+      if (!dis) {
+        throw `Failed to disassemble Thumb op at ${hex32(pc)}: ${hex16(opcode16)}`;
+      }
+      const { op, syms } = dis;
+      if (!op.run) {
+        throw new Error('parseThumb must return op with run function');
+      }
+      op.run(cpu, (name: string): number => {
+        if (name in syms) {
+          return syms[name].v;
+        }
+        throw new Error(`Unknown symbol: ${name}`);
+      });
     }
   }
 }

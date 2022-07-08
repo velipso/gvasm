@@ -9,8 +9,8 @@ import { ITest } from '../itest.ts';
 
 export function load(def: (test: ITest) => void) {
   def({
-    name: 'run.basic',
-    desc: 'Basic usage of run',
+    name: 'run.arm.basic',
+    desc: 'Basic usage of run using ARM mode',
     kind: 'run',
     stdout: [
       'r0 = 5',
@@ -68,6 +68,43 @@ _exit
 @data:
 .i32  0x12345678
 .pool
+`,
+    },
+  });
+
+  def({
+    name: 'run.thumb.basic',
+    desc: 'Basic usage of run using Thumb mode',
+    kind: 'run',
+    stdout: [
+      'r0 = 5',
+      'r0 = 4',
+      'r0 = 3',
+      'r0 = 2',
+      'r0 = 1',
+      'r0 = 0',
+      'r0 = 1',
+      'r0 = 2',
+      'r0 = 3',
+      'r0 = 4',
+      'done',
+    ],
+    files: {
+      '/root/main': `
+.thumb
+movs  r0, #5
+@again:
+_log  "r0 = %d", r0
+subs  r0, #1
+bne   @again
+@again2:
+_log  "r0 = %d", r0
+adds  r0, #1
+cmp   r0, #5
+blt   @again2
+_log  "done"
+_exit
+_log  "shouldn't run"
 `,
     },
   });

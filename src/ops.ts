@@ -3539,6 +3539,13 @@ export namespace Thumb {
         { s: 5, k: 'value', v: 9 },
       ],
       syntax: ['ldr $Rd, [pc, #$offset]'],
+      run: (cpu: CPU, sym: SymReader) => {
+        const Rd = sym('Rd');
+        const offset = sym('offset');
+        const addr = cpu.reg(15) + offset;
+        cpu.mov(Rd, cpu.read32(addr));
+        cpu.next();
+      },
     },
 
     //

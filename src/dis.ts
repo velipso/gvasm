@@ -305,7 +305,7 @@ export async function dis(
               case 'word':
               case 'offsetsplit':
               case 'pcoffsetsplit':
-                throw new Error(`TODO: ${part.k}`);
+                return `${v}`;
               default:
                 assertNever(part);
             }

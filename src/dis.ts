@@ -31,7 +31,13 @@ export function parseARM(opcode: number, runOnly = false): { op: ARM.IOp; syms: 
       const v = (opcode >> bpos) & ((1 << part.s) - 1);
       switch (part.k) {
         case 'register':
-          syms[part.sym] = { v, part };
+          if (syms[part.sym]) {
+            if (syms[part.sym].v !== v) {
+              error = `register not reused correctly`;
+            }
+          } else {
+            syms[part.sym] = { v, part };
+          }
           break;
         case 'value':
           if (v !== part.v) {
@@ -138,7 +144,13 @@ export function parseThumb(
       const v = (opcode >> bpos) & ((1 << part.s) - 1);
       switch (part.k) {
         case 'register':
-          syms[part.sym] = { v, part };
+          if (syms[part.sym]) {
+            if (syms[part.sym].v !== v) {
+              error = `register not reused correctly`;
+            }
+          } else {
+            syms[part.sym] = { v, part };
+          }
           break;
         case 'registerhigh':
           syms[part.sym] = { v: v + 8, part };

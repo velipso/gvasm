@@ -236,6 +236,18 @@ ${op} r0, r6  /// ${b}0 4${a}
   }
 
   def({
+    name: `thumb.negs-single`,
+    desc: 'Negate with single operand',
+    kind: 'make',
+    files: {
+      '/root/main': `.thumb
+negs r2  /// 52 42
+negs r6  /// 76 42
+`,
+    },
+  });
+
+  def({
     name: 'thumb.bx',
     desc: 'Branch and exchange',
     kind: 'make',

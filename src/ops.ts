@@ -658,6 +658,62 @@ export namespace ARM {
       ref: '4.5,4.5.2,4.5.8.1',
       category: 'Data Processing',
       codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
+        { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
+        { s: 5, k: 'value', sym: 'amount', v: 0 }, // amount = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'ignored', sym: 'Rn', v: 0 }, // Rn is ignored for mov/mvn
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        {
+          s: 4,
+          k: 'enum',
+          sym: 'oper',
+          enum: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            'mvn/not',
+          ],
+        },
+        { s: 1, k: 'value', sym: 'immediate', v: 0 }, // immediate = 0
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        '$oper$s$cond $Rd',
+        '$oper$s$cond $Rd, lsl #0',
+        '$oper$s$cond $Rd, lsr #0',
+        '$oper$s$cond $Rd, asr #0',
+        '$oper$s$cond $Rd, ror #0',
+        '$oper$s.$cond $Rd',
+        '$oper$s.$cond $Rd, lsl #0',
+        '$oper$s.$cond $Rd, lsr #0',
+        '$oper$s.$cond $Rd, asr #0',
+        '$oper$s.$cond $Rd, ror #0',
+        '$oper$cond$s $Rd',
+        '$oper$cond$s $Rd, lsl #0',
+        '$oper$cond$s $Rd, lsr #0',
+        '$oper$cond$s $Rd, asr #0',
+        '$oper$cond$s $Rd, ror #0',
+      ],
+    },
+    {
+      ref: '4.5,4.5.2,4.5.8.1',
+      category: 'Data Processing',
+      codeParts: [
         { s: 4, k: 'register', sym: 'Rm' },
         { s: 1, k: 'value', v: 0 }, // instruction specified shift amount
         { s: 2, k: 'value', sym: 'shift', v: 0 }, // shift = lsl
@@ -2171,6 +2227,46 @@ export namespace ARM {
       ref: '4.7,4.7.4.1',
       category: 'Multiply and Multiply-Accumulate',
       codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'value', v: 9 },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'value', sym: 'Rn', v: 0 }, // Rn must be 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 1, k: 'value', v: 0 }, // multiply only
+        { s: 6, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'mul$s$cond $Rd',
+        'mul$s.$cond $Rd',
+        'mul$cond$s $Rd',
+      ],
+    },
+    {
+      ref: '4.7,4.7.4.1',
+      category: 'Multiply and Multiply-Accumulate',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'value', v: 9 },
+        { s: 4, k: 'register', sym: 'Rs' },
+        { s: 4, k: 'value', sym: 'Rn', v: 0 }, // Rn must be 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 1, k: 'value', v: 0 }, // multiply only
+        { s: 6, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'mul$s$cond $Rd, $Rs',
+        'mul$s.$cond $Rd, $Rs',
+        'mul$cond$s $Rd, $Rs',
+      ],
+    },
+    {
+      ref: '4.7,4.7.4.1',
+      category: 'Multiply and Multiply-Accumulate',
+      codeParts: [
         { s: 4, k: 'register', sym: 'Rm' },
         { s: 4, k: 'value', v: 9 },
         { s: 4, k: 'register', sym: 'Rs' },
@@ -2185,6 +2281,46 @@ export namespace ARM {
         'mul$s$cond $Rd, $Rm, $Rs',
         'mul$s.$cond $Rd, $Rm, $Rs',
         'mul$cond$s $Rd, $Rm, $Rs',
+      ],
+    },
+    {
+      ref: '4.7,4.7.4.2',
+      category: 'Multiply and Multiply-Accumulate',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'value', v: 9 },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'register', sym: 'Rn' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 1, k: 'value', v: 1 }, // multiply and accumulate
+        { s: 6, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'mla$s$cond $Rd, $Rn',
+        'mla$s.$cond $Rd, $Rn',
+        'mla$cond$s $Rd, $Rn',
+      ],
+    },
+    {
+      ref: '4.7,4.7.4.2',
+      category: 'Multiply and Multiply-Accumulate',
+      codeParts: [
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'value', v: 9 },
+        { s: 4, k: 'register', sym: 'Rs' },
+        { s: 4, k: 'register', sym: 'Rn' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 1, k: 'value', v: 1 }, // multiply and accumulate
+        { s: 6, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'mla$s$cond $Rd, $Rs, $Rn',
+        'mla$s.$cond $Rd, $Rs, $Rn',
+        'mla$cond$s $Rd, $Rs, $Rn',
       ],
     },
     {
@@ -3346,6 +3482,39 @@ export namespace Thumb {
     // FORMAT 4: ALU OPERATIONS
     //
 
+    {
+      ref: '5.4',
+      category: 'Format 4: ALU Operations',
+      codeParts: [
+        { s: 3, k: 'register', sym: 'Rd' },
+        { s: 3, k: 'register', sym: 'Rd' },
+        {
+          s: 4,
+          k: 'enum',
+          sym: 'oper',
+          enum: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            'negs/neg',
+            false,
+            false,
+            false,
+            'muls/mul',
+            false,
+            'mvns/nots/mvn/not',
+          ],
+        },
+        { s: 6, k: 'value', v: 16 },
+      ],
+      syntax: ['$oper $Rd'],
+    },
     {
       ref: '5.4',
       category: 'Format 4: ALU Operations',

@@ -1,19 +1,19 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { IInitArgs, init } from './init.ts';
 import { IMakeArgs, make } from './make.ts';
 import { IRunArgs, run } from './run.ts';
 import { dis, IDisArgs } from './dis.ts';
-import { IItestArgs, itest } from './itest.ts';
+import { IItestArgs, itest as _itest } from './itest.ts';
 import { argParse, path } from './deps.ts';
 import { lexKeyValue } from './lexer.ts';
 
-export const version = 1009004;
+export const version = 2000000;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -21,8 +21,8 @@ function printVersion() {
   const vpat = version % 1000;
   console.log(`gvasm - Assembler and disassembler for Game Boy Advance homebrew
 by Sean Connelly (@velipso), https://sean.cm
-The Unlicense License
 Project Home: https://github.com/velipso/gvasm
+SPDX-License-Identifier: 0BSD
 Version: ${vmaj}.${vmin}.${vpat}`);
 }
 
@@ -157,13 +157,14 @@ function parseInitArgs(args: string[]): number | IInitArgs {
 }
 
 function printMakeHelp() {
-  console.log(`gvasm make <input> [-o <output>] [-d NAME=value]
+  console.log(`gvasm make <input> [-o <output>] [-d NAME=value] [-w]
 
 <input>        The input .gvasm file
 -o <output>    The output file (default: input with .gba extension)
--d NAME=value  Define the global \$NAME, set to value (integer), ex:
+-d NAME=value  Define the global NAME, set to value (integer), ex:
                -d FOO=1         is equivalent to:
-               .def \$FOO = 1`);
+               .def FOO = 1
+-w             Watch for file changes, and recompile incrementally`);
 }
 
 function parseDefines(define: string | string[]): { key: string; value: number }[] | false {
@@ -184,8 +185,8 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
     string: ['output', 'define'],
-    boolean: ['help'],
-    alias: { h: 'help', o: 'output', d: 'define' },
+    boolean: ['help', 'watch'],
+    alias: { h: 'help', o: 'output', d: 'define', w: 'watch' },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -212,6 +213,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   }
   const input = a._[0] as string;
   const output = a.output;
+  const watch = a.watch;
   const defines = parseDefines(a.define);
   if (defines === false) {
     return 1;
@@ -221,24 +223,26 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
     output: output ??
       path.format({ ...path.parse(input), base: undefined, ext: '.gba' }),
     defines,
+    watch,
   };
 }
 
 function printRunHelp() {
-  console.log(`gvasm run <input> [-d NAME=value]
+  console.log(`gvasm run <input> [-d NAME=value] [-w]
 
 <input>        The input .gvasm file
--d NAME=value  Define the global \$NAME, set to value (integer), ex:
+-d NAME=value  Define the global NAME, set to value (integer), ex:
                -d FOO=1         is equivalent to:
-               .def \$FOO = 1`);
+               .def FOO = 1
+-w             Watch for file changes, and rerun automatically`);
 }
 
 function parseRunArgs(args: string[]): number | IRunArgs {
   let badArgs = false;
   const a = argParse(args, {
     string: ['define'],
-    boolean: ['help'],
-    alias: { h: 'help', d: 'define' },
+    boolean: ['help', 'watch'],
+    alias: { h: 'help', d: 'define', w: 'watch' },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -395,7 +399,8 @@ export async function main(args: string[]): Promise<number> {
     if (typeof itestArgs === 'number') {
       return itestArgs;
     }
-    return await itest(itestArgs);
+    // TODO: return await itest(itestArgs);
+    return 0;
   }
   console.error(`Unknown command: ${args[0]}`);
   return 1;

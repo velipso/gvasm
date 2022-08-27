@@ -1,11 +1,11 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-export function assertNever(value: never) {
+export function assertNever(value: never): never {
   throw new Error(`Unexpected value: ${value}`);
 }
 
@@ -86,6 +86,12 @@ export function splitLines(
       .flatMap((a) => a.split('\n'))
       .map((data, i) => ({ kind: 'str', filename, line: startLine + i, data, main }))
   );
+}
+
+export function waitForever<T>(): Promise<T> {
+  return new Promise(() => {
+    setInterval(() => {}, 9999999);
+  });
 }
 
 export function printf(format: string, ...args: number[]): string {

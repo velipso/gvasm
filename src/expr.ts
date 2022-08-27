@@ -1,15 +1,15 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import { assertNever, b16, b32 } from './util.ts';
-import { ITok, TokEnum } from './lexer.ts';
-import { decodeRegister, isNextId, parseName } from './make.ts';
-import { ConstTable } from './const.ts';
-import { CPU } from './run.ts';
+import { assertNever } from './util.ts';
+import { CompError, ISym, Mode, ParsedFile, Parser } from './parser.ts';
+import { Project } from './project.ts';
+import { IFilePos, ITok } from './lexer.ts';
+import { version } from './main.ts';
 
 interface IFunctions {
   [name: string]: {
@@ -40,19 +40,42 @@ const functions: IFunctions = Object.freeze({
   sqrt: { size: 1, f: ([a]) => Math.sqrt(Math.abs(a)) },
 });
 
+export const reservedNames = Object.freeze([
+  ...Object.keys(functions),
+  'assert',
+  'defined',
+  '_arm',
+  '_base',
+  '_bytes',
+  '_here',
+  '_main',
+  '_pc',
+  '_thumb',
+  '_version',
+]);
+
 interface IExprNum {
   kind: 'num';
   value: number;
 }
 
-interface IExprRegister {
-  kind: 'register';
-  index: number;
+interface IExprReserved {
+  kind: 'reserved';
+  name:
+    | '_arm'
+    | '_base'
+    | '_bytes'
+    | '_here'
+    | '_main'
+    | '_pc'
+    | '_thumb'
+    | '_version';
 }
 
-interface IExprLabel {
-  kind: 'label';
-  label: string;
+export interface IExprLookup {
+  kind: 'lookup';
+  flp: IFilePos;
+  path: (string | IExpr)[];
 }
 
 interface IExprRead {
@@ -61,51 +84,21 @@ interface IExprRead {
   addr: IExpr;
 }
 
-interface IExprParam {
-  kind: 'param';
-  index: number;
-}
-
 interface IExprAssert {
   kind: 'assert';
   hint: string;
   value: IExpr;
 }
 
-interface IExprReadWithParam {
-  kind: 'read';
-  size: 'i8' | 'i16' | 'i32' | 'b8' | 'b16' | 'b32';
-  addr: IExprWithParam;
-}
-
-interface IExprAssertWithParam {
-  kind: 'assert';
-  hint: string;
-  value: IExprWithParam;
-}
-
-interface IExprBuild {
-  kind: 'build';
-  expr: ExpressionBuilder;
-  params: IExpr[];
-}
-
-interface IExprBuildWithParam {
-  kind: 'build';
-  expr: ExpressionBuilder;
-  params: IExprWithParam[];
+interface IExprDefined {
+  kind: 'defined';
+  value: IExpr;
 }
 
 interface IExprFunc {
   kind: 'func';
   func: string;
   params: IExpr[];
-}
-
-interface IExprFuncWithParam {
-  kind: 'func';
-  func: string;
-  params: IExprWithParam[];
 }
 
 type UnaryOp =
@@ -118,12 +111,6 @@ interface IExprUnary {
   kind: 'unary';
   op: UnaryOp;
   value: IExpr;
-}
-
-interface IExprUnaryWithParam {
-  kind: 'unary';
-  op: UnaryOp;
-  value: IExprWithParam;
 }
 
 type BinaryOp =
@@ -152,13 +139,6 @@ interface IExprBinary {
   op: BinaryOp;
   left: IExpr;
   right: IExpr;
-}
-
-interface IExprBinaryWithParam {
-  kind: 'binary';
-  op: BinaryOp;
-  left: IExprWithParam;
-  right: IExprWithParam;
 }
 
 function isBinaryOp(op: string): op is BinaryOp {
@@ -192,54 +172,17 @@ interface IExprTernary {
   iffalse: IExpr;
 }
 
-interface IExprTernaryWithParam {
-  kind: '?:';
-  condition: IExprWithParam;
-  iftrue: IExprWithParam;
-  iffalse: IExprWithParam;
-}
-
 type IExpr =
   | IExprNum
-  | IExprRegister
-  | IExprLabel
+  | IExprReserved
+  | IExprLookup
   | IExprRead
   | IExprAssert
-  | IExprBuild
+  | IExprDefined
   | IExprFunc
   | IExprUnary
   | IExprBinary
   | IExprTernary;
-
-type IExprWithParam =
-  | IExprParam
-  | IExprNum
-  | IExprRegister
-  | IExprLabel
-  | IExprReadWithParam
-  | IExprAssertWithParam
-  | IExprBuildWithParam
-  | IExprFuncWithParam
-  | IExprUnaryWithParam
-  | IExprBinaryWithParam
-  | IExprTernaryWithParam;
-
-function parsePrefixName(
-  prefix: '@' | '$',
-  line: ITok[],
-  error: string,
-): string {
-  let p = prefix;
-  if (isNextId(line, prefix)) {
-    p += prefix;
-    line.shift();
-  }
-  const name = parseName(line);
-  if (name === false) {
-    throw error;
-  }
-  return p + name;
-}
 
 function checkParamSize(got: number, expect: number) {
   if (got === expect) {
@@ -254,201 +197,163 @@ function checkParamSize(got: number, expect: number) {
   }
 }
 
-export class ExpressionBuilder {
-  private expr: IExprWithParam;
-  private labelsNeed: Set<string>;
-  private labelsHave: { [label: string]: number };
-  private paramsLength: number;
+interface ITokUnary extends IFilePos {
+  kind: 'punc';
+  punc: UnaryOp | '+';
+}
 
-  private constructor(
-    expr: IExprWithParam,
-    labelsNeed: Set<string>,
-    paramsLength: number,
-  ) {
+function isTokUnary(t: ITok): t is ITokUnary {
+  return t.kind === 'punc' && (
+    t.punc === '+' ||
+    t.punc === '-' ||
+    t.punc === '~' ||
+    t.punc === '!'
+  );
+}
+
+// 'allow'      - allow lookups to fail
+// 'unresolved' - fail if lookup isn't found
+// 'deny'       - fail if lookup isn't found, or doesn't have a value
+export type LookupFailMode = 'allow' | 'unresolved' | 'deny';
+
+export interface IExprContext {
+  proj: Project;
+  main: boolean;
+  symHere: Map<string, ISym>[];
+  mode: Mode;
+  addr: number | false;
+}
+
+export class Expression {
+  private expr: IExpr;
+
+  private constructor(expr: IExpr) {
     this.expr = expr;
-    this.labelsNeed = labelsNeed;
-    this.labelsHave = {};
-    this.paramsLength = paramsLength;
   }
 
-  public static fromNum(num: number) {
-    return new ExpressionBuilder({ kind: 'num', value: num }, new Set(), 0);
+  static fromNum(num: number) {
+    return new Expression({ kind: 'num', value: num });
   }
 
-  public static parse(
-    line: ITok[],
-    paramNames: string[],
-    ctable: ConstTable,
-    regs: false | string[] = false,
-  ): ExpressionBuilder | false {
-    const labelsNeed: Set<string> = new Set();
-    if (
-      !(
-        line.length > 0 && (
-          (
-            line[0].kind === TokEnum.ID && (
-              line[0].id in functions ||
-              line[0].id === 'assert' ||
-              line[0].id === 'defined' ||
-              line[0].id === '(' ||
-              line[0].id === '-' ||
-              line[0].id === '+' ||
-              line[0].id === '~' ||
-              line[0].id === '@' ||
-              line[0].id === '$' ||
-              line[0].id === '!' ||
-              (regs && (
-                decodeRegister(regs, line[0].id, true) >= 0 ||
-                line[0].id === '[' ||
-                line[0].id === 'i8' ||
-                line[0].id === 'i16' ||
-                line[0].id === 'i32' ||
-                line[0].id === 'b8' ||
-                line[0].id === 'b16' ||
-                line[0].id === 'b32'
-              ))
-            )
-          ) ||
-          line[0].kind === TokEnum.NUM
-        )
-      )
-    ) {
-      return false;
-    }
-    const readParams = (params: IExprWithParam[]) => {
-      if (!isNextId(line, '(')) {
+  static parse(parser: Parser, result: ParsedFile): Expression {
+    const readParams = (): IExpr[] => {
+      const params: IExpr[] = [];
+      if (!parser.isNext('(')) {
         throw 'Expecting \'(\' at start of call';
       }
-      line.shift();
-      while (!isNextId(line, ')')) {
+      parser.nextTok();
+      while (!parser.isNext(')')) {
         params.push(term());
-        if (isNextId(line, ',')) {
-          line.shift();
+        if (parser.isNext(',')) {
+          parser.nextTok();
         } else {
           break;
         }
       }
-      if (!isNextId(line, ')')) {
+      if (!parser.isNext(')')) {
         throw 'Expecting \')\' at end of call';
       }
-      line.shift();
+      parser.nextTok();
+      return params;
     };
-    const term = (): IExprWithParam => {
+
+    const term = (): IExpr => {
       // collect all unary operators
-      const unary: ('+' | '-' | '~' | '!')[] = [];
-      while (true) {
-        if (isNextId(line, '+')) {
-          unary.push('+');
-          line.shift();
-        } else if (isNextId(line, '-')) {
-          unary.push('-');
-          line.shift();
-        } else if (isNextId(line, '~')) {
-          unary.push('~');
-          line.shift();
-        } else if (isNextId(line, '!')) {
-          unary.push('!');
-          line.shift();
+      let t = parser.nextTokOptional();
+      const unary: ITokUnary[] = [];
+      while (t) {
+        if (t && isTokUnary(t)) {
+          unary.push(t);
+          t = parser.nextTokOptional();
         } else {
           break;
         }
       }
 
       // get the terminal
-      const t = line.shift();
-      let result: IExprWithParam | undefined;
-      if (t && t.kind === TokEnum.NUM) {
-        result = { kind: 'num', value: t.num };
-      } else if (t && t.kind === TokEnum.ID) {
+      let value: IExpr | undefined;
+      if (t && t.kind === 'num') {
+        value = { kind: 'num', value: t.num };
+      } else if (t && t.kind === 'punc' && t.punc === '(') {
+        value = { kind: 'unary', op: '(', value: term() };
+        if (!parser.isNext(')')) {
+          throw 'Expecting close parenthesis';
+        }
+        parser.nextTok();
+      } else if (t && t.kind === 'id') {
         if (t.id in functions) {
-          const params: IExprWithParam[] = [];
-          readParams(params);
+          const params = readParams();
           if (functions[t.id].size >= 0) {
             checkParamSize(params.length, functions[t.id].size);
           }
-          result = { kind: 'func', func: t.id, params };
+          value = { kind: 'func', func: t.id, params };
         } else if (t.id === 'assert') {
-          if (!isNextId(line, '(')) {
+          if (!parser.isNext('(')) {
             throw 'Expecting \'(\' at start of call';
           }
-          line.shift();
-          const hint = line.shift();
-          if (!hint || hint.kind !== TokEnum.STR) {
+          parser.nextTok();
+          const hint = parser.nextTokOptional();
+          if (!hint || hint.kind !== 'str') {
             throw `Expecting string as first parameter to assert()`;
           }
-          if (!isNextId(line, ',')) {
+          if (!parser.isNext(',')) {
             throw 'Expecting two parameters to assert()';
           }
-          line.shift();
-          const value = term();
-          if (!isNextId(line, ')')) {
+          parser.nextTok();
+          const v = term();
+          if (!parser.isNext(')')) {
             throw 'Expecting \')\' at end of call';
           }
-          line.shift();
-          result = { kind: 'assert', hint: hint.str, value };
+          parser.nextTok();
+          value = { kind: 'assert', hint: hint.str, value: v };
         } else if (t.id === 'defined') {
-          if (!isNextId(line, '(')) {
-            throw 'Expecting \'(\' at start of call';
-          }
-          line.shift();
-          if (!isNextId(line, '$')) {
-            throw `Expecting constant name inside defined()`;
-          }
-          line.shift();
-          const cname = parsePrefixName(
-            '$',
-            line,
-            'Invalid constant inside defined()',
-          );
-          if (!isNextId(line, ')')) {
-            throw 'Expecting \')\' at end of call';
-          }
-          line.shift();
-          result = { kind: 'num', value: ctable.defined(cname) ? 1 : 0 };
-        } else if (t.id === '(') {
-          result = { kind: 'unary', op: '(', value: term() };
-          if (!isNextId(line, ')')) {
-            throw 'Expecting close parenthesis';
-          }
-          line.shift();
-        } else if (t.id === '@') {
-          const label = parsePrefixName(
-            '@',
-            line,
-            'Invalid label in expression',
-          );
-          labelsNeed.add(label);
-          result = { kind: 'label', label };
-        } else if (t.id === '$') {
-          const cname = parsePrefixName(
-            '$',
-            line,
-            'Invalid constant in expression',
-          );
-          if (paramNames.indexOf(cname) >= 0) {
-            result = { kind: 'param', index: paramNames.indexOf(cname) };
-          } else {
-            const params: IExprWithParam[] = [];
-            if (isNextId(line, '(')) {
-              readParams(params);
-            }
-            const cvalue = ctable.lookup(cname);
-            if (cvalue.kind === 'expr') {
-              ExpressionBuilder.propagateLabels(cvalue.expr, labelsNeed);
-              result = { kind: 'build', expr: cvalue.expr, params };
+          const params = readParams();
+          checkParamSize(params.length, 1);
+          value = { kind: 'defined', value: params[0] };
+        } else if (!result.isRegister(t.id)) {
+          const path: (string | IExpr)[] = [t.id];
+          while (true) {
+            if (parser.isNext('.')) {
+              const tp = parser.nextTok();
+              const t2 = parser.nextTokOptional();
+              if (!t2) throw new CompError(tp, 'Invalid expression');
+              if (t2.kind !== 'id') throw new CompError(t2, 'Invalid expression');
+              path.push(t2.id);
+            } else if (parser.isNext('[')) {
+              const tp = parser.nextTok();
+              if (!parser.hasTok()) throw new CompError(tp, 'Invalid expression');
+              path.push(term());
+              if (!parser.isNext(']')) throw new CompError(tp, 'Invalid expression');
+              parser.nextTok();
             } else {
-              throw `Constant cannot be called as an expression: ${cname}`;
+              break;
             }
           }
-        } else if (regs && decodeRegister(regs, t.id, true) >= 0) {
-          result = { kind: 'register', index: decodeRegister(regs, t.id, true) };
+          const path0 = t.id;
+          switch (path0) {
+            case '_arm':
+            case '_base':
+            case '_bytes':
+            case '_here':
+            case '_main':
+            case '_pc':
+            case '_thumb':
+            case '_version':
+              if (path.length > 1) throw new CompError(t, 'Cannot index into number');
+              value = { kind: 'reserved', name: path0 };
+              break;
+            default:
+              value = { kind: 'lookup', flp: t, path };
+              break;
+          }
+          /*
         } else if (regs && t.id === '[') {
           const addr = term();
           if (!isNextId(line, ']')) {
             throw 'Expecting \']\' at end of memory read';
           }
           line.shift();
-          result = { kind: 'read', size: 'i32', addr };
+          value = { kind: 'read', size: 'i32', addr };
         } else if (
           regs && (
             t.id === 'i8' ||
@@ -468,21 +373,28 @@ export class ExpressionBuilder {
             throw 'Expecting \']\' at end of memory read';
           }
           line.shift();
-          result = { kind: 'read', size: t.id, addr };
+          value = { kind: 'read', size: t.id, addr };
+          */
         }
       }
-      if (!result) {
+      if (!value) {
         // maybe we parsed a terminal as a unary operator incorrectly...
         if (
-          unary.length > 0 && (unary[unary.length - 1] === '+' || unary[unary.length - 1] === '-')
+          unary.length > 0 && (
+            unary[unary.length - 1].punc === '+' ||
+            unary[unary.length - 1].punc === '-'
+          )
         ) {
           // interpret the tail of the unary array as an anonymous label
-          let label = unary.pop() as string; // verified above
-          while (unary.length > 0 && unary[unary.length - 1] === label.charAt(0)) {
-            label += unary.pop();
+          let flp = unary.pop();
+          if (!flp) throw new Error('Expecting unary token');
+          let label = flp.punc;
+          while (unary.length > 0 && unary[unary.length - 1].punc === label.charAt(0)) {
+            flp = unary.pop();
+            if (!flp) throw new Error('Expecting unary token');
+            label += flp.punc;
           }
-          labelsNeed.add(label);
-          result = { kind: 'label', label };
+          value = { kind: 'lookup', flp, path: [label] };
         } else {
           throw 'Invalid expression';
         }
@@ -491,8 +403,8 @@ export class ExpressionBuilder {
       // apply unary operators to the terminal
       while (true) {
         const op = unary.pop();
-        if (op && op !== '+') {
-          result = { kind: 'unary', op, value: result };
+        if (op && op.punc !== '+') {
+          value = { kind: 'unary', op: op.punc, value };
         } else {
           break;
         }
@@ -536,10 +448,10 @@ export class ExpressionBuilder {
       };
 
       const checkPrecedence = (
-        left: IExprWithParam,
+        left: IExpr,
         op: BinaryOp,
-        right: IExprWithParam,
-      ): IExprBinaryWithParam => {
+        right: IExpr,
+      ): IExprBinary => {
         if (right.kind === 'binary') {
           const inner = checkPrecedence(left, op, right.left);
           if (precedence(inner.op) > precedence(right.op)) {
@@ -558,156 +470,121 @@ export class ExpressionBuilder {
       };
 
       // look for binary operators
-      if (line.length > 0 && line[0].kind === TokEnum.ID) {
-        const id = line[0].id;
+      const binOp = parser.peekTokOptional();
+      if (binOp && binOp.kind === 'punc') {
+        const id = binOp.punc;
         if (isBinaryOp(id)) {
-          line.shift();
-          result = checkPrecedence(result, id, term());
+          parser.nextTok();
+          value = checkPrecedence(value, id, term());
         } else if (id === '?') {
-          line.shift();
+          parser.nextTok();
           const iftrue = term();
-          if (
-            line.length <= 0 || line[0].kind !== TokEnum.ID ||
-            line[0].id !== ':'
-          ) {
+          if (!parser.isNext(':')) {
             throw 'Invalid operator, missing \':\'';
           }
-          line.shift();
+          parser.nextTok();
           const iffalse = term();
-          result = { kind: '?:', condition: result, iftrue, iffalse };
+          value = { kind: '?:', condition: value, iftrue, iffalse };
         }
       }
 
-      return result;
+      return value;
     };
 
-    return new ExpressionBuilder(term(), labelsNeed, paramNames.length);
+    return new Expression(term());
   }
 
-  private static propagateLabels(src: ExpressionBuilder, tgt: Set<string>) {
-    for (const label of src.labelsNeed) {
-      tgt.add(label);
+  negate() {
+    const n = this.expr;
+    if (n.kind === 'unary' && n.op === '-') {
+      this.expr = n.value;
+    } else {
+      this.expr = { kind: 'unary', op: '-', value: n };
     }
   }
 
-  public build(params: number[]): Expression {
-    checkParamSize(params.length, this.paramsLength);
-
-    // walk the tree and convert IExprParam to the finalized number
-    const walk = (ex: IExprWithParam): IExpr => {
-      switch (ex.kind) {
-        case 'param':
-          // convert param to number
-          return {
-            kind: 'num',
-            value: params[ex.index],
-          };
-        case 'num':
-        case 'register':
-        case 'label':
-          return ex;
-        case 'read':
-          return {
-            kind: 'read',
-            size: ex.size,
-            addr: walk(ex.addr),
-          };
-        case 'assert':
-          return {
-            kind: 'assert',
-            hint: ex.hint,
-            value: walk(ex.value),
-          };
-        case 'build':
-          return {
-            kind: 'build',
-            expr: ex.expr,
-            params: ex.params.map(walk),
-          };
-        case 'func':
-          return {
-            kind: 'func',
-            func: ex.func,
-            params: ex.params.map(walk),
-          };
-        case 'unary':
-          return {
-            kind: 'unary',
-            op: ex.op,
-            value: walk(ex.value),
-          };
-        case 'binary':
-          return {
-            kind: 'binary',
-            op: ex.op,
-            left: walk(ex.left),
-            right: walk(ex.right),
-          };
-        case '?:':
-          return {
-            kind: '?:',
-            condition: walk(ex.condition),
-            iftrue: walk(ex.iftrue),
-            iffalse: walk(ex.iffalse),
-          };
-        default:
-          assertNever(ex);
-      }
-      throw new Error('Unknown expression');
-    };
-
-    return new Expression(walk(this.expr), this.labelsNeed);
-  }
-}
-
-export class Expression {
-  private expr: IExpr;
-  private labelsNeed: Set<string>;
-  private labelsHave: { [label: string]: number };
-
-  constructor(expr: IExpr, labelsNeed: Set<string>) {
-    this.expr = expr;
-    this.labelsNeed = new Set(labelsNeed);
-    this.labelsHave = {};
-  }
-
-  public validateNoLabelsNeeded(hint: string) {
-    if (this.labelsNeed.size > 0) {
-      throw `${hint}, label${this.labelsNeed.size === 1 ? '' : 's'} not defined: ${
-        [...this.labelsNeed].join(', ')
-      }`;
-    }
-  }
-
-  public addLabel(label: string, v: number) {
-    if (this.labelsNeed.has(label)) {
-      this.labelsNeed.delete(label);
-      this.labelsHave[label] = v;
-    }
-  }
-
-  public value(cpu?: CPU): number | false {
-    if (this.labelsNeed.size > 0) {
-      return false;
-    }
-    const get = (ex: IExpr): number => {
+  value(context: IExprContext, lookupFailMode: LookupFailMode): number | false {
+    const get = (ex: IExpr): number | false => {
       switch (ex.kind) {
         case 'num':
           return ex.value;
-        case 'register':
-          if (!cpu) {
-            throw 'Cannot have register in expression at compile-time';
+        case 'reserved':
+          switch (ex.name) {
+            case '_arm':
+              return context.mode === 'arm' ? 1 : 0;
+            case '_base':
+              throw 'TODO: _base';
+            case '_bytes':
+              throw 'TODO: _bytes';
+            case '_here':
+              return context.addr;
+            case '_main':
+              return context.main ? 1 : 0;
+            case '_pc':
+              throw 'TODO: _pc';
+            case '_thumb':
+              return context.mode === 'thumb' ? 1 : 0;
+            case '_version':
+              return version;
+            default:
+              return assertNever(ex.name);
           }
-          return cpu.reg(ex.index);
-        case 'label':
-          if (ex.label in this.labelsHave) {
-            return this.labelsHave[ex.label];
+        case 'lookup': {
+          const lookup = (i: number, here: Map<string, ISym>): number | 'notfound' | false => {
+            const p = ex.path[i];
+            if (typeof p !== 'string') return 'notfound';
+            const root = here.get(p);
+            if (!root) return 'notfound';
+            switch (root.kind) {
+              case 'begin':
+                return i + 1 < ex.path.length ? lookup(i + 1, root.map) : root.addr;
+              case 'importAll': {
+                if (i + 1 >= ex.path.length) {
+                  throw new CompError(ex.flp, 'Cannot use imported name as value');
+                }
+                const pf = context.proj.readCache(root.filename);
+                if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
+                return lookup(i + 1, pf.symTable);
+              }
+              case 'importName': {
+                const pf = context.proj.readCache(root.filename);
+                if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
+                return lookup(i, pf.symTable);
+              }
+              case 'label':
+                if (i + 1 < ex.path.length) {
+                  throw new CompError(ex.flp, 'Cannot index into a label');
+                }
+                return root.addr;
+              case 'num':
+                if (i + 1 < ex.path.length) {
+                  throw new CompError(ex.flp, 'Cannot index into constant number');
+                }
+                return root.num;
+              default:
+                return assertNever(root);
+            }
+          };
+          const pathError = () =>
+            ex.path.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
+          for (const map of context.symHere) {
+            const v = lookup(0, map);
+            if (typeof v === 'number' || v === false) {
+              if (v === false && lookupFailMode === 'deny') {
+                throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
+              }
+              return v;
+            }
           }
-          throw new Error(`Should have label ${ex.label} but it's missing`);
+          if (lookupFailMode === 'allow') {
+            return false;
+          }
+          throw new CompError(ex.flp, `Cannot find symbol: ${pathError()}`);
+        }
         case 'read': {
-          if (!cpu) {
-            throw 'Cannot have memory read in expression at compile-time';
-          }
+          //if (!cpu) {
+          throw 'Cannot have memory read in expression at compile-time';
+          /*}
           const addr = get(ex.addr);
           switch (ex.size) {
             case 'i8':
@@ -724,101 +601,104 @@ export class Expression {
             default:
               assertNever(ex.size);
           }
-          return 0;
+          return 0;*/
         }
-        case 'assert':
-          if (get(ex.value) === 0) {
+        case 'assert': {
+          const a = get(ex.value);
+          if (a === false) return false;
+          if (a === 0) {
             throw `Failed assertion: ${ex.hint}`;
           }
           return 1;
-        case 'build': {
-          const ex2 = ex.expr.build(ex.params.map(get));
-          for (const [label, v] of Object.entries(this.labelsHave)) {
-            ex2.addLabel(label, v);
-          }
-          const v = ex2.value();
-          if (v === false) {
-            throw new Error(
-              `Missing labels: ${[...ex2.labelsNeed].join(', ')}`,
-            );
-          }
-          return v;
         }
+        case 'defined':
+          throw 'TODO: defined';
         case 'func': {
           const func = functions[ex.func];
           if (!func) {
             throw new Error(`Unknown function: ${func}`);
           }
-          return func.f(ex.params.map(get)) | 0;
+          const a: number[] = [];
+          for (const px of ex.params) {
+            const p = get(px);
+            if (p === false) return false;
+            a.push(p);
+          }
+          return func.f(a) | 0;
         }
-        case 'unary':
+        case 'unary': {
+          const a = get(ex.value);
+          if (a === false) return false;
           switch (ex.op) {
             case '-':
-              return -get(ex.value);
+              return -a;
             case '~':
-              return ~get(ex.value);
+              return ~a;
             case '!':
-              return get(ex.value) === 0 ? 1 : 0;
+              return a === 0 ? 1 : 0;
             case '(':
-              return get(ex.value);
+              return a;
             default:
               assertNever(ex);
           }
           break;
-        case 'binary':
+        }
+        case 'binary': {
+          const a = get(ex.left);
+          if (a === false) return false;
+          const b = get(ex.right);
+          if (b === false) return false;
           switch (ex.op) {
             case '+':
-              return (get(ex.left) + get(ex.right)) | 0;
+              return (a + b) | 0;
             case '-':
-              return (get(ex.left) - get(ex.right)) | 0;
+              return (a - b) | 0;
             case '*':
-              return (get(ex.left) * get(ex.right)) | 0;
+              return (a * b) | 0;
             case '/':
-              return (get(ex.left) / get(ex.right)) | 0;
+              return (a / b) | 0;
             case '%':
-              return (get(ex.left) % get(ex.right)) | 0;
+              return (a % b) | 0;
             case '<<':
-              return (get(ex.left) << get(ex.right)) | 0;
+              return (a << b) | 0;
             case '>>':
-              return (get(ex.left) >> get(ex.right)) | 0;
+              return (a >> b) | 0;
             case '>>>':
-              return (get(ex.left) >>> get(ex.right)) | 0;
+              return (a >>> b) | 0;
             case '&':
-              return (get(ex.left) & get(ex.right)) | 0;
+              return (a & b) | 0;
             case '|':
-              return (get(ex.left) | get(ex.right)) | 0;
+              return (a | b) | 0;
             case '^':
-              return (get(ex.left) ^ get(ex.right)) | 0;
+              return (a ^ b) | 0;
             case '<':
-              return get(ex.left) < get(ex.right) ? 1 : 0;
+              return a < b ? 1 : 0;
             case '<=':
-              return get(ex.left) <= get(ex.right) ? 1 : 0;
+              return a <= b ? 1 : 0;
             case '>':
-              return get(ex.left) > get(ex.right) ? 1 : 0;
+              return a > b ? 1 : 0;
             case '>=':
-              return get(ex.left) >= get(ex.right) ? 1 : 0;
+              return a >= b ? 1 : 0;
             case '==':
-              return get(ex.left) == get(ex.right) ? 1 : 0;
+              return a == b ? 1 : 0;
             case '!=':
-              return get(ex.left) != get(ex.right) ? 1 : 0;
-            case '&&': {
-              const left = get(ex.left);
-              const right = get(ex.right);
-              return left === 0 ? left : right;
-            }
-            case '||': {
-              const left = get(ex.left);
-              const right = get(ex.right);
-              return left !== 0 ? left : right;
-            }
+              return a != b ? 1 : 0;
+            case '&&':
+              return a === 0 ? a : b;
+            case '||':
+              return a !== 0 ? a : b;
             default:
               assertNever(ex);
           }
           break;
+        }
         case '?:': {
           const condition = get(ex.condition);
+          if (condition === false) return false;
           const iftrue = get(ex.iftrue);
+          if (iftrue === false) return false;
           const iffalse = get(ex.iffalse);
+          if (iffalse === false) return false;
           return condition === 0 ? iffalse : iftrue;
         }
         default:

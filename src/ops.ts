@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { assertNever, isAlpha, isNum, isSpace } from './util.ts';

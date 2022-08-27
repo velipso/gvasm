@@ -1,16 +1,15 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import * as path from 'https://deno.land/std@0.113.0/path/mod.ts';
-export { path };
-export { parse as argParse } from 'https://deno.land/std@0.113.0/flags/mod.ts';
-export { exists as fileExists } from 'https://deno.land/std@0.113.0/fs/exists.ts';
-
 import * as canvas from 'https://raw.githubusercontent.com/DjDeveloperr/deno-canvas/f6fc1f5a73dc77b991ff035ef1f7627008c6b51c/mod.ts';
+import * as path from 'https://deno.land/std@0.152.0/path/mod.ts';
+export { path };
+export { parse as argParse } from 'https://deno.land/std@0.144.0/flags/mod.ts';
+export { exists as fileExists } from 'https://deno.land/std@0.152.0/fs/exists.ts';
 
 export interface Image {
   width: number;
@@ -52,4 +51,8 @@ export function pathBasename(posix: boolean, file: string): string {
 
 export function pathResolve(posix: boolean, ...paths: string[]): string {
   return posix ? path.posix.resolve(...paths) : path.win32.resolve(...paths);
+}
+
+export function pathRelative(posix: boolean, from: string, to: string): string {
+  return posix ? path.posix.relative(from, to) : path.win32.resolve(from, to);
 }

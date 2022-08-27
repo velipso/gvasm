@@ -1,14 +1,15 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import { IDebugStatement, makeResult } from './make.ts';
+import { IDebugStatement } from './make.ts';
+/*
 import { parseARM, parseThumb } from './dis.ts';
-import { assertNever, hex16, hex32, printf } from './util.ts';
-
+import { assertNever, hex16, hex32 } from './util.ts';
+*/
 export interface IRunArgs {
   input: string;
   defines: { key: string; value: number }[];
@@ -223,12 +224,13 @@ export class CPU {
 }
 
 export function runResult(
-  bytes: readonly number[],
-  base: number,
-  arm: boolean,
-  debug: IDebugStatement[],
-  log: (str: string) => void,
+  _bytes: readonly number[],
+  _base: number,
+  _arm: boolean,
+  _debug: IDebugStatement[],
+  _log: (str: string) => void,
 ) {
+  /*
   const cpu = new CPU();
   cpu.addROM(base, bytes);
   cpu.addRAM(0x02000000, 0x40000); // EWRAM
@@ -249,6 +251,7 @@ export function runResult(
       if (dbg.addr === pc) {
         switch (dbg.kind) {
           case 'log': {
+            /* TODO:
             const args = dbg.args.map((arg) => {
               const v = arg.value(cpu);
               if (v === false) {
@@ -257,6 +260,7 @@ export function runResult(
               return v;
             });
             log(printf(dbg.format, ...args));
+            * /
             break;
           }
           case 'exit':
@@ -310,9 +314,12 @@ export function runResult(
       });
     }
   }
+  */
 }
 
-export async function run({ input, defines }: IRunArgs): Promise<number> {
+export async function run({ input: _input, defines: _defines }: IRunArgs): Promise<number> {
+  return 1;
+  /*
   try {
     const result = await makeResult(input, defines);
 
@@ -339,4 +346,5 @@ export async function run({ input, defines }: IRunArgs): Promise<number> {
     }
     return 1;
   }
+  */
 }

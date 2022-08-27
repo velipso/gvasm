@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { load as basicLoad } from './itests/basic.ts';
@@ -21,10 +21,10 @@ import { load as sinkLoad } from './itests/sink.ts';
 import { load as stdlibLoad } from './itests/stdlib.ts';
 import { load as regsLoad } from './itests/regs.ts';
 import { load as runLoad } from './itests/run.ts';
-import { makeFromFile } from './make.ts';
-import { runResult } from './run.ts';
+import { IMakeResult, makeFromFile } from './make.ts';
+//import { runResult } from './run.ts';
 import * as sink from './sink.ts';
-import { assertNever } from './util.ts';
+import { assertNever, waitForever } from './util.ts';
 
 export interface IItestArgs {
   filters: string[];
@@ -76,9 +76,15 @@ function extractBytes(data: string): number[] {
 
 async function itestMake(test: ITestMake): Promise<boolean> {
   const stdout: string[] = [];
-  const res = await makeFromFile(
+  let res: IMakeResult | undefined;
+  await makeFromFile(
     '/root/main',
+    async (result: IMakeResult) => {
+      res = result;
+    },
     [{ key: 'defined123', value: 123 }],
+    false,
+    '/',
     true,
     (filename) => filename.startsWith('/'),
     (filename) => {
@@ -111,8 +117,10 @@ async function itestMake(test: ITestMake): Promise<boolean> {
         throw new Error(`Not found: ${filename}`);
       }
     },
+    waitForever,
     (str) => stdout.push(str),
   );
+  if (!res) throw new Error('No result?');
   if ('errors' in res) {
     if (test.error) {
       return true;
@@ -145,27 +153,28 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     return true;
   }
 
+  const actual = res.sections.flat();
   const expected = extractBytes(test.files['/root/main']);
-  if (expected.length !== res.result.length) {
+  if (expected.length !== actual.length) {
     console.error(
-      `\nExpected length is ${expected.length} bytes, but got ${res.result.length} bytes`,
+      `\nExpected length is ${expected.length} bytes, but got ${actual.length} bytes`,
     );
     return false;
   }
   const hex = (n: number) => `${n < 16 ? '0' : ''}${n.toString(16)}`;
   for (let i = 0; i < expected.length; i++) {
-    if (expected[i] !== res.result[i]) {
+    if (expected[i] !== actual[i]) {
       console.error(`\nResult doesn't match expected:`);
       for (
         let s = Math.max(0, i - 5);
         s < Math.min(expected.length, i + 6);
         s++
       ) {
-        if (res.result[s] === expected[s]) {
-          console.error(` result[${s}] = ${hex(res.result[s])} // match`);
+        if (actual[s] === expected[s]) {
+          console.error(` result[${s}] = ${hex(actual[s])} // match`);
         } else {
           console.error(
-            ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${hex(expected[s])}`,
+            ` actual[${s}] = ${hex(actual[s])} // expected[${s}] = ${hex(expected[s])}`,
           );
         }
       }
@@ -177,9 +186,15 @@ async function itestMake(test: ITestMake): Promise<boolean> {
 
 async function itestRun(test: ITestRun): Promise<boolean> {
   const stdout: string[] = [];
-  const res = await makeFromFile(
+  let res: IMakeResult | undefined;
+  await makeFromFile(
     '/root/main',
+    async (result: IMakeResult) => {
+      res = result;
+    },
     [{ key: 'defined123', value: 123 }],
+    false,
+    '/',
     true,
     (filename) => filename.startsWith('/'),
     (filename) => {
@@ -206,8 +221,12 @@ async function itestRun(test: ITestRun): Promise<boolean> {
         throw new Error(`Not found: ${filename}`);
       }
     },
+    waitForever,
     () => {},
   );
+
+  if (!res) throw new Error('No result?');
+
   if ('errors' in res) {
     console.error('');
     for (const err of res.errors) {
@@ -216,13 +235,13 @@ async function itestRun(test: ITestRun): Promise<boolean> {
     return false;
   }
 
-  runResult(
-    res.result,
+  /* TODO: runResult(
+    res.sections,
     res.base,
     res.arm,
     res.debug,
     (str: string) => stdout.push(str),
-  );
+  );*/
 
   for (let i = 0; i < Math.max(test.stdout.length, stdout.length); i++) {
     const exp = test.stdout[i];

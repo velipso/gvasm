@@ -1,16 +1,18 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-// deno-lint-ignore-file no-explicit-any
+// TODO: deno-lint-ignore-file no-explicit-any
 
-import { b16, b32, ILineStr, printf, splitLines } from './util.ts';
+import { /*b16, b32,*/ ILineStr /*, printf, splitLines*/ } from './util.ts';
+/*
 import { loadImage } from './deps.ts';
 import * as sink from './sink.ts';
 import { ConstTable } from './const.ts';
+*/
 
 export interface ILineBytes {
   kind: 'bytes';
@@ -18,7 +20,7 @@ export interface ILineBytes {
 }
 
 export type ILinePut = ILineStr | ILineBytes;
-
+/*
 export function loadLibIntoScript(scr: sink.scr, ctable: ConstTable) {
   sink.scr_autonative(scr, 'put');
   sink.scr_autonative(scr, 'i8');
@@ -561,3 +563,4 @@ export function loadLibIntoContext(
     );
   }
 }
+*/

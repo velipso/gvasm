@@ -1,42 +1,23 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import {
-  errorString,
-  flpString,
-  IFilePos,
-  isIdentStart,
-  ITok,
-  lexAddLine,
-  lexNew,
-  TokEnum,
-} from './lexer.ts';
-import { assertNever, b16, b32, ILineStr, printf, splitLines } from './util.ts';
-import { ARM, Thumb } from './ops.ts';
-import { Expression, ExpressionBuilder } from './expr.ts';
-import { Bytes, IBase } from './bytes.ts';
-import { path, pathBasename, pathDirname, pathJoin, pathResolve } from './deps.ts';
-import { ConstTable } from './const.ts';
-import { version } from './main.ts';
-import { stdlib } from './stdlib.ts';
-import { extlib } from './extlib.ts';
-import { ILinePut, loadLibIntoContext, loadLibIntoScript } from './sinklib.ts';
+import { path, pathResolve } from './deps.ts';
+import { IMakeResult, Project } from './project.ts';
 import * as sink from './sink.ts';
+export type { IMakeResult };
 
 export interface IMakeArgs {
   input: string;
   output: string;
   defines: { key: string; value: number }[];
+  watch: boolean;
 }
 
-export type IMakeResult =
-  | { result: readonly number[]; base: number; arm: boolean; debug: IDebugStatement[] }
-  | { errors: string[] };
-
+/*
 interface IDotStackBegin {
   kind: 'begin';
   arm: boolean;
@@ -74,12 +55,12 @@ type IDotStack =
   | IDotStackStruct
   | IDotStackScript
   | IDotStackMacro;
-
+*/
 interface IDebugStatementLog {
   kind: 'log';
   addr: number;
   format: string;
-  args: Expression[];
+  // TODO: args: Expression[];
 }
 
 interface IDebugStatementExit {
@@ -88,7 +69,7 @@ interface IDebugStatementExit {
 }
 
 export type IDebugStatement = IDebugStatementLog | IDebugStatementExit;
-
+/*
 interface IParseState {
   firstARM: boolean;
   arm: boolean;
@@ -119,32 +100,6 @@ interface IParseState {
 }
 
 type ISyms = { [sym: string]: Expression | number };
-
-const defaultRegs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11'];
-const reservedRegs = ['r12', 'ip', 'r13', 'sp', 'r14', 'lr', 'r15', 'pc'];
-
-export function decodeRegister(regs: string[], id: string, allowCpsr = false): number {
-  if (allowCpsr && id === 'cpsr') {
-    return 16;
-  }
-  const r = reservedRegs.indexOf(id);
-  if (r >= 0) {
-    return 12 + (r >> 1);
-  }
-  const i = regs.indexOf(id);
-  if (i < 0) {
-    // attempt to provide friendly error message
-    const d = defaultRegs.indexOf(id);
-    if (d >= 0) {
-      throw `Invalid register name; ${id} has been renamed to: ${regs[d]}`;
-    }
-  }
-  return i;
-}
-
-export function isNextId(line: ITok[], id: string): boolean {
-  return line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === id;
-}
 
 function parseComma(line: ITok[], error: string) {
   if (isNextId(line, ',')) {
@@ -715,32 +670,6 @@ function parseDebugStatement(
       break;
     default:
       throw `Unknown debug statement: ${cmd}`;
-  }
-}
-
-function validateStr(partStr: string, line: ITok[]): boolean {
-  if (partStr === '') {
-    return true;
-  }
-  const t = line.shift();
-  if (!t || t.kind !== TokEnum.ID || t.id !== partStr) {
-    return false;
-  }
-  return true;
-}
-
-function validateNum(
-  state: IParseState,
-  partNum: number,
-  line: ITok[],
-): boolean {
-  try {
-    if (parseNum(state, line) !== partNum) {
-      return false;
-    }
-    return true;
-  } catch (_) {
-    return false;
   }
 }
 
@@ -1891,88 +1820,81 @@ function parseLine(
     }
   }
 }
-
-function isARM(state: IParseState): boolean {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      return ds.arm;
-    }
-  }
-  return state.arm;
-}
-
-function setARM(state: IParseState, arm: boolean) {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      ds.arm = arm;
-      return;
-    }
-  }
-  state.arm = arm;
-}
-
-function getBase(state: IParseState): IBase {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      return ds.base;
-    }
-  }
-  return state.base;
-}
-
-function setBase(state: IParseState, base: IBase) {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      ds.base = base;
-      return;
-    }
-  }
-  state.base = base;
-}
-
-function getRegs(state: IParseState): string[] {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      return ds.regs;
-    }
-  }
-  return state.regs;
-}
-
-function setRegs(state: IParseState, regs: string[]) {
-  for (let i = state.dotStack.length - 1; i >= 0; i--) {
-    const ds = state.dotStack[i];
-    if (ds.kind === 'begin') {
-      ds.regs = regs;
-      return;
-    }
-  }
-  state.regs = regs;
-}
+*/
 
 export async function makeFromFile(
-  filename: string,
+  input: string,
+  output: (result: IMakeResult) => Promise<void>,
   defines: { key: string; value: number }[],
+  watch: boolean,
+  cwd: string,
   posix: boolean,
   isAbsolute: (filename: string) => boolean,
   fileType: (filename: string) => Promise<sink.fstype>,
   readTextFile: (filename: string) => Promise<string>,
   readBinaryFile: (filename: string) => Promise<number[] | Uint8Array>,
+  watchFileChanges: (filenames: string[]) => Promise<string[]>,
   log: (str: string) => void,
-): Promise<IMakeResult> {
-  let data;
-  try {
-    data = await readTextFile(filename);
-  } catch (_) {
-    return { errors: [`Failed to read file: ${filename}`] };
+): Promise<void> {
+  const mainFilename = isAbsolute(input) ? input : pathResolve(posix, cwd, input);
+
+  const proj = new Project(
+    mainFilename,
+    defines,
+    cwd,
+    posix,
+    isAbsolute,
+    fileType,
+    (filename: string): Promise<string> => {
+      console.log('  > reading:', filename);
+      return readTextFile(filename);
+    },
+    readBinaryFile,
+    log,
+  );
+
+  if (watch) {
+    while (true) {
+      await output(await proj.make());
+      proj.invalidate(await watchFileChanges(proj.filenames()));
+    }
+  } else {
+    await output(await proj.make());
   }
 
-  const linePuts: ILinePut[] = splitLines(filename, data, true);
+  /*
+  let data;
+  try {
+    data = await readTextFile(fullFile);
+  } catch (_) {
+    return { errors: [`Failed to read file: ${fullFile}`] };
+  }
+
+  try {
+    const tks = lex(data);
+    const store: Map<string, string> = new Map();
+    console.log(await parse(
+      fullFile,
+      tks,
+      store,
+      defines,
+      posix,
+      isAbsolute,
+      fileType,
+      readTextFile,
+      readBinaryFile,
+      log
+    ));
+  } catch (e) {
+    if (e instanceof CompError) {
+      return { errors: [errorString(filename, e.lc, e.message)] };
+    } else {
+      throw e;
+    }
+  }
+
+  throw new Error('TODO: parsed file, now what?');
+
   const lx = lexNew();
   const bytes = new Bytes();
   const state: IParseState = {
@@ -2208,15 +2130,21 @@ export async function makeFromFile(
     throw e;
   }
   return { result, base: state.bytes.firstBase, arm: state.firstARM, debug: state.debug };
+  */
 }
 
-export function makeResult(
+export async function makeResult(
   input: string,
+  output: (result: IMakeResult) => Promise<void>,
   defines: { key: string; value: number }[],
-): Promise<IMakeResult> {
-  return makeFromFile(
+  watch: boolean,
+): Promise<void> {
+  await makeFromFile(
     input,
+    output,
     defines,
+    watch,
+    Deno.cwd(),
     path.sep === '/',
     path.isAbsolute,
     async (file: string) => {
@@ -2232,29 +2160,71 @@ export function makeResult(
     },
     Deno.readTextFile,
     Deno.readFile,
+    async (filenames: string[]): Promise<string[]> => {
+      const watcher = Deno.watchFs(filenames);
+      const iter = watcher[Symbol.asyncIterator]();
+      const nextChange = async (): Promise<string[] | false> => {
+        while (true) {
+          const { value, done } = await iter.next();
+          if (done) return false;
+          if (value.kind !== 'access' && value.paths.length > 0) return value.paths;
+        }
+      };
+
+      let closed = false;
+      const scheduleClose = (timeout: number) =>
+        setTimeout(() => {
+          if (!closed) {
+            closed = true;
+            watcher.close();
+          }
+        }, timeout);
+
+      const changedList = await nextChange();
+      if (changedList === false) {
+        throw new Error('Failed to watch files for changes');
+      }
+      const changed = new Set(changedList);
+      scheduleClose(5000); // close after 5 seconds no matter what
+      while (true) {
+        const timer = scheduleClose(1000); // close after 1 second of inactivity
+        const more = await nextChange();
+        if (more === false) return Array.from(changed.values());
+        clearTimeout(timer);
+        for (const filename of more) changed.add(filename);
+      }
+    },
     (str) => console.log(str),
   );
 }
 
-export async function make({ input, output, defines }: IMakeArgs): Promise<number> {
+export async function make({ input, output, defines, watch }: IMakeArgs): Promise<number> {
   try {
-    const result = await makeResult(input, defines);
-
-    if ('errors' in result) {
-      for (const e of result.errors) {
-        console.error(e);
+    const onResult = async (result: IMakeResult) => {
+      const d2 = (n: number) => `${n < 10 ? '0' : ''}${n}`;
+      const ts = watch
+        ? ((n: Date) => `[${d2(n.getHours())}:${d2(n.getMinutes())}:${d2(n.getSeconds())}] `)(
+          new Date(),
+        )
+        : '';
+      if ('errors' in result) {
+        console.error(`${ts}Error:`);
+        for (const e of result.errors) {
+          console.error(`  ${e}`);
+        }
+      } else {
+        console.log(
+          `${ts}Success! Output: ${output}`,
+          result.sections.flat().map((n) => `0${n.toString(16)}`.substr(-2)).join(' '),
+        );
+        //await Deno.writeFile(output, new Uint8Array(result.sections));
       }
-      throw false;
-    }
-
-    await Deno.writeFile(output, new Uint8Array(result.result));
-
+    };
+    await makeResult(input, onResult, defines, watch);
     return 0;
   } catch (e) {
-    if (e !== false) {
-      console.error(e);
-      console.error('Unknown fatal error');
-    }
+    console.error(e);
+    console.error('Unknown fatal error');
     return 1;
   }
 }

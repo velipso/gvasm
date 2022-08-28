@@ -6,8 +6,8 @@
 //
 
 import { assertNever } from './util.ts';
-import { CompError, ISym, Mode, ParsedFile, Parser } from './parser.ts';
-import { Project } from './project.ts';
+import { CompError, Parser } from './parser.ts';
+import { Import, IPendingWriteContext } from './import.ts';
 import { IFilePos, ITok } from './lexer.ts';
 import { version } from './main.ts';
 
@@ -75,7 +75,7 @@ interface IExprReserved {
 export interface IExprLookup {
   kind: 'lookup';
   flp: IFilePos;
-  path: (string | IExpr)[];
+  idPath: (string | Expression)[];
 }
 
 interface IExprRead {
@@ -216,14 +216,6 @@ function isTokUnary(t: ITok): t is ITokUnary {
 // 'deny'       - fail if lookup isn't found, or doesn't have a value
 export type LookupFailMode = 'allow' | 'unresolved' | 'deny';
 
-export interface IExprContext {
-  proj: Project;
-  main: boolean;
-  symHere: Map<string, ISym>[];
-  mode: Mode;
-  addr: number | false;
-}
-
 export class Expression {
   private expr: IExpr;
 
@@ -235,7 +227,7 @@ export class Expression {
     return new Expression({ kind: 'num', value: num });
   }
 
-  static parse(parser: Parser, result: ParsedFile): Expression {
+  static parse(parser: Parser, imp: Import): Expression {
     const readParams = (): IExpr[] => {
       const params: IExpr[] = [];
       if (!parser.isNext('(')) {
@@ -310,27 +302,27 @@ export class Expression {
           const params = readParams();
           checkParamSize(params.length, 1);
           value = { kind: 'defined', value: params[0] };
-        } else if (!result.isRegister(t.id)) {
-          const path: (string | IExpr)[] = [t.id];
+        } else if (!imp.isRegister(t.id)) {
+          const idPath: (string | Expression)[] = [t.id];
           while (true) {
             if (parser.isNext('.')) {
               const tp = parser.nextTok();
               const t2 = parser.nextTokOptional();
               if (!t2) throw new CompError(tp, 'Invalid expression');
               if (t2.kind !== 'id') throw new CompError(t2, 'Invalid expression');
-              path.push(t2.id);
+              idPath.push(t2.id);
             } else if (parser.isNext('[')) {
               const tp = parser.nextTok();
               if (!parser.hasTok()) throw new CompError(tp, 'Invalid expression');
-              path.push(term());
+              idPath.push(new Expression(term()));
               if (!parser.isNext(']')) throw new CompError(tp, 'Invalid expression');
               parser.nextTok();
             } else {
               break;
             }
           }
-          const path0 = t.id;
-          switch (path0) {
+          const idPath0 = t.id;
+          switch (idPath0) {
             case '_arm':
             case '_base':
             case '_bytes':
@@ -339,11 +331,11 @@ export class Expression {
             case '_pc':
             case '_thumb':
             case '_version':
-              if (path.length > 1) throw new CompError(t, 'Cannot index into number');
-              value = { kind: 'reserved', name: path0 };
+              if (idPath.length > 1) throw new CompError(t, 'Cannot index into number');
+              value = { kind: 'reserved', name: idPath0 };
               break;
             default:
-              value = { kind: 'lookup', flp: t, path };
+              value = { kind: 'lookup', flp: t, idPath };
               break;
           }
           /*
@@ -394,9 +386,9 @@ export class Expression {
             if (!flp) throw new Error('Expecting unary token');
             label += flp.punc;
           }
-          value = { kind: 'lookup', flp, path: [label] };
+          value = { kind: 'lookup', flp, idPath: [label] };
         } else {
-          throw 'Invalid expression';
+          throw new CompError(parser.here(), 'Invalid expression');
         }
       }
 
@@ -503,7 +495,7 @@ export class Expression {
     }
   }
 
-  value(context: IExprContext, lookupFailMode: LookupFailMode): number | false {
+  value(context: IPendingWriteContext, lookupFailMode: LookupFailMode): number | false {
     const get = (ex: IExpr): number | false => {
       switch (ex.kind) {
         case 'num':
@@ -519,7 +511,7 @@ export class Expression {
             case '_here':
               return context.addr;
             case '_main':
-              return context.main ? 1 : 0;
+              return context.imp.main ? 1 : 0;
             case '_pc':
               throw 'TODO: _pc';
             case '_thumb':
@@ -530,53 +522,15 @@ export class Expression {
               return assertNever(ex.name);
           }
         case 'lookup': {
-          const lookup = (i: number, here: Map<string, ISym>): number | 'notfound' | false => {
-            const p = ex.path[i];
-            if (typeof p !== 'string') return 'notfound';
-            const root = here.get(p);
-            if (!root) return 'notfound';
-            switch (root.kind) {
-              case 'begin':
-                return i + 1 < ex.path.length ? lookup(i + 1, root.map) : root.addr;
-              case 'importAll': {
-                if (i + 1 >= ex.path.length) {
-                  throw new CompError(ex.flp, 'Cannot use imported name as value');
-                }
-                const pf = context.proj.readCache(root.filename);
-                if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
-                return lookup(i + 1, pf.symTable);
-              }
-              case 'importName': {
-                const pf = context.proj.readCache(root.filename);
-                if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
-                return lookup(i, pf.symTable);
-              }
-              case 'label':
-                if (i + 1 < ex.path.length) {
-                  throw new CompError(ex.flp, 'Cannot index into a label');
-                }
-                return root.addr;
-              case 'num':
-                if (i + 1 < ex.path.length) {
-                  throw new CompError(ex.flp, 'Cannot index into constant number');
-                }
-                return root.num;
-              default:
-                return assertNever(root);
-            }
-          };
+          const v = context.imp.lookup(ex.flp, context.defHere, ex.idPath);
           const pathError = () =>
-            ex.path.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
-          for (const map of context.symHere) {
-            const v = lookup(0, map);
-            if (typeof v === 'number' || v === false) {
-              if (v === false && lookupFailMode === 'deny') {
-                throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
-              }
-              return v;
+            ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
+          if (typeof v === 'number') {
+            return v;
+          } else if (v === false || lookupFailMode === 'allow') {
+            if (lookupFailMode === 'deny') {
+              throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
             }
-          }
-          if (lookupFailMode === 'allow') {
             return false;
           }
           throw new CompError(ex.flp, `Cannot find symbol: ${pathError()}`);
@@ -696,9 +650,7 @@ export class Expression {
           const condition = get(ex.condition);
           if (condition === false) return false;
           const iftrue = get(ex.iftrue);
-          if (iftrue === false) return false;
           const iffalse = get(ex.iffalse);
-          if (iffalse === false) return false;
           return condition === 0 ? iffalse : iftrue;
         }
         default:

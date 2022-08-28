@@ -5,15 +5,12 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IFilePos, ITok, ITokId } from './lexer.ts';
+import { IFilePos, ILexKeyValue, ITok, ITokId } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
-import { Expression, IExprContext, LookupFailMode, reservedNames } from './expr.ts';
-import { IFileState, Project } from './project.ts';
-
-export type Mode = 'none' | 'arm' | 'thumb';
-
-type ISyms = { [sym: string]: Expression | number };
+import { Expression } from './expr.ts';
+import { Project } from './project.ts';
+import { Import, ISyms } from './import.ts';
 
 export class Parser {
   i = 0;
@@ -22,6 +19,12 @@ export class Parser {
 
   constructor(tks: ITok[]) {
     this.tks = tks;
+  }
+
+  here(): IFilePos {
+    if (this.tks.length <= 0) return { filename: '', line: 1, chr: 1 };
+    if (this.i >= this.tks.length) return this.tks[this.tks.length - 1];
+    return this.tks[this.i];
   }
 
   save() {
@@ -41,6 +44,12 @@ export class Parser {
       throw new Error('Unbalanced parser save/restore');
     }
     this.i = i;
+  }
+
+  trim() {
+    while (this.i < this.tks.length && this.tks[this.i].kind === 'newline') {
+      this.i++;
+    }
   }
 
   hasTok(amount = 1) {
@@ -118,590 +127,6 @@ export class Parser {
   }
 }
 
-interface ILevelBegin {
-  kind: 'begin';
-  mode: Mode;
-  regs: string[];
-}
-
-type ILevel = ILevelBegin;
-
-abstract class Section {
-  abstract flatten(state: IFileState, startLength: number): Promise<number[][]>;
-}
-
-interface IRewrite {
-  addr(): number | false;
-  write(v: number): void;
-}
-
-class SectionBytes extends Section {
-  static MAX_LENGTH = 0x02000000;
-  private array: number[] = [];
-  private addrRecvs: { i: number; recv: { addr: number | false } }[] = [];
-  private addr: { base: { addr: number; relativeTo: number }; startLength: number } | false = false;
-
-  async flatten(state: IFileState, startLength: number): Promise<number[][]> {
-    this.addr = { base: state.base, startLength };
-    for (const { i, recv } of this.addrRecvs) {
-      recv.addr = state.base.addr + startLength + i - state.base.relativeTo;
-    }
-    return [this.array];
-  }
-
-  clearAddr() {
-    this.addr = false;
-    for (const { recv } of this.addrRecvs) recv.addr = false;
-  }
-
-  length() {
-    return this.array.length;
-  }
-
-  addAddrRecv(recv: { addr: number | false }) {
-    this.addrRecvs.push({ i: this.array.length, recv });
-  }
-
-  write8(v: number) {
-    this.array.push(v & 0xff);
-  }
-
-  write16(v: number) {
-    this.array.push(
-      v & 0xff,
-      (v >> 8) & 0xff,
-    );
-  }
-
-  write32(v: number) {
-    this.array.push(
-      v & 0xff,
-      (v >> 8) & 0xff,
-      (v >> 16) & 0xff,
-      (v >> 24) & 0xff,
-    );
-  }
-
-  writeArray(v: number[] | Uint8Array) {
-    for (let i = 0; i < v.length; i++) {
-      this.array.push(v[i] & 0xff);
-    }
-  }
-
-  rewrite8(): IRewrite {
-    const i = this.array.length;
-    this.write8(0);
-    return {
-      addr: () => {
-        if (this.addr === false) return false;
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
-      },
-      write: (v: number) => {
-        this.array[i] = v & 0xff;
-      },
-    };
-  }
-
-  rewrite16(): IRewrite {
-    const i = this.array.length;
-    this.write16(0);
-    return {
-      addr: () => {
-        if (this.addr === false) return false;
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
-      },
-      write: (v: number) => {
-        this.array[i] = v & 0xff;
-        this.array[i + 1] = (v >> 8) & 0xff;
-      },
-    };
-  }
-
-  rewrite32(): IRewrite {
-    const i = this.array.length;
-    this.write32(0);
-    return {
-      addr: () => {
-        if (this.addr === false) return false;
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
-      },
-      write: (v: number) => {
-        this.array[i] = v & 0xff;
-        this.array[i + 1] = (v >> 8) & 0xff;
-        this.array[i + 2] = (v >> 16) & 0xff;
-        this.array[i + 3] = (v >> 24) & 0xff;
-      },
-    };
-  }
-}
-
-class SectionInclude extends Section {
-  proj: Project;
-  filename: string;
-
-  constructor(proj: Project, filename: string) {
-    super();
-    this.proj = proj;
-    this.filename = filename;
-  }
-
-  async flatten(state: IFileState, startLength: number): Promise<number[][]> {
-    return await this.proj.include(this.filename, state, startLength);
-  }
-}
-
-class SectionPool extends Section {
-  async flatten(_state: IFileState, _startLength: number): Promise<number[][]> {
-    return [];
-  }
-}
-
-interface ISymBegin {
-  kind: 'begin';
-  map: Map<string, ISym>;
-  addr: number | false;
-}
-
-interface ISymNum {
-  kind: 'num';
-  num: number;
-}
-
-interface ISymLabel {
-  kind: 'label';
-  addr: number | false;
-}
-
-interface ISymImportAll {
-  kind: 'importAll';
-  filename: string;
-}
-
-interface ISymImportName {
-  kind: 'importName';
-  filename: string;
-  name: string;
-}
-
-export type ISym =
-  | ISymBegin
-  | ISymImportAll
-  | ISymImportName
-  | ISymLabel
-  | ISymNum;
-
-class BitNumber {
-  private maxSize: number;
-  private bpos = 0;
-  private value = 0;
-
-  constructor(maxSize: number) {
-    this.maxSize = maxSize;
-  }
-
-  push(size: number, v: number) {
-    this.value |= (v & ((1 << size) - 1)) << this.bpos;
-    this.bpos += size;
-  }
-
-  get() {
-    if (this.bpos !== this.maxSize) {
-      throw new Error(`Opcode length isn't ${this.maxSize} bits`);
-    }
-    return this.value;
-  }
-}
-
-interface IPendingInstCommon<T> {
-  flp: IFilePos;
-  op: T;
-  syms: ISyms;
-  context: IExprContext;
-  rewrite: IRewrite;
-}
-
-interface IPendingInstARM extends IPendingInstCommon<ARM.IOp> {
-  isARM: true;
-}
-
-interface IPendingInstThumb extends IPendingInstCommon<Thumb.IOp> {
-  isARM: false;
-}
-
-type IPendingInst = IPendingInstARM | IPendingInstThumb;
-
-export class ParsedFile {
-  static defaultRegs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11'];
-  static reservedRegs = ['r12', 'ip', 'r13', 'sp', 'r14', 'lr', 'r15', 'pc'];
-
-  proj: Project;
-  filename: string;
-  symTable = new Map<string, ISym>();
-  symHere = [this.symTable];
-  levels: ILevel[] = [];
-  sections: Section[] = [];
-  inst: IPendingInst[] = [];
-  uniqueId = 0;
-
-  constructor(proj: Project, filename: string) {
-    this.proj = proj;
-    this.filename = filename;
-  }
-
-  tailBytes(): SectionBytes {
-    const tail = this.sections[this.sections.length - 1];
-    if (tail && tail instanceof SectionBytes) {
-      return tail;
-    }
-    const bytes = new SectionBytes();
-    this.sections.push(bytes);
-    return bytes;
-  }
-
-  exprContext(): IExprContext {
-    return {
-      proj: this.proj,
-      main: this.proj.isMain(this.filename),
-      symHere: [...this.symHere],
-      mode: this.mode(),
-      addr: false,
-    };
-  }
-
-  decodeRegister(t: ITokId, allowCpsr: boolean): number {
-    if (allowCpsr && t.id === 'cpsr') {
-      return 16;
-    }
-    const a = ParsedFile.reservedRegs.indexOf(t.id);
-    if (a >= 0) {
-      return 12 + (a >> 1);
-    }
-    const regs = this.regs();
-    const b = regs.indexOf(t.id);
-    if (b >= 0) {
-      return b;
-    }
-    // attempt to provide friendly error message
-    const c = ParsedFile.defaultRegs.indexOf(t.id);
-    if (c >= 0) {
-      throw new CompError(t, `Invalid register name; ${t.id} has been renamed to: ${regs[c]}`);
-    }
-    return -1;
-  }
-
-  isRegister(name: string) {
-    return (
-      name === 'cpsr' ||
-      ParsedFile.reservedRegs.includes(name) ||
-      ParsedFile.defaultRegs.includes(name) ||
-      this.regs().includes(name)
-    );
-  }
-
-  validateNewName(flp: IFilePos, name: string) {
-    if (this.isRegister(name)) {
-      throw new CompError(flp, `Cannot use register name: ${name}`);
-    }
-    if (reservedNames.includes(name)) {
-      throw new CompError(flp, `Cannot use reserved name: ${name}`);
-    }
-    if (this.symHere[0].has(name)) {
-      throw new CompError(flp, `Cannot redefine: ${name}`);
-    }
-  }
-
-  addSymNum(flp: IFilePos, name: string, num: number) {
-    this.validateNewName(flp, name);
-    this.symHere[0].set(name, { kind: 'num', num });
-  }
-
-  addSymNamedLabel(tk: ITokId) {
-    this.validateNewName(tk, tk.id);
-    const label: ISymLabel = { kind: 'label', addr: false };
-    this.tailBytes().addAddrRecv(label);
-    this.symHere[0].set(tk.id, label);
-  }
-
-  async importAll(flp: IFilePos, filename: string, name: string) {
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    await this.proj.import(fullFile);
-    this.validateNewName(flp, name);
-    this.symTable.set(name, { kind: 'importAll', filename: fullFile });
-  }
-
-  async importNames(flp: IFilePos, filename: string, names: string[]) {
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    await this.proj.import(fullFile);
-    for (const name of names) {
-      this.validateNewName(flp, name);
-      this.symTable.set(name, { kind: 'importName', filename: fullFile, name });
-    }
-  }
-
-  include(filename: string) {
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    this.sections.push(new SectionInclude(this.proj, fullFile));
-    return Promise.resolve();
-  }
-
-  beginStart(flp: IFilePos, name: string | undefined) {
-    const symName = name ?? `%${this.uniqueId++}`;
-    this.validateNewName(flp, symName);
-    const entry: ISymBegin = {
-      kind: 'begin',
-      map: new Map(),
-      addr: false,
-    };
-    this.tailBytes().addAddrRecv(entry);
-    this.symHere[0].set(symName, entry);
-    this.symHere.unshift(entry.map);
-    this.levels.unshift({ kind: 'begin', mode: this.mode(), regs: this.regs() });
-  }
-
-  beginEnd() {
-    if (this.levels.length <= 0 || this.levels[0].kind !== 'begin') {
-      throw new Error(`Can't call beginEnd without matching beginStart`);
-    }
-    this.symHere.shift();
-    this.levels.shift();
-  }
-
-  pool() {
-    // TODO: populate pool with outstanding expressions
-    this.sections.push(new SectionPool());
-  }
-
-  armStatement(flp: IFilePos, op: ARM.IOp, syms: ISyms) {
-    const rewrite = this.tailBytes().rewrite32();
-    const context = this.exprContext();
-    if (!this.armWrite(flp, op, syms, context, 'allow', rewrite)) {
-      this.inst.push({ isARM: true, flp, op, syms, context, rewrite });
-    }
-  }
-
-  armWrite(
-    _flp: IFilePos,
-    _op: ARM.IOp,
-    _syms: ISyms,
-    _context: IExprContext,
-    _lookupFailMode: LookupFailMode,
-    _rewrite: IRewrite,
-  ): boolean {
-    return false;
-  }
-
-  thumbStatement(flp: IFilePos, op: Thumb.IOp, syms: ISyms) {
-    const bytes = this.tailBytes();
-    const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
-    const context = this.exprContext();
-    if (!this.thumbWrite(flp, op, syms, context, 'allow', rewrite)) {
-      this.inst.push({ isARM: false, flp, op, syms, context, rewrite });
-    }
-  }
-
-  thumbWrite(
-    flp: IFilePos,
-    op: Thumb.IOp,
-    syms: ISyms,
-    context: IExprContext,
-    lookupFailMode: LookupFailMode,
-    rewrite: IRewrite,
-  ): boolean {
-    // calculate all expressions
-    const symNums: { [key: string]: number } = {};
-    for (const [key, expr] of Object.entries(syms)) {
-      if (typeof expr === 'number') {
-        symNums[key] = expr;
-      } else {
-        const v = expr.value(context, lookupFailMode);
-        if (v === false) return false;
-        symNums[key] = v;
-      }
-    }
-
-    // generate opcode
-    const address = rewrite.addr();
-    const opcode = new BitNumber(op.doubleInstruction ? 32 : 16);
-    const pushAlign = (size: number, v: number, shift: number) => {
-      if (v < 0 || v >= (1 << (size + shift))) {
-        throw new CompError(
-          flp,
-          `Immediate value out of range 0..${
-            ((1 << size) - 1) <<
-            shift
-          }: ${v}`,
-        );
-      }
-      if (v & ((1 << shift) - 1)) {
-        throw new CompError(
-          flp,
-          `Immediate value is not ${shift === 2 ? 'word' : 'halfword'} aligned: ${v}`,
-        );
-      }
-      opcode.push(size, v >> shift);
-    };
-    for (const codePart of op.codeParts) {
-      switch (codePart.k) {
-        case 'immediate':
-          pushAlign(codePart.s, symNums[codePart.sym], 0);
-          break;
-        case 'enum':
-        case 'register':
-        case 'reglist':
-          opcode.push(codePart.s, symNums[codePart.sym]);
-          break;
-        case 'registerhigh':
-          opcode.push(codePart.s, symNums[codePart.sym] - 8);
-          break;
-        case 'value':
-        case 'ignored':
-          opcode.push(codePart.s, codePart.v);
-          break;
-        case 'word':
-        case 'negword':
-          pushAlign(codePart.s, symNums[codePart.sym], 2);
-          break;
-        case 'halfword':
-          pushAlign(codePart.s, symNums[codePart.sym], 1);
-          break;
-        case 'shalfword': {
-          if (address === false) return false;
-          const offset = symNums[codePart.sym] - address - 4;
-          if (offset < -(1 << codePart.s) || offset >= (1 << codePart.s)) {
-            throw new CompError(flp, `Offset too large: ${offset}`);
-          } else if (offset & 1) {
-            throw new CompError(flp, 'Can\'t branch to misaligned memory address');
-          }
-          opcode.push(codePart.s, offset >> 1);
-          break;
-        }
-        case 'pcoffset': {
-          if (address === false) return false;
-          const offset = symNums[codePart.sym] - (address & 0xfffffffd) - 4;
-          if (offset < 0) {
-            throw new CompError(flp, 'Can\'t load from address before PC in thumb mode');
-          } else if (offset & 3) {
-            throw new CompError(flp, 'Can\'t load from misaligned address');
-          }
-          pushAlign(codePart.s, offset, 2);
-          break;
-        }
-        case 'offsetsplit': {
-          if (address === false) return false;
-          const offset = symNums[codePart.sym] - address - 4;
-          if (offset < -4194304 || offset >= 4194304) {
-            throw new CompError(flp, `Offset too large: ${offset}`);
-          } else if (offset & 1) {
-            throw new CompError(flp, 'Can\'t branch to misaligned memory address');
-          }
-          opcode.push(
-            codePart.s,
-            codePart.low ? (offset >> 1) & 0x7ff : (offset >> 12) & 0x7ff,
-          );
-          break;
-        }
-        default:
-          assertNever(codePart);
-      }
-    }
-
-    // write!
-    rewrite.write(opcode.get());
-    return true;
-  }
-
-  endOfFile() {
-    // attempt rewrites now that we know more information
-    for (let i = 0; i < this.inst.length; i++) {
-      const { isARM, flp, op, syms, context, rewrite } = this.inst[i];
-      if (isARM) {
-        if (this.armWrite(flp, op, syms, context, 'unresolved', rewrite)) {
-          this.inst.splice(i, 1);
-          i--;
-        }
-      } else {
-        if (this.thumbWrite(flp, op, syms, context, 'unresolved', rewrite)) {
-          this.inst.splice(i, 1);
-          i--;
-        }
-      }
-    }
-  }
-
-  setMode(mode: Mode) {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        lv.mode = mode;
-        return;
-      }
-    }
-    throw new Error(`Can't set instruction set outside of begin block`);
-  }
-
-  mode(): Mode {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        return lv.mode;
-      }
-    }
-    return 'none';
-  }
-
-  setRegs(regs: string[]) {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        lv.regs = regs;
-        return;
-      }
-    }
-    throw new Error(`Can't set registers outside of begin block`);
-  }
-
-  regs(): string[] {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        return lv.regs;
-      }
-    }
-    return ParsedFile.defaultRegs;
-  }
-
-  async flatten(initialState: IFileState, startLength: number): Promise<number[][]> {
-    const sections: number[][] = [];
-    const states = [initialState];
-    let length = startLength;
-    for (const section of this.sections) {
-      const sects = await section.flatten(states[0], length);
-      for (const sect of sects) {
-        if (sect.length <= 0) continue;
-        length += sect.length;
-        sections.push(sect);
-      }
-    }
-    return sections;
-  }
-
-  makeStart() {
-    for (const section of this.sections) {
-      if (section instanceof SectionBytes) section.clearAddr();
-    }
-  }
-
-  makeEnd() {
-    for (const { isARM, flp, op, syms, context, rewrite } of this.inst) {
-      if (isARM) {
-        if (!this.armWrite(flp, op, syms, context, 'deny', rewrite)) {
-          throw new CompError(flp, 'Failed to write instruction');
-        }
-      } else {
-        if (!this.thumbWrite(flp, op, syms, context, 'deny', rewrite)) {
-          throw new CompError(flp, 'Failed to write instruction');
-        }
-      }
-    }
-  }
-}
-
 export class CompError extends Error {
   filename: string;
   line: number;
@@ -730,7 +155,7 @@ function parseReglist(
   width: 8 | 16,
   registerRequired: number | false,
   parser: Parser,
-  result: ParsedFile,
+  imp: Import,
 ): number | false {
   let state = 0;
   let reglist = 0;
@@ -766,7 +191,7 @@ function parseReglist(
         if (t.kind === 'punc' && t.punc === '}') {
           done = true;
         } else if (t.kind === 'id') {
-          lastRegister = result.decodeRegister(t, false);
+          lastRegister = imp.decodeRegister(t, false);
           if (lastRegister < 0) {
             return false;
           }
@@ -794,7 +219,7 @@ function parseReglist(
         break;
       case 3: // reading end of range
         if (t.kind === 'id') {
-          const end = result.decodeRegister(t, false);
+          const end = imp.decodeRegister(t, false);
           if (end < 0) {
             return false;
           }
@@ -833,35 +258,40 @@ interface IPool {
   expr: Expression;
 }
 
-function parsePoolStatement(parser: Parser, result: ParsedFile): IPool | false {
+function parsePoolStatement(parser: Parser, imp: Import): IPool | false {
+  parser.save();
   try {
-    const tk1 = parser.tks[parser.i + 0];
+    const tk1 = parser.nextTokOptional();
     if (!tk1 || tk1.kind !== 'id') {
+      parser.restore();
       return false;
     }
 
-    const rd = result.decodeRegister(tk1, false);
+    const rd = imp.decodeRegister(tk1, false);
     if (rd < 0) {
+      parser.restore();
       return false;
     }
 
-    const tk2 = parser.tks[parser.i + 1];
+    const tk2 = parser.nextTokOptional();
     if (!tk2 || tk2.kind !== 'punc' || tk2.punc !== ',') {
+      parser.restore();
       return false;
     }
 
-    const tk3 = parser.tks[parser.i + 2];
+    const tk3 = parser.nextTokOptional();
     if (!tk3 || tk3.kind !== 'punc' || tk3.punc !== '=') {
+      parser.restore();
       return false;
     }
-
-    // consume tokens
-    parser.i += 3;
 
     // parse rest of expression
-    const expr = Expression.parse(parser, result);
+    const expr = Expression.parse(parser, imp);
+    parser.forceNewline('pool load statement');
+    parser.applySave();
     return { rd, expr };
   } catch (_) {
+    parser.restore();
     return false;
   }
 }
@@ -882,9 +312,9 @@ function validateStr(partStr: string, parser: Parser): boolean {
   return false;
 }
 
-function validateNum(partNum: number, parser: Parser, result: ParsedFile): boolean {
+function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
   try {
-    return Expression.parse(parser, result).value(result.exprContext(), 'allow') === partNum;
+    return Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'allow') === partNum;
   } catch (_) {
     return false;
   }
@@ -895,10 +325,10 @@ function validateSymExpr(
   partSym: string,
   negate: boolean,
   parser: Parser,
-  result: ParsedFile,
+  imp: Import,
 ): boolean {
   try {
-    const ex = Expression.parse(parser, result);
+    const ex = Expression.parse(parser, imp);
     if (negate) {
       ex.negate();
     }
@@ -915,14 +345,14 @@ function validateSymRegister(
   low: number,
   high: number,
   parser: Parser,
-  result: ParsedFile,
+  imp: Import,
 ): boolean {
   try {
     const t = parser.nextTok();
     if (!t || t.kind !== 'id') {
       return false;
     }
-    const reg = result.decodeRegister(t, false);
+    const reg = imp.decodeRegister(t, false);
     if (reg >= low && reg <= high) {
       syms[partSym] = reg;
       return true;
@@ -961,18 +391,11 @@ function validateSymEnum(
   return false;
 }
 
-function parseARMStatement(_pb: ARM.IParsedBody, _parser: Parser, _result: ParsedFile): boolean {
-  return false;
-}
-
-function parseARMPoolStatement(_cmd: ITokId, _pool: IPool, _parser: Parser, _result: ParsedFile) {
-}
-
-function parseThumbStatement(
+function parseARMStatement(
   flp: IFilePos,
-  pb: Thumb.IParsedBody,
+  pb: ARM.IParsedBody,
   parser: Parser,
-  result: ParsedFile,
+  imp: Import,
 ): boolean {
   const syms = { ...pb.syms };
   for (const part of pb.body) {
@@ -983,7 +406,114 @@ function parseThumbStatement(
         }
         break;
       case 'num':
-        if (!validateNum(part.num, parser, result)) {
+        if (!validateNum(part.num, parser, imp)) {
+          return false;
+        }
+        break;
+      case 'sym': {
+        const codePart = part.codeParts[0];
+        switch (codePart.k) {
+          case 'word':
+          case 'immediate':
+          case 'rotimm':
+          case 'offset12':
+          case 'pcoffset12':
+          case 'offsetsplit':
+          case 'pcoffsetsplit':
+            if (!validateSymExpr(syms, part.sym, false, parser, imp)) {
+              return false;
+            }
+            break;
+          case 'register':
+            if (!validateSymRegister(syms, part.sym, 0, 15, parser, imp)) {
+              return false;
+            }
+            break;
+          case 'enum':
+            if (!validateSymEnum(syms, part.sym, codePart.enum, parser)) {
+              return false;
+            }
+            break;
+          case 'reglist': {
+            const v = parseReglist(16, false, parser, imp);
+            if (v === false) {
+              return false;
+            }
+            syms[part.sym] = v;
+            break;
+          }
+          case 'value':
+          case 'ignored':
+            throw new Error('Invalid syntax for parsed body');
+          default:
+            assertNever(codePart);
+        }
+        break;
+      }
+      default:
+        assertNever(part);
+    }
+  }
+
+  parser.forceNewline('ARM statement');
+  imp.writeInstARM(flp, pb.op, syms);
+  return true;
+}
+
+function parseARMPoolStatement(cmd: ITokId, pool: IPool, imp: Import) {
+  let cmdSize = -1;
+  let cmdSigned = false;
+  let cond = -1;
+  for (let ci = 0; ci < ARM.conditionEnum.length && cond < 0; ci++) {
+    const ce = ARM.conditionEnum[ci];
+    if (ce !== false) {
+      for (const cs of ce.split('/')) {
+        if (cmd.id === `ldr${cs}` || (cs !== '' && cmd.id === `ldr.${cs}`)) {
+          cmdSize = 4;
+          cond = ci;
+        } else if (cmd.id === `ldrh${cs}` || (cs !== '' && cmd.id === `ldrh.${cs}`)) {
+          cmdSize = 2;
+          cond = ci;
+        } else if (cmd.id === `ldrsh${cs}` || (cs !== '' && cmd.id === `ldrsh.${cs}`)) {
+          cmdSize = 2;
+          cmdSigned = true;
+          cond = ci;
+        } else if (cmd.id === `ldrb${cs}` || (cs !== '' && cmd.id === `ldrb.${cs}`)) {
+          cmdSize = 1;
+          cond = ci;
+        } else if (cmd.id === `ldrsb${cs}` || (cs !== '' && cmd.id === `ldrsb.${cs}`)) {
+          cmdSize = 1;
+          cmdSigned = true;
+          cond = ci;
+        } else {
+          continue;
+        }
+        break;
+      }
+    }
+  }
+  if (cond < 0) {
+    throw new CompError(cmd, 'Invalid ARM pool statement');
+  }
+  imp.writePoolARM(cmd, cmdSize, cmdSigned, cond, pool.rd, pool.expr);
+}
+
+function parseThumbStatement(
+  flp: IFilePos,
+  pb: Thumb.IParsedBody,
+  parser: Parser,
+  imp: Import,
+): boolean {
+  const syms = { ...pb.syms };
+  for (const part of pb.body) {
+    switch (part.kind) {
+      case 'str':
+        if (!validateStr(part.str, parser)) {
+          return false;
+        }
+        break;
+      case 'num':
+        if (!validateNum(part.num, parser, imp)) {
           return false;
         }
         break;
@@ -997,17 +527,17 @@ function parseThumbStatement(
           case 'immediate':
           case 'pcoffset':
           case 'offsetsplit':
-            if (!validateSymExpr(syms, part.sym, false, parser, result)) {
+            if (!validateSymExpr(syms, part.sym, false, parser, imp)) {
               return false;
             }
             break;
           case 'register':
-            if (!validateSymRegister(syms, part.sym, 0, 7, parser, result)) {
+            if (!validateSymRegister(syms, part.sym, 0, 7, parser, imp)) {
               return false;
             }
             break;
           case 'registerhigh':
-            if (!validateSymRegister(syms, part.sym, 8, 15, parser, result)) {
+            if (!validateSymRegister(syms, part.sym, 8, 15, parser, imp)) {
               return false;
             }
             break;
@@ -1017,7 +547,7 @@ function parseThumbStatement(
             }
             break;
           case 'reglist': {
-            const v = parseReglist(8, codePart.extra ?? false, parser, result);
+            const v = parseReglist(8, codePart.extra ?? false, parser, imp);
             if (v === false) {
               return false;
             }
@@ -1038,15 +568,15 @@ function parseThumbStatement(
   }
 
   parser.forceNewline('Thumb statement');
-  result.thumbStatement(flp, pb.op, syms);
+  imp.writeInstThumb(flp, pb.op, syms);
   return true;
 }
 
-function parseThumbPoolStatement(_cmd: ITokId, _pool: IPool, parser: Parser, _result: ParsedFile) {
+function parseThumbPoolStatement(_cmd: ITokId, _pool: IPool, parser: Parser, _imp: Import) {
   parser.forceNewline('Thumb statement');
 }
 
-function parseBeginBody(parser: Parser, result: ParsedFile) {
+async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
   const tk = parser.nextTok();
   switch (tk.kind) {
     case 'punc': {
@@ -1057,21 +587,126 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
       switch (tk2.kind) {
         case 'id':
           switch (tk2.id) {
+            case 'align': {
+              const context = imp.pendingWriteContext();
+              const amount = Expression.parse(parser, imp).value(context, 'deny');
+              if (amount === false) throw new Error('Align amount not constant');
+              let fill: number | 'nop' = 0;
+              if (parser.isNext(',')) {
+                parser.nextTok();
+                if (parser.isNext('nop')) {
+                  fill = 'nop';
+                  parser.nextTok();
+                } else {
+                  const fillx = Expression.parse(parser, imp).value(context, 'deny');
+                  if (fillx === false) throw new Error('Align fill not constant');
+                  fill = fillx;
+                }
+              }
+              parser.forceNewline('`.align` statement');
+              imp.align(amount, fill);
+              break;
+            }
             case 'arm':
               parser.forceNewline('`.arm` statement');
-              result.setMode('arm');
+              imp.setMode('arm');
               break;
             case 'begin':
-              parseBegin(parser, result);
+              await parseBegin(parser, imp);
+              break;
+            case 'crc':
+              parser.forceNewline('`.crc` statement');
+              imp.writeCRC(tk);
+              break;
+            case 'i8':
+            case 'ib8':
+            case 'im8':
+            case 'ibm8':
+            case 'i16':
+            case 'ib16':
+            case 'im16':
+            case 'ibm16':
+            case 'i32':
+            case 'ib32':
+            case 'im32':
+            case 'ibm32':
+            case 'u8':
+            case 'ub8':
+            case 'um8':
+            case 'ubm8':
+            case 'u16':
+            case 'ub16':
+            case 'um16':
+            case 'ubm16':
+            case 'u32':
+            case 'ub32':
+            case 'um32':
+            case 'ubm32': {
+              const data = [Expression.parse(parser, imp)];
+              while (parser.isNext(',')) {
+                parser.nextTok();
+                data.push(Expression.parse(parser, imp));
+              }
+              parser.forceNewline(`\`.${tk2.id}\` statement`);
+              imp.writeData(tk, tk2.id, data);
+              break;
+            }
+            case 'include':
+              await parseInclude(parser, imp);
+              break;
+            case 'logo':
+              parser.forceNewline('`.logo` statement');
+              imp.writeLogo();
               break;
             case 'pool':
               parser.forceNewline('`.pool` statement');
-              result.pool();
+              imp.pool();
               break;
+            case 'printf': {
+              const tk3 = parser.nextTokOptional();
+              if (!tk3 || tk3.kind !== 'str') {
+                throw new CompError(tk3 ?? tk2, 'Expecting `.printf "message"`');
+              }
+              const args: Expression[] = [];
+              while (parser.isNext(',')) {
+                parser.nextTok();
+                args.push(Expression.parse(parser, imp));
+              }
+              parser.forceNewline('`.printf` statement');
+              imp.printf(tk, tk3.str, args);
+              break;
+            }
+            case 'str': {
+              let str = '';
+              while (true) {
+                const tk3 = parser.nextTokOptional();
+                if (!tk3 || tk3.kind !== 'str') {
+                  throw new CompError(tk3 ?? tk2, 'Expecting `.str "string"`');
+                }
+                str += tk3.str;
+                if (parser.isNext(',')) {
+                  parser.nextTok();
+                  continue;
+                }
+                break;
+              }
+              parser.forceNewline('`.str` statement');
+              imp.writeStr(str);
+              break;
+            }
             case 'thumb':
               parser.forceNewline('`.thumb` statement');
-              result.setMode('thumb');
+              imp.setMode('thumb');
               break;
+            case 'title': {
+              const title = parser.nextTokOptional();
+              if (!title || title.kind !== 'str') {
+                throw new CompError(title ?? tk2, 'Expecting `.title "Title"`');
+              }
+              parser.forceNewline('`.title` statement');
+              imp.writeTitle(title, title.str);
+              break;
+            }
             default:
               throw new CompError(tk2, `Unknown statement: \`.${tk2.id}\``);
           }
@@ -1080,7 +715,7 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
         case 'newline':
         case 'num':
         case 'str':
-          throw new CompError(tk2, 'Invalid statement inside `.begin`');
+          throw new CompError(tk2, 'Invalid statement');
         case 'error':
           throw new CompError(tk2, tk2.msg);
         default:
@@ -1091,10 +726,12 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
     case 'id': {
       const tk2 = parser.peekTokOptional();
       if (tk2 && tk2.kind === 'punc' && tk2.punc === ':') {
-        result.addSymNamedLabel(tk);
+        imp.addSymNamedLabel(tk);
         parser.nextTok();
-        parser.forceNewline('label');
-      } else if (tk.id.charAt(0) === '_') {
+        break;
+      }
+
+      if (tk.id.charAt(0) === '_') {
         // TODO: debug statement
         console.log('TODO: debug:', tk.id);
         while (true) {
@@ -1105,14 +742,14 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
           parser.nextTok();
         }
       } else {
-        const mode = result.mode();
+        const mode = imp.mode();
         switch (mode) {
           case 'none':
             throw new CompError(tk, 'Unknown assembler mode (`.arm` or `.thumb`)');
           case 'arm': {
-            const pool = parsePoolStatement(parser, result);
+            const pool = parsePoolStatement(parser, imp);
             if (pool) {
-              parseARMPoolStatement(tk, pool, parser, result);
+              parseARMPoolStatement(tk, pool, imp);
             } else {
               const ops = ARM.parsedOps[tk.id];
               if (!ops) {
@@ -1123,7 +760,7 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
                 !ops.some((op) => {
                   try {
                     parser.save();
-                    const res = parseARMStatement(op, parser, result);
+                    const res = parseARMStatement(tk, op, parser, imp);
                     if (res) {
                       parser.applySave();
                       return true;
@@ -1142,13 +779,12 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
                 throw lastError;
               }
             }
-            parser.forceNewline('ARM statement');
             break;
           }
           case 'thumb': {
-            const pool = parsePoolStatement(parser, result);
+            const pool = parsePoolStatement(parser, imp);
             if (pool) {
-              parseThumbPoolStatement(tk, pool, parser, result);
+              parseThumbPoolStatement(tk, pool, parser, imp);
             } else {
               const ops = Thumb.parsedOps[tk.id];
               if (!ops) {
@@ -1159,7 +795,7 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
                 !ops.some((op) => {
                   try {
                     parser.save();
-                    const res = parseThumbStatement(tk, op, parser, result);
+                    const res = parseThumbStatement(tk, op, parser, imp);
                     if (res) {
                       parser.applySave();
                       return true;
@@ -1187,7 +823,7 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
       break;
     }
     case 'newline':
-      return;
+      break;
     case 'num':
       throw 'TODO: numbered labels';
     case 'str':
@@ -1199,7 +835,7 @@ function parseBeginBody(parser: Parser, result: ParsedFile) {
   }
 }
 
-function parseBegin(parser: Parser, result: ParsedFile) {
+async function parseBegin(parser: Parser, imp: Import) {
   const tk1 = parser.nextTok();
   let tk = tk1;
   let name: string | undefined;
@@ -1215,7 +851,7 @@ function parseBegin(parser: Parser, result: ParsedFile) {
   }
 
   // parse begin body
-  result.beginStart(tk1, name);
+  imp.beginStart(tk1, name);
   while (!parser.checkEnd()) {
     if (!parser.hasTok()) {
       throw new CompError(
@@ -1223,36 +859,43 @@ function parseBegin(parser: Parser, result: ParsedFile) {
         `Missing \`.end\` for \`.begin\` on line ${tk.line}`,
       );
     }
-    parseBeginBody(parser, result);
+    await parseBeginBody(parser, imp);
   }
-  result.beginEnd();
+  imp.beginEnd();
 }
 
-async function parseInclude(parser: Parser, result: ParsedFile) {
+async function parseInclude(parser: Parser, imp: Import) {
   const tk = parser.nextTok();
   if (tk.kind !== 'str') {
     throw new CompError(tk, 'Expecting `.include \'file.gvasm\'');
   }
   parser.forceNewline('`.include` statement');
-  await result.include(tk.str);
+  await imp.include(tk.str);
 }
 
-async function parseFileImport(parser: Parser, result: ParsedFile): Promise<boolean> {
-  if (!parser.isNext2('.', 'import')) {
+async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
+  parser.trim();
+  if (parser.isNext2('.', 'stdlib')) {
+    const flp = parser.nextTok();
+    parser.nextTok();
+    parser.forceNewline('`.stdlib` statement');
+    imp.stdlib(flp);
+    return true;
+  } else if (!parser.isNext2('.', 'import')) {
     return false;
   }
-  const imp = parser.nextTok();
+  const tk0 = parser.nextTok();
   parser.nextTok();
 
   const filenameTok = parser.nextTokOptional();
   if (!filenameTok || filenameTok.kind !== 'str') {
-    throw new CompError(imp, 'Expecting `.import \'file.gvasm\' ...`');
+    throw new CompError(tk0, 'Expecting `.import \'file.gvasm\' ...`');
   }
   const filename = filenameTok.str;
 
   const tk = parser.nextTokOptional();
   if (tk && tk.kind === 'id') {
-    await result.importAll(imp, filename, tk.id);
+    await imp.importAll(tk0, filename, tk.id);
   } else if (tk && tk.kind === 'punc' && tk.punc === '{') {
     const names: string[] = [];
     if (!parser.isNext('}')) {
@@ -1280,10 +923,10 @@ async function parseFileImport(parser: Parser, result: ParsedFile): Promise<bool
       }
     }
     parser.nextTok(); // '}'
-    await result.importNames(imp, filename, names);
+    await imp.importNames(tk0, filename, names);
   } else {
     throw new CompError(
-      imp,
+      tk0,
       'Expecting `.import \'file.gvasm\' Name` or `.import \'file.gvasm\' { Names, ... }',
     );
   }
@@ -1293,79 +936,24 @@ async function parseFileImport(parser: Parser, result: ParsedFile): Promise<bool
   return true;
 }
 
-async function parseFileBody(parser: Parser, result: ParsedFile): Promise<boolean> {
-  const tk = parser.nextTokOptional();
-  if (!tk) return false;
-  switch (tk.kind) {
-    case 'punc': {
-      if (tk.punc !== '.' || !parser.hasTok()) {
-        throw new CompError(tk, 'Invalid statement');
-      }
-      const tk2 = parser.nextTok();
-      switch (tk2.kind) {
-        case 'id':
-          if (!parser.hasTok()) {
-            throw new CompError(tk2, 'Invalid statement');
-          }
-          switch (tk2.id) {
-            case 'begin':
-              parseBegin(parser, result);
-              break;
-            case 'include':
-              await parseInclude(parser, result);
-              break;
-            case 'pool':
-              parser.forceNewline('`.pool` statement');
-              result.pool();
-              break;
-            default:
-              throw new CompError(tk2, `Unknown statement: \`.${tk2.id}\``);
-          }
-          break;
-        case 'punc':
-        case 'newline':
-        case 'num':
-        case 'str':
-          throw new CompError(tk2, 'Invalid statement');
-        case 'error':
-          throw new CompError(tk2, tk2.msg);
-        default:
-          assertNever(tk2);
-      }
-      break;
-    }
-    case 'newline':
-      return true;
-    case 'id':
-      throw 'TODO: named labels';
-    case 'str':
-    case 'num':
-      throw new CompError(tk, 'Invalid statement');
-    case 'error':
-      throw new CompError(tk, tk.msg);
-    default:
-      assertNever(tk);
-  }
-  return true;
-}
-
 export async function parse(
   proj: Project,
   filename: string,
-  defines: { key: string; value: number }[],
+  main: boolean,
+  defines: ILexKeyValue[],
   tks: ITok[],
-): Promise<ParsedFile> {
-  const result = new ParsedFile(proj, filename);
+): Promise<Import> {
+  const imp = new Import(proj, filename, main);
 
   for (const d of defines) {
-    result.addSymNum({ filename, line: 1, chr: 1 }, d.key, d.value);
+    imp.addSymNum({ filename, line: 1, chr: 1 }, d.key, d.value);
   }
 
   const parser = new Parser(tks);
 
   // parse imports, then body
-  while (await parseFileImport(parser, result));
-  while (await parseFileBody(parser, result));
-  result.endOfFile();
-  return result;
+  while (await parseFileImport(parser, imp));
+  while (parser.hasTok()) await parseBeginBody(parser, imp);
+  imp.endOfFile();
+  return imp;
 }

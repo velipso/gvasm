@@ -66,32 +66,19 @@ export function b32(v: number) {
   return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
-export interface ILineStr {
-  kind: 'str';
-  filename: string;
-  line: number;
-  data: string;
-  main: boolean;
-}
-
-export function splitLines(
-  filename: string,
-  lines: string,
-  main: boolean,
-  startLine = 1,
-): ILineStr[] {
-  return (
-    lines.split('\r\n')
-      .flatMap((a) => a.split('\r'))
-      .flatMap((a) => a.split('\n'))
-      .map((data, i) => ({ kind: 'str', filename, line: startLine + i, data, main }))
-  );
-}
-
 export function waitForever<T>(): Promise<T> {
   return new Promise(() => {
     setInterval(() => {}, 9999999);
   });
+}
+
+export function dig2(n: number) {
+  return `${n < 10 ? '0' : ''}${n}`;
+}
+
+export function timestamp() {
+  const now = new Date();
+  return `[${dig2(now.getHours())}:${dig2(now.getMinutes())}:${dig2(now.getSeconds())}]`;
 }
 
 export function printf(format: string, ...args: number[]): string {

@@ -25,24 +25,25 @@ export function generateInit(args: IInitArgs): string {
 // ${title} v${version}
 //
 
-  // include standard library for useful constants
-  .stdlib
+// include standard library for useful constants
+.stdlib
+.arm
 
-  // GBA header
-  .begin
-  b @@main
+// GBA header
+.begin
+  b main
   .logo
   .title "${title.toUpperCase()}"
-  .i8 "${(code + initials + region + maker).toUpperCase()}"
+  .str "${(code + initials + region + maker).toUpperCase()}"
   .i16 150, 0, 0, 0, 0
   .i8 ${version} // version
   .crc
   .i16 0
-@@main:
-  .end
+.end
 
+.begin main
   // set cartridge wait state for faster access
-  ldr r0, =$REG_WAITCNT
+  ldr r0, =REG_WAITCNT
   ldr r1, =0x4317
   strh r1, [r0]
 
@@ -51,7 +52,7 @@ export function generateInit(args: IInitArgs): string {
   // For example, this will set the display to blueish green:
 
   // set REG_DISPCNT to 0
-  ldr r0, =$REG_DISPCNT
+  ldr r0, =REG_DISPCNT
   ldr r1, =0
   strh r1, [r0]
 
@@ -61,12 +62,14 @@ export function generateInit(args: IInitArgs): string {
   strh r1, [r0]
 
   // infinite loop
-@loop:
-  b @loop
+loop:
+  b loop
 
   .pool
   .align 4
-  .i8 "FLASH512_Vnnn", 0, 0, 0 // tell emulators we want 512kbit of SRAM
+  .str "FLASH512_Vnnn" // tell emulators we want 512kbit of SRAM
+  .align 4
+.end
 `;
 }
 

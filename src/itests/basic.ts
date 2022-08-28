@@ -17,8 +17,9 @@ export function load(def: (test: ITest) => void) {
     files: {
       '/root/main': `
 .stdlib
-b @main.program.0      /// 2e 00 00 ea
-.Logo
+.arm
+b main                /// 2e 00 00 ea
+.logo
 /// 24 ff ae 51 69 9a a2 21 3d 84 82 0a
 /// 84 e4 09 ad 11 24 8b 98 c0 81 7f 21 a3 52 be 19
 /// 93 09 ce 20 10 46 4a 4a f8 27 31 ec 58 c7 e8 33
@@ -29,26 +30,26 @@ b @main.program.0      /// 2e 00 00 ea
 /// 60 d6 80 25 a9 63 be 03 01 4e 38 e2 f9 a2 34 ff
 /// bb 3e 03 44 78 00 90 cb 88 11 3a 94 65 c0 7c 63
 /// 87 f0 3c af d6 25 e4 8b 38 0a ac 72 21 d4 f8 07
-.title "Game"          /// 47 61 6d 65 00 00 00 00 00 00 00 00
-.i8 "CAAE77"           /// 43 41 41 45 37 37
-.i16 150, 0, 0, 0, 0   /// 96 00 00 00 00 00 00 00 00 00
-.I8 0                  /// 00
-.crc                   /// 5f
-.i16 0                 /// 00 00
+.title "Game"         /// 47 61 6d 65 00 00 00 00 00 00 00 00
+.str "CAAE77"         /// 43 41 41 45 37 37
+.i16 150, 0, 0, 0, 0  /// 96 00 00 00 00 00 00 00 00 00
+.i8 0                 /// 00
+.crc                  /// 5f
+.i16 0                /// 00 00
 
-@main.program.0:
+main:
 
-.printf 'Main program at %#08x', $_here
+.printf 'Main program at %#08x', _here
 
-ldr r0, =$REG_DISPCNT  /// 01 03 a0 e3
-MOV r1, #0x0           /// 00 10 a0 e3
-str r1, [r0]           /// 00 10 80 e5
+ldr r0, =REG_DISPCNT  /// 01 03 a0 e3
+mov r1, #0x0          /// 00 10 a0 e3
+str r1, [r0]          /// 00 10 80 e5
 
-mov r0, #0x05000000    /// 05 04 a0 e3
-mov r1, #0x3e0         /// 3e 1e a0 e3
-str r1, [r0]           /// 00 10 80 e5
+mov r0, #0x05000000   /// 05 04 a0 e3
+mov r1, #0x3e0        /// 3e 1e a0 e3
+str r1, [r0]          /// 00 10 80 e5
 
-@L.0cF: b @l.0cf       /// fe ff ff ea
+loop: b loop          /// fe ff ff ea
 `,
     },
   });
@@ -71,7 +72,7 @@ str r1, [r0]           /// 00 10 80 e5
       }),
     },
   });
-
+  /*
   def({
     name: 'basic.i8',
     desc: 'Use .i8 command',
@@ -470,10 +471,11 @@ ldr r0, =0x02000004  /// 00 a0
       '/root/main': `
 .i8   \\
  1    \\  // comment here
- ,    \\  /* comment here */
+ ,    \\  TODO: fix / * comment here * /
  2    \\
  , 3  /// 01 02 03
 `,
     },
   });
+  TODO: fix comment above */
 }

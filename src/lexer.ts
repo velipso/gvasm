@@ -490,7 +490,12 @@ export function lex(filename: string, data: string, startLine = 1): ITok[] {
   return tks;
 }
 
-export function lexKeyValue(line: string): { key: string; value: number } | false {
+export interface ILexKeyValue {
+  key: string;
+  value: number;
+}
+
+export function lexKeyValue(line: string): ILexKeyValue | false {
   const tks = lex('', line);
   const tk1 = tks.shift();
   const tk2 = tks.shift();

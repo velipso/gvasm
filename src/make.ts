@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { path, pathResolve } from './deps.ts';
+import { Path } from './deps.ts';
 import { IMakeResult, Project } from './project.ts';
 import * as sink from './sink.ts';
+import { timestamp } from './util.ts';
+import { ILexKeyValue } from './lexer.ts';
 export type { IMakeResult };
 
 export interface IMakeArgs {
   input: string;
   output: string;
-  defines: { key: string; value: number }[];
+  defines: ILexKeyValue[];
   watch: boolean;
 }
 
@@ -136,91 +138,6 @@ function parseExpr(line: ITok[], ctable: ConstTable): Expression {
     throw 'Expecting constant expression';
   }
   return expr.build([]);
-}
-
-function parseReglist(
-  pstate: IParseState,
-  line: ITok[],
-  width: 8 | 16,
-  extra?: number,
-): number | false {
-  let state = 0;
-  let result = 0;
-  let lastRegister = -1;
-  for (let i = 0; i < line.length; i++) {
-    const t = line[i];
-    switch (state) {
-      case 0: // read open brace
-        if (t.kind === TokEnum.ID && t.id === '{') {
-          state = 1;
-        } else {
-          return false;
-        }
-        break;
-      case 1: // read register
-        if (t.kind === TokEnum.ID && t.id === '}') {
-          line.splice(0, i + 1); // remove tokens
-          return result;
-        } else if (t.kind === TokEnum.ID && decodeRegister(getRegs(pstate), t.id) >= 0) {
-          lastRegister = decodeRegister(getRegs(pstate), t.id);
-          if (lastRegister >= width && lastRegister !== extra) {
-            return false;
-          }
-          if (result & (1 << lastRegister)) {
-            return false;
-          }
-          state = 2;
-        } else {
-          return false;
-        }
-        break;
-      case 2: // after register
-        if (t.kind === TokEnum.ID && t.id === '}') {
-          if (lastRegister !== extra) {
-            result |= 1 << lastRegister;
-          }
-          line.splice(0, i + 1); // remove tokens
-          return result;
-        } else if (t.kind === TokEnum.ID && t.id === ',') {
-          if (lastRegister !== extra) {
-            result |= 1 << lastRegister;
-          }
-          state = 1;
-        } else if (
-          t.kind === TokEnum.ID && t.id === '-' && lastRegister !== extra
-        ) {
-          state = 3;
-        } else {
-          return false;
-        }
-        break;
-      case 3: // reading end of range
-        if (t.kind === TokEnum.ID && decodeRegister(getRegs(pstate), t.id) >= 0) {
-          const end = decodeRegister(getRegs(pstate), t.id);
-          if (end >= width) {
-            return false;
-          }
-          for (let b = lastRegister; b <= end; b++) {
-            result |= 1 << b;
-          }
-          state = 4;
-        } else {
-          return false;
-        }
-        break;
-      case 4: // after range
-        if (t.kind === TokEnum.ID && t.id === '}') {
-          line.splice(0, i + 1); // remove tokens
-          return result;
-        } else if (t.kind === TokEnum.ID && t.id === ',') {
-          state = 1;
-        } else {
-          return false;
-        }
-        break;
-    }
-  }
-  return false;
 }
 
 function parseNumCommas(
@@ -671,703 +588,6 @@ function parseDebugStatement(
     default:
       throw `Unknown debug statement: ${cmd}`;
   }
-}
-
-function validateSymExpr(
-  syms: ISyms,
-  partSym: string,
-  line: ITok[],
-  ctable: ConstTable,
-  negate: boolean,
-): boolean {
-  try {
-    const expr = ExpressionBuilder.parse(line, [], ctable);
-    if (expr === false) {
-      return false;
-    }
-    const ex = expr.build([]);
-    if (!negate) {
-      syms[partSym] = ex;
-      return true;
-    }
-    const v = ex.value();
-    if (v === false || v >= 0) {
-      return false;
-    }
-    syms[partSym] = -v;
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-function validateSymRegister(
-  state: IParseState,
-  syms: ISyms,
-  partSym: string,
-  line: ITok[],
-  low: number,
-  high: number,
-): boolean {
-  const t = line.shift();
-  if (!t || t.kind !== TokEnum.ID) {
-    return false;
-  }
-  const reg = decodeRegister(getRegs(state), t.id);
-  if (reg >= low && reg <= high) {
-    syms[partSym] = reg;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function validateSymEnum(
-  syms: ISyms,
-  partSym: string,
-  line: ITok[],
-  enums: (string | false)[],
-): boolean {
-  const valid: { [str: string]: number } = {};
-  for (let i = 0; i < enums.length; i++) {
-    const en = enums[i];
-    if (en === false) {
-      continue;
-    }
-    for (const es of en.split('/')) {
-      valid[es] = i;
-    }
-  }
-  if (
-    line.length > 0 && line[0].kind === TokEnum.ID &&
-    line[0].id in valid
-  ) {
-    syms[partSym] = valid[line[0].id];
-    line.shift();
-    return true;
-  } else if ('' in valid) {
-    syms[partSym] = valid[''];
-    return true;
-  }
-  return false;
-}
-
-class BitNumber {
-  private maxSize: number;
-  private bpos = 0;
-  private value = 0;
-
-  constructor(maxSize: number) {
-    this.maxSize = maxSize;
-  }
-
-  public push(size: number, v: number) {
-    this.value |= (v & ((1 << size) - 1)) << this.bpos;
-    this.bpos += size;
-  }
-
-  public get() {
-    if (this.bpos !== this.maxSize) {
-      throw new Error(`Opcode length isn't ${this.maxSize} bits`);
-    }
-    return this.value;
-  }
-}
-
-function calcRotImm(v: number): number | false {
-  let r = 0;
-  while (v !== 0 && (v & 3) === 0) {
-    v >>>= 2;
-    r++;
-  }
-  if ((v & 0xff) !== v) {
-    return false;
-  }
-  return (((16 - r) & 0xf) << 8) | (v & 0xff);
-}
-
-function parseARMStatement(
-  state: IParseState,
-  flp: IFilePos,
-  pb: ARM.IParsedBody,
-  line: ITok[],
-) {
-  const syms: ISyms = { ...pb.syms };
-
-  for (const part of pb.body) {
-    switch (part.kind) {
-      case 'str':
-        if (!validateStr(part.str, line)) {
-          return false;
-        }
-        break;
-      case 'num':
-        if (!validateNum(state, part.num, line)) {
-          return false;
-        }
-        break;
-      case 'sym': {
-        const codePart = part.codeParts[0];
-        switch (codePart.k) {
-          case 'word':
-          case 'immediate':
-          case 'rotimm':
-          case 'offset12':
-          case 'pcoffset12':
-          case 'offsetsplit':
-          case 'pcoffsetsplit':
-            if (!validateSymExpr(syms, part.sym, line, state.ctable, false)) {
-              return false;
-            }
-            break;
-          case 'register':
-            if (!validateSymRegister(state, syms, part.sym, line, 0, 15)) {
-              return false;
-            }
-            break;
-          case 'enum':
-            if (!validateSymEnum(syms, part.sym, line, codePart.enum)) {
-              return false;
-            }
-            break;
-          case 'reglist': {
-            const v = parseReglist(state, line, 16);
-            if (v === false) {
-              return false;
-            }
-            syms[part.sym] = v;
-            break;
-          }
-          case 'value':
-          case 'ignored':
-            throw new Error('Invalid syntax for parsed body');
-          default:
-            assertNever(codePart);
-        }
-        break;
-      }
-      default:
-        assertNever(part);
-    }
-  }
-
-  // did we consume the entire line?
-  if (line.length > 0) {
-    return false;
-  }
-
-  // great! now constitute the opcode using the symbols
-  state.bytes.expr32(
-    errorString(flp, 'Invalid statement'),
-    syms,
-    false,
-    (syms, address) => {
-      const opcode = new BitNumber(32);
-      for (const codePart of pb.op.codeParts) {
-        switch (codePart.k) {
-          case 'immediate': {
-            const v = syms[codePart.sym];
-            if (v < 0 || v >= (1 << codePart.s)) {
-              throw `Immediate value out of range 0..${
-                (1 << codePart.s) -
-                1
-              }: ${v}`;
-            }
-            opcode.push(codePart.s, v);
-            break;
-          }
-          case 'enum':
-          case 'register':
-          case 'reglist':
-            opcode.push(codePart.s, syms[codePart.sym]);
-            break;
-          case 'value':
-          case 'ignored':
-            opcode.push(codePart.s, codePart.v);
-            break;
-          case 'rotimm': {
-            const rotimm = calcRotImm(syms[codePart.sym]);
-            if (rotimm === false) {
-              throw `Can't generate rotated immediate from ${syms[codePart.sym]}`;
-            }
-            opcode.push(12, rotimm);
-            break;
-          }
-          case 'word': {
-            const offset = syms[codePart.sym] - address - 8;
-            if (offset & 3) {
-              throw 'Can\'t branch to misaligned memory address';
-            }
-            opcode.push(codePart.s, offset >> 2);
-            break;
-          }
-          case 'offset12':
-          case 'pcoffset12': {
-            const offset = codePart.k === 'offset12'
-              ? syms[codePart.sym]
-              : syms[codePart.sym] - address - 8;
-            if (codePart.sign) {
-              opcode.push(codePart.s, offset < 0 ? 0 : 1);
-            } else {
-              const v = Math.abs(offset);
-              if (v >= (1 << codePart.s)) {
-                throw `Offset too large: ${v}`;
-              }
-              opcode.push(codePart.s, v);
-            }
-            break;
-          }
-          case 'offsetsplit':
-          case 'pcoffsetsplit': {
-            const offset = codePart.k === 'offsetsplit'
-              ? syms[codePart.sym]
-              : syms[codePart.sym] - address - 8;
-            if (codePart.sign) {
-              opcode.push(codePart.s, offset < 0 ? 0 : 1);
-            } else {
-              const v = Math.abs(offset);
-              if (v > 0xff) {
-                throw `Offset too large: ${v}`;
-              }
-              opcode.push(
-                codePart.s,
-                codePart.low ? v & 0xf : ((v >> 4) & 0xf),
-              );
-            }
-            break;
-          }
-          default:
-            assertNever(codePart);
-        }
-      }
-      return opcode.get();
-    },
-  );
-  return true;
-}
-
-interface IPool {
-  rd: number;
-  ex: Expression;
-}
-
-function parsePoolStatement(state: IParseState, line: ITok[], ctable: ConstTable): IPool | false {
-  // pool statements have a specific format:
-  //   op register, =constant
-  const trd = line.shift();
-  if (!trd || trd.kind !== TokEnum.ID) {
-    return false;
-  }
-  const rd = decodeRegister(getRegs(state), trd.id);
-  if (rd < 0) {
-    return false;
-  }
-
-  const tc = line.shift();
-  if (!tc || tc.kind !== TokEnum.ID || tc.id !== ',') {
-    return false;
-  }
-  const te = line.shift();
-  if (!te || te.kind !== TokEnum.ID || te.id !== '=') {
-    return false;
-  }
-
-  try {
-    const ex = parseExpr(line, ctable);
-    return { rd, ex };
-  } catch (_) {
-    return false;
-  }
-}
-
-function parseARMPoolStatement(
-  state: IParseState,
-  flp: IFilePos,
-  cmd: string,
-  { rd, ex }: IPool,
-) {
-  let cmdSize = -1;
-  let cmdSigned = false;
-  let cond = -1;
-  for (let ci = 0; ci < ARM.conditionEnum.length && cond < 0; ci++) {
-    const ce = ARM.conditionEnum[ci];
-    if (ce !== false) {
-      for (const cs of ce.split('/')) {
-        if (cmd === `ldr${cs}` || (cs !== '' && cmd === `ldr.${cs}`)) {
-          cmdSize = 4;
-          cond = ci;
-        } else if (cmd === `ldrh${cs}` || (cs !== '' && cmd === `ldrh.${cs}`)) {
-          cmdSize = 2;
-          cond = ci;
-        } else if (
-          cmd === `ldrsh${cs}` || (cs !== '' && cmd === `ldrsh.${cs}`)
-        ) {
-          cmdSize = 2;
-          cmdSigned = true;
-          cond = ci;
-        } else if (
-          cmd === `ldrsb${cs}` || (cs !== '' && cmd === `ldrsb.${cs}`)
-        ) {
-          cmdSize = 1;
-          cond = ci;
-        } else {
-          continue;
-        }
-        break;
-      }
-    }
-  }
-  if (cond < 0) {
-    throw 'Invalid arm pool statement';
-  }
-
-  if (cmdSize === 4) {
-    state.bytes.expr32(
-      errorString(flp, 'Incomplete statement'),
-      { ex },
-      { align: 4, bytes: 4, sym: 'ex' },
-      ({ ex }, _) => {
-        const mov = calcRotImm(ex);
-        if (mov !== false) {
-          // convert to: mov rd, #expression
-          // cond 0011 1010 0000 rd mov
-          return (
-            (cond << 28) |
-            0x03a00000 |
-            (rd << 12) |
-            mov
-          );
-        }
-        const mvn = calcRotImm(~ex);
-        if (mvn !== false) {
-          // convert to: mvn rd, #expression
-          // cond 0011 1110 0000 rd mvn
-          return (
-            (cond << 28) |
-            0x03e00000 |
-            (rd << 12) |
-            mvn
-          );
-        }
-        return false;
-      },
-      (_, address, poolAddress) => {
-        // convert to: ldr rd, [pc, #offset]
-        // cond 0111 1001 1111 rd offset
-        const offset = poolAddress - address - 8;
-        if (offset < -4) {
-          throw new Error('Pool offset shouldn\'t be negative');
-        } else if (offset > 0xfff) {
-          throw 'Next .pool too far away';
-        }
-        return offset < 0
-          ? ((cond << 28) | 0x051f0000 | (rd << 12) | Math.abs(offset))
-          : ((cond << 28) | 0x059f0000 | (rd << 12) | offset);
-      },
-    );
-  } else if (cmdSize === 2) {
-    state.bytes.expr32(
-      errorString(flp, 'Incomplete statement'),
-      { ex },
-      { align: 2, bytes: 2, sym: 'ex' },
-      () => false,
-      (_, address, poolAddress) => {
-        // convert to: ldrh rd, [pc, #offset]
-        const offset = poolAddress - address - 8;
-        if (offset < -4) {
-          throw new Error('Pool offset shouldn\'t be negative');
-        } else if (offset > 0xff) {
-          throw 'Next .pool too far away';
-        }
-        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-          Math.abs(offset) & 0xf;
-        const s = cmdSigned ? 0xf0 : 0xb0;
-        return offset < 0
-          ? ((cond << 28) | 0x015f0000 | s | (rd << 12) | mask)
-          : ((cond << 28) | 0x01df0000 | s | (rd << 12) | mask);
-      },
-    );
-  } else { // cmdSize === 1
-    state.bytes.expr32(
-      errorString(flp, 'Incomplete statement'),
-      { ex },
-      { align: 1, bytes: 1, sym: 'ex' },
-      () => false,
-      (_, address, poolAddress) => {
-        // convert to: ldrh rd, [pc, #offset]
-        const offset = poolAddress - address - 8;
-        if (offset < -4) {
-          throw new Error('Pool offset shouldn\'t be negative');
-        } else if (offset > 0xff) {
-          throw 'Next .pool too far away';
-        }
-        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-          Math.abs(offset) & 0xf;
-        return offset < 0
-          ? ((cond << 28) | 0x015f00d0 | (rd << 12) | mask)
-          : ((cond << 28) | 0x01df00d0 | (rd << 12) | mask);
-      },
-    );
-  }
-}
-
-function parseThumbStatement(
-  state: IParseState,
-  flp: IFilePos,
-  pb: Thumb.IParsedBody,
-  line: ITok[],
-) {
-  const syms: ISyms = { ...pb.syms };
-
-  for (const part of pb.body) {
-    switch (part.kind) {
-      case 'str':
-        if (!validateStr(part.str, line)) {
-          return false;
-        }
-        break;
-      case 'num':
-        if (!validateNum(state, part.num, line)) {
-          return false;
-        }
-        break;
-      case 'sym': {
-        const codePart = part.codeParts[0];
-        switch (codePart.k) {
-          case 'word':
-          case 'negword':
-          case 'halfword':
-          case 'shalfword':
-          case 'immediate':
-          case 'pcoffset':
-          case 'offsetsplit':
-            if (
-              !validateSymExpr(
-                syms,
-                part.sym,
-                line,
-                state.ctable,
-                codePart.k === 'negword',
-              )
-            ) {
-              return false;
-            }
-            break;
-          case 'register':
-            if (!validateSymRegister(state, syms, part.sym, line, 0, 7)) {
-              return false;
-            }
-            break;
-          case 'registerhigh':
-            if (!validateSymRegister(state, syms, part.sym, line, 8, 15)) {
-              return false;
-            }
-            break;
-          case 'enum':
-            if (!validateSymEnum(syms, part.sym, line, codePart.enum)) {
-              return false;
-            }
-            break;
-          case 'reglist': {
-            const v = parseReglist(state, line, 8, codePart.extra);
-            if (v === false) {
-              return false;
-            }
-            syms[part.sym] = v;
-            break;
-          }
-          case 'value':
-          case 'ignored':
-            throw new Error('Invalid syntax for parsed body');
-          default:
-            assertNever(codePart);
-        }
-        break;
-      }
-      default:
-        assertNever(part);
-    }
-  }
-
-  // did we consume the entire line?
-  if (line.length > 0) {
-    return false;
-  }
-
-  // great! now constitute the opcode using the symbols
-  const writer = (maxSize: number) => (
-    (syms: { [name: string]: number }, address: number) => {
-      const opcode = new BitNumber(maxSize);
-      const pushAlign = (size: number, v: number, shift: number) => {
-        if (v < 0 || v >= (1 << (size + shift))) {
-          throw `Immediate value out of range 0..${
-            ((1 << size) - 1) <<
-            shift
-          }: ${v}`;
-        }
-        if (v & ((1 << shift) - 1)) {
-          throw `Immediate value is not ${shift === 2 ? 'word' : 'halfword'} aligned: ${v}`;
-        }
-        opcode.push(size, v >> shift);
-      };
-      for (const codePart of pb.op.codeParts) {
-        switch (codePart.k) {
-          case 'immediate':
-            pushAlign(codePart.s, syms[codePart.sym], 0);
-            break;
-          case 'enum':
-          case 'register':
-          case 'reglist':
-            opcode.push(codePart.s, syms[codePart.sym]);
-            break;
-          case 'registerhigh':
-            opcode.push(codePart.s, syms[codePart.sym] - 8);
-            break;
-          case 'value':
-          case 'ignored':
-            opcode.push(codePart.s, codePart.v);
-            break;
-          case 'word':
-          case 'negword':
-            pushAlign(codePart.s, syms[codePart.sym], 2);
-            break;
-          case 'halfword':
-            pushAlign(codePart.s, syms[codePart.sym], 1);
-            break;
-          case 'shalfword': {
-            const offset = syms[codePart.sym] - address - 4;
-            if (offset < -(1 << codePart.s) || offset >= (1 << codePart.s)) {
-              throw `Offset too large: ${offset}`;
-            } else if (offset & 1) {
-              throw 'Can\'t branch to misaligned memory address';
-            }
-            opcode.push(codePart.s, offset >> 1);
-            break;
-          }
-          case 'pcoffset': {
-            const offset = syms[codePart.sym] - (address & 0xfffffffd) - 4;
-            if (offset < 0) {
-              throw 'Can\'t load from address before PC in thumb mode';
-            } else if (offset & 3) {
-              throw 'Can\'t load from misaligned address';
-            }
-            pushAlign(codePart.s, offset, 2);
-            break;
-          }
-          case 'offsetsplit': {
-            const offset = syms[codePart.sym] - address - 4;
-            if (offset < -4194304 || offset >= 4194304) {
-              throw `Offset too large: ${offset}`;
-            } else if (offset & 1) {
-              throw 'Can\'t branch to misaligned memory address';
-            }
-            opcode.push(
-              codePart.s,
-              codePart.low ? (offset >> 1) & 0x7ff : (offset >> 12) & 0x7ff,
-            );
-            break;
-          }
-          default:
-            assertNever(codePart);
-        }
-      }
-      return opcode.get();
-    }
-  );
-
-  const es = errorString(flp, 'Invalid statement');
-  if (pb.op.doubleInstruction) {
-    // double instructions are 32-bits instead of 16-bits
-    state.bytes.expr32(es, syms, false, writer(32));
-  } else {
-    state.bytes.expr16(es, syms, false, writer(16));
-  }
-  return true;
-}
-
-function parseThumbPoolStatement(
-  state: IParseState,
-  flp: IFilePos,
-  cmd: string,
-  { rd, ex }: IPool,
-) {
-  if (cmd !== 'ldr') {
-    throw 'Invalid thumb pool statement';
-  }
-  state.bytes.expr16(
-    errorString(flp, 'Incomplete statement'),
-    { ex },
-    { align: 4, bytes: 4, sym: 'ex' },
-    ({ ex }, address) => {
-      // convert to: add rd, pc, #offset
-      const offset = ex - (address & 0xfffffffd) - 4;
-      if (offset >= 0 && offset <= 1020 && (offset & 3) === 0) {
-        return 0xa000 | (rd << 8) | (offset >> 2);
-      }
-      return false;
-    },
-    (_, address, poolAddress) => {
-      // convert to: ldr rd, [pc, #offset]
-      const offset = poolAddress - (address & 0xfffffffd) - 4;
-      if (offset < 0) {
-        throw new Error('Pool offset shouldn\'t be negative');
-      } else if (offset & 3) {
-        throw 'Can\'t load from misaligned address';
-      } else if (offset > 0x3fc) {
-        throw 'Next .pool too far away';
-      }
-      return 0x4800 | (rd << 8) | (offset >> 2);
-    },
-  );
-}
-
-export function parseName(line: ITok[]): string | false {
-  if (
-    line.length > 0 && line[0].kind === TokEnum.ID &&
-    isIdentStart(line[0].id.charAt(0))
-  ) {
-    const t = line.shift();
-    if (!t || t.kind !== TokEnum.ID) {
-      return false;
-    }
-    return t.id;
-  }
-  return false;
-}
-
-function parseLabel(line: ITok[]): string | false {
-  if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '@') {
-    let prefix = '@';
-    line.shift();
-    if (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '@') {
-      prefix += '@';
-      line.shift();
-    }
-    const name = parseName(line);
-    if (name === false) {
-      throw 'Missing label name';
-    }
-    return prefix + name;
-  }
-
-  // check for runs of '---' or '+++'
-  let name = '';
-  while (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '-') {
-    name += '-';
-    line.shift();
-  }
-  if (name !== '') {
-    return name;
-  }
-  while (line.length > 0 && line[0].kind === TokEnum.ID && line[0].id === '+') {
-    name += '+';
-    line.shift();
-  }
-  if (name !== '') {
-    return name;
-  }
-
-  return false;
 }
 
 function recalcActive(state: IParseState): boolean {
@@ -1824,26 +1044,24 @@ function parseLine(
 
 export async function makeFromFile(
   input: string,
-  output: (result: IMakeResult) => Promise<void>,
-  defines: { key: string; value: number }[],
+  defines: ILexKeyValue[],
   watch: boolean,
   cwd: string,
-  posix: boolean,
-  isAbsolute: (filename: string) => boolean,
+  path: Path,
+  output: (result: IMakeResult) => Promise<void>,
   fileType: (filename: string) => Promise<sink.fstype>,
   readTextFile: (filename: string) => Promise<string>,
-  readBinaryFile: (filename: string) => Promise<number[] | Uint8Array>,
+  readBinaryFile: (filename: string) => Promise<Uint8Array>,
   watchFileChanges: (filenames: string[]) => Promise<string[]>,
   log: (str: string) => void,
 ): Promise<void> {
-  const mainFilename = isAbsolute(input) ? input : pathResolve(posix, cwd, input);
+  const mainFilename = path.isAbsolute(input) ? input : path.resolve(cwd, input);
 
   const proj = new Project(
     mainFilename,
     defines,
     cwd,
-    posix,
-    isAbsolute,
+    path,
     fileType,
     (filename: string): Promise<string> => {
       console.log('  > reading:', filename);
@@ -2135,18 +1353,19 @@ export async function makeFromFile(
 
 export async function makeResult(
   input: string,
-  output: (result: IMakeResult) => Promise<void>,
-  defines: { key: string; value: number }[],
+  defines: ILexKeyValue[],
   watch: boolean,
+  output: (result: IMakeResult) => Promise<void>,
 ): Promise<void> {
+  const cwd = Deno.cwd();
+  const path = new Path();
   await makeFromFile(
     input,
-    output,
     defines,
     watch,
-    Deno.cwd(),
-    path.sep === '/',
-    path.isAbsolute,
+    cwd,
+    path,
+    output,
     async (file: string) => {
       const st = await Deno.stat(file);
       if (st !== null) {
@@ -2161,6 +1380,9 @@ export async function makeResult(
     Deno.readTextFile,
     Deno.readFile,
     async (filenames: string[]): Promise<string[]> => {
+      console.log(
+        `${timestamp()} Watching ${filenames.length} file${filenames.length === 1 ? '' : 's'}`,
+      );
       const watcher = Deno.watchFs(filenames);
       const iter = watcher[Symbol.asyncIterator]();
       const nextChange = async (): Promise<string[] | false> => {
@@ -2189,7 +1411,15 @@ export async function makeResult(
       while (true) {
         const timer = scheduleClose(1000); // close after 1 second of inactivity
         const more = await nextChange();
-        if (more === false) return Array.from(changed.values());
+        if (more === false) {
+          const ch = Array.from(changed.values());
+          console.log(
+            `${timestamp()} Detected changes:\n  ${
+              ch.map((f) => path.relative(cwd, f)).join('\n  ')
+            }`,
+          );
+          return ch;
+        }
         clearTimeout(timer);
         for (const filename of more) changed.add(filename);
       }
@@ -2201,26 +1431,27 @@ export async function makeResult(
 export async function make({ input, output, defines, watch }: IMakeArgs): Promise<number> {
   try {
     const onResult = async (result: IMakeResult) => {
-      const d2 = (n: number) => `${n < 10 ? '0' : ''}${n}`;
-      const ts = watch
-        ? ((n: Date) => `[${d2(n.getHours())}:${d2(n.getMinutes())}:${d2(n.getSeconds())}] `)(
-          new Date(),
-        )
-        : '';
+      const ts = watch ? `${timestamp()} ` : '';
       if ('errors' in result) {
-        console.error(`${ts}Error:`);
+        console.error(`${ts}Error${result.errors.length === 1 ? '' : 's'}:`);
         for (const e of result.errors) {
           console.error(`  ${e}`);
         }
       } else {
+        const file = await Deno.open(output, { write: true, create: true, truncate: true });
+        for (const section of result.sections) {
+          await file.write(section);
+        }
+        file.close();
         console.log(
           `${ts}Success! Output: ${output}`,
-          result.sections.flat().map((n) => `0${n.toString(16)}`.substr(-2)).join(' '),
+          result.sections.map((n) => Array.from(n)).flat().map((n) =>
+            `0${n.toString(16)}`.substr(-2)
+          ).join(' '),
         );
-        //await Deno.writeFile(output, new Uint8Array(result.sections));
       }
     };
-    await makeResult(input, onResult, defines, watch);
+    await makeResult(input, defines, watch, onResult);
     return 0;
   } catch (e) {
     console.error(e);

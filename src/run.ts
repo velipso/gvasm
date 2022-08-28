@@ -6,13 +6,14 @@
 //
 
 import { IDebugStatement } from './make.ts';
+import { ILexKeyValue } from './lexer.ts';
 /*
 import { parseARM, parseThumb } from './dis.ts';
 import { assertNever, hex16, hex32 } from './util.ts';
 */
 export interface IRunArgs {
   input: string;
-  defines: { key: string; value: number }[];
+  defines: ILexKeyValue[];
 }
 
 interface IMemoryRegion {

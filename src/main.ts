@@ -10,8 +10,8 @@ import { IMakeArgs, make } from './make.ts';
 import { IRunArgs, run } from './run.ts';
 import { dis, IDisArgs } from './dis.ts';
 import { IItestArgs, itest as _itest } from './itest.ts';
-import { argParse, path } from './deps.ts';
-import { lexKeyValue } from './lexer.ts';
+import { argParse, Path } from './deps.ts';
+import { ILexKeyValue, lexKeyValue } from './lexer.ts';
 
 export const version = 2000000;
 
@@ -162,15 +162,15 @@ function printMakeHelp() {
 <input>        The input .gvasm file
 -o <output>    The output file (default: input with .gba extension)
 -d NAME=value  Define the global NAME, set to value (integer), ex:
-               -d FOO=1         is equivalent to:
+               -d FOO=1,BAR=2      is equivalent to:
                .def FOO = 1
+               .def BAR = 2
 -w             Watch for file changes, and recompile incrementally`);
 }
 
-function parseDefines(define: string | string[]): { key: string; value: number }[] | false {
-  const defines: { key: string; value: number }[] = [];
-  const defs: string[] = typeof define === 'string' ? [define] : define ?? [];
-  for (const def of defs) {
+function parseDefines(define: string): ILexKeyValue[] | false {
+  const defines: ILexKeyValue[] = [];
+  for (const def of define.split(',')) {
     const kv = lexKeyValue(def);
     if (kv === false) {
       console.error(`Invalid define: ${def}`);
@@ -214,14 +214,13 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   const input = a._[0] as string;
   const output = a.output;
   const watch = a.watch;
-  const defines = parseDefines(a.define);
+  const defines = a.define ? parseDefines(a.define) : [];
   if (defines === false) {
     return 1;
   }
   return {
     input,
-    output: output ??
-      path.format({ ...path.parse(input), base: undefined, ext: '.gba' }),
+    output: output ?? (new Path()).replaceExt(input, '.gba'),
     defines,
     watch,
   };
@@ -232,8 +231,9 @@ function printRunHelp() {
 
 <input>        The input .gvasm file
 -d NAME=value  Define the global NAME, set to value (integer), ex:
-               -d FOO=1         is equivalent to:
+               -d FOO=1,BAR=2      is equivalent to:
                .def FOO = 1
+               .def BAR = 2
 -w             Watch for file changes, and rerun automatically`);
 }
 
@@ -268,7 +268,7 @@ function parseRunArgs(args: string[]): number | IRunArgs {
     return 1;
   }
   const input = a._[0] as string;
-  const defines = parseDefines(a.define);
+  const defines = a.define ? parseDefines(a.define) : [];
   if (defines === false) {
     return 1;
   }
@@ -325,8 +325,7 @@ function parseDisArgs(args: string[]): number | IDisArgs {
   return {
     input,
     format,
-    output: output ??
-      path.format({ ...path.parse(input), base: undefined, ext: '.gvasm' }),
+    output: output ?? (new Path()).replaceExt(input, '.gvasm'),
   };
 }
 
@@ -399,8 +398,8 @@ export async function main(args: string[]): Promise<number> {
     if (typeof itestArgs === 'number') {
       return itestArgs;
     }
-    // TODO: return await itest(itestArgs);
-    return 0;
+    return await _itest(itestArgs);
+    //return 0;
   }
   console.error(`Unknown command: ${args[0]}`);
   return 1;

@@ -141,14 +141,8 @@ const regs: [number, string][] = [
   [0x301, 'HALTCNT'],
 ];
 
-export const stdlib = `
-.once
-.def $REG_BASE = 0x04000000
-${
-  regs.map(([offset, name]) => `
-.def $REG_${name}_OFFSET = ${offset}
-.def $REG_${name} = ${0x04000000 + offset}
-  `).join('\n')
-}
-.end // once
-`;
+export const stdlib: [string, number][] = [
+  ['REG_BASE', 0x04000000],
+  ...regs.map(([offset, name]): [string, number] => [`REG_${name}_OFFSET`, offset]),
+  ...regs.map(([offset, name]): [string, number] => [`REG_${name}`, 0x04000000 + offset]),
+];

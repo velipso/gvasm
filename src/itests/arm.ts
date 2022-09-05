@@ -13,7 +13,7 @@ export function load(def: (test: ITest) => void) {
     desc: 'Branch and exchange',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 bx r9      /// 19 ff 2f e1
 bxeq r14   /// 1e ff 2f 01
 bx.eq r14  /// 1e ff 2f 01
@@ -27,7 +27,9 @@ bx.eq r14  /// 1e ff 2f 01
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `bx. r9`,
+      '/root/main': `.arm
+bx. r9
+`,
     },
   });
 
@@ -36,13 +38,13 @@ bx.eq r14  /// 1e ff 2f 01
     desc: 'Branch',
     kind: 'make',
     files: {
-      '/root/main': `
-@L1: b 0x08000008  /// 00 00 00 ea
-@L2: b @L1         /// fd ff ff ea
-@L3: bne @L3       /// fe ff ff 1a
-b.cs @L4           /// 01 00 00 2a
-.i32 0, 0          /// 00 00 00 00 00 00 00 00
-@L4:
+      '/root/main': `.arm
+L1: b 0x08000008  /// 00 00 00 ea
+L2: b L1          /// fd ff ff ea
+L3: bne L3        /// fe ff ff 1a
+b.cs L4           /// 01 00 00 2a
+.i32 0, 0         /// 00 00 00 00 00 00 00 00
+L4:
 `,
     },
   });
@@ -53,10 +55,10 @@ b.cs @L4           /// 01 00 00 2a
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `
-b @L1  /// 00 00 00 00
+      '/root/main': `.arm
+b L1   /// 00 00 00 00
 .i8 0  /// 00
-@L1:
+L1:
 `,
     },
   });
@@ -66,13 +68,13 @@ b @L1  /// 00 00 00 00
     desc: 'Branch and Link',
     kind: 'make',
     files: {
-      '/root/main': `
-@L1: bl 0x08000008  /// 00 00 00 eb
-@L2: bl @L1         /// fd ff ff eb
-@L3: blhs @L3       /// fe ff ff 2b
-bl.cc @L4           /// 01 00 00 3b
-.i32 0, 0           /// 00 00 00 00 00 00 00 00
-@L4:
+      '/root/main': `.arm
+L1: bl 0x08000008  /// 00 00 00 eb
+L2: bl L1          /// fd ff ff eb
+L3: blhs L3        /// fe ff ff 2b
+bl.cc L4           /// 01 00 00 3b
+.i32 0, 0          /// 00 00 00 00 00 00 00 00
+L4:
 `,
     },
   });
@@ -82,7 +84,7 @@ bl.cc @L4           /// 01 00 00 3b
     desc: 'Nop',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mov r0, r0  /// 00 00 a0 e1
 nop         /// 00 00 a0 e1
 `,
@@ -104,7 +106,7 @@ nop         /// 00 00 a0 e1
       desc,
       kind: 'make',
       files: {
-        '/root/main': `
+        '/root/main': `.arm
 ${op} r3, r14               /// 0e 30 ${b0}0 e1
 ${op}s r3, r14              /// 0e 30 ${b1}0 e1
 ${op}mi r3, r14             /// 0e 30 ${b0}0 41
@@ -201,7 +203,7 @@ ${op}mis r3, #0x50          /// 05 3e ${b1}0 43
       desc,
       kind: 'make',
       files: {
-        '/root/main': `
+        '/root/main': `.arm
 ${op} r9, r14              /// 0e 00 ${b1}9 e1
 ${op}pl r9, r14            /// 0e 00 ${b1}9 51
 ${op}.pl r9, r14           /// 0e 00 ${b1}9 51
@@ -275,7 +277,7 @@ ${op}.pl r9, #0x7800       /// 1e 0b ${b1}9 53
       desc,
       kind: 'make',
       files: {
-        '/root/main': `
+        '/root/main': `.arm
 ${op} r3, r9, r14              /// 0e 30 ${b0}9 e${a0}
 ${op}s r3, r9, r14             /// 0e 30 ${b1}9 e${a0}
 ${op}lo r3, r9, r14            /// 0e 30 ${b0}9 3${a0}
@@ -426,7 +428,7 @@ ${op}los r3, #0x50             /// 05 3e ${b1}3 3${a2}
       desc,
       kind: 'make',
       files: {
-        '/root/main': `
+        '/root/main': `.arm
 ${op} r3, r14, #0       /// 0e 30 a0 e1
 ${op}s r3, r14, #0      /// 0e 30 b0 e1
 ${op}mi r3, r14, #0     /// 0e 30 a0 41
@@ -491,7 +493,7 @@ ${op}mis r3, r10        /// ${a1}3 3a b0 41
     desc: 'Rotate right extended',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 rrx r3, r14      /// 6e 30 a0 e1
 rrxs r3, r14     /// 6e 30 b0 e1
 rrxmi r3, r14    /// 6e 30 a0 41
@@ -514,7 +516,7 @@ rrxmis r3        /// 63 30 b0 41
     desc: 'Transfer PSR to register',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mov r12, cpsr     /// 00 c0 0f e1
 mov r12, spsr     /// 00 c0 4f e1
 movvs r12, cpsr   /// 00 c0 0f 61
@@ -532,7 +534,7 @@ mrsvs r12, spsr   /// 00 c0 4f 61
     desc: 'Transfer register to PSR',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mov cpsr, r13                /// 0d f0 29 e1
 mov spsr, r13                /// 0d f0 69 e1
 movvc cpsr, r13              /// 0d f0 29 71
@@ -577,7 +579,7 @@ msrvc spsr_flg, #0xf0000000  /// 0f f2 68 73
     desc: 'Multiply',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mul r1, r9, r4     /// 99 04 01 e0
 muls r1, r9, r4    /// 99 04 11 e0
 mulhi r1, r9, r4   /// 99 04 01 80
@@ -592,7 +594,7 @@ mulhis r1, r9, r4  /// 99 04 11 80
     desc: 'Multiply and accumulate',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mla r1, r9, r4, r12     /// 99 c4 21 e0
 mlas r1, r9, r4, r12    /// 99 c4 31 e0
 mlahi r1, r9, r4, r12   /// 99 c4 21 80
@@ -607,7 +609,7 @@ mlahis r1, r9, r4, r12  /// 99 c4 31 80
     desc: 'Multiply long',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 umull r5, r3, r13, r11     /// 9d 5b 83 e0
 umulls r5, r3, r13, r11    /// 9d 5b 93 e0
 umullls r5, r3, r13, r11   /// 9d 5b 83 90
@@ -627,7 +629,7 @@ smulllss r5, r3, r13, r11  /// 9d 5b d3 90
     desc: 'Multiply and accumulate long',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 umlal r5, r3, r13, r11     /// 9d 5b a3 e0
 umlals r5, r3, r13, r11    /// 9d 5b b3 e0
 umlalls r5, r3, r13, r11   /// 9d 5b a3 90
@@ -661,7 +663,7 @@ smlallss r5, r3, r13, r11  /// 9d 5b f3 90
       desc,
       kind: 'make',
       files: {
-        '/root/main': `
+        '/root/main': `.arm
 ${op} r2, [r9]                        /// 00 20 ${c8}9 e5
 ${op}b r2, [r9]                       /// 00 20 ${cc}9 e5
 ${op}ge r2, [r9]                      /// 00 20 ${c8}9 a5
@@ -1436,18 +1438,18 @@ ${op}gebt r2, [r9], -r10, lsl #13     /// 8a 26 ${c6}9 a6
     desc: 'Store word relative to PC',
     kind: 'make',
     files: {
-      '/root/main': `
-@L0: .i16 100, 200  /// 64 00 c8 00
-str r2, [#@L0]      /// 0c 20 0f e5
-strb r2, [#@L0]     /// 10 20 4f e5
-strbge r2, [#@L0]   /// 14 20 4f a5
-strgeb r2, [#@L0]   /// 18 20 4f a5
+      '/root/main': `.arm
+L0: .i16 100, 200  /// 64 00 c8 00
+str r2, [#L0]      /// 0c 20 0f e5
+strb r2, [#L0]     /// 10 20 4f e5
+strbge r2, [#L0]   /// 14 20 4f a5
+strgeb r2, [#L0]   /// 18 20 4f a5
 
-str r2, [#@L1]!     /// 08 20 af e5
-strb r2, [#@L1]!    /// 04 20 ef e5
-strbge r2, [#@L1]!  /// 00 20 ef a5
-strgeb r2, [#@L1]!  /// 04 20 6f a5
-@L1: .i16 100, 200  /// 64 00 c8 00
+str r2, [#L1]!     /// 08 20 af e5
+strb r2, [#L1]!    /// 04 20 ef e5
+strbge r2, [#L1]!  /// 00 20 ef a5
+strgeb r2, [#L1]!  /// 04 20 6f a5
+L1: .i16 100, 200  /// 64 00 c8 00
 `,
     },
   });
@@ -1457,18 +1459,18 @@ strgeb r2, [#@L1]!  /// 04 20 6f a5
     desc: 'Load word relative to PC',
     kind: 'make',
     files: {
-      '/root/main': `
-@L0: .i16 100, 200  /// 64 00 c8 00
-ldr r2, [#@L0]      /// 0c 20 1f e5
-ldrb r2, [#@L0]     /// 10 20 5f e5
-ldrbge r2, [#@L0]   /// 14 20 5f a5
-ldrgeb r2, [#@L0]   /// 18 20 5f a5
+      '/root/main': `.arm
+L0: .i16 100, 200  /// 64 00 c8 00
+ldr r2, [#L0]      /// 0c 20 1f e5
+ldrb r2, [#L0]     /// 10 20 5f e5
+ldrbge r2, [#L0]   /// 14 20 5f a5
+ldrgeb r2, [#L0]   /// 18 20 5f a5
 
-ldr r2, [#@L1]!     /// 08 20 bf e5
-ldrb r2, [#@L1]!    /// 04 20 ff e5
-ldrbge r2, [#@L1]!  /// 00 20 ff a5
-ldrgeb r2, [#@L1]!  /// 04 20 7f a5
-@L1: .i16 100, 200  /// 64 00 c8 00
+ldr r2, [#L1]!     /// 08 20 bf e5
+ldrb r2, [#L1]!    /// 04 20 ff e5
+ldrbge r2, [#L1]!  /// 00 20 ff a5
+ldrgeb r2, [#L1]!  /// 04 20 7f a5
+L1: .i16 100, 200  /// 64 00 c8 00
 `,
     },
   });
@@ -1479,7 +1481,9 @@ ldrgeb r2, [#@L1]!  /// 04 20 7f a5
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `str r2, [r9], r10, lsl #32`,
+      '/root/main': `.arm
+str r2, [r9], r10, lsl #32
+`,
     },
   });
 
@@ -1489,7 +1493,9 @@ ldrgeb r2, [#@L1]!  /// 04 20 7f a5
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `str r2, [r9, #4096]`,
+      '/root/main': `.arm
+str r2, [r9, #4096]
+`,
     },
   });
 
@@ -1498,7 +1504,7 @@ ldrgeb r2, [#@L1]!  /// 04 20 7f a5
     desc: 'Store half word',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 strh r11, [r4]                /// b0 b0 44 e1
 strhlt r11, [r4]              /// b0 b0 44 b1
 strlth r11, [r4]              /// b0 b0 44 b1
@@ -1566,14 +1572,14 @@ strlth r11, [r4], -r13        /// bd b0 04 b0
     desc: 'Store half word relative to PC',
     kind: 'make',
     files: {
-      '/root/main': `
-@L0: .i16 100, 200  /// 64 00 c8 00
-strh r11, [#@L0]    /// bc b0 4f e1
-strh r11, [#@L0]!   /// b0 b1 6f e1
+      '/root/main': `.arm
+L0: .i16 100, 200  /// 64 00 c8 00
+strh r11, [#L0]    /// bc b0 4f e1
+strh r11, [#L0]!   /// b0 b1 6f e1
 
-strh r11, [#@L1]    /// b0 b0 cf e1
-strh r11, [#@L1]!   /// b4 b0 6f e1
-@L1: .i16 100, 200  /// 64 00 c8 00
+strh r11, [#L1]    /// b0 b0 cf e1
+strh r11, [#L1]!   /// b4 b0 6f e1
+L1: .i16 100, 200  /// 64 00 c8 00
 `,
     },
   });
@@ -1584,7 +1590,9 @@ strh r11, [#@L1]!   /// b4 b0 6f e1
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `strh r2, [r9, #256]`,
+      '/root/main': `.arm
+strh r2, [r9, #256]
+`,
     },
   });
 
@@ -1593,7 +1601,7 @@ strh r11, [#@L1]!   /// b4 b0 6f e1
     desc: 'Load half word',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 ldrh r11, [r4]                /// b0 b0 54 e1
 ldrhgt r11, [r4]              /// b0 b0 54 c1
 ldrgth r11, [r4]              /// b0 b0 54 c1
@@ -1794,22 +1802,22 @@ ldrgtsh r11, [r4], -r13       /// fd b0 14 c0
     desc: 'Load half word relative to PC',
     kind: 'make',
     files: {
-      '/root/main': `
-@L0: .i16 100, 200  /// 64 00 c8 00
-ldrh r11, [#@L0]    /// bc b0 5f e1
-ldrsh r11, [#@L0]   /// f0 b1 5f e1
-ldrsb r11, [#@L0]   /// d4 b1 5f e1
-ldrh r11, [#@L0]!   /// b8 b1 7f e1
-ldrsh r11, [#@L0]!  /// fc b1 7f e1
-ldrsb r11, [#@L0]!  /// d0 b2 7f e1
+      '/root/main': `.arm
+L0: .i16 100, 200  /// 64 00 c8 00
+ldrh r11, [#L0]    /// bc b0 5f e1
+ldrsh r11, [#L0]   /// f0 b1 5f e1
+ldrsb r11, [#L0]   /// d4 b1 5f e1
+ldrh r11, [#L0]!   /// b8 b1 7f e1
+ldrsh r11, [#L0]!  /// fc b1 7f e1
+ldrsb r11, [#L0]!  /// d0 b2 7f e1
 
-ldrh r11, [#@L1]    /// b0 b1 df e1
-ldrsh r11, [#@L1]   /// fc b0 df e1
-ldrsb r11, [#@L1]   /// d8 b0 df e1
-ldrh r11, [#@L1]!   /// b4 b0 ff e1
-ldrsh r11, [#@L1]!  /// f0 b0 ff e1
-ldrsb r11, [#@L1]!  /// d4 b0 7f e1
-@L1: .i16 100, 200  /// 64 00 c8 00
+ldrh r11, [#L1]    /// b0 b1 df e1
+ldrsh r11, [#L1]   /// fc b0 df e1
+ldrsb r11, [#L1]   /// d8 b0 df e1
+ldrh r11, [#L1]!   /// b4 b0 ff e1
+ldrsh r11, [#L1]!  /// f0 b0 ff e1
+ldrsb r11, [#L1]!  /// d4 b0 7f e1
+L1: .i16 100, 200  /// 64 00 c8 00
 `,
     },
   });
@@ -1819,7 +1827,7 @@ ldrsb r11, [#@L1]!  /// d4 b0 7f e1
     desc: 'Push registers to stack',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 push {r0-r4, r8, lr}           /// 1f 41 2d e9
 pushle {r3, r5-r9, r13-r15}    /// e8 e3 2d d9
 
@@ -1834,7 +1842,7 @@ pushle {r3, r5-r9, r13-r15}^   /// e8 e3 6d d9
     desc: 'Store multiple registers',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 stmed r5, {r1-lr}             /// fe 7f 05 e8
 stmdale r5, {r1-lr}           /// fe 7f 05 d8
 stmleda r5, {r1-lr}           /// fe 7f 05 d8
@@ -1895,7 +1903,7 @@ stmlefa r5!, {r1-lr}^         /// fe 7f e5 d9
     desc: 'Pop registers from stack',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 pop {r0-r4, r8, lr}           /// 1f 41 bd e8
 pople {r3, r5-r9, r13-r15}    /// e8 e3 bd d8
 
@@ -1910,7 +1918,7 @@ pople {r3, r5-r9, r13-r15}^   /// e8 e3 fd d8
     desc: 'Store multiple registers',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 ldmfa r5, {r1-lr}             /// fe 7f 15 e8
 ldmdale r5, {r1-lr}           /// fe 7f 15 d8
 ldmleda r5, {r1-lr}           /// fe 7f 15 d8
@@ -1971,7 +1979,7 @@ ldmleed r5!, {r1-lr}^         /// fe 7f f5 d9
     desc: 'Swap',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 swp r8, r9, [r1]      /// 99 80 01 e1
 swpb r8, r9, [r1]     /// 99 80 41 e1
 swppl r8, r9, [r1]    /// 99 80 01 51
@@ -1988,7 +1996,7 @@ swpplb r8, r9, [r1]   /// 99 80 41 51
     desc: 'Software interrupt',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 swi 0            /// 00 00 00 ef
 swi 100          /// 64 00 00 ef
 swi 0xffffff     /// ff ff ff ef
@@ -2006,7 +2014,9 @@ swi.mi 0xffffff  /// ff ff ff 4f
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `swi 16777216`,
+      '/root/main': `.arm
+swi 16777216
+`,
     },
   });
 
@@ -2016,7 +2026,9 @@ swi.mi 0xffffff  /// ff ff ff 4f
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `swi -1`,
+      '/root/main': `.arm
+swi -1
+`,
     },
   });
 }

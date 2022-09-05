@@ -10,7 +10,7 @@ import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
 import { Expression } from './expr.ts';
 import { Project } from './project.ts';
-import { Import, ISyms } from './import.ts';
+import { DataType, Import, ISyms } from './import.ts';
 
 export class Parser {
   i = 0;
@@ -22,9 +22,23 @@ export class Parser {
   }
 
   here(): IFilePos {
-    if (this.tks.length <= 0) return { filename: '', line: 1, chr: 1 };
-    if (this.i >= this.tks.length) return this.tks[this.tks.length - 1];
+    if (this.tks.length <= 0) {
+      return { filename: '', line: 1, chr: 1 };
+    }
+    if (this.i >= this.tks.length) {
+      return this.tks[this.tks.length - 1];
+    }
     return this.tks[this.i];
+  }
+
+  last(): IFilePos {
+    if (this.tks.length <= 0) {
+      return { filename: '', line: 1, chr: 1 };
+    }
+    if (this.i >= this.tks.length) {
+      return this.tks[this.tks.length - 1];
+    }
+    return this.tks[Math.max(0, this.i - 1)];
   }
 
   save() {
@@ -117,9 +131,23 @@ export class Parser {
     return true;
   }
 
+  checkNewline() {
+    const tk = this.tks[this.i];
+    if (!tk) {
+      return true;
+    } else if (tk.kind === 'newline') {
+      this.i++;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   forceNewline(hint: string) {
     const tk = this.tks[this.i];
-    if (!tk) return;
+    if (!tk) {
+      return;
+    }
     if (tk.kind !== 'newline') {
       throw new CompError(tk, `Missing newline at end of ${hint}`);
     }
@@ -329,10 +357,15 @@ function validateSymExpr(
 ): boolean {
   try {
     const ex = Expression.parse(parser, imp);
-    if (negate) {
-      ex.negate();
+    if (!negate) {
+      syms[partSym] = ex;
+      return true;
     }
-    syms[partSym] = ex;
+    const v = ex.value(imp.pendingWriteContext(), 'deny');
+    if (v === false || v >= 0) {
+      return false;
+    }
+    syms[partSym] = -v;
     return true;
   } catch (_) {
     return false;
@@ -382,6 +415,10 @@ function validateSymEnum(
   const t = parser.peekTokOptional();
   if (t && t.kind === 'id' && t.id in valid) {
     syms[partSym] = valid[t.id];
+    parser.nextTok();
+    return true;
+  } else if (t && t.kind === 'punc' && t.punc in valid) {
+    syms[partSym] = valid[t.punc];
     parser.nextTok();
     return true;
   } else if ('' in valid) {
@@ -455,7 +492,9 @@ function parseARMStatement(
     }
   }
 
-  parser.forceNewline('ARM statement');
+  if (!parser.checkNewline()) {
+    return false;
+  }
   imp.writeInstARM(flp, pb.op, syms);
   return true;
 }
@@ -527,7 +566,7 @@ function parseThumbStatement(
           case 'immediate':
           case 'pcoffset':
           case 'offsetsplit':
-            if (!validateSymExpr(syms, part.sym, false, parser, imp)) {
+            if (!validateSymExpr(syms, part.sym, codePart.k === 'negword', parser, imp)) {
               return false;
             }
             break;
@@ -567,7 +606,9 @@ function parseThumbStatement(
     }
   }
 
-  parser.forceNewline('Thumb statement');
+  if (!parser.checkNewline()) {
+    return false;
+  }
   imp.writeInstThumb(flp, pb.op, syms);
   return true;
 }
@@ -590,7 +631,9 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
             case 'align': {
               const context = imp.pendingWriteContext();
               const amount = Expression.parse(parser, imp).value(context, 'deny');
-              if (amount === false) throw new Error('Align amount not constant');
+              if (amount === false) {
+                throw new CompError(tk, 'Align amount must be constant');
+              }
               let fill: number | 'nop' = 0;
               if (parser.isNext(',')) {
                 parser.nextTok();
@@ -599,18 +642,29 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
                   parser.nextTok();
                 } else {
                   const fillx = Expression.parse(parser, imp).value(context, 'deny');
-                  if (fillx === false) throw new Error('Align fill not constant');
+                  if (fillx === false) {
+                    throw new CompError(tk, 'Align fill must be constant');
+                  }
                   fill = fillx;
                 }
               }
               parser.forceNewline('`.align` statement');
-              imp.align(amount, fill);
+              imp.align(tk, amount, fill);
               break;
             }
             case 'arm':
               parser.forceNewline('`.arm` statement');
               imp.setMode('arm');
               break;
+            case 'base': {
+              const base = Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'deny');
+              if (base === false) {
+                throw new CompError(tk, 'Base must be constant');
+              }
+              parser.forceNewline('`.base` statement');
+              imp.setBase(base);
+              break;
+            }
             case 'begin':
               await parseBegin(parser, imp);
               break;
@@ -618,6 +672,45 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               parser.forceNewline('`.crc` statement');
               imp.writeCRC(tk);
               break;
+            case 'def': {
+              const name = parser.nextTokOptional();
+              if (!name || name.kind !== 'id') {
+                throw new CompError(name ?? tk, 'Expecting `.def name = value`');
+              }
+              const paramNames: string[] = [];
+              if (parser.isNext('(')) {
+                parser.nextTok();
+                while (!parser.isNext(')')) {
+                  const paramName = parser.nextTokOptional();
+                  if (!paramName || paramName.kind !== 'id') {
+                    throw new CompError(parser.last(), 'Expecting `.def name(arg1, arg2) = value`');
+                  }
+                  if (paramNames.includes(paramName.id)) {
+                    throw new CompError(
+                      parser.last(),
+                      `Parameter names must be unique; name used twice: ${paramName.id}`,
+                    );
+                  }
+                  paramNames.push(paramName.id);
+                  if (parser.isNext(',')) {
+                    parser.nextTok();
+                    continue;
+                  } else if (parser.isNext(')')) {
+                    break;
+                  }
+                }
+                parser.nextTok(); // right paren
+              }
+              if (parser.isNext('=')) {
+                parser.nextTok();
+                const body = Expression.parse(parser, imp, paramNames);
+                parser.forceNewline('`.def` statement');
+                imp.addSymConst(tk, name.id, body);
+              } else {
+                throw new CompError(parser.here(), 'Expecting `.def name = value`');
+              }
+              break;
+            }
             case 'i8':
             case 'ib8':
             case 'im8':
@@ -651,6 +744,43 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               imp.writeData(tk, tk2.id, data);
               break;
             }
+            case 'i8fill':
+            case 'ib8fill':
+            case 'im8fill':
+            case 'ibm8fill':
+            case 'i16fill':
+            case 'ib16fill':
+            case 'im16fill':
+            case 'ibm16fill':
+            case 'i32fill':
+            case 'ib32fill':
+            case 'im32fill':
+            case 'ibm32fill':
+            case 'u8fill':
+            case 'ub8fill':
+            case 'um8fill':
+            case 'ubm8fill':
+            case 'u16fill':
+            case 'ub16fill':
+            case 'um16fill':
+            case 'ubm16fill':
+            case 'u32fill':
+            case 'ub32fill':
+            case 'um32fill':
+            case 'ubm32fill': {
+              const amount = Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'deny');
+              if (amount === false) {
+                throw new CompError(tk, 'Data fill amount must be constant');
+              }
+              let fill = Expression.fromNum(0);
+              if (parser.isNext(',')) {
+                parser.nextTok();
+                fill = Expression.parse(parser, imp);
+              }
+              parser.forceNewline(`\`.${tk2.id}\` statement`);
+              imp.writeDataFill(tk, tk2.id.substr(0, tk2.id.length - 4) as DataType, amount, fill);
+              break;
+            }
             case 'include':
               await parseInclude(parser, imp);
               break;
@@ -662,7 +792,8 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               parser.forceNewline('`.pool` statement');
               imp.pool();
               break;
-            case 'printf': {
+            case 'printf':
+            case 'error': {
               const tk3 = parser.nextTokOptional();
               if (!tk3 || tk3.kind !== 'str') {
                 throw new CompError(tk3 ?? tk2, 'Expecting `.printf "message"`');
@@ -672,8 +803,8 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
                 parser.nextTok();
                 args.push(Expression.parse(parser, imp));
               }
-              parser.forceNewline('`.printf` statement');
-              imp.printf(tk, tk3.str, args);
+              parser.forceNewline(`\`.${tk2.id}\` statement`);
+              imp.printf(tk, tk3.str, args, tk2.id === 'error');
               break;
             }
             case 'str': {
@@ -724,8 +855,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
       break;
     }
     case 'id': {
-      const tk2 = parser.peekTokOptional();
-      if (tk2 && tk2.kind === 'punc' && tk2.punc === ':') {
+      if (parser.isNext(':')) {
         imp.addSymNamedLabel(tk);
         parser.nextTok();
         break;
@@ -751,9 +881,19 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
             if (pool) {
               parseARMPoolStatement(tk, pool, imp);
             } else {
-              const ops = ARM.parsedOps[tk.id];
+              let opName = tk.id;
+              while (parser.isNext('.')) {
+                parser.nextTok();
+                opName += '.';
+                const p = parser.peekTokOptional();
+                if (p && p.kind === 'id') {
+                  opName += p.id;
+                  parser.nextTok();
+                }
+              }
+              const ops = ARM.parsedOps[opName];
               if (!ops) {
-                throw new CompError(tk, `Unknown ARM command: ${tk.id}`);
+                throw new CompError(tk, `Unknown ARM command: ${opName}`);
               }
               let lastError = new CompError(tk, 'Failed to parse ARM statement');
               if (
@@ -786,9 +926,19 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
             if (pool) {
               parseThumbPoolStatement(tk, pool, parser, imp);
             } else {
-              const ops = Thumb.parsedOps[tk.id];
+              let opName = tk.id;
+              while (parser.isNext('.')) {
+                parser.nextTok();
+                opName += '.';
+                const p = parser.peekTokOptional();
+                if (p && p.kind === 'id') {
+                  opName += p.id;
+                  parser.nextTok();
+                }
+              }
+              const ops = Thumb.parsedOps[opName];
               if (!ops) {
-                throw new CompError(tk, `Unknown Thumb command: ${tk.id}`);
+                throw new CompError(tk, `Unknown Thumb command: ${opName}`);
               }
               let lastError = new CompError(tk, 'Failed to parse Thumb statement');
               if (

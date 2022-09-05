@@ -27,10 +27,10 @@ export function generateInit(args: IInitArgs): string {
 
 // include standard library for useful constants
 .stdlib
-.arm
 
 // GBA header
 .begin
+  .arm
   b main
   .logo
   .title "${title.toUpperCase()}"
@@ -42,6 +42,7 @@ export function generateInit(args: IInitArgs): string {
 .end
 
 .begin main
+  .arm
   // set cartridge wait state for faster access
   ldr r0, =REG_WAITCNT
   ldr r1, =0x4317

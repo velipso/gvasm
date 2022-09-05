@@ -269,10 +269,10 @@ bx r13  /// 68 47
 ldr r4, [pc, #0]     /// 00 4c
 ldr r4, [pc]         /// 00 4c
 ldr r4, [pc, #844]   /// d3 4c
-ldr r4, [#@L]        /// 01 4c
-ldr r4, [#@L]        /// 00 4c
-ldr r4, [#@L]        /// 00 4c
-@L: .i32 0x12345678  /// 78 56 34 12
+ldr r4, [#L]         /// 01 4c
+ldr r4, [#L]         /// 00 4c
+ldr r4, [#L]         /// 00 4c
+L: .i32 0x12345678   /// 78 56 34 12
 // word
 ldr r7, [r5, r3]     /// ef 58
 ldr r3, [r6, #116]   /// 73 6f
@@ -434,48 +434,48 @@ ldmfd r3!, {r0-r3}  /// 0f cb
     kind: 'make',
     files: {
       '/root/main': `.thumb
-@top:
-beq @top    /// fe d0
-beq @bot    /// 1d d0
-bne @top    /// fc d1
-bne @bot    /// 1b d1
-bcs @top    /// fa d2
-bcs @bot    /// 19 d2
-bhs @top    /// f8 d2
-bhs @bot    /// 17 d2
-bcc @top    /// f6 d3
-bcc @bot    /// 15 d3
-blo @top    /// f4 d3
-blo @bot    /// 13 d3
-bmi @top    /// f2 d4
-bmi @bot    /// 11 d4
-bpl @top    /// f0 d5
-bpl @bot    /// 0f d5
-bvs @top    /// ee d6
-bvs @bot    /// 0d d6
-bvc @top    /// ec d7
-bvc @bot    /// 0b d7
-bhi @top    /// ea d8
-bhi @bot    /// 09 d8
-bls @top    /// e8 d9
-bls @bot    /// 07 d9
-bge @top    /// e6 da
-bge @bot    /// 05 da
-blt @top    /// e4 db
-blt @bot    /// 03 db
-bgt @top    /// e2 dc
-bgt @bot    /// 01 dc
-ble @top    /// e0 dd
-ble @bot    /// ff dd
-@bot:
-b @bot      /// fe e7
-b @top      /// dd e7
-b @next     /// 05 e0
+top:
+beq top     /// fe d0
+beq bot     /// 1d d0
+bne top     /// fc d1
+bne bot     /// 1b d1
+bcs top     /// fa d2
+bcs bot     /// 19 d2
+bhs top     /// f8 d2
+bhs bot     /// 17 d2
+bcc top     /// f6 d3
+bcc bot     /// 15 d3
+blo top     /// f4 d3
+blo bot     /// 13 d3
+bmi top     /// f2 d4
+bmi bot     /// 11 d4
+bpl top     /// f0 d5
+bpl bot     /// 0f d5
+bvs top     /// ee d6
+bvs bot     /// 0d d6
+bvc top     /// ec d7
+bvc bot     /// 0b d7
+bhi top     /// ea d8
+bhi bot     /// 09 d8
+bls top     /// e8 d9
+bls bot     /// 07 d9
+bge top     /// e6 da
+bge bot     /// 05 da
+blt top     /// e4 db
+blt bot     /// 03 db
+bgt top     /// e2 dc
+bgt bot     /// 01 dc
+ble top     /// e0 dd
+ble bot     /// ff dd
+bot:
+b bot       /// fe e7
+b top       /// dd e7
+b next      /// 05 e0
 .i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
-@next:
-bal @next2  /// 05 e0
+next:
+bal next2   /// 05 e0
 .i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
-@next2:
+next2:
 `,
     },
   });
@@ -499,11 +499,11 @@ swi 255  /// ff df
     kind: 'make',
     files: {
       '/root/main': `.thumb
-@top:
-bl @top     /// ff f7 fe ff
-bl @bot     /// 00 f0 06 f8
+top:
+bl top      /// ff f7 fe ff
+bl bot      /// 00 f0 06 f8
 .i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
-@bot:
+bot:
 bl lr       /// 00 f8
 `,
     },

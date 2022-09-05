@@ -6,10 +6,10 @@
 //
 
 import { load as basicLoad } from './itests/basic.ts';
-//import { load as exprLoad } from './itests/expr.ts';
+import { load as exprLoad } from './itests/expr.ts';
 //import { load as filesLoad } from './itests/files.ts';
-//import { load as armLoad } from './itests/arm.ts';
-//import { load as thumbLoad } from './itests/thumb.ts';
+import { load as armLoad } from './itests/arm.ts';
+import { load as thumbLoad } from './itests/thumb.ts';
 //import { load as poolLoad } from './itests/pool.ts';
 //import { load as constLoad } from './itests/const.ts';
 //import { load as scopeLoad } from './itests/scope.ts';
@@ -80,7 +80,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   let res: IMakeResult | undefined;
   await makeFromFile(
     '/root/main',
-    [{ key: 'defined123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }],
     false,
     '/',
     new Path(true),
@@ -189,7 +189,7 @@ async function itestRun(test: ITestRun): Promise<boolean> {
   let res: IMakeResult | undefined;
   await makeFromFile(
     '/root/main',
-    [{ key: 'defined123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }],
     false,
     '/',
     new Path(true),
@@ -349,10 +349,10 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
 
   // load the tests
   basicLoad(def);
-  // TODO: exprLoad(def);
+  exprLoad(def);
   // TODO: filesLoad(def);
-  // TODO: armLoad(def);
-  // TODO: thumbLoad(def);
+  armLoad(def);
+  thumbLoad(def);
   // TODO: poolLoad(def);
   // TODO: constLoad(def);
   // TODO: scopeLoad(def);

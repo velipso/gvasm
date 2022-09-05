@@ -72,10 +72,16 @@ interface IExprReserved {
     | '_version';
 }
 
+interface IExprParam {
+  kind: 'param';
+  param: number;
+}
+
 export interface IExprLookup {
   kind: 'lookup';
   flp: IFilePos;
   idPath: (string | Expression)[];
+  params: IExpr[] | false;
 }
 
 interface IExprRead {
@@ -86,6 +92,7 @@ interface IExprRead {
 
 interface IExprAssert {
   kind: 'assert';
+  flp: IFilePos;
   hint: string;
   value: IExpr;
 }
@@ -176,6 +183,7 @@ type IExpr =
   | IExprNum
   | IExprReserved
   | IExprLookup
+  | IExprParam
   | IExprRead
   | IExprAssert
   | IExprDefined
@@ -184,16 +192,16 @@ type IExpr =
   | IExprBinary
   | IExprTernary;
 
-function checkParamSize(got: number, expect: number) {
+function checkParamSize(flp: IFilePos, got: number, expect: number) {
   if (got === expect) {
     return;
   }
   const exp = `${expect} parameter${expect === 1 ? '' : 's'}`;
   const err = `expecting ${exp}, but got ${got} instead`;
   if (got < expect) {
-    throw `Too few parameters; ${err}`;
+    throw new CompError(flp, `Too few parameters; ${err}`);
   } else {
-    throw `Too many parameters; ${err}`;
+    throw new CompError(flp, `Too many parameters; ${err}`);
   }
 }
 
@@ -218,20 +226,22 @@ export type LookupFailMode = 'allow' | 'unresolved' | 'deny';
 
 export class Expression {
   private expr: IExpr;
+  private paramSize: number;
 
-  private constructor(expr: IExpr) {
+  private constructor(expr: IExpr, paramSize: number) {
     this.expr = expr;
+    this.paramSize = paramSize;
   }
 
   static fromNum(num: number) {
-    return new Expression({ kind: 'num', value: num });
+    return new Expression({ kind: 'num', value: num }, 0);
   }
 
-  static parse(parser: Parser, imp: Import): Expression {
+  static parse(parser: Parser, imp: Import, paramNames?: string[]): Expression {
     const readParams = (): IExpr[] => {
       const params: IExpr[] = [];
       if (!parser.isNext('(')) {
-        throw 'Expecting \'(\' at start of call';
+        throw new CompError(parser.here(), 'Expecting \'(\' at start of call');
       }
       parser.nextTok();
       while (!parser.isNext(')')) {
@@ -243,7 +253,7 @@ export class Expression {
         }
       }
       if (!parser.isNext(')')) {
-        throw 'Expecting \')\' at end of call';
+        throw new CompError(parser.here(), 'Expecting \')\' at end of call');
       }
       parser.nextTok();
       return params;
@@ -276,7 +286,7 @@ export class Expression {
         if (t.id in functions) {
           const params = readParams();
           if (functions[t.id].size >= 0) {
-            checkParamSize(params.length, functions[t.id].size);
+            checkParamSize(t, params.length, functions[t.id].size);
           }
           value = { kind: 'func', func: t.id, params };
         } else if (t.id === 'assert') {
@@ -297,10 +307,10 @@ export class Expression {
             throw 'Expecting \')\' at end of call';
           }
           parser.nextTok();
-          value = { kind: 'assert', hint: hint.str, value: v };
+          value = { kind: 'assert', flp: t, hint: hint.str, value: v };
         } else if (t.id === 'defined') {
           const params = readParams();
-          checkParamSize(params.length, 1);
+          checkParamSize(t, params.length, 1);
           value = { kind: 'defined', value: params[0] };
         } else if (!imp.isRegister(t.id)) {
           const idPath: (string | Expression)[] = [t.id];
@@ -314,7 +324,7 @@ export class Expression {
             } else if (parser.isNext('[')) {
               const tp = parser.nextTok();
               if (!parser.hasTok()) throw new CompError(tp, 'Invalid expression');
-              idPath.push(new Expression(term()));
+              idPath.push(new Expression(term(), 0));
               if (!parser.isNext(']')) throw new CompError(tp, 'Invalid expression');
               parser.nextTok();
             } else {
@@ -322,21 +332,50 @@ export class Expression {
             }
           }
           const idPath0 = t.id;
-          switch (idPath0) {
-            case '_arm':
-            case '_base':
-            case '_bytes':
-            case '_here':
-            case '_main':
-            case '_pc':
-            case '_thumb':
-            case '_version':
-              if (idPath.length > 1) throw new CompError(t, 'Cannot index into number');
-              value = { kind: 'reserved', name: idPath0 };
-              break;
-            default:
-              value = { kind: 'lookup', flp: t, idPath };
-              break;
+          if (paramNames && paramNames.indexOf(idPath0) >= 0) {
+            if (idPath.length > 1) {
+              throw new CompError(t, 'Cannot index into parameter');
+            }
+            value = { kind: 'param', param: paramNames.indexOf(idPath0) };
+          } else {
+            switch (idPath0) {
+              case '_arm':
+              case '_base':
+              case '_bytes':
+              case '_here':
+              case '_main':
+              case '_pc':
+              case '_thumb':
+              case '_version':
+                if (idPath.length > 1) {
+                  throw new CompError(t, 'Cannot index into number');
+                }
+                if (parser.isNext('(')) {
+                  throw new CompError(parser.here(), 'Reserved identifier cannot be called');
+                }
+                value = { kind: 'reserved', name: idPath0 };
+                break;
+              default:
+                value = { kind: 'lookup', flp: t, idPath, params: false };
+                if (parser.isNext('(')) {
+                  const pexpr: IExpr[] = [];
+                  parser.nextTok();
+                  while (!parser.isNext(')')) {
+                    pexpr.push(term());
+                    if (parser.isNext(',')) {
+                      parser.nextTok();
+                      continue;
+                    } else if (parser.isNext(')')) {
+                      break;
+                    } else {
+                      throw new CompError(parser.here(), 'Expecting parameters in call');
+                    }
+                  }
+                  parser.nextTok();
+                  value.params = pexpr;
+                }
+                break;
+            }
           }
           /*
         } else if (regs && t.id === '[') {
@@ -386,7 +425,7 @@ export class Expression {
             if (!flp) throw new Error('Expecting unary token');
             label += flp.punc;
           }
-          value = { kind: 'lookup', flp, idPath: [label] };
+          value = { kind: 'lookup', flp, idPath: [label], params: false };
         } else {
           throw new CompError(parser.here(), 'Invalid expression');
         }
@@ -483,19 +522,14 @@ export class Expression {
       return value;
     };
 
-    return new Expression(term());
+    return new Expression(term(), paramNames?.length ?? 0);
   }
 
-  negate() {
-    const n = this.expr;
-    if (n.kind === 'unary' && n.op === '-') {
-      this.expr = n.value;
-    } else {
-      this.expr = { kind: 'unary', op: '-', value: n };
-    }
-  }
-
-  value(context: IPendingWriteContext, lookupFailMode: LookupFailMode): number | false {
+  value(
+    context: IPendingWriteContext,
+    lookupFailMode: LookupFailMode,
+    params?: number[],
+  ): number | false {
     const get = (ex: IExpr): number | false => {
       switch (ex.kind) {
         case 'num':
@@ -505,7 +539,7 @@ export class Expression {
             case '_arm':
               return context.mode === 'arm' ? 1 : 0;
             case '_base':
-              throw 'TODO: _base';
+              return context.base;
             case '_bytes':
               throw 'TODO: _bytes';
             case '_here':
@@ -527,6 +561,20 @@ export class Expression {
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
             return v;
+          } else if (v !== false && v !== 'notfound' && v.kind === 'const') {
+            if (ex.params) {
+              const pvalues: number[] = [];
+              for (const p of ex.params) {
+                const pv = get(p);
+                if (pv === false) {
+                  return false;
+                }
+                pvalues.push(pv);
+              }
+              return v.body.value(v.context, lookupFailMode, pvalues);
+            } else {
+              return v.body.value(v.context, lookupFailMode);
+            }
           } else if (v === false || lookupFailMode === 'allow') {
             if (lookupFailMode === 'deny') {
               throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
@@ -535,6 +583,8 @@ export class Expression {
           }
           throw new CompError(ex.flp, `Cannot find symbol: ${pathError()}`);
         }
+        case 'param':
+          return params?.[ex.param] ?? false;
         case 'read': {
           //if (!cpu) {
           throw 'Cannot have memory read in expression at compile-time';
@@ -561,7 +611,7 @@ export class Expression {
           const a = get(ex.value);
           if (a === false) return false;
           if (a === 0) {
-            throw `Failed assertion: ${ex.hint}`;
+            throw new CompError(ex.flp, `Failed assertion: ${ex.hint}`);
           }
           return 1;
         }

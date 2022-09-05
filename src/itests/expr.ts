@@ -206,7 +206,7 @@ export function load(def: (test: ITest) => void) {
       '/root/main': `
 .i8 abs(5), abs(-5), abs(0)     /// 05 05 00
 .i8 clamp(-1, 3, 5)             /// 03
-.i8 CLAMP(-1, 5, 3)             /// 03
+.i8 clamp(-1, 5, 3)             /// 03
 .i8 clamp(10, 3, 5)             /// 05
 .i8 clamp(10, 5, 3)             /// 05
 .i8 clamp(4, 3, 5)              /// 04
@@ -249,10 +249,10 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.def $pos2neg($a) = \\
-  assert("must pass positive value to $pos2neg", $a > 0) * \\
-  -$a
-.i8 $pos2neg(5)  /// fb
+.def pos2neg(a) = \\
+  assert("must pass positive value to pos2neg", a > 0) * \\
+  -a
+.i8 pos2neg(5)  /// fb
 `,
     },
   });
@@ -264,14 +264,15 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       '/root/main': `
-.def $pos2neg($a) = \\
-  assert("must pass positive value to $pos2neg", $a > 0) * \\
-  -$a
-.i8 $pos2neg(-5)
+.def pos2neg(a) = \\
+  assert("must pass positive value to pos2neg", a > 0) * \\
+  -a
+.i8 pos2neg(-5)
 `,
     },
   });
 
+  /* TODO: defined and if
   def({
     name: 'expr.defined',
     desc: 'Use defined() in an expression',
@@ -293,6 +294,7 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+  */
 
   def({
     name: 'expr.precedence-bug',
@@ -301,11 +303,11 @@ export function load(def: (test: ITest) => void) {
     stdout: ['1', '1'],
     files: {
       '/root/main': `
-.def $a = 0x03000001
+.def a = 0x03000001
 .i32 0 /// 00 00 00 00
-@b:
-.printf "%d", @b - 0x08000000 + 0x03000000 > $a
-.printf "%d", $a < @b - 0x08000000 + 0x03000000
+b:
+.printf "%d", b - 0x08000000 + 0x03000000 > a
+.printf "%d", a < b - 0x08000000 + 0x03000000
 `,
     },
   });
@@ -316,7 +318,7 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.i8 $DEFINED123  /// 7b
+.i8 DEFINED123  /// 7b
 `,
     },
   });

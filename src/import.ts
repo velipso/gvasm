@@ -118,7 +118,9 @@ export function dataTypeSize(dataType: DataType) {
 }
 
 abstract class Section {
-  abstract flatten(state: IFileState, startLength: number): Promise<Uint8Array[]>;
+  async flatten(_state: IFileState, _startLength: number): Promise<Uint8Array[]> {
+    return [];
+  }
 }
 
 interface IRewrite<T> {
@@ -129,7 +131,7 @@ interface IRewrite<T> {
 class SectionBytes extends Section {
   private array: number[] = [];
   private byteArray: Uint8Array | undefined;
-  private addrRecvs: { i: number; recv: { addr: number | false } }[] = [];
+  private addrRecvs: { i: number; recv: { addr: number | false; base?: number | false } }[] = [];
   private alignments: { flp: IFilePos; align: number; msg: string; i: number }[] = [];
   private addr: { base: { addr: number; relativeTo: number }; startLength: number } | false = false;
 
@@ -144,6 +146,9 @@ class SectionBytes extends Section {
     }
     for (const { i, recv } of this.addrRecvs) {
       recv.addr = startAddr + i;
+      if ('base' in recv) {
+        recv.base = state.base.addr;
+      }
     }
     if (!this.byteArray) {
       this.byteArray = new Uint8Array(this.array);
@@ -153,7 +158,12 @@ class SectionBytes extends Section {
 
   clearAddr() {
     this.addr = false;
-    for (const { recv } of this.addrRecvs) recv.addr = false;
+    for (const { recv } of this.addrRecvs) {
+      recv.addr = false;
+      if ('base' in recv) {
+        recv.base = false;
+      }
+    }
   }
 
   addAddrRecv(recv: { addr: number | false }): () => void {
@@ -285,8 +295,14 @@ class SectionBytes extends Section {
       },
       write: (v: number[]) => {
         if (v.length !== size) throw new Error('Bad rewrite for array');
-        for (let j = 0; j < size; j++) {
-          this.array[i + j] = v[j] & 0xff;
+        if (this.byteArray) {
+          for (let j = 0; j < size; j++) {
+            this.byteArray[i + j] = v[j] & 0xff;
+          }
+        } else {
+          for (let j = 0; j < size; j++) {
+            this.array[i + j] = v[j] & 0xff;
+          }
         }
       },
     };
@@ -306,16 +322,30 @@ class SectionBytes extends Section {
       write: littleEndian
         ? (v: number[]) => {
           if (v.length !== size) throw new Error('Bad rewrite for array');
-          for (let j = 0; j < size; j++) {
-            this.array[i + j] = v[j] & 0xff;
-            this.array[i + j + 1] = (v[j] >> 8) & 0xff;
+          if (this.byteArray) {
+            for (let j = 0; j < size; j++) {
+              this.byteArray[i + j * 2] = v[j] & 0xff;
+              this.byteArray[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+            }
+          } else {
+            for (let j = 0; j < size; j++) {
+              this.array[i + j * 2] = v[j] & 0xff;
+              this.array[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+            }
           }
         }
         : (v: number[]) => {
           if (v.length !== size) throw new Error('Bad rewrite for array');
-          for (let j = 0; j < size; j++) {
-            this.array[i + j * 2] = (v[j] >> 8) & 0xff;
-            this.array[i + j * 2 + 1] = v[j] & 0xff;
+          if (this.byteArray) {
+            for (let j = 0; j < size; j++) {
+              this.byteArray[i + j * 2] = (v[j] >> 8) & 0xff;
+              this.byteArray[i + j * 2 + 1] = v[j] & 0xff;
+            }
+          } else {
+            for (let j = 0; j < size; j++) {
+              this.array[i + j * 2] = (v[j] >> 8) & 0xff;
+              this.array[i + j * 2 + 1] = v[j] & 0xff;
+            }
           }
         },
     };
@@ -335,20 +365,38 @@ class SectionBytes extends Section {
       write: littleEndian
         ? (v: number[]) => {
           if (v.length !== size) throw new Error('Bad rewrite for array');
-          for (let j = 0; j < size; j++) {
-            this.array[i + j * 4] = v[j] & 0xff;
-            this.array[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
-            this.array[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
-            this.array[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+          if (this.byteArray) {
+            for (let j = 0; j < size; j++) {
+              this.byteArray[i + j * 4] = v[j] & 0xff;
+              this.byteArray[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
+              this.byteArray[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
+              this.byteArray[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+            }
+          } else {
+            for (let j = 0; j < size; j++) {
+              this.array[i + j * 4] = v[j] & 0xff;
+              this.array[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
+              this.array[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
+              this.array[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+            }
           }
         }
         : (v: number[]) => {
           if (v.length !== size) throw new Error('Bad rewrite for array');
-          for (let j = 0; j < size; j++) {
-            this.array[i + j * 4] = (v[j] >> 24) & 0xff;
-            this.array[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
-            this.array[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
-            this.array[i + j * 4 + 3] = v[j] & 0xff;
+          if (this.byteArray) {
+            for (let j = 0; j < size; j++) {
+              this.byteArray[i + j * 4] = (v[j] >> 24) & 0xff;
+              this.byteArray[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
+              this.byteArray[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
+              this.byteArray[i + j * 4 + 3] = v[j] & 0xff;
+            }
+          } else {
+            for (let j = 0; j < size; j++) {
+              this.array[i + j * 4] = (v[j] >> 24) & 0xff;
+              this.array[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
+              this.array[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
+              this.array[i + j * 4 + 3] = v[j] & 0xff;
+            }
           }
         },
     };
@@ -396,7 +444,9 @@ class SectionPool extends Section {
 
   clearWrite() {
     // TODO: memory leak; does this help at all??????????????? I'm tired
-    for (const p of this.pendingPools) p.poolWriteExpr = () => {};
+    for (const p of this.pendingPools) {
+      p.poolWriteExpr = () => {};
+    }
   }
 
   async flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
@@ -441,11 +491,15 @@ class SectionPool extends Section {
 }
 
 class SectionAlign extends Section {
+  flp: IFilePos;
+  mode: Mode;
   amount: number;
   fill: number | 'nop';
 
-  constructor(amount: number, fill: number | 'nop') {
+  constructor(flp: IFilePos, mode: Mode, amount: number, fill: number | 'nop') {
     super();
+    this.flp = flp;
+    this.mode = mode;
     this.amount = amount;
     this.fill = fill;
   }
@@ -453,17 +507,49 @@ class SectionAlign extends Section {
   async flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
     const array: number[] = [];
     const startAddr = state.base.addr + startLength - state.base.relativeTo;
+    let fill: number[];
+    if (this.fill === 'nop') {
+      switch (this.mode) {
+        case 'none':
+          throw new CompError(
+            this.flp,
+            'Missing mode for nop alignment; use `.arm` or `.thumb` prior to `.align`',
+          );
+        case 'arm':
+          fill = [0x00, 0x00, 0xa0, 0xe1];
+          break;
+        case 'thumb':
+          fill = [0xc0, 0x46];
+          break;
+        default:
+          assertNever(this.mode);
+      }
+    } else {
+      fill = [this.fill];
+    }
     while (true) {
       const addr = startAddr + array.length;
-      if (addr % this.amount === 0) break;
-      if (this.fill === 'nop') {
-        throw 'TODO: fill nop';
-      } else {
-        array.push(this.fill & 0xff);
+      if (addr % this.amount === 0) {
+        break;
       }
+      array.push(fill[addr % fill.length] & 0xff);
     }
     return array.length <= 0 ? [] : [new Uint8Array(array)];
   }
+}
+
+class SectionBase extends Section {
+  base: number;
+  overwrite: boolean;
+
+  constructor(base: number, overwrite: boolean) {
+    super();
+    this.base = base;
+    this.overwrite = overwrite;
+  }
+}
+
+class SectionStateShift extends Section {
 }
 
 type DefMap = Map<string, IDef>;
@@ -495,12 +581,23 @@ interface IDefImportName {
   name: string;
 }
 
+interface IDefConst {
+  kind: 'const';
+  context: IPendingWriteContext;
+  body: Expression;
+}
+
 export type IDef =
   | IDefBegin
   | IDefImportAll
   | IDefImportName
   | IDefLabel
-  | IDefNum;
+  | IDefNum
+  | IDefConst;
+
+type ILookup =
+  | number
+  | IDefConst;
 
 class BitNumber {
   private maxSize: number;
@@ -529,6 +626,7 @@ export interface IPendingWriteContext {
   defHere: DefMap[];
   mode: Mode;
   addr: number | false;
+  base: number | false;
 }
 
 abstract class PendingWrite {
@@ -824,7 +922,7 @@ class PendingWriteData extends PendingWrite {
       this.rewrite.write(data);
       return true;
     } else {
-      let returnFalse = false;
+      let allNumber = true;
       const data: (number | Expression)[] = [];
       for (const expr of this.data) {
         if (typeof expr === 'number') {
@@ -833,15 +931,71 @@ class PendingWriteData extends PendingWrite {
           const v = expr.value(this.context, lookupFailMode);
           if (v === false) {
             data.push(expr);
-            returnFalse = true;
+            allNumber = false;
           } else {
             data.push(v);
           }
         }
       }
       this.data = data; // cache results
-      if (returnFalse) return false;
-      this.rewrite.write(data as number[]); // verified via returnFalse
+      if (!allNumber) {
+        return false;
+      }
+      this.rewrite.write(data as number[]); // verified via allNumber
+      return true;
+    }
+  }
+}
+
+class PendingWriteDataFill extends PendingWrite {
+  amount: number;
+  fill: number | Expression;
+  fillCache: { array: number[]; fill: number } | undefined;
+  rewrite: IRewrite<number[]>;
+
+  constructor(
+    flp: IFilePos,
+    context: IPendingWriteContext,
+    amount: number,
+    fill: Expression,
+    rewrite: IRewrite<number[]>,
+  ) {
+    super(flp, context);
+    this.amount = amount;
+    this.fill = fill;
+    this.rewrite = rewrite;
+  }
+
+  write(fill: number) {
+    if (!this.fillCache || this.fillCache.fill !== fill) {
+      const array: number[] = [];
+      for (let i = 0; i < this.amount; i++) {
+        array.push(fill);
+      }
+      this.fillCache = { array, fill };
+    }
+    this.rewrite.write(this.fillCache.array);
+  }
+
+  attemptWrite(lookupFailMode: LookupFailMode): boolean {
+    if (lookupFailMode === 'deny') {
+      const fill = typeof this.fill === 'number'
+        ? this.fill
+        : this.fill.value(this.context, lookupFailMode);
+      if (fill === false) {
+        return false;
+      }
+      this.write(fill);
+      return true;
+    } else {
+      const fill = typeof this.fill === 'number'
+        ? this.fill
+        : this.fill.value(this.context, lookupFailMode);
+      if (fill === false) {
+        return false;
+      }
+      this.fill = fill;
+      this.write(fill);
       return true;
     }
   }
@@ -850,6 +1004,7 @@ class PendingWriteData extends PendingWrite {
 class PendingWritePrintf extends PendingWrite {
   format: string;
   args: (number | Expression)[];
+  error: boolean;
   log: (str: string) => void;
 
   constructor(
@@ -857,11 +1012,13 @@ class PendingWritePrintf extends PendingWrite {
     context: IPendingWriteContext,
     format: string,
     args: Expression[],
+    error: boolean,
     log: (str: string) => void,
   ) {
     super(flp, context);
     this.format = format;
     this.args = args;
+    this.error = error;
     this.log = log;
   }
 
@@ -877,10 +1034,15 @@ class PendingWritePrintf extends PendingWrite {
           data.push(v);
         }
       }
-      this.log(printf(this.format, ...data));
+      const msg = printf(this.format, ...data);
+      if (this.error) {
+        throw new CompError(this.flp, msg);
+      } else {
+        this.log(msg);
+      }
       return true;
     } else {
-      let returnFalse = false;
+      let allNumber = true;
       const data: (number | Expression)[] = [];
       for (const expr of this.args) {
         if (typeof expr === 'number') {
@@ -889,15 +1051,22 @@ class PendingWritePrintf extends PendingWrite {
           const v = expr.value(this.context, lookupFailMode);
           if (v === false) {
             data.push(expr);
-            returnFalse = true;
+            allNumber = false;
           } else {
             data.push(v);
           }
         }
       }
       this.args = data; // cache results
-      if (returnFalse) return false;
-      this.log(printf(this.format, ...(data as number[]))); // verified via returnFalse
+      if (!allNumber) {
+        return false;
+      }
+      const msg = printf(this.format, ...(data as number[])); // verified via allNumber
+      if (this.error) {
+        throw new CompError(this.flp, msg);
+      } else {
+        this.log(msg);
+      }
       return true;
     }
   }
@@ -979,19 +1148,30 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
 
   attemptWrite(lookupFailMode: LookupFailMode): boolean {
     if (lookupFailMode === 'deny') {
-      // pool is already flattened, so we must use the pool addr
+      // pool is flattened, so we have space in the pool if we need it
       let ex: number | false = false;
       if (this.expr instanceof Expression) {
         ex = this.expr.value(this.context, lookupFailMode);
       } else {
         ex = this.expr;
       }
+      if (ex === false) {
+        return false;
+      }
 
-      if (ex === false) return false;
-      if (this.writeInline(ex)) return true;
-      if (typeof this.poolAddr !== 'number') return false;
+      if (this.writeInline(ex)) {
+        // turns out we don't need the pool space... guess it's wasted
+        return true;
+      }
+
+      if (typeof this.poolAddr !== 'number') { // shouldn't happen
+        return false;
+      }
+
       const address = this.rewrite.addr();
-      if (address === false) return false;
+      if (address === false) { // shouldn't happen
+        return false;
+      }
 
       if (this.cmdSize === 4) {
         // convert to: ldr rd, [pc, #offset]
@@ -1064,27 +1244,34 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
 class _PendingWritePoolThumb extends PendingWritePoolCommon {
   attemptWrite(lookupFailMode: LookupFailMode): boolean {
     if (lookupFailMode === 'deny') {
-      // pool is already flattened, so we must use the pool addr
+      // pool is flattened, so we have space in the pool if we need it
       let ex: number | false = false;
       if (this.expr instanceof Expression) {
         ex = this.expr.value(this.context, lookupFailMode);
       } else {
         ex = this.expr;
       }
+      if (ex === false) {
+        return false;
+      }
 
-      if (ex === false) return false;
       const address = this.rewrite.addr();
-      if (address === false) return false;
+      if (address === false) { // shouldn't happen
+        return false;
+      }
 
       const offset1 = ex - (address & 0xfffffffd) - 4;
       if (offset1 >= 0 && offset1 <= 1020 && (offset1 & 3) === 0) {
+        // turns out we don't need the pool space... guess it's wasted
         // convert to: add rd, pc, #offset
         this.rewrite.write(0xa000 | (this.rd << 8) | (offset1 >> 2));
         this.poolAddr = 'inline';
         return true;
       }
 
-      if (typeof this.poolAddr !== 'number') return false;
+      if (typeof this.poolAddr !== 'number') { // shouldn't happen
+        return false;
+      }
 
       // convert to: ldr rd, [pc, #offset]
       const offset2 = this.poolAddr - (address & 0xfffffffd) - 4;
@@ -1102,7 +1289,9 @@ class _PendingWritePoolThumb extends PendingWritePoolCommon {
       // try to cache expression if possible
       if (this.expr instanceof Expression) {
         const v = this.expr.value(this.context, lookupFailMode);
-        if (v === false) return false;
+        if (v === false) {
+          return false;
+        }
         this.expr = v;
       }
       return false;
@@ -1114,6 +1303,7 @@ interface ILevelBegin {
   kind: 'begin';
   mode: Mode;
   regs: string[];
+  shiftState: boolean;
 }
 
 type ILevel = ILevelBegin;
@@ -1127,7 +1317,7 @@ export class Import {
   main: boolean;
   defTable: DefMap = new Map();
   defHere = [this.defTable];
-  levels: ILevel[] = [{ kind: 'begin', mode: 'none', regs: Import.defaultRegs }];
+  levels: ILevel[] = [{ kind: 'begin', mode: 'none', regs: Import.defaultRegs, shiftState: true }];
   sections: Section[] = [];
   pendingWrites: { pw: PendingWrite; remove: () => void }[] = [];
   pendingCRC: (IRewrite<number> & { flp: IFilePos })[] = [];
@@ -1153,9 +1343,10 @@ export class Import {
   pendingWriteContext(): IPendingWriteContext {
     return {
       imp: this,
-      defHere: [...this.defHere],
+      defHere: this.defHere,
       mode: this.mode(),
       addr: false,
+      base: false,
     };
   }
 
@@ -1213,6 +1404,13 @@ export class Import {
     this.defHere[0].set(tk.id, label);
   }
 
+  addSymConst(flp: IFilePos, name: string, body: Expression) {
+    const context = this.pendingWriteContext();
+    this.tailBytes().addAddrRecv(context);
+    this.validateNewName(flp, name);
+    this.defHere[0].set(name, { kind: 'const', context, body });
+  }
+
   stdlib(flp: IFilePos) {
     if (this.hasStdlib) {
       throw new CompError(flp, 'Cannot import `.stdlib` twice');
@@ -1227,12 +1425,16 @@ export class Import {
     flp: IFilePos,
     defHere: DefMap[],
     idPath: (string | Expression)[],
-  ): number | 'notfound' | false {
-    const lookup = (i: number, here: DefMap): number | 'notfound' | false => {
+  ): ILookup | 'notfound' | false {
+    const lookup = (i: number, here: DefMap): ILookup | 'notfound' | false => {
       const p = idPath[i];
-      if (typeof p !== 'string') return 'notfound';
+      if (typeof p !== 'string') {
+        return 'notfound';
+      }
       const root = here.get(p);
-      if (!root) return 'notfound';
+      if (!root) {
+        return 'notfound';
+      }
       switch (root.kind) {
         case 'begin':
           return i + 1 < idPath.length ? lookup(i + 1, root.map) : root.addr;
@@ -1241,12 +1443,16 @@ export class Import {
             throw new CompError(flp, 'Cannot use imported name as value');
           }
           const pf = this.proj.readFileCacheImport(root.filename);
-          if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
+          if (!pf) {
+            throw new Error(`Failed to reimport: ${root.filename}`);
+          }
           return lookup(i + 1, pf.defTable);
         }
         case 'importName': {
           const pf = this.proj.readFileCacheImport(root.filename);
-          if (!pf) throw new Error(`Failed to reimport: ${root.filename}`);
+          if (!pf) {
+            throw new Error(`Failed to reimport: ${root.filename}`);
+          }
           return lookup(i, pf.defTable);
         }
         case 'label':
@@ -1259,6 +1465,8 @@ export class Import {
             throw new CompError(flp, 'Cannot index into constant number');
           }
           return root.num;
+        case 'const':
+          return root;
         default:
           return assertNever(root);
       }
@@ -1266,7 +1474,9 @@ export class Import {
 
     for (const here of defHere) {
       const v = lookup(0, here);
-      if (typeof v === 'number' || v === false) return v;
+      if (v !== 'notfound') {
+        return v;
+      }
     }
     return 'notfound';
   }
@@ -1303,16 +1513,19 @@ export class Import {
     };
     this.tailBytes().addAddrRecv(entry);
     this.defHere[0].set(symName, entry);
-    this.defHere.unshift(entry.map);
-    this.levels.unshift({ kind: 'begin', mode: this.mode(), regs: this.regs() });
+    this.defHere = [entry.map, ...this.defHere];
+    this.levels.unshift({ kind: 'begin', mode: this.mode(), regs: this.regs(), shiftState: false });
   }
 
   beginEnd() {
     if (this.levels.length <= 1 || this.levels[0].kind !== 'begin') {
       throw new Error(`Can't call beginEnd without matching beginStart`);
     }
-    this.defHere.shift();
-    this.levels.shift();
+    this.defHere = this.defHere.slice(1);
+    const entry = this.levels.shift();
+    if (entry && entry.shiftState) {
+      this.sections.push(new SectionStateShift());
+    }
   }
 
   pool() {
@@ -1329,8 +1542,8 @@ export class Import {
     }
   }
 
-  align(amount: number, fill: number | 'nop') {
-    this.sections.push(new SectionAlign(amount, fill));
+  align(flp: IFilePos, amount: number, fill: number | 'nop') {
+    this.sections.push(new SectionAlign(flp, this.mode(), amount, fill));
   }
 
   writeLogo() {
@@ -1423,13 +1636,57 @@ export class Import {
     this.addPendingWrite(pw);
   }
 
+  writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: Expression) {
+    const bytes = this.tailBytes();
+    const context = this.pendingWriteContext();
+    let pw: PendingWrite;
+    switch (dataTypeSize(dataType)) {
+      case 8: {
+        const rewrite = bytes.rewriteArray8(amount);
+        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+        break;
+      }
+      case 16: {
+        if (dataTypeAligned(dataType)) {
+          bytes.forceAlignment(
+            flp,
+            2,
+            `Misaligned data; add \`.align 2\` or change to \`.${
+              dataTypeToMisaligned(dataType)
+            }fill\``,
+          );
+        }
+        const rewrite = bytes.rewriteArray16(amount, dataTypeLE(dataType));
+        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+        break;
+      }
+      case 32: {
+        if (dataTypeAligned(dataType)) {
+          bytes.forceAlignment(
+            flp,
+            4,
+            `Misaligned data; add \`.align 4\` or change to \`.${
+              dataTypeToMisaligned(dataType)
+            }fill\``,
+          );
+        }
+        const rewrite = bytes.rewriteArray32(amount, dataTypeLE(dataType));
+        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+        break;
+      }
+      default:
+        throw new Error(`Invalid data type size? ${dataType}`);
+    }
+    this.addPendingWrite(pw);
+  }
+
   writeStr(str: string) {
     this.tailBytes().writeArray(new TextEncoder().encode(str));
   }
 
-  printf(flp: IFilePos, format: string, args: Expression[]) {
+  printf(flp: IFilePos, format: string, args: Expression[], error: boolean) {
     const context = this.pendingWriteContext();
-    const pw = new PendingWritePrintf(flp, context, format, args, this.proj.getLog());
+    const pw = new PendingWritePrintf(flp, context, format, args, error, this.proj.getLog());
     this.addPendingWrite(pw);
   }
 
@@ -1449,6 +1706,18 @@ export class Import {
         i--;
       }
     }
+  }
+
+  setBase(base: number) {
+    for (const lv of this.levels) {
+      if (lv.kind === 'begin') {
+        // overwrite the base at this level if we already unshifted a base here
+        this.sections.push(new SectionBase(base, lv.shiftState));
+        lv.shiftState = true;
+        return;
+      }
+    }
+    throw new Error(`Can't set base set outside of begin block`);
   }
 
   setMode(mode: Mode) {
@@ -1494,11 +1763,30 @@ export class Import {
     const states = [initialState];
     let length = startLength;
     for (const section of this.sections) {
-      const sects = await section.flatten(states[0], length);
-      for (const sect of sects) {
-        if (sect.length <= 0) continue;
-        length += sect.length;
-        sections.push(sect);
+      if (section instanceof SectionBase) {
+        if (section.overwrite) {
+          states[0].base.addr = section.base;
+          states[0].base.relativeTo = length;
+        } else {
+          states.unshift({
+            base: {
+              addr: section.base,
+              relativeTo: length,
+            },
+          });
+        }
+      } else if (section instanceof SectionStateShift) {
+        states.shift();
+        if (states.length <= 0) {
+          throw new Error('Unbalanced state shift');
+        }
+      } else {
+        const sects = await section.flatten(states[0], length);
+        for (const sect of sects) {
+          if (sect.length <= 0) continue;
+          length += sect.length;
+          sections.push(sect);
+        }
       }
     }
     return sections;

@@ -131,7 +131,14 @@ interface IRewrite<T> {
 class SectionBytes extends Section {
   private array: number[] = [];
   private byteArray: Uint8Array | undefined;
-  private addrRecvs: { i: number; recv: { addr: number | false; base?: number | false } }[] = [];
+  private addrRecvs: {
+    i: number;
+    recv: {
+      addr: number | false;
+      base?: number | false;
+      bytes?: number | false;
+    };
+  }[] = [];
   private alignments: { flp: IFilePos; align: number; msg: string; i: number }[] = [];
   private addr: { base: { addr: number; relativeTo: number }; startLength: number } | false = false;
 
@@ -149,6 +156,9 @@ class SectionBytes extends Section {
       if ('base' in recv) {
         recv.base = state.base.addr;
       }
+      if ('bytes' in recv) {
+        recv.bytes = startLength + i;
+      }
     }
     if (!this.byteArray) {
       this.byteArray = new Uint8Array(this.array);
@@ -162,6 +172,9 @@ class SectionBytes extends Section {
       recv.addr = false;
       if ('base' in recv) {
         recv.base = false;
+      }
+      if ('bytes' in recv) {
+        recv.bytes = false;
       }
     }
   }
@@ -435,11 +448,15 @@ class _SectionEmbed extends Section {
 
 class SectionPool extends Section {
   pendingPools: PendingWritePoolCommon[];
+  align: number;
 
-  constructor(pendingPools: PendingWritePoolCommon[]) {
+  constructor(pendingPools: PendingWritePoolCommon[], align: number) {
     super();
     this.pendingPools = pendingPools;
-    for (const p of pendingPools) p.captured = true;
+    this.align = align;
+    for (const p of pendingPools) {
+      p.captured = true;
+    }
   }
 
   clearWrite() {
@@ -454,8 +471,57 @@ class SectionPool extends Section {
     let bytes: Uint8Array | undefined = undefined;
     const startAddr = state.base.addr + startLength - state.base.relativeTo;
     for (const p of this.pendingPools) {
-      if (p.poolAddr === 'inline') continue; // instruction doesn't need pool
+      if (p.poolAddr === 'inline') {
+        // instruction doesn't need pool
+        continue;
+      }
       const cmdSize = p.cmdSize;
+
+      //
+      // if possible, search the current pool values to see if there are duplicates
+      //
+
+      if (typeof p.expr === 'number') {
+        const ex = p.expr;
+        let searchStart = 0;
+        while ((startAddr + searchStart) % cmdSize !== 0) {
+          searchStart++;
+        }
+        let found = false;
+        while (searchStart + cmdSize <= array.length) {
+          switch (cmdSize) {
+            case 1:
+              found = array[searchStart] === (ex & 0xff);
+              break;
+            case 2:
+              found = (array[searchStart] === (ex & 0xff)) &&
+                (array[searchStart + 1] === ((ex >> 8) & 0xff));
+              break;
+            case 4:
+              found = (array[searchStart] === (ex & 0xff)) &&
+                (array[searchStart + 1] === ((ex >> 8) & 0xff)) &&
+                (array[searchStart + 2] === ((ex >> 16) & 0xff)) &&
+                (array[searchStart + 3] === ((ex >> 24) & 0xff));
+              break;
+            default:
+              throw new Error(`Invalid command size: ${cmdSize}`);
+          }
+          if (found) {
+            break;
+          }
+          searchStart += cmdSize;
+        }
+        if (found) {
+          p.poolAddr = startAddr + searchStart;
+          p.poolWriteExpr = () => {};
+          continue;
+        }
+      }
+
+      //
+      // not found in pool yet, so add constant value
+      //
+
       // align the constant
       while ((startAddr + array.length) % cmdSize !== 0) {
         array.push(0);
@@ -463,27 +529,55 @@ class SectionPool extends Section {
       // store the final address
       p.poolAddr = startAddr + array.length;
       const i = array.length;
-      for (let j = 0; j < cmdSize; j++) array.push(0);
-      p.poolWriteExpr = (ex: number) => {
-        if (!bytes) throw new Error('Byte array isn\'t set');
+      if (typeof p.expr === 'number') {
+        // early write
+        const ex = p.expr;
         switch (cmdSize) {
           case 1:
-            bytes[i] = ex & 0xff;
+            array.push(ex & 0xff);
             break;
           case 2:
-            bytes[i] = ex & 0xff;
-            bytes[i + 1] = (ex >> 8) & 0xff;
+            array.push(ex & 0xff, (ex >> 8) & 0xff);
             break;
           case 4:
-            bytes[i] = ex & 0xff;
-            bytes[i + 1] = (ex >> 8) & 0xff;
-            bytes[i + 2] = (ex >> 16) & 0xff;
-            bytes[i + 3] = (ex >> 24) & 0xff;
+            array.push(ex & 0xff, (ex >> 8) & 0xff, (ex >> 16) & 0xff, (ex >> 24) & 0xff);
             break;
           default:
             throw new Error(`Invalid command size: ${cmdSize}`);
         }
-      };
+        p.poolWriteExpr = () => {};
+      } else {
+        // late write
+        for (let j = 0; j < cmdSize; j++) {
+          array.push(0);
+        }
+        p.poolWriteExpr = (ex: number) => {
+          if (!bytes) {
+            throw new Error('Byte array isn\'t set');
+          }
+          switch (cmdSize) {
+            case 1:
+              bytes[i] = ex & 0xff;
+              break;
+            case 2:
+              bytes[i] = ex & 0xff;
+              bytes[i + 1] = (ex >> 8) & 0xff;
+              break;
+            case 4:
+              bytes[i] = ex & 0xff;
+              bytes[i + 1] = (ex >> 8) & 0xff;
+              bytes[i + 2] = (ex >> 16) & 0xff;
+              bytes[i + 3] = (ex >> 24) & 0xff;
+              break;
+            default:
+              throw new Error(`Invalid command size: ${cmdSize}`);
+          }
+        };
+      }
+    }
+    // align the end
+    while ((startAddr + array.length) % this.align !== 0) {
+      array.push(0);
     }
     bytes = new Uint8Array(array);
     return [bytes];
@@ -627,6 +721,8 @@ export interface IPendingWriteContext {
   mode: Mode;
   addr: number | false;
   base: number | false;
+  bytes: number | false;
+  hereOffset: number;
 }
 
 abstract class PendingWrite {
@@ -796,7 +892,9 @@ class PendingWriteInstThumb extends PendingWriteInstCommon<Thumb.IOp> {
         symNums[key] = expr;
       } else {
         const v = expr.value(this.context, lookupFailMode);
-        if (v === false) return false;
+        if (v === false) {
+          return false;
+        }
         symNums[key] = v;
       }
     }
@@ -1117,6 +1215,10 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
   }
 
   writeInline(ex: number): boolean {
+    if (this.cmdSigned) {
+      // TODO: can we write sign extended loads as movs? probably
+      return false;
+    }
     const mov = calcRotImm(ex);
     if (mov !== false) {
       // convert to: mov rd, #expression
@@ -1164,8 +1266,8 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
         return true;
       }
 
-      if (typeof this.poolAddr !== 'number') { // shouldn't happen
-        return false;
+      if (typeof this.poolAddr !== 'number') {
+        throw new CompError(this.flp, 'Missing `.pool` statement for load');
       }
 
       const address = this.rewrite.addr();
@@ -1180,7 +1282,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
         if (offset < -4) {
           throw new Error('Pool offset shouldn\'t be negative');
         } else if (offset > 0xfff) {
-          throw new CompError(this.flp, 'Next .pool too far away');
+          throw new CompError(this.flp, 'Next `.pool` statement too far away');
         }
         this.rewrite.write(
           offset < 0
@@ -1195,7 +1297,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
         if (offset < -4) {
           throw new Error('Pool offset shouldn\'t be negative');
         } else if (offset > 0xff) {
-          throw new CompError(this.flp, 'Next .pool too far away');
+          throw new CompError(this.flp, 'Next `.pool` statement too far away');
         }
         const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
           Math.abs(offset) & 0xf;
@@ -1214,7 +1316,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
           if (offset < -4) {
             throw new Error('Pool offset shouldn\'t be negative');
           } else if (offset > 0xff) {
-            throw new CompError(this.flp, 'Next .pool too far away');
+            throw new CompError(this.flp, 'Next `.pool` statement too far away');
           }
           const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
             Math.abs(offset) & 0xf;
@@ -1233,7 +1335,9 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
       // pool isn't flattened yet, so try to convert to inline
       if (this.expr instanceof Expression) {
         const v = this.expr.value(this.context, lookupFailMode);
-        if (v === false) return false;
+        if (v === false) {
+          return false;
+        }
         this.expr = v;
       }
       return this.writeInline(this.expr);
@@ -1241,7 +1345,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
   }
 }
 
-class _PendingWritePoolThumb extends PendingWritePoolCommon {
+class PendingWritePoolThumb extends PendingWritePoolCommon {
   attemptWrite(lookupFailMode: LookupFailMode): boolean {
     if (lookupFailMode === 'deny') {
       // pool is flattened, so we have space in the pool if we need it
@@ -1340,13 +1444,15 @@ export class Import {
     return bytes;
   }
 
-  pendingWriteContext(): IPendingWriteContext {
+  pendingWriteContext(hereOffset: number): IPendingWriteContext {
     return {
       imp: this,
       defHere: this.defHere,
       mode: this.mode(),
       addr: false,
       base: false,
+      bytes: false,
+      hereOffset,
     };
   }
 
@@ -1390,6 +1496,9 @@ export class Import {
     if (this.defHere[0].has(name)) {
       throw new CompError(flp, `Cannot redefine: ${name}`);
     }
+    if (/^_[a-z]/.test(name)) {
+      throw new CompError(flp, `Cannot start name with reserved prefix \`_[a-z]\`: ${name}`);
+    }
   }
 
   addSymNum(flp: IFilePos, name: string, num: number) {
@@ -1405,7 +1514,7 @@ export class Import {
   }
 
   addSymConst(flp: IFilePos, name: string, body: Expression) {
-    const context = this.pendingWriteContext();
+    const context = this.pendingWriteContext(0);
     this.tailBytes().addAddrRecv(context);
     this.validateNewName(flp, name);
     this.defHere[0].set(name, { kind: 'const', context, body });
@@ -1538,7 +1647,10 @@ export class Import {
       }
     }
     if (pendingPools.length > 0) {
-      this.sections.push(new SectionPool(pendingPools));
+      const mode = this.mode();
+      this.sections.push(
+        new SectionPool(pendingPools, mode === 'arm' ? 4 : mode === 'thumb' ? 2 : 1),
+      );
     }
   }
 
@@ -1567,8 +1679,9 @@ export class Import {
 
   writeInstARM(flp: IFilePos, op: ARM.IOp, syms: ISyms) {
     const bytes = this.tailBytes();
+    bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
-    const context = this.pendingWriteContext();
+    const context = this.pendingWriteContext(4);
     const pw = new PendingWriteInstARM(flp, context, op, syms, rewrite);
     this.addPendingWrite(pw);
   }
@@ -1582,25 +1695,37 @@ export class Import {
     expr: Expression,
   ) {
     const bytes = this.tailBytes();
+    bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
-    const context = this.pendingWriteContext();
+    const context = this.pendingWriteContext(4);
     const pw = new PendingWritePoolARM(flp, context, cmdSize, cmdSigned, cond, rd, expr, rewrite);
     this.addPendingWrite(pw);
   }
 
   writeInstThumb(flp: IFilePos, op: Thumb.IOp, syms: ISyms) {
     const bytes = this.tailBytes();
+    bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
     const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
-    const context = this.pendingWriteContext();
+    const context = this.pendingWriteContext(op.doubleInstruction ? 4 : 2);
     const pw = new PendingWriteInstThumb(flp, context, op, syms, rewrite);
+    this.addPendingWrite(pw);
+  }
+
+  writePoolThumb(flp: IFilePos, rd: number, expr: Expression) {
+    const bytes = this.tailBytes();
+    bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
+    const rewrite = bytes.rewrite16();
+    const context = this.pendingWriteContext(2);
+    const pw = new PendingWritePoolThumb(flp, context, 4, rd, expr, rewrite);
     this.addPendingWrite(pw);
   }
 
   writeData(flp: IFilePos, dataType: DataType, data: Expression[]) {
     const bytes = this.tailBytes();
-    const context = this.pendingWriteContext();
+    const dataSize = dataTypeSize(dataType);
+    const context = this.pendingWriteContext(dataSize >> 3);
     let pw: PendingWrite;
-    switch (dataTypeSize(dataType)) {
+    switch (dataSize) {
       case 8: {
         const rewrite = bytes.rewriteArray8(data.length);
         pw = new PendingWriteData(flp, context, data, rewrite);
@@ -1638,9 +1763,10 @@ export class Import {
 
   writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: Expression) {
     const bytes = this.tailBytes();
-    const context = this.pendingWriteContext();
+    const dataSize = dataTypeSize(dataType);
+    const context = this.pendingWriteContext(dataSize >> 3);
     let pw: PendingWrite;
-    switch (dataTypeSize(dataType)) {
+    switch (dataSize) {
       case 8: {
         const rewrite = bytes.rewriteArray8(amount);
         pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
@@ -1685,7 +1811,7 @@ export class Import {
   }
 
   printf(flp: IFilePos, format: string, args: Expression[], error: boolean) {
-    const context = this.pendingWriteContext();
+    const context = this.pendingWriteContext(0);
     const pw = new PendingWritePrintf(flp, context, format, args, error, this.proj.getLog());
     this.addPendingWrite(pw);
   }

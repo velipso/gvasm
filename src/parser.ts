@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IFilePos, ILexKeyValue, ITok, ITokId } from './lexer.ts';
+import { IFilePos, ILexKeyValue, ITok } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
 import { Expression } from './expr.ts';
@@ -342,7 +342,7 @@ function validateStr(partStr: string, parser: Parser): boolean {
 
 function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
   try {
-    return Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'allow') === partNum;
+    return Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'allow') === partNum;
   } catch (_) {
     return false;
   }
@@ -361,7 +361,7 @@ function validateSymExpr(
       syms[partSym] = ex;
       return true;
     }
-    const v = ex.value(imp.pendingWriteContext(), 'deny');
+    const v = ex.value(imp.pendingWriteContext(0), 'deny');
     if (v === false || v >= 0) {
       return false;
     }
@@ -499,7 +499,7 @@ function parseARMStatement(
   return true;
 }
 
-function parseARMPoolStatement(cmd: ITokId, pool: IPool, imp: Import) {
+function parseARMPoolStatement(flp: IFilePos, cmd: string, pool: IPool, imp: Import) {
   let cmdSize = -1;
   let cmdSigned = false;
   let cond = -1;
@@ -507,20 +507,20 @@ function parseARMPoolStatement(cmd: ITokId, pool: IPool, imp: Import) {
     const ce = ARM.conditionEnum[ci];
     if (ce !== false) {
       for (const cs of ce.split('/')) {
-        if (cmd.id === `ldr${cs}` || (cs !== '' && cmd.id === `ldr.${cs}`)) {
+        if (cmd === `ldr${cs}` || (cs !== '' && cmd === `ldr.${cs}`)) {
           cmdSize = 4;
           cond = ci;
-        } else if (cmd.id === `ldrh${cs}` || (cs !== '' && cmd.id === `ldrh.${cs}`)) {
+        } else if (cmd === `ldrh${cs}` || (cs !== '' && cmd === `ldrh.${cs}`)) {
           cmdSize = 2;
           cond = ci;
-        } else if (cmd.id === `ldrsh${cs}` || (cs !== '' && cmd.id === `ldrsh.${cs}`)) {
+        } else if (cmd === `ldrsh${cs}` || (cs !== '' && cmd === `ldrsh.${cs}`)) {
           cmdSize = 2;
           cmdSigned = true;
           cond = ci;
-        } else if (cmd.id === `ldrb${cs}` || (cs !== '' && cmd.id === `ldrb.${cs}`)) {
+        } else if (cmd === `ldrb${cs}` || (cs !== '' && cmd === `ldrb.${cs}`)) {
           cmdSize = 1;
           cond = ci;
-        } else if (cmd.id === `ldrsb${cs}` || (cs !== '' && cmd.id === `ldrsb.${cs}`)) {
+        } else if (cmd === `ldrsb${cs}` || (cs !== '' && cmd === `ldrsb.${cs}`)) {
           cmdSize = 1;
           cmdSigned = true;
           cond = ci;
@@ -532,9 +532,9 @@ function parseARMPoolStatement(cmd: ITokId, pool: IPool, imp: Import) {
     }
   }
   if (cond < 0) {
-    throw new CompError(cmd, 'Invalid ARM pool statement');
+    throw new CompError(flp, 'Invalid ARM pool statement');
   }
-  imp.writePoolARM(cmd, cmdSize, cmdSigned, cond, pool.rd, pool.expr);
+  imp.writePoolARM(flp, cmdSize, cmdSigned, cond, pool.rd, pool.expr);
 }
 
 function parseThumbStatement(
@@ -613,8 +613,16 @@ function parseThumbStatement(
   return true;
 }
 
-function parseThumbPoolStatement(_cmd: ITokId, _pool: IPool, parser: Parser, _imp: Import) {
-  parser.forceNewline('Thumb statement');
+function parseThumbPoolStatement(
+  flp: IFilePos,
+  cmd: string,
+  pool: IPool,
+  imp: Import,
+) {
+  if (cmd !== 'ldr') {
+    throw new CompError(flp, 'Invalid thumb pool statement');
+  }
+  imp.writePoolThumb(flp, pool.rd, pool.expr);
 }
 
 async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
@@ -629,7 +637,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
         case 'id':
           switch (tk2.id) {
             case 'align': {
-              const context = imp.pendingWriteContext();
+              const context = imp.pendingWriteContext(0);
               const amount = Expression.parse(parser, imp).value(context, 'deny');
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
@@ -657,7 +665,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               imp.setMode('arm');
               break;
             case 'base': {
-              const base = Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'deny');
+              const base = Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'deny');
               if (base === false) {
                 throw new CompError(tk, 'Base must be constant');
               }
@@ -677,14 +685,16 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               if (!name || name.kind !== 'id') {
                 throw new CompError(name ?? tk, 'Expecting `.def name = value`');
               }
-              const paramNames: string[] = [];
+              let paramNames: string[] | undefined;
               if (parser.isNext('(')) {
                 parser.nextTok();
+                paramNames = [];
                 while (!parser.isNext(')')) {
                   const paramName = parser.nextTokOptional();
                   if (!paramName || paramName.kind !== 'id') {
                     throw new CompError(parser.last(), 'Expecting `.def name(arg1, arg2) = value`');
                   }
+                  imp.validateNewName(paramName, paramName.id);
                   if (paramNames.includes(paramName.id)) {
                     throw new CompError(
                       parser.last(),
@@ -768,7 +778,10 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
             case 'ub32fill':
             case 'um32fill':
             case 'ubm32fill': {
-              const amount = Expression.parse(parser, imp).value(imp.pendingWriteContext(), 'deny');
+              const amount = Expression.parse(parser, imp).value(
+                imp.pendingWriteContext(0),
+                'deny',
+              );
               if (amount === false) {
                 throw new CompError(tk, 'Data fill amount must be constant');
               }
@@ -872,6 +885,17 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
           parser.nextTok();
         }
       } else {
+        let opName = tk.id;
+        while (parser.isNext('.')) {
+          parser.nextTok();
+          opName += '.';
+          const p = parser.peekTokOptional();
+          if (p && p.kind === 'id') {
+            opName += p.id;
+            parser.nextTok();
+          }
+        }
+
         const mode = imp.mode();
         switch (mode) {
           case 'none':
@@ -879,18 +903,8 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
           case 'arm': {
             const pool = parsePoolStatement(parser, imp);
             if (pool) {
-              parseARMPoolStatement(tk, pool, imp);
+              parseARMPoolStatement(tk, opName, pool, imp);
             } else {
-              let opName = tk.id;
-              while (parser.isNext('.')) {
-                parser.nextTok();
-                opName += '.';
-                const p = parser.peekTokOptional();
-                if (p && p.kind === 'id') {
-                  opName += p.id;
-                  parser.nextTok();
-                }
-              }
               const ops = ARM.parsedOps[opName];
               if (!ops) {
                 throw new CompError(tk, `Unknown ARM command: ${opName}`);
@@ -924,18 +938,8 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
           case 'thumb': {
             const pool = parsePoolStatement(parser, imp);
             if (pool) {
-              parseThumbPoolStatement(tk, pool, parser, imp);
+              parseThumbPoolStatement(tk, opName, pool, imp);
             } else {
-              let opName = tk.id;
-              while (parser.isNext('.')) {
-                parser.nextTok();
-                opName += '.';
-                const p = parser.peekTokOptional();
-                if (p && p.kind === 'id') {
-                  opName += p.id;
-                  parser.nextTok();
-                }
-              }
               const ops = Thumb.parsedOps[opName];
               if (!ops) {
                 throw new CompError(tk, `Unknown Thumb command: ${opName}`);

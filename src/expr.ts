@@ -61,6 +61,7 @@ interface IExprNum {
 
 interface IExprReserved {
   kind: 'reserved';
+  flp: IFilePos;
   name:
     | '_arm'
     | '_base'
@@ -234,7 +235,7 @@ export class Expression {
   }
 
   static fromNum(num: number) {
-    return new Expression({ kind: 'num', value: num }, 0);
+    return new Expression({ kind: 'num', value: num }, -1);
   }
 
   static parse(parser: Parser, imp: Import, paramNames?: string[]): Expression {
@@ -324,7 +325,7 @@ export class Expression {
             } else if (parser.isNext('[')) {
               const tp = parser.nextTok();
               if (!parser.hasTok()) throw new CompError(tp, 'Invalid expression');
-              idPath.push(new Expression(term(), 0));
+              idPath.push(new Expression(term(), -1));
               if (!parser.isNext(']')) throw new CompError(tp, 'Invalid expression');
               parser.nextTok();
             } else {
@@ -353,7 +354,7 @@ export class Expression {
                 if (parser.isNext('(')) {
                   throw new CompError(parser.here(), 'Reserved identifier cannot be called');
                 }
-                value = { kind: 'reserved', name: idPath0 };
+                value = { kind: 'reserved', flp: t, name: idPath0 };
                 break;
               default:
                 value = { kind: 'lookup', flp: t, idPath, params: false };
@@ -522,7 +523,7 @@ export class Expression {
       return value;
     };
 
-    return new Expression(term(), paramNames?.length ?? 0);
+    return new Expression(term(), paramNames?.length ?? -1);
   }
 
   value(
@@ -541,13 +542,22 @@ export class Expression {
             case '_base':
               return context.base;
             case '_bytes':
-              throw 'TODO: _bytes';
+              return context.bytes ? context.bytes - context.hereOffset : false;
             case '_here':
-              return context.addr;
+              return context.addr ? context.addr - context.hereOffset : false;
             case '_main':
               return context.imp.main ? 1 : 0;
             case '_pc':
-              throw 'TODO: _pc';
+              switch (context.mode) {
+                case 'none':
+                  throw new CompError(ex.flp, 'Unknown assembler mode (`.arm` or `.thumb`)');
+                case 'arm':
+                  return context.addr ? context.addr - context.hereOffset + 8 : false;
+                case 'thumb':
+                  return context.addr ? context.addr - context.hereOffset + 4 : false;
+                default:
+                  return assertNever(context.mode);
+              }
             case '_thumb':
               return context.mode === 'thumb' ? 1 : 0;
             case '_version':
@@ -563,6 +573,10 @@ export class Expression {
             return v;
           } else if (v !== false && v !== 'notfound' && v.kind === 'const') {
             if (ex.params) {
+              if (v.body.paramSize < 0) {
+                throw new CompError(ex.flp, 'Constant cannot be called');
+              }
+              checkParamSize(ex.flp, ex.params.length, v.body.paramSize);
               const pvalues: number[] = [];
               for (const p of ex.params) {
                 const pv = get(p);
@@ -573,6 +587,9 @@ export class Expression {
               }
               return v.body.value(v.context, lookupFailMode, pvalues);
             } else {
+              if (v.body.paramSize >= 0) {
+                throw new CompError(ex.flp, 'Constant expecting to be called with parameters');
+              }
               return v.body.value(v.context, lookupFailMode);
             }
           } else if (v === false || lookupFailMode === 'allow') {

@@ -13,7 +13,7 @@ export function load(def: (test: ITest) => void) {
     desc: 'Verify default registers',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 mov r0, #0   /// 00 00 a0 e3
 mov r1, #0   /// 00 10 a0 e3
 mov r2, #0   /// 00 20 a0 e3
@@ -43,7 +43,7 @@ mov pc, #0   /// 00 f0 a0 e3
     desc: 'Reset register names',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 .regs r0-r11
 mov r0, #0   /// 00 00 a0 e3
 mov r1, #0   /// 00 10 a0 e3
@@ -74,7 +74,7 @@ mov pc, #0   /// 00 f0 a0 e3
     desc: 'Descending register names',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 .regs r11-r0
 mov r0, #0   /// 00 b0 a0 e3
 mov r1, #0   /// 00 a0 a0 e3
@@ -106,7 +106,7 @@ mov pc, #0   /// 00 f0 a0 e3
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 .regs a, r1-r11
 mov r0, #0
 `,
@@ -118,8 +118,8 @@ mov r0, #0
     desc: 'Parse register ranges correctly',
     kind: 'make',
     files: {
-      '/root/main': `
-.regs TEMP0-temp3, foo, bar, baz10-BAZ8, Qux, R5, r20-r20
+      '/root/main': `.arm
+.regs temp0-temp3, foo, bar, baz10-baz8, qux, r5, r20-r20
 mov temp0, #0  /// 00 00 a0 e3
 mov temp1, #0  /// 00 10 a0 e3
 mov temp2, #0  /// 00 20 a0 e3
@@ -142,7 +142,7 @@ mov r20, #0    /// 00 b0 a0 e3
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 .regs r5-r16
 mov r5, #0  /// 00 00 a0 e3
 `,
@@ -155,8 +155,8 @@ mov r5, #0  /// 00 00 a0 e3
     kind: 'make',
     error: true,
     files: {
-      '/root/main': `
-.regs r0-r10, SP
+      '/root/main': `.arm
+.regs r0-r10, sp
 mov r5, #0  /// 00 00 a0 e3
 `,
     },
@@ -167,7 +167,7 @@ mov r5, #0  /// 00 00 a0 e3
     desc: 'Register names are scoped',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
 .regs r0, r1-r11
 mov r0, #0        /// 00 00 a0 e3
 .begin
@@ -193,8 +193,8 @@ mov r0, #0        /// 00 00 a0 e3
       '/root/main:3:1: Registers: temp0, temp1, temp2, temp3, foo, bar, baz10, baz9, baz8, qux, r5, r20',
     ],
     files: {
-      '/root/main': `
-.regs TEMP0-temp3, foo, bar, baz10-BAZ8, Qux, R5, r20-r20
+      '/root/main': `.arm
+.regs temp0-temp3, foo, bar, baz10-baz8, qux, r5, r20-r20
 .regs
 `,
     },

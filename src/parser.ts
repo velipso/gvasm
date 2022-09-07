@@ -341,11 +341,7 @@ function validateStr(partStr: string, parser: Parser): boolean {
 }
 
 function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
-  try {
-    return Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'allow') === partNum;
-  } catch (_) {
-    return false;
-  }
+  return Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'allow') === partNum;
 }
 
 function validateSymExpr(
@@ -355,21 +351,17 @@ function validateSymExpr(
   parser: Parser,
   imp: Import,
 ): boolean {
-  try {
-    const ex = Expression.parse(parser, imp);
-    if (!negate) {
-      syms[partSym] = ex;
-      return true;
-    }
-    const v = ex.value(imp.pendingWriteContext(0), 'deny');
-    if (v === false || v >= 0) {
-      return false;
-    }
-    syms[partSym] = -v;
+  const ex = Expression.parse(parser, imp);
+  if (!negate) {
+    syms[partSym] = ex;
     return true;
-  } catch (_) {
+  }
+  const v = ex.value(imp.pendingWriteContext(0), 'deny');
+  if (v === false || v >= 0) {
     return false;
   }
+  syms[partSym] = -v;
+  return true;
 }
 
 function validateSymRegister(
@@ -380,20 +372,16 @@ function validateSymRegister(
   parser: Parser,
   imp: Import,
 ): boolean {
-  try {
-    const t = parser.nextTok();
-    if (!t || t.kind !== 'id') {
-      return false;
-    }
-    const reg = imp.decodeRegister(t, false);
-    if (reg >= low && reg <= high) {
-      syms[partSym] = reg;
-      return true;
-    }
-    return false;
-  } catch (_) {
+  const t = parser.nextTok();
+  if (!t || t.kind !== 'id') {
     return false;
   }
+  const reg = imp.decodeRegister(t, false);
+  if (reg >= low && reg <= high) {
+    syms[partSym] = reg;
+    return true;
+  }
+  return false;
 }
 
 function validateSymEnum(
@@ -625,7 +613,7 @@ function parseThumbPoolStatement(
   imp.writePoolThumb(flp, pool.rd, pool.expr);
 }
 
-async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
+function parseBeginBody(parser: Parser, imp: Import) {
   const tk = parser.nextTok();
   switch (tk.kind) {
     case 'punc': {
@@ -674,7 +662,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               break;
             }
             case 'begin':
-              await parseBegin(parser, imp);
+              parseBegin(parser, imp);
               break;
             case 'crc':
               parser.forceNewline('`.crc` statement');
@@ -721,6 +709,9 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               }
               break;
             }
+            case 'embed':
+              parseEmbed(parser, imp);
+              break;
             case 'i8':
             case 'ib8':
             case 'im8':
@@ -795,7 +786,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               break;
             }
             case 'include':
-              await parseInclude(parser, imp);
+              parseInclude(parser, imp);
               break;
             case 'logo':
               parser.forceNewline('`.logo` statement');
@@ -820,6 +811,9 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               imp.printf(tk, tk3.str, args, tk2.id === 'error');
               break;
             }
+            case 'regs':
+              parseRegs(tk, parser, imp);
+              break;
             case 'str': {
               let str = '';
               while (true) {
@@ -912,22 +906,24 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               let lastError = new CompError(tk, 'Failed to parse ARM statement');
               if (
                 !ops.some((op) => {
+                  parser.save();
+                  let res;
                   try {
-                    parser.save();
-                    const res = parseARMStatement(tk, op, parser, imp);
-                    if (res) {
-                      parser.applySave();
-                      return true;
-                    }
-                    parser.restore();
-                    return false;
+                    res = parseARMStatement(tk, op, parser, imp);
                   } catch (e) {
                     if (e instanceof CompError) {
                       lastError = e;
+                      parser.restore();
                       return false;
                     }
                     throw e;
                   }
+                  if (res) {
+                    parser.applySave();
+                    return true;
+                  }
+                  parser.restore();
+                  return false;
                 })
               ) {
                 throw lastError;
@@ -947,22 +943,24 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
               let lastError = new CompError(tk, 'Failed to parse Thumb statement');
               if (
                 !ops.some((op) => {
+                  parser.save();
+                  let res;
                   try {
-                    parser.save();
-                    const res = parseThumbStatement(tk, op, parser, imp);
-                    if (res) {
-                      parser.applySave();
-                      return true;
-                    }
-                    parser.restore();
-                    return false;
+                    res = parseThumbStatement(tk, op, parser, imp);
                   } catch (e) {
                     if (e instanceof CompError) {
                       lastError = e;
+                      parser.restore();
                       return false;
                     }
                     throw e;
                   }
+                  if (res) {
+                    parser.applySave();
+                    return true;
+                  }
+                  parser.restore();
+                  return false;
                 })
               ) {
                 throw lastError;
@@ -989,7 +987,7 @@ async function parseBeginBody(parser: Parser, imp: Import): Promise<void> {
   }
 }
 
-async function parseBegin(parser: Parser, imp: Import) {
+function parseBegin(parser: Parser, imp: Import) {
   const tk1 = parser.nextTok();
   let tk = tk1;
   let name: string | undefined;
@@ -1013,18 +1011,121 @@ async function parseBegin(parser: Parser, imp: Import) {
         `Missing \`.end\` for \`.begin\` on line ${tk.line}`,
       );
     }
-    await parseBeginBody(parser, imp);
+    parseBeginBody(parser, imp);
   }
   imp.beginEnd();
 }
 
-async function parseInclude(parser: Parser, imp: Import) {
+function parseInclude(parser: Parser, imp: Import) {
   const tk = parser.nextTok();
   if (tk.kind !== 'str') {
     throw new CompError(tk, 'Expecting `.include \'file.gvasm\'');
   }
   parser.forceNewline('`.include` statement');
-  await imp.include(tk.str);
+  imp.include(tk, tk.str);
+}
+
+function parseEmbed(parser: Parser, imp: Import) {
+  const tk = parser.nextTok();
+  if (tk.kind !== 'str') {
+    throw new CompError(tk, 'Expecting `.embed \'file.bin\'');
+  }
+  parser.forceNewline('`.embed` statement');
+  imp.embed(tk, tk.str);
+}
+
+function parseRegs(cmdFlp: IFilePos, parser: Parser, imp: Import) {
+  const regs: string[] = [];
+  while (parser.hasTok()) {
+    const name1 = parser.nextTok();
+    if (name1.kind === 'newline') {
+      break;
+    }
+    if (name1.kind !== 'id') {
+      throw new CompError(name1, 'Expecting register name');
+    }
+
+    if (parser.isNext('-')) {
+      parser.nextTok();
+      const name2 = parser.nextTokOptional();
+      if (!name2 || name2.kind !== 'id') {
+        throw new CompError(parser.last(), 'Expecting register name');
+      }
+      const m1 = name1.id.match(/[0-9]+$/);
+      const m2 = name2.id.match(/[0-9]+$/);
+      if (m1 === null || m2 === null) {
+        throw new CompError(
+          name1,
+          `Invalid range in \`.regs\` statement; names must end with numbers: ${name1.id}-${name2.id}`,
+        );
+      }
+      const prefix1 = name1.id.substr(0, name1.id.length - m1[0].length);
+      const prefix2 = name2.id.substr(0, name2.id.length - m2[0].length);
+      if (prefix1 !== prefix2) {
+        throw new CompError(
+          name1,
+          `Invalid range in \`.regs\` statement; prefix mismatch: ${name1.id}-${name2.id}`,
+        );
+      }
+      const n1 = parseFloat(m1[0]);
+      const n2 = parseFloat(m2[0]);
+      if (n2 < n1) {
+        if (n1 - n2 + 1 > 12) {
+          throw new CompError(
+            name1,
+            `Invalid range in \`.regs\` statement; range too large: ${name1.id}-${name2.id}`,
+          );
+        }
+        for (let i = n1; i >= n2; i--) {
+          const name = `${prefix1}${i}`;
+          imp.validateRegName(name2, name);
+          regs.push(name);
+        }
+      } else {
+        if (n2 - n1 + 1 > 12) {
+          throw new CompError(
+            name1,
+            `Invalid range in \`.regs\` statement; range too large: ${name1.id}-${name2.id}`,
+          );
+        }
+        for (let i = n1; i <= n2; i++) {
+          const name = `${prefix1}${i}`;
+          imp.validateRegName(name2, name);
+          regs.push(name);
+        }
+      }
+    } else {
+      imp.validateRegName(name1, name1.id);
+      regs.push(name1.id);
+    }
+    if (parser.isNext(',')) {
+      parser.nextTok();
+    } else if (parser.checkNewline()) {
+      break;
+    } else {
+      throw new CompError(parser.here(), 'Invalid `.regs` statement');
+    }
+  }
+
+  if (regs.length <= 0) {
+    imp.proj.getLog()(`${new CompError(cmdFlp, `Registers: ${imp.regs().join(', ')}`)}`);
+    return;
+  }
+
+  if (regs.length !== 12) {
+    if (regs.length > 0) {
+      throw new CompError(
+        cmdFlp,
+        `Invalid \`.regs\` statement; expecting 12 names but got ${regs.length}: ${
+          regs.join(', ')
+        }`,
+      );
+    } else {
+      throw new CompError(cmdFlp, 'Invalid `.regs` statement; missing register names');
+    }
+  }
+
+  imp.setRegs(regs);
 }
 
 async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
@@ -1107,7 +1208,7 @@ export async function parse(
 
   // parse imports, then body
   while (await parseFileImport(parser, imp));
-  while (parser.hasTok()) await parseBeginBody(parser, imp);
+  while (parser.hasTok()) parseBeginBody(parser, imp);
   imp.endOfFile();
   return imp;
 }

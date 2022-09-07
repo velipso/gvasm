@@ -9,7 +9,7 @@ import { IInitArgs, init } from './init.ts';
 import { IMakeArgs, make } from './make.ts';
 import { IRunArgs, run } from './run.ts';
 import { dis, IDisArgs } from './dis.ts';
-import { IItestArgs, itest as _itest } from './itest.ts';
+import { IItestArgs, itest } from './itest.ts';
 import { argParse, Path } from './deps.ts';
 import { ILexKeyValue, lexKeyValue } from './lexer.ts';
 
@@ -398,8 +398,7 @@ export async function main(args: string[]): Promise<number> {
     if (typeof itestArgs === 'number') {
       return itestArgs;
     }
-    return await _itest(itestArgs);
-    //return 0;
+    return await itest(itestArgs);
   }
   console.error(`Unknown command: ${args[0]}`);
   return 1;

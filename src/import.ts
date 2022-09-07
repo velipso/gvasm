@@ -417,32 +417,48 @@ class SectionBytes extends Section {
 }
 
 class SectionInclude extends Section {
+  flp: IFilePos;
   proj: Project;
+  fullFile: string;
   filename: string;
 
-  constructor(proj: Project, filename: string) {
+  constructor(flp: IFilePos, proj: Project, fullFile: string, filename: string) {
     super();
+    this.flp = flp;
     this.proj = proj;
+    this.fullFile = fullFile;
     this.filename = filename;
   }
 
-  flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
-    return this.proj.include(this.filename, state, startLength);
+  async flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
+    try {
+      return await this.proj.include(this.fullFile, state, startLength);
+    } catch (_) {
+      throw new CompError(this.flp, `Failed to include: ${this.filename}`);
+    }
   }
 }
 
-class _SectionEmbed extends Section {
+class SectionEmbed extends Section {
+  flp: IFilePos;
   proj: Project;
+  fullFile: string;
   filename: string;
 
-  constructor(proj: Project, filename: string) {
+  constructor(flp: IFilePos, proj: Project, fullFile: string, filename: string) {
     super();
+    this.flp = flp;
     this.proj = proj;
+    this.fullFile = fullFile;
     this.filename = filename;
   }
 
   async flatten(_state: IFileState, _startLength: number): Promise<Uint8Array[]> {
-    return [await this.proj.embed(this.filename)];
+    try {
+      return [await this.proj.embed(this.fullFile)];
+    } catch (_) {
+      throw new CompError(this.flp, `Failed to embed: ${this.filename}`);
+    }
   }
 }
 
@@ -1490,6 +1506,13 @@ export class Import {
     if (this.isRegister(name)) {
       throw new CompError(flp, `Cannot use register name: ${name}`);
     }
+    this.validateRegName(flp, name);
+  }
+
+  validateRegName(flp: IFilePos, name: string) {
+    if (Import.reservedRegs.includes(name)) {
+      throw new CompError(flp, `Cannot use reserved register name: ${name}`);
+    }
     if (reservedNames.includes(name)) {
       throw new CompError(flp, `Cannot use reserved name: ${name}`);
     }
@@ -1592,24 +1615,36 @@ export class Import {
 
   async importAll(flp: IFilePos, filename: string, name: string) {
     const fullFile = this.proj.resolveFile(filename, this.filename);
-    await this.proj.import(fullFile);
+    try {
+      await this.proj.import(fullFile);
+    } catch (_) {
+      throw new CompError(flp, `Failed to import file: ${filename}`);
+    }
     this.validateNewName(flp, name);
     this.defTable.set(name, { kind: 'importAll', filename: fullFile });
   }
 
   async importNames(flp: IFilePos, filename: string, names: string[]) {
     const fullFile = this.proj.resolveFile(filename, this.filename);
-    await this.proj.import(fullFile);
+    try {
+      await this.proj.import(fullFile);
+    } catch (_) {
+      throw new CompError(flp, `Failed to import file: ${filename}`);
+    }
     for (const name of names) {
       this.validateNewName(flp, name);
       this.defTable.set(name, { kind: 'importName', filename: fullFile, name });
     }
   }
 
-  include(filename: string) {
+  include(flp: IFilePos, filename: string) {
     const fullFile = this.proj.resolveFile(filename, this.filename);
-    this.sections.push(new SectionInclude(this.proj, fullFile));
-    return Promise.resolve();
+    this.sections.push(new SectionInclude(flp, this.proj, fullFile, filename));
+  }
+
+  embed(flp: IFilePos, filename: string) {
+    const fullFile = this.proj.resolveFile(filename, this.filename);
+    this.sections.push(new SectionEmbed(flp, this.proj, fullFile, filename));
   }
 
   beginStart(flp: IFilePos, name: string | undefined) {

@@ -7,19 +7,19 @@
 
 import { load as basicLoad } from './itests/basic.ts';
 import { load as exprLoad } from './itests/expr.ts';
-//import { load as filesLoad } from './itests/files.ts';
+import { load as filesLoad } from './itests/files.ts';
 import { load as armLoad } from './itests/arm.ts';
 import { load as thumbLoad } from './itests/thumb.ts';
 import { load as poolLoad } from './itests/pool.ts';
 import { load as constLoad } from './itests/const.ts';
 //import { load as scopeLoad } from './itests/scope.ts';
-//import { load as printfLoad } from './itests/printf.ts';
+import { load as printfLoad } from './itests/printf.ts';
 //import { load as ifLoad } from './itests/if.ts';
 //import { load as structLoad } from './itests/struct.ts';
 //import { load as scriptLoad } from './itests/script.ts';
-//import { load as sinkLoad } from './itests/sink.ts';
+import { load as sinkLoad } from './itests/sink.ts';
 //import { load as stdlibLoad } from './itests/stdlib.ts';
-//import { load as regsLoad } from './itests/regs.ts';
+import { load as regsLoad } from './itests/regs.ts';
 //import { load as runLoad } from './itests/run.ts';
 import { IMakeResult, makeFromFile } from './make.ts';
 //import { runResult } from './run.ts';
@@ -350,19 +350,19 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   // load the tests
   basicLoad(def);
   exprLoad(def);
-  // TODO: filesLoad(def);
+  filesLoad(def);
   armLoad(def);
   thumbLoad(def);
   poolLoad(def);
   constLoad(def);
   // TODO: scopeLoad(def);
-  // TODO: printfLoad(def);
+  printfLoad(def);
   // TODO: ifLoad(def);
   // TODO: structLoad(def);
   // TODO: scriptLoad(def);
-  // TODO: sinkLoad(def);
+  sinkLoad(def);
   // TODO: stdlibLoad(def);
-  // TODO: regsLoad(def);
+  regsLoad(def);
   // TODO: runLoad(def);
 
   // execute the tests that match any filter

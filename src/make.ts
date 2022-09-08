@@ -212,73 +212,6 @@ function parseBlockStatement(
 ): boolean {
   const ds = state.dotStack[state.dotStack.length - 1];
   switch (cmd) {
-    case '.begin':
-      if (line.length > 0 && state.active) {
-        throw 'Invalid .begin statement';
-      }
-      if (state.active) {
-        state.ctable.scopeBegin();
-        state.bytes.scopeBegin();
-      }
-      state.dotStack.push({
-        kind: 'begin',
-        arm: isARM(state),
-        base: getBase(state),
-        regs: getRegs(state),
-        flp,
-      });
-      return true;
-    case '.script':
-      if (line.length > 0 && state.active) {
-        throw 'Invalid .script statement';
-      }
-      if (state.active) {
-        const body: ILineStr[] = [];
-        const resolvedStartFile = pathResolve(state.posix, flp.filename);
-        const startFile = pathBasename(state.posix, flp.filename);
-        const scr = sink.scr_new(
-          {
-            f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
-              if (file === resolvedStartFile) {
-                return Promise.resolve(sink.fstype.FILE);
-              }
-              return state.fileType(file);
-            },
-            f_fsread: async (scr: sink.scr, file: string): Promise<boolean> => {
-              if (file === resolvedStartFile) {
-                await sink.scr_write(
-                  scr,
-                  body.map((b) => b.data).join('\n'),
-                  body[0]?.line ?? 1,
-                );
-                return true;
-              }
-              try {
-                const data = await state.readBinaryFile(file);
-                let text = '';
-                for (const b of data) {
-                  text += String.fromCharCode(b);
-                }
-                await sink.scr_write(scr, text, body[0]?.line ?? 1);
-                return true;
-              } catch (_e) {
-                // ignore errors
-              }
-              return false;
-            },
-          },
-          pathDirname(state.posix, resolvedStartFile),
-          state.posix,
-          false,
-        );
-        sink.scr_addpath(scr, '.');
-        loadLibIntoScript(scr, state.ctable);
-        state.script = { scr, startFile, body };
-      } else {
-        state.script = true; // we're in a script, but we're ignoring it
-      }
-      state.dotStack.push({ kind: 'script', flp });
-      return true;
     case '.once': {
       if (line.length > 0 && state.active) {
         throw 'Invalid .once statement';
@@ -662,7 +595,7 @@ export async function makeFromFile(
   fileType: (filename: string) => Promise<sink.fstype>,
   readTextFile: (filename: string) => Promise<string>,
   readBinaryFile: (filename: string) => Promise<Uint8Array>,
-  watchFileChanges: (filenames: string[]) => Promise<string[]>,
+  watchFileChanges: (filenames: string[]) => Promise<string[] | false>,
   log: (str: string) => void,
 ): Promise<void> {
   const mainFilename = path.isAbsolute(input) ? input : path.resolve(cwd, input);
@@ -673,10 +606,7 @@ export async function makeFromFile(
     cwd,
     path,
     fileType,
-    (filename: string): Promise<string> => {
-      console.log('  > reading:', filename);
-      return readTextFile(filename);
-    },
+    readTextFile,
     readBinaryFile,
     log,
   );
@@ -684,281 +614,15 @@ export async function makeFromFile(
   if (watch) {
     while (true) {
       await output(await proj.make());
-      proj.invalidate(await watchFileChanges(proj.filenames()));
+      const changes = await watchFileChanges(proj.filenames());
+      if (changes === false) {
+        break;
+      }
+      proj.invalidate(changes);
     }
   } else {
     await output(await proj.make());
   }
-
-  /*
-  let data;
-  try {
-    data = await readTextFile(fullFile);
-  } catch (_) {
-    return { errors: [`Failed to read file: ${fullFile}`] };
-  }
-
-  try {
-    const tks = lex(data);
-    const store: Map<string, string> = new Map();
-    console.log(await parse(
-      fullFile,
-      tks,
-      store,
-      defines,
-      posix,
-      isAbsolute,
-      fileType,
-      readTextFile,
-      readBinaryFile,
-      log
-    ));
-  } catch (e) {
-    if (e instanceof CompError) {
-      return { errors: [errorString(filename, e.lc, e.message)] };
-    } else {
-      throw e;
-    }
-  }
-
-  throw new Error('TODO: parsed file, now what?');
-
-  const lx = lexNew();
-  const bytes = new Bytes();
-  const state: IParseState = {
-    firstARM: true,
-    arm: true,
-    base: bytes.getBase(),
-    main: true,
-    regs: defaultRegs,
-    bytes,
-    debug: [],
-    ctable: new ConstTable(
-      [
-        '$_version',
-        '$_arm',
-        '$_thumb',
-        '$_main',
-        '$_here',
-        '$_pc',
-        '$_base',
-        '$_bytes',
-      ],
-      (cname) => {
-        if (cname === '$_version') {
-          return version;
-        } else if (cname === '$_arm') {
-          return isARM(state) ? 1 : 0;
-        } else if (cname === '$_thumb') {
-          return !isARM(state) ? 1 : 0;
-        } else if (cname === '$_main') {
-          return state.main ? 1 : 0;
-        } else if (cname === '$_here') {
-          return state.bytes.nextAddress();
-        } else if (cname === '$_pc') {
-          return state.bytes.nextAddress() + (isARM(state) ? 8 : 4);
-        } else if (cname === '$_base') {
-          return state.bytes.getBase().value;
-        } else if (cname === '$_bytes') {
-          return state.bytes.length();
-        }
-        return false;
-      },
-    ),
-    active: true,
-    struct: false,
-    dotStack: [],
-    script: false,
-    store: {},
-    onceFound: new Set(),
-    posix,
-    fileType,
-    readBinaryFile,
-    log,
-  };
-
-  for (const def of defines) {
-    try {
-      state.ctable.defNum(`\$${def.key.toLowerCase()}`, def.value);
-    } catch (e) {
-      return { errors: [e] };
-    }
-  }
-
-  const alreadyIncluded = new Set<string>();
-  const tokens: ITok[] = [];
-  let linePut;
-  while ((linePut = linePuts.shift())) {
-    switch (linePut.kind) {
-      case 'bytes':
-        state.bytes.writeArray(linePut.data);
-        break;
-      case 'str': {
-        const { filename, line, data } = linePut;
-        state.main = linePut.main;
-        if (state.script) {
-          // process sink script
-          const tok = lexAddLine({ ...lx }, filename, line, data).shift();
-          if (tok && tok.kind === TokEnum.ID && tok.id === '.end') {
-            if (state.script === true) {
-              // ignored script section
-              state.script = false;
-              linePuts.unshift(linePut);
-            } else {
-              if (
-                await sink.scr_loadfile(state.script.scr, state.script.startFile)
-              ) {
-                const put: ILinePut[] = [];
-                const ctx = sink.ctx_new(state.script.scr, {
-                  f_say: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
-                    log(str);
-                    return Promise.resolve(sink.NIL);
-                  },
-                  f_warn: () => Promise.resolve(sink.NIL),
-                  f_ask: () => Promise.resolve(sink.NIL),
-                });
-                loadLibIntoContext(ctx, put, state.store, linePut.main, state.ctable);
-                const run = await sink.ctx_run(ctx);
-                if (run === sink.run.PASS) {
-                  linePuts.unshift(linePut);
-                  for (let i = put.length - 1; i >= 0; i--) {
-                    linePuts.unshift(put[i]);
-                  }
-                  state.script = false;
-                } else {
-                  return {
-                    errors: [
-                      sink.ctx_geterr(ctx) ??
-                        errorString({ ...linePut, chr: 1 }, 'Failed to run script'),
-                    ],
-                  };
-                }
-              } else {
-                return {
-                  errors: [
-                    sink.scr_geterr(state.script.scr) ??
-                      errorString(
-                        { ...linePut, chr: 1 },
-                        'Failed to compile script',
-                      ),
-                  ],
-                };
-              }
-            }
-          } else {
-            if (state.script !== true) { // if not ignored
-              state.script.body.push(linePut);
-            }
-          }
-        } else {
-          // process assembly
-          tokens.push(...lexAddLine(lx, filename, line, data));
-
-          const errors: string[] = [];
-          if (
-            tokens.filter((t) => {
-              if (t.kind === TokEnum.ERROR) {
-                errors.push(errorString(t.flp, t.msg));
-                return true;
-              }
-            }).length > 0
-          ) {
-            return { errors };
-          }
-
-          if (
-            tokens.length > 0 && tokens[tokens.length - 1].kind === TokEnum.NEWLINE
-          ) {
-            tokens.pop(); // remove newline
-            if (tokens.length > 0) {
-              const flp = tokens[0].flp;
-              try {
-                const includeEmbed = parseLine(state, tokens);
-                tokens.splice(0, tokens.length); // remove all tokens
-
-                if (includeEmbed && 'stdlib' in includeEmbed) {
-                  linePuts.unshift(...splitLines('stdlib', stdlib, false));
-                } else if (includeEmbed && 'extlib' in includeEmbed) {
-                  linePuts.unshift(...splitLines('extlib', extlib, false));
-                } else if (includeEmbed && 'include' in includeEmbed) {
-                  const { include } = includeEmbed;
-                  const full = isAbsolute(include)
-                    ? include
-                    : pathJoin(posix, pathDirname(posix, flp.filename), include);
-
-                  const includeKey = `${flpString(flp)}:${full}`;
-                  if (alreadyIncluded.has(includeKey)) {
-                    return {
-                      errors: [errorString(flp, `Circular include of: ${full}`)],
-                    };
-                  }
-                  alreadyIncluded.add(includeKey);
-
-                  let data2;
-                  try {
-                    data2 = await readTextFile(full);
-                  } catch (_) {
-                    return {
-                      errors: [errorString(flp, `Failed to include file: ${full}`)],
-                    };
-                  }
-
-                  linePuts.unshift(...splitLines(full, data2, false));
-                } else if (includeEmbed && 'embed' in includeEmbed) {
-                  const { embed } = includeEmbed;
-                  const full = isAbsolute(embed)
-                    ? embed
-                    : pathJoin(posix, pathDirname(posix, flp.filename), embed);
-
-                  let data2;
-                  try {
-                    data2 = await readBinaryFile(full);
-                  } catch (_) {
-                    return {
-                      errors: [errorString(flp, `Failed to embed file: ${full}`)],
-                    };
-                  }
-
-                  state.bytes.writeArray(data2);
-                }
-              } catch (e) {
-                if (typeof e === 'string') {
-                  return { errors: [errorString(flp, e)] };
-                }
-                throw e;
-              }
-            }
-          }
-        }
-        break;
-      }
-      default:
-        assertNever(linePut);
-    }
-  }
-
-  // all done, verify that we don't have any open blocks
-  const ds = state.dotStack[state.dotStack.length - 1];
-  if (ds) {
-    return {
-      errors: [errorString(
-        ds.flp,
-        `Missing .end${ds.kind === 'macro' ? 'm' : ''} for .${ds.kind} statement`,
-      )],
-    };
-  }
-
-  let result;
-  try {
-    result = state.bytes.get();
-  } catch (e) {
-    if (typeof e === 'string') {
-      return { errors: [e] };
-    }
-    throw e;
-  }
-  return { result, base: state.bytes.firstBase, arm: state.firstARM, debug: state.debug };
-  */
 }
 
 export async function makeResult(

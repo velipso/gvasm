@@ -21,6 +21,12 @@ export class Parser {
     this.tks = tks;
   }
 
+  insert(tks: ITok[]) {
+    const before = this.tks.slice(0, this.i);
+    const after = this.tks.slice(this.i);
+    this.tks = before.concat(tks).concat(after);
+  }
+
   here(): IFilePos {
     if (this.tks.length <= 0) {
       return { filename: '', line: 1, chr: 1 };
@@ -156,18 +162,14 @@ export class Parser {
 }
 
 export class CompError extends Error {
-  filename: string;
-  line: number;
-  chr: number;
+  flp: IFilePos | false;
 
-  constructor({ filename, line, chr }: IFilePos, msg: string) {
+  constructor(flp: IFilePos | false, msg: string) {
     super(msg);
-    this.filename = filename;
-    this.line = line;
-    this.chr = chr;
+    this.flp = flp;
   }
 
-  static errorString(filename: string, line: number, chr: number, msg: string) {
+  static errorString({ filename, line, chr }: IFilePos, msg: string) {
     if (!filename) {
       return `${line}:${chr}: ${msg}`;
     }
@@ -175,7 +177,7 @@ export class CompError extends Error {
   }
 
   toString() {
-    return CompError.errorString(this.filename, this.line, this.chr, this.message);
+    return this.flp ? CompError.errorString(this.flp, this.message) : this.message;
   }
 }
 
@@ -613,7 +615,7 @@ function parseThumbPoolStatement(
   imp.writePoolThumb(flp, pool.rd, pool.expr);
 }
 
-function parseBeginBody(parser: Parser, imp: Import) {
+async function parseBeginBody(parser: Parser, imp: Import) {
   const tk = parser.nextTok();
   switch (tk.kind) {
     case 'punc': {
@@ -662,7 +664,7 @@ function parseBeginBody(parser: Parser, imp: Import) {
               break;
             }
             case 'begin':
-              parseBegin(parser, imp);
+              await parseBegin(parser, imp);
               break;
             case 'crc':
               parser.forceNewline('`.crc` statement');
@@ -814,6 +816,9 @@ function parseBeginBody(parser: Parser, imp: Import) {
             case 'regs':
               parseRegs(tk, parser, imp);
               break;
+            case 'script':
+              await parseScript(parser, imp);
+              break;
             case 'str': {
               let str = '';
               while (true) {
@@ -853,9 +858,13 @@ function parseBeginBody(parser: Parser, imp: Import) {
         case 'newline':
         case 'num':
         case 'str':
+        case 'script':
           throw new CompError(tk2, 'Invalid statement');
         case 'error':
           throw new CompError(tk2, tk2.msg);
+        case 'closure':
+          tk2.closure();
+          break;
         default:
           assertNever(tk2);
       }
@@ -979,15 +988,19 @@ function parseBeginBody(parser: Parser, imp: Import) {
     case 'num':
       throw 'TODO: numbered labels';
     case 'str':
+    case 'script':
       throw new CompError(tk, 'Invalid statement inside `.begin`');
     case 'error':
       throw new CompError(tk, tk.msg);
+    case 'closure':
+      tk.closure();
+      break;
     default:
       assertNever(tk);
   }
 }
 
-function parseBegin(parser: Parser, imp: Import) {
+async function parseBegin(parser: Parser, imp: Import) {
   const tk1 = parser.nextTok();
   let tk = tk1;
   let name: string | undefined;
@@ -1006,12 +1019,9 @@ function parseBegin(parser: Parser, imp: Import) {
   imp.beginStart(tk1, name);
   while (!parser.checkEnd()) {
     if (!parser.hasTok()) {
-      throw new CompError(
-        parser.tks[parser.tks.length - 1],
-        `Missing \`.end\` for \`.begin\` on line ${tk.line}`,
-      );
+      throw new CompError(parser.here(), `Missing \`.end\` for \`.begin\` on line ${tk.line}`);
     }
-    parseBeginBody(parser, imp);
+    await parseBeginBody(parser, imp);
   }
   imp.beginEnd();
 }
@@ -1128,6 +1138,34 @@ function parseRegs(cmdFlp: IFilePos, parser: Parser, imp: Import) {
   imp.setRegs(regs);
 }
 
+async function parseScript(parser: Parser, imp: Import) {
+  const tk1 = parser.nextTok();
+  let tk = tk1;
+  let name: string | undefined;
+  if (tk.kind === 'id') {
+    name = tk.id;
+    if (!parser.hasTok()) {
+      throw new CompError(tk, 'Missing `.end` for `.begin`');
+    }
+    tk = parser.nextTok();
+  }
+  if (tk.kind !== 'newline') {
+    throw new CompError(tk, 'Expecting `.begin` or `.begin Name`');
+  }
+
+  // parse script body
+  imp.beginStart(tk1, name);
+  const str = parser.nextTokOptional();
+  if (!str || str.kind !== 'script') {
+    throw new CompError(parser.last(), 'Missing script body');
+  }
+  if (!parser.checkEnd()) {
+    throw new CompError(parser.here(), `Missing \`.end\` for \`.script\` on line ${tk.line}`);
+  }
+  parser.insert(await imp.proj.runScript(tk, imp, str.body));
+  imp.beginEnd();
+}
+
 async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
   parser.trim();
   if (parser.isNext2('.', 'stdlib')) {
@@ -1208,7 +1246,9 @@ export async function parse(
 
   // parse imports, then body
   while (await parseFileImport(parser, imp));
-  while (parser.hasTok()) parseBeginBody(parser, imp);
+  while (parser.hasTok()) {
+    await parseBeginBody(parser, imp);
+  }
   imp.endOfFile();
   return imp;
 }

@@ -43,6 +43,23 @@ export type DataType =
   | 'um32'
   | 'ubm32';
 
+export function dataTypeCreate(
+  unsigned: boolean,
+  bigendian: boolean,
+  misaligned: boolean,
+  size: number,
+): DataType {
+  if (size !== 8 && size !== 16 && size !== 32) {
+    throw new Error('Invalid data type size');
+  }
+  return (
+    (unsigned ? 'u' : 'i') +
+    (bigendian ? 'b' : '') +
+    (misaligned ? 'm' : '') +
+    size
+  ) as DataType;
+}
+
 export function dataTypeSigned(dataType: DataType) {
   return dataType.charAt(0) === 'i';
 }
@@ -635,14 +652,14 @@ class SectionAlign extends Section {
           assertNever(this.mode);
       }
     } else {
-      fill = [this.fill];
+      fill = [this.fill & 0xff];
     }
     while (true) {
       const addr = startAddr + array.length;
       if (addr % this.amount === 0) {
         break;
       }
-      array.push(fill[addr % fill.length] & 0xff);
+      array.push(fill[addr % fill.length]);
     }
     return array.length <= 0 ? [] : [new Uint8Array(array)];
   }
@@ -697,17 +714,24 @@ interface IDefConst {
   body: Expression;
 }
 
+interface IDefScriptExport {
+  kind: 'scriptExport';
+  data: string;
+}
+
 export type IDef =
   | IDefBegin
   | IDefImportAll
   | IDefImportName
   | IDefLabel
   | IDefNum
-  | IDefConst;
+  | IDefConst
+  | IDefScriptExport;
 
 type ILookup =
   | number
-  | IDefConst;
+  | IDefConst
+  | IDefScriptExport;
 
 class BitNumber {
   private maxSize: number;
@@ -1013,7 +1037,7 @@ class PendingWriteData extends PendingWrite {
   constructor(
     flp: IFilePos,
     context: IPendingWriteContext,
-    data: Expression[],
+    data: (number | Expression)[],
     rewrite: IRewrite<number[]>,
   ) {
     super(flp, context);
@@ -1071,7 +1095,7 @@ class PendingWriteDataFill extends PendingWrite {
     flp: IFilePos,
     context: IPendingWriteContext,
     amount: number,
-    fill: Expression,
+    fill: number | Expression,
     rewrite: IRewrite<number[]>,
   ) {
     super(flp, context);
@@ -1510,7 +1534,7 @@ export class Import {
   }
 
   validateRegName(flp: IFilePos, name: string) {
-    if (Import.reservedRegs.includes(name)) {
+    if (name === 'cpsr' || Import.reservedRegs.includes(name)) {
       throw new CompError(flp, `Cannot use reserved register name: ${name}`);
     }
     if (reservedNames.includes(name)) {
@@ -1556,7 +1580,7 @@ export class Import {
   lookup(
     flp: IFilePos,
     defHere: DefMap[],
-    idPath: (string | Expression)[],
+    idPath: (string | number | Expression)[],
   ): ILookup | 'notfound' | false {
     const lookup = (i: number, here: DefMap): ILookup | 'notfound' | false => {
       const p = idPath[i];
@@ -1598,6 +1622,11 @@ export class Import {
           }
           return root.num;
         case 'const':
+          return root;
+        case 'scriptExport':
+          if (i + 1 < idPath.length) {
+            throw new CompError(flp, 'Cannot index into script export');
+          }
           return root;
         default:
           return assertNever(root);
@@ -1669,6 +1698,15 @@ export class Import {
     const entry = this.levels.shift();
     if (entry && entry.shiftState) {
       this.sections.push(new SectionStateShift());
+    }
+  }
+
+  scriptExport(flp: IFilePos, name: string, data: string | number) {
+    this.validateNewName(flp, name);
+    if (typeof data === 'number') {
+      this.defHere[0].set(name, { kind: 'num', num: data });
+    } else {
+      this.defHere[0].set(name, { kind: 'scriptExport', data });
     }
   }
 
@@ -1755,7 +1793,7 @@ export class Import {
     this.addPendingWrite(pw);
   }
 
-  writeData(flp: IFilePos, dataType: DataType, data: Expression[]) {
+  writeData(flp: IFilePos, dataType: DataType, data: (number | Expression)[]) {
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.pendingWriteContext(dataSize >> 3);
@@ -1796,7 +1834,7 @@ export class Import {
     this.addPendingWrite(pw);
   }
 
-  writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: Expression) {
+  writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: number | Expression) {
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.pendingWriteContext(dataSize >> 3);

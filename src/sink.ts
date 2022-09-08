@@ -75,6 +75,8 @@ export type fsread_f = (
   incuser: unknown,
 ) => Promise<boolean>;
 export type io_f = (ctx: ctx, str: str, iouser: unknown) => Promise<val>;
+export type xlookup_f = (ctx: ctx, path: val, iouser: unknown) => val;
+export type xexport_f = (ctx: ctx, name: string, data: string | number, iouser: unknown) => void;
 export type native_f = (
   ctx: ctx,
   args: val[],
@@ -86,6 +88,8 @@ export interface io_st {
   f_say?: io_f;
   f_warn?: io_f;
   f_ask?: io_f;
+  f_xlookup: xlookup_f;
+  f_xexport: xexport_f;
   user?: unknown;
 }
 
@@ -329,6 +333,8 @@ enum op_enum {
   GC_GETLEVEL = 0x96,
   GC_SETLEVEL = 0x97,
   GC_RUN = 0x98,
+  XLOOKUP = 0x99,
+  XEXPORT = 0x9a,
   // RESERVED     = 0xFD,
   // fake ops
   GT = 0x1F0,
@@ -669,6 +675,10 @@ function op_paramcat(op: op_enum): op_pcat {
       return op_pcat.VV;
     case op_enum.GC_RUN:
       return op_pcat.V;
+    case op_enum.XLOOKUP:
+      return op_pcat.VV;
+    case op_enum.XEXPORT:
+      return op_pcat.STR;
     case op_enum.GT:
       return op_pcat.INVALID;
     case op_enum.GTE:
@@ -976,18 +986,6 @@ function op_call(
   );
 }
 
-function op_isnative(b: number[], ret: varloc_st, index: number): void {
-  b.push(
-    op_enum.ISNATIVE,
-    ret.frame,
-    ret.index,
-    index % 256,
-    Math.floor(index / 0x100) % 256,
-    Math.floor(index / 0x10000) % 256,
-    Math.floor(index / 0x1000000) % 256,
-  );
-}
-
 function op_native(
   b: number[],
   ret: varloc_st,
@@ -1087,6 +1085,18 @@ function op_param3(
   );
 }
 
+function op_xexport(b: number[], nameIndex: number, src: varloc_st) {
+  b.push(
+    op_enum.XEXPORT,
+    src.frame,
+    src.index,
+    nameIndex % 256,
+    Math.floor(nameIndex / 256) % 256,
+    Math.floor(nameIndex / 65536) % 256,
+    Math.floor(nameIndex / 16777216) % 256,
+  );
+}
+
 enum ks_enum {
   INVALID,
   PLUS,
@@ -1148,6 +1158,8 @@ enum ks_enum {
   USING,
   VAR,
   WHILE,
+  XLOOKUP,
+  XEXPORT,
 }
 
 function ks_char(c: string): ks_enum {
@@ -1220,6 +1232,8 @@ function ks_str(s: string): ks_enum {
   else if (s === 'using') return ks_enum.USING;
   else if (s === 'var') return ks_enum.VAR;
   else if (s === 'while') return ks_enum.WHILE;
+  else if (s === 'lookup') return ks_enum.XLOOKUP;
+  else if (s === 'export') return ks_enum.XEXPORT;
   return ks_enum.INVALID;
 }
 
@@ -1740,7 +1754,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
           }
         }
         lx.state = lex_enum.SPECIAL1;
-      } else if (isIdentStart(ch1) || ch1 === '$') {
+      } else if (isIdentStart(ch1)) {
         lx.str = ch1;
         lx.state = lex_enum.IDENT;
       } else if (isNum(ch1)) {
@@ -1873,7 +1887,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
       break;
 
     case lex_enum.IDENT:
-      if (!(isIdentBody(ch1) || (lx.str === '$' && ch1 === '$'))) {
+      if (!isIdentBody(ch1)) {
         const ksk = ks_str(lx.str);
         if (ksk !== ks_enum.INVALID) {
           tks.push(tok_ks(flpS, ksk));
@@ -1883,7 +1897,7 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         lx.state = lex_enum.START;
         lex_process(lx, tks);
       } else {
-        lx.str += lx.str.startsWith('$') ? ch1.toLowerCase() : ch1;
+        lx.str += ch1;
         if (lx.str.length > 1024) {
           tks.push(tok_error(flpS, 'Identifier too long'));
         }
@@ -2262,6 +2276,7 @@ enum expr_enum {
   CALL,
   INDEX,
   SLICE,
+  XLOOKUP,
 }
 
 interface expr_st_NIL {
@@ -2335,6 +2350,11 @@ interface expr_st_SLICE {
   start: expr_st | null;
   len: expr_st | null;
 }
+interface expr_st_XLOOKUP {
+  type: expr_enum.XLOOKUP;
+  flp: filepos_st;
+  path: expr_st[];
+}
 type expr_st =
   | expr_st_NIL
   | expr_st_NUM
@@ -2348,7 +2368,8 @@ type expr_st =
   | expr_st_INFIX
   | expr_st_CALL
   | expr_st_INDEX
-  | expr_st_SLICE;
+  | expr_st_SLICE
+  | expr_st_XLOOKUP;
 
 function expr_nil(flp: filepos_st): expr_st {
   return {
@@ -2558,6 +2579,10 @@ function expr_slice(
   };
 }
 
+function expr_xlookup(flp: filepos_st, path: expr_st[]): expr_st {
+  return { flp, type: expr_enum.XLOOKUP, path };
+}
+
 //
 // ast
 //
@@ -2614,6 +2639,7 @@ enum ast_enumt {
   VAR,
   EVAL,
   LABEL,
+  XEXPORT,
 }
 interface ast_st_BREAK {
   type: ast_enumt.BREAK;
@@ -2738,6 +2764,12 @@ interface ast_st_LABEL {
   flp: filepos_st;
   ident: string;
 }
+interface ast_st_XEXPORT {
+  type: ast_enumt.XEXPORT;
+  flp: filepos_st;
+  name: string;
+  ex: expr_st;
+}
 type ast_st =
   | ast_st_BREAK
   | ast_st_CONTINUE
@@ -2764,7 +2796,8 @@ type ast_st =
   | ast_st_USING
   | ast_st_VAR
   | ast_st_EVAL
-  | ast_st_LABEL;
+  | ast_st_LABEL
+  | ast_st_XEXPORT;
 
 function ast_break(flp: filepos_st): ast_st {
   return {
@@ -2990,6 +3023,15 @@ function ast_label(flp: filepos_st, ident: string): ast_st {
   };
 }
 
+function ast_xexport(flp: filepos_st, name: string, ex: expr_st): ast_st {
+  return {
+    flp,
+    type: ast_enumt.XEXPORT,
+    name,
+    ex,
+  };
+}
+
 //
 // parser state helpers
 //
@@ -3090,6 +3132,9 @@ enum prs_enum {
   USING_LOOKUP,
   VAR,
   VAR_LVALUES,
+  XEXPORT,
+  XEXPORT_EQU,
+  XEXPORT_DONE,
   IDENTS,
   ENUM,
   ENUM_LVALUES,
@@ -3098,6 +3143,11 @@ enum prs_enum {
   EXPR,
   EXPR_PRE,
   EXPR_TERM,
+  EXPR_XLOOKUP,
+  EXPR_XLOOKUP_CLOSEPAREN,
+  EXPR_XLOOKUP_POST,
+  EXPR_XLOOKUP_BRACKET,
+  EXPR_XLOOKUP_CLOSEBRACKET,
   EXPR_TERM_ISEMPTYLIST,
   EXPR_TERM_CLOSEBRACE,
   EXPR_TERM_CLOSEPAREN,
@@ -3323,10 +3373,6 @@ function parser_lookup(
   return null;
 }
 
-function hasInvalidNames(names: string[]) {
-  return names.some((n) => n.startsWith('$'));
-}
-
 // returns null for success, or an error message
 function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
   if (pr.tk1 === null) {
@@ -3372,6 +3418,8 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return parser_start(pr, flpT, prs_enum.USING);
       } else if (tok_isKS(tk1, ks_enum.VAR)) {
         return parser_start(pr, flpT, prs_enum.VAR);
+      } else if (tok_isKS(tk1, ks_enum.XEXPORT)) {
+        return parser_start(pr, flpT, prs_enum.XEXPORT);
       } else if (tk1.type === tok_enum.IDENT) {
         st.flpS = flpT;
         return parser_lookup(pr, flpT, prs_enum.IDENTS);
@@ -3476,9 +3524,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting names to be list of strings');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name';
-      }
       st.next.exprTerm = expr_names(flpL, st.names);
       st.names = null;
       parser_pop(pr);
@@ -3546,9 +3591,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting lvalue tail lookup to return names');
-      }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name';
       }
       st.state = prs_enum.LVALUES_TERM_LIST_TAIL_DONE;
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -3667,9 +3709,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting def tail lookup to return names');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name in def';
-      }
       st.next.names = st.names;
       parser_pop(pr);
       st = pr.state;
@@ -3715,9 +3754,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting declare lookup to return names');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name in declare';
-      }
       stmts.push(ast_declare(flpS, decl_local(flpL, st.names)));
       if (tok_isKS(tk1, ks_enum.COMMA)) {
         st.state = prs_enum.DECLARE;
@@ -3731,9 +3767,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting declare lookup to return names');
-      }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name in declare';
       }
       stmts.push(ast_declare(flpS, decl_native(flpL, st.names, tk1.str)));
       st.state = prs_enum.DECLARE_STR2;
@@ -3772,9 +3805,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.lvalues === null) {
         throw new Error('Parser def expecting lvalues');
-      }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name used in def';
       }
       stmts.push(ast_def1(flpS, flpL, st.names, st.lvalues));
       st.state = prs_enum.DEF_BODY;
@@ -3859,9 +3889,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser `for` lookup expecting names');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name used in for loop';
-      }
       st.names2 = st.names;
       st.names = null;
       if (tok_isKS(tk1, ks_enum.COMMA)) {
@@ -3885,9 +3912,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       }
       if (st.names === null || st.names === true) {
         throw new Error('Parser `for` lookup expecting names');
-      }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name used in for loop';
       }
       st.state = prs_enum.FOR_VARS_DONE;
       return null;
@@ -4031,9 +4055,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (!tok_isKS(tk1, ks_enum.LPAREN)) {
         return 'Expecting file as constant string literal';
       }
-      if (st.names !== null && st.names !== true && hasInvalidNames(st.names)) {
-        return 'Invalid name in include';
-      }
       st.state = prs_enum.INCLUDE_STR;
       return null;
 
@@ -4080,9 +4101,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting `namespace` names');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name used in namespace';
-      }
       stmts.push(ast_namespace1(flpS, st.names));
       st.state = prs_enum.NAMESPACE_BODY;
       parser_push(pr, prs_enum.BODY);
@@ -4124,9 +4142,6 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       if (st.names === null || st.names === true) {
         throw new Error('Parser expecting `using` names');
       }
-      if (hasInvalidNames(st.names)) {
-        return 'Invalid name in using';
-      }
       stmts.push(ast_using(flpS, st.names));
       if (tok_isKS(tk1, ks_enum.COMMA)) {
         st.state = prs_enum.USING;
@@ -4149,6 +4164,34 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return 'Invalid variable declaration';
       }
       stmts.push(ast_var(flpS, st.lvalues));
+      return parser_statement(pr, stmts, false);
+
+    case prs_enum.XEXPORT:
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      }
+      if (tk1.type !== tok_enum.IDENT) {
+        return 'Expecting identifier';
+      }
+      st.str = tk1.ident;
+      st.state = prs_enum.XEXPORT_EQU;
+      return null;
+
+    case prs_enum.XEXPORT_EQU:
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      }
+      if (!tok_isKS(tk1, ks_enum.EQU)) {
+        return 'Expecting =';
+      }
+      parser_expr(pr, prs_enum.XEXPORT_DONE);
+      return null;
+
+    case prs_enum.XEXPORT_DONE:
+      if (st.exprTerm === null) {
+        throw new Error('Parser expecting expression for export');
+      }
+      stmts.push(ast_xexport(flpS, st.str, st.exprTerm));
       return parser_statement(pr, stmts, false);
 
     case prs_enum.IDENTS:
@@ -4206,6 +4249,10 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         st.state = prs_enum.EXPR_POST;
         st.exprTerm = expr_str(flpT, tk1.str);
         return null;
+      } else if (tok_isKS(tk1, ks_enum.XLOOKUP)) {
+        st.state = prs_enum.EXPR_XLOOKUP;
+        st.exprTerm = expr_xlookup(flpT, []);
+        return null;
       } else if (tk1.type === tok_enum.IDENT) {
         return parser_lookup(pr, flpT, prs_enum.EXPR_TERM_LOOKUP);
       } else if (tok_isKS(tk1, ks_enum.LBRACE)) {
@@ -4217,6 +4264,101 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
         return null;
       }
       return 'Invalid expression';
+
+    case prs_enum.EXPR_XLOOKUP:
+      if (st.exprTerm === null || st.exprTerm.type !== expr_enum.XLOOKUP) {
+        throw new Error('Expecting lookup expression');
+      }
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      } else if (tk1.type === tok_enum.IDENT) {
+        st.state = prs_enum.EXPR_XLOOKUP_POST;
+        st.exprTerm.path.push(expr_str(flpT, tk1.ident));
+        return null;
+      } else if (tk1.type === tok_enum.STR) {
+        st.state = prs_enum.EXPR_POST;
+        st.exprTerm.path.push(expr_str(flpT, tk1.str));
+        return null;
+      } else if (tok_isKS(tk1, ks_enum.LPAREN)) {
+        st.exprTerm2 = st.exprTerm;
+        st.exprTerm = null;
+        parser_expr(pr, prs_enum.EXPR_XLOOKUP_CLOSEPAREN);
+        pr.state.exprAllowTrailComma = true;
+        return null;
+      }
+      return 'Invalid lookup';
+
+    case prs_enum.EXPR_XLOOKUP_CLOSEPAREN:
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      }
+      if (!tok_isKS(tk1, ks_enum.RPAREN)) {
+        return 'Expecting close parenthesis';
+      }
+      if (st.exprTerm === null) {
+        throw new Error('Parser expecting parenthesis to contain expression');
+      }
+      if (st.exprTerm2 === null || st.exprTerm2.type !== expr_enum.XLOOKUP) {
+        throw new Error('Expecting lookup expression');
+      }
+      st.exprTerm2.path.push(expr_paren(st.exprTerm.flp, st.exprTerm));
+      st.exprTerm = st.exprTerm2;
+      st.exprTerm2 = null;
+      st.state = prs_enum.EXPR_XLOOKUP_POST;
+      return null;
+
+    case prs_enum.EXPR_XLOOKUP_POST:
+      if (
+        tk1.type === tok_enum.NEWLINE || tok_isKS(tk1, ks_enum.END) ||
+        tok_isKS(tk1, ks_enum.ELSE) || tok_isKS(tk1, ks_enum.ELSEIF)
+      ) {
+        st.state = prs_enum.EXPR_FINISH;
+        return parser_process(pr, stmts);
+      } else if (tok_isKS(tk1, ks_enum.LBRACKET)) {
+        st.state = prs_enum.EXPR_XLOOKUP_BRACKET;
+        return null;
+      } else if (tok_isKS(tk1, ks_enum.PERIOD)) {
+        st.state = prs_enum.EXPR_XLOOKUP;
+        return null;
+      } else if (tok_isMid(tk1, st.exprAllowComma, st.exprAllowPipe)) {
+        if (st.exprAllowTrailComma && tok_isKS(tk1, ks_enum.COMMA)) {
+          st.state = prs_enum.EXPR_COMMA;
+          return null;
+        }
+        st.state = prs_enum.EXPR_MID;
+        return parser_process(pr, stmts);
+      }
+      // otherwise, finished with xlookup
+      st.state = prs_enum.EXPR_FINISH;
+      return parser_process(pr, stmts);
+
+    case prs_enum.EXPR_XLOOKUP_BRACKET:
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      }
+      st.exprTerm2 = st.exprTerm;
+      st.exprTerm = null;
+      parser_expr(pr, prs_enum.EXPR_XLOOKUP_CLOSEBRACKET);
+      return parser_process(pr, stmts);
+
+    case prs_enum.EXPR_XLOOKUP_CLOSEBRACKET:
+      if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
+        return null;
+      }
+      if (!tok_isKS(tk1, ks_enum.RBRACKET)) {
+        return 'Missing close bracket';
+      }
+      if (st.exprTerm === null) {
+        throw new Error('Parser expecting brackets to contain expression');
+      }
+      if (st.exprTerm2 === null || st.exprTerm2.type !== expr_enum.XLOOKUP) {
+        throw new Error('Expecting lookup expression');
+      }
+      st.exprTerm2.path.push(expr_paren(st.exprTerm.flp, st.exprTerm));
+      st.exprTerm = st.exprTerm2;
+      st.exprTerm2 = null;
+      st.state = prs_enum.EXPR_XLOOKUP_POST;
+      return null;
 
     case prs_enum.EXPR_TERM_ISEMPTYLIST:
       if (tk1.type === tok_enum.NEWLINE && !tk1.soft) {
@@ -7053,38 +7195,6 @@ async function program_evalCall(
     }
     return efu.pe;
   } else if (
-    nsn.type == nsname_enumt.CMD_OPCODE && nsn.opcode == op_enum.ISNATIVE
-  ) {
-    let func = params;
-    while (func && func.type == expr_enum.PAREN) {
-      func = func.ex;
-    }
-    if (func && func.type == expr_enum.NAMES) {
-      const sl = symtbl_lookup(sym, func.names);
-      if (!sl.ok) {
-        return per_error(func.flp, sl.msg);
-      }
-      if (sl.nsn.type == nsname_enumt.CMD_NATIVE) {
-        if (mode === pem_enum.EMPTY || mode === pem_enum.CREATE) {
-          const ts = symtbl_addTemp(sym);
-          if (!ts.ok) {
-            return per_error(flp, ts.msg);
-          }
-          intoVlc = ts.vlc;
-        }
-        const index = native_index(prg, sl.nsn.hash);
-        if (index < 0) {
-          return per_error(flp, 'Too many native commands');
-        }
-        op_isnative(prg.ops, intoVlc, index);
-        return per_ok(intoVlc);
-      }
-    }
-    return per_error(
-      flp,
-      'Expecting `isnative` to test against a declared native command',
-    );
-  } else if (
     nsn.type === nsname_enumt.CMD_OPCODE && nsn.opcode === op_enum.STR_HASH &&
     params !== null
   ) {
@@ -8082,6 +8192,33 @@ async function program_eval(
         symtbl_clearTemp(sym, intoVlc);
         return per_ok(VARLOC_NULL);
       }
+      return per_ok(intoVlc);
+    }
+
+    case expr_enum.XLOOKUP: {
+      if (mode === pem_enum.EMPTY || mode === pem_enum.CREATE) {
+        const ts = symtbl_addTemp(sym);
+        if (!ts.ok) {
+          return per_error(ex.flp, ts.msg);
+        }
+        intoVlc = ts.vlc;
+      }
+
+      op_list(prg.ops, intoVlc, ex.path.length);
+      for (const pathex of ex.path) {
+        const pe = await program_eval(
+          pgen,
+          pem_enum.CREATE,
+          VARLOC_NULL,
+          pathex,
+        );
+        if (!pe.ok) {
+          return pe;
+        }
+        op_param2(prg.ops, op_enum.LIST_PUSH, intoVlc, intoVlc, pe.vlc);
+      }
+
+      op_param1(prg.ops, op_enum.XLOOKUP, intoVlc, intoVlc);
       return per_ok(intoVlc);
     }
   }
@@ -9132,6 +9269,37 @@ async function program_gen(
         throw new Error('Label cannot be null');
       }
       label_declare(lbl, prg.ops);
+      return pgr_ok();
+    }
+
+    case ast_enumt.XEXPORT: {
+      const pr = await program_eval(
+        pgen,
+        pem_enum.CREATE,
+        VARLOC_NULL,
+        stmt.ex,
+      );
+      if (!pr.ok) {
+        return pgr_error(pr.flp, pr.msg);
+      }
+
+      let found = false;
+      let index = 0;
+      for (; index < prg.strTable.length; index++) {
+        if (stmt.name === prg.strTable[index]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        if (index >= 0x7FFFFFFF) {
+          return pgr_error(stmt.flp, 'Too many string constants');
+        }
+        prg.strTable.push(stmt.name);
+      }
+
+      op_xexport(prg.ops, index, pr.vlc);
+      symtbl_clearTemp(sym, pr.vlc);
       return pgr_ok();
     }
   }
@@ -14416,6 +14584,35 @@ async function context_run(ctx: context_st): Promise<run> {
         { // [TGT]
           LOAD_ab();
           var_set(ctx, A, B, NIL);
+        }
+        break;
+
+      case op_enum.XLOOKUP:
+        { // [TGT], [SRC]
+          LOAD_abcd();
+          X = var_get(ctx, C, D);
+          X = ctx.io.f_xlookup(ctx, X, ctx.io.user);
+          if (ctx.failed) {
+            return RUNDONE(run.FAIL);
+          }
+          var_set(ctx, A, B, X);
+        }
+        break;
+
+      case op_enum.XEXPORT:
+        { // [SRC], [[NAME]]
+          LOAD_abcdef();
+          X = var_get(ctx, A, B);
+          C = C + (D << 8) + (E << 16) + ((F << 23) * 2);
+          ctx.io.f_xexport(
+            ctx,
+            ctx.prg.strTable[C],
+            typeof X === 'number' ? X : pickle_binstr(X),
+            ctx.io.user,
+          );
+          if (ctx.failed) {
+            return RUNDONE(run.FAIL);
+          }
         }
         break;
 

@@ -17,6 +17,8 @@ type LexState =
   | 'start'
   | 'commentLine'
   | 'return'
+  | 'returnNewline'
+  | 'newline'
   | 'continue'
   | 'continueSlash'
   | 'continueCommentBlock'
@@ -32,7 +34,8 @@ type LexState =
   | 'consumeIdent'
   | 'str'
   | 'strEsc'
-  | 'strHex';
+  | 'strHex'
+  | 'script';
 
 interface ILex {
   filename: string;
@@ -74,9 +77,19 @@ interface ITokStr extends IFilePos {
   str: string;
 }
 
+interface ITokScript extends IFilePos {
+  kind: 'script';
+  body: string;
+}
+
 interface ITokError extends IFilePos {
   kind: 'error';
   msg: string;
+}
+
+interface ITokClosure extends IFilePos {
+  kind: 'closure';
+  closure(): void;
 }
 
 export type ITok =
@@ -85,7 +98,9 @@ export type ITok =
   | ITokId
   | ITokNum
   | ITokStr
-  | ITokError;
+  | ITokScript
+  | ITokError
+  | ITokClosure;
 
 function tokNewline(filename: string, line: number, chr: number): ITokNewline {
   return { kind: 'newline', filename, line, chr };
@@ -105,6 +120,10 @@ function tokNum(filename: string, line: number, chr: number, num: number): ITokN
 
 function tokStr(filename: string, line: number, chr: number, str: string): ITokStr {
   return { kind: 'str', str, filename, line, chr };
+}
+
+function tokScript(filename: string, line: number, chr: number, body: string): ITokScript {
+  return { kind: 'script', body, filename, line, chr };
 }
 
 function tokError(filename: string, line: number, chr: number, msg: string): ITokError {
@@ -156,9 +175,10 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         lx.str = '';
         lx.state = 'str';
       } else if (ch1 === '\r') {
-        lx.state = 'return';
+        lx.state = 'returnNewline';
         tks.push(tokNewline(filename, line, chr));
       } else if (ch1 === '\n') {
+        lx.state = 'newline';
         tks.push(tokNewline(filename, line, chr));
       } else if (ch1 === '\\') {
         lx.state = 'continue';
@@ -181,6 +201,49 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         lexProcess(lx, tks);
       }
       break;
+
+    case 'returnNewline':
+      lx.state = 'newline';
+      if (ch1 !== '\n') {
+        lexProcess(lx, tks);
+      }
+      break;
+
+    case 'newline': {
+      // check for .script
+      let script = false;
+      if (
+        (tks.length >= 4 && tks[tks.length - 4].kind === 'newline') ||
+        tks.length === 3
+      ) {
+        const tk1 = tks[tks.length - 3];
+        const tk2 = tks[tks.length - 2];
+        const tk3 = tks[tks.length - 1];
+        script = tk1.kind === 'punc' && tk1.punc === '.' &&
+          tk2.kind === 'id' && tk2.id === 'script' &&
+          tk3.kind === 'newline';
+      }
+      // check for .script id
+      if (
+        !script && (
+          (tks.length >= 5 && tks[tks.length - 5].kind === 'newline') ||
+          tks.length === 4
+        )
+      ) {
+        const tk1 = tks[tks.length - 4];
+        const tk2 = tks[tks.length - 3];
+        const tk3 = tks[tks.length - 2];
+        const tk4 = tks[tks.length - 1];
+        script = tk1.kind === 'punc' && tk1.punc === '.' &&
+          tk2.kind === 'id' && tk2.id === 'script' &&
+          tk3.kind === 'id' &&
+          tk4.kind === 'newline';
+      }
+      lx.str = '';
+      lx.state = script ? 'script' : 'start';
+      lexProcess(lx, tks);
+      break;
+    }
 
     case 'continue':
       if (ch1 === '\r') {
@@ -446,6 +509,29 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       }
       break;
 
+    case 'script': {
+      lx.str += ch1;
+      const m = lx.str.match(/\n\s*\.end(\r|\n|\s)/);
+      if (m) {
+        tks.push(
+          tokScript(filename, line, chr, lx.str.substr(0, lx.str.length - m[0].length)),
+          tokPunc(filename, line, chr, '.'),
+          tokId(filename, line, chr, 'end'),
+        );
+        lx.str = '';
+        if (m[0].substr(-1) === '\n') {
+          lx.state = 'start';
+          tks.push(tokNewline(filename, line, chr));
+        } else if (m[0].substr(-1) === '\r') {
+          lx.state = 'return';
+          tks.push(tokNewline(filename, line, chr));
+        } else {
+          lx.state = 'start';
+        }
+      }
+      break;
+    }
+
     default:
       assertNever(lx.state);
   }
@@ -486,6 +572,36 @@ export function lex(filename: string, data: string, startLine = 1): ITok[] {
       lx.line++;
       gotReturn = false;
     }
+  }
+  switch (lx.state) {
+    case 'start':
+    case 'commentLine':
+    case 'return':
+    case 'returnNewline':
+    case 'newline':
+      break;
+    case 'continue':
+    case 'continueSlash':
+    case 'continueCommentBlock':
+    case 'commentBlock':
+    case 'punc':
+    case 'rshift':
+    case 'ident':
+    case 'num0':
+    case 'num2b':
+    case 'num2':
+    case 'numBody':
+    case 'numFB':
+    case 'consumeIdent':
+    case 'str':
+    case 'strEsc':
+    case 'strHex':
+      throw new Error(`Not sure how to process: ${lx.state}`);
+    case 'script':
+      tks.push(tokScript(lx.filename, lx.line, lx.chr, lx.str));
+      break;
+    default:
+      assertNever(lx.state);
   }
   return tks;
 }

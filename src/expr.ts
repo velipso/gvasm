@@ -227,7 +227,7 @@ export type LookupFailMode = 'allow' | 'unresolved' | 'deny';
 
 export class Expression {
   private expr: IExpr;
-  private paramSize: number;
+  paramSize: number;
 
   private constructor(expr: IExpr, paramSize: number) {
     this.expr = expr;
@@ -571,34 +571,46 @@ export class Expression {
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
             return v;
-          } else if (v !== false && v !== 'notfound' && v.kind === 'const') {
-            if (ex.params) {
-              if (v.body.paramSize < 0) {
-                throw new CompError(ex.flp, 'Constant cannot be called');
-              }
-              checkParamSize(ex.flp, ex.params.length, v.body.paramSize);
-              const pvalues: number[] = [];
-              for (const p of ex.params) {
-                const pv = get(p);
-                if (pv === false) {
-                  return false;
-                }
-                pvalues.push(pv);
-              }
-              return v.body.value(v.context, lookupFailMode, pvalues);
-            } else {
-              if (v.body.paramSize >= 0) {
-                throw new CompError(ex.flp, 'Constant expecting to be called with parameters');
-              }
-              return v.body.value(v.context, lookupFailMode);
-            }
-          } else if (v === false || lookupFailMode === 'allow') {
+          }
+          if (v === false) {
             if (lookupFailMode === 'deny') {
               throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
             }
             return false;
           }
-          throw new CompError(ex.flp, `Cannot find symbol: ${pathError()}`);
+          if (v === 'notfound') {
+            if (lookupFailMode !== 'allow') {
+              throw new CompError(ex.flp, `Can't find symbol: ${pathError()}`);
+            }
+            return false;
+          }
+          switch (v.kind) {
+            case 'const':
+              if (ex.params) {
+                if (v.body.paramSize < 0) {
+                  throw new CompError(ex.flp, 'Constant cannot be called');
+                }
+                checkParamSize(ex.flp, ex.params.length, v.body.paramSize);
+                const pvalues: number[] = [];
+                for (const p of ex.params) {
+                  const pv = get(p);
+                  if (pv === false) {
+                    return false;
+                  }
+                  pvalues.push(pv);
+                }
+                return v.body.value(v.context, lookupFailMode, pvalues);
+              } else {
+                if (v.body.paramSize >= 0) {
+                  throw new CompError(ex.flp, 'Constant expecting to be called with parameters');
+                }
+                return v.body.value(v.context, lookupFailMode);
+              }
+            case 'scriptExport':
+              throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
+            default:
+              return assertNever(v);
+          }
         }
         case 'param':
           return params?.[ex.param] ?? false;

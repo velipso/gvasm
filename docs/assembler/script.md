@@ -85,13 +85,13 @@ Keywords and Symbols
 --------------------
 
 ```
-break       end          nil
-continue    enum         return
-declare     for          using
-def         goto         var
-do          if           while
-else        include
-elseif      namespace
+break      end       lookup
+continue   enum      namespace
+declare    export    nil
+def        for       return
+do         goto      using
+else       if        var
+elseif     include   while
 ```
 
 ```
@@ -735,21 +735,6 @@ var ls = {1, 2} | list.push 3 | list.unshift 0 | list.rev
 say ls  // {3, 2, 1, 0}
 ```
 
-Predefined Commands
--------------------
-
-Scripts inherit commands and values from the outer assembler scope:
-
-```
-.def $FOO = 1
-.def $lerp($a, $b, $t) = $a + ($b - $a) * 100 / $t
-
-.script
-  say $FOO // outputs 1
-  say $lerp 5, 10, 20 // outputs 6
-.end
-```
-
 Namespaces
 ----------
 
@@ -859,3 +844,42 @@ var img = embed './image.png'
 ```
 
 This is equivalent to pasting the binary data as a string in the script.
+
+Lookups and Exports
+-------------------
+
+Scripts are executed before everything else in their own private envirnoment.  However, they can
+access the surrounding environment with `lookup` and export values with `export`.
+
+For example:
+
+```
+.script test1
+  var x = 5
+  export result = {2, 3, 4}
+  export hello = 'world'
+.end
+
+.def one = 1
+
+.script test2
+  // *cannot* access `x` since it is private to the test1 script
+
+  // can access defined constants
+  // outputs: 1
+  say lookup one
+
+  // can access exported values
+  // outputs: {2, 3, 4}
+  say lookup test1.result
+
+  // outputs: world
+  say lookup test1.hello
+
+  export two = 1 + lookup one
+.end
+
+// if scripts export a number, it is accessible in rest of assembler
+// outputs: two = 2
+.printf "two = %d", test2.two
+```

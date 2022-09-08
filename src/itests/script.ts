@@ -28,6 +28,7 @@ export function load(def: (test: ITest) => void) {
     },
   });
 
+  /* TODO: if
   def({
     name: 'script.if',
     desc: 'Wrap .script in .if',
@@ -45,7 +46,7 @@ export function load(def: (test: ITest) => void) {
 .end
 `,
     },
-  });
+  }); */
 
   def({
     name: 'script.missing-end',
@@ -119,32 +120,45 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: 'script.store',
-    desc: 'Store values between scripts',
+    name: 'script.export-lookup-scripts',
+    desc: 'Export and lookup values between scripts',
     kind: 'make',
+    stdout: ['2', '{\'world\', 2}', 'two = 2'],
     files: {
       '/root/main': `
-.script
-  var x = 1
-  store.set 'x', {2}
+.def one = 1
+.script sc
+  export world = {'world', 2}
+  export two = 2
 .end
 .script
-  var x = 3
-  put ".i8 \${store.has 'x'}, \${(store.get 'x')[0]}" /// 01 02
+  say lookup one + 1
+  say lookup sc.world
 .end
+.printf "two = %d", sc.two
 `,
     },
   });
 
   def({
-    name: 'script.store-default',
-    desc: 'Store get default',
+    name: 'script.export-lookup-files',
+    desc: 'Export and lookup values between files',
     kind: 'make',
-    stdout: ['nil'],
+    stdout: ['2', '{\'world\', 2}', 'two = 2'],
     files: {
       '/root/main': `
+.import 'hello' hello
 .script
-  say store.get 'foo'
+  say lookup hello.one + 1
+  say lookup hello.sc.world
+.end
+.printf "two = %d", hello.sc.two
+`,
+      '/root/hello': `
+.def one = 1
+.script sc
+  export world = {'world', 2}
+  export two = 2
 .end
 `,
     },
@@ -224,164 +238,6 @@ include "../one.sink" /// 01 02
   });
 
   def({
-    name: 'script.def-available',
-    desc: 'Defined constants are available in scripts',
-    kind: 'make',
-    stdout: ['1', '2', '175'],
-    files: {
-      '/root/main': `
-.def $FOO = 1
-.def $$BAR = 2
-.def $lerp($a, $b, $t) = $a + ($b - $a) * $t / 100
-.script
-  say $FOO
-  say $$BAR
-  say $lerp 100, 200, 75
-.end
-`,
-    },
-  });
-
-  function defLines(name: string, desc: string, lines: string[]) {
-    let i = 1;
-    for (const line of lines) {
-      def({
-        name: `${name}-${i}`,
-        desc,
-        kind: 'make',
-        error: true,
-        files: {
-          '/root/main': `
-.script
-  ${line}
-.end
-`,
-          '/root/inc.sink': '',
-        },
-      });
-      i++;
-    }
-  }
-
-  defLines(
-    'script.no-const-var',
-    'Don\'t allow consts in vars',
-    [
-      'var $foo = 1',
-      'var $$foo = 1',
-      'var a.$foo = 2',
-      'var a.$$foo = 2',
-      'var $bar.z = 3',
-      'var $$bar.z = 3',
-      'var {...$foo} = {1}',
-      'var {...$$foo} = {1}',
-      'var {...a.$foo} = {2}',
-      'var {...a.$$foo} = {2}',
-      'var {...$bar.z} = {3}',
-      'var {...$$bar.z} = {3}',
-    ],
-  );
-
-  defLines(
-    'script.no-const-for',
-    'Don\'t allow consts in for loops',
-    [
-      'for var $foo: range 0; end',
-      'for var x, $foo: range 0; end',
-      'for var $$foo: range 0; end',
-      'for var x, $$foo: range 0; end',
-      'for var a.$foo: range 0; end',
-      'for var x, a.$foo: range 0; end',
-      'for var a.$$foo: range 0; end',
-      'for var $bar.z: range 0; end',
-      'for var $$bar.z: range 0; end',
-    ],
-  );
-
-  defLines(
-    'script.no-const-def',
-    'Don\'t allow consts in defs',
-    [
-      'def $foo; end',
-      'def $$foo; end',
-      'def a.$foo; end',
-      'def a.$$foo; end',
-      'def $bar.z; end',
-      'def $$bar.z; end',
-      'def x $foo; end',
-      'def x $$foo; end',
-      'def x a.$foo; end',
-      'def x a.$$foo; end',
-      'def x $bar.z; end',
-      'def x $$bar.z; end',
-      'def x ...$foo; end',
-      'def x ...$$foo; end',
-      'def x ...a.$foo; end',
-      'def x ...a.$$foo; end',
-      'def x ...$bar.z; end',
-      'def x ...$$bar.z; end',
-    ],
-  );
-
-  defLines(
-    'script.no-const-namespace',
-    'Don\'t allow consts in namespaces',
-    [
-      'namespace $foo; end',
-      'namespace $$foo; end',
-      'namespace a.$foo; end',
-      'namespace a.$$foo; end',
-      'namespace $bar.z; end',
-      'namespace $$bar.z; end',
-    ],
-  );
-
-  defLines(
-    'script.no-const-using',
-    'Don\'t allow consts in using',
-    [
-      'using $foo',
-      'using $$foo',
-      'using a.$foo',
-      'using a.$$foo',
-      'using $bar.z',
-      'using $$bar.z',
-    ],
-  );
-
-  defLines(
-    'script.no-const-include',
-    'Don\'t allow consts in include',
-    [
-      'include $foo "inc.sink"',
-      'include $$foo "inc.sink"',
-      'include a.$foo "inc.sink"',
-      'include a.$$foo "inc.sink"',
-      'include $bar.z "inc.sink"',
-      'include $$bar.z "inc.sink"',
-    ],
-  );
-
-  defLines(
-    'script.no-const-declare',
-    'Don\'t allow consts in declare',
-    [
-      'declare $foo "inc.sink"',
-      'declare $$foo "inc.sink"',
-      'declare a.$foo "inc.sink"',
-      'declare a.$$foo "inc.sink"',
-      'declare $bar.z "inc.sink"',
-      'declare $$bar.z "inc.sink"',
-      'declare $foo',
-      'declare $$foo',
-      'declare a.$foo',
-      'declare a.$$foo',
-      'declare $bar.z',
-      'declare $$bar.z',
-    ],
-  );
-
-  def({
     name: 'script.dot-bytes',
     desc: 'Use dot statement commands inside .script',
     kind: 'make',
@@ -389,32 +245,63 @@ include "../one.sink" /// 01 02
       '/root/main': `
 .script
   i8 0, 1, 2, 3         /// 00 01 02 03
-  b8 0, 1, 2, 3         /// 00 01 02 03
+  ib8 0, 1, 2, 3        /// 00 01 02 03
   i8 {0, 1, 2, 3}       /// 00 01 02 03
-  b8 {0, 1, 2, 3}       /// 00 01 02 03
-  i8 1.5                /// 01
+  ib8 {0, 1, 2, 3}      /// 00 01 02 03
+  i8 1.1, 2.9, 3.5, 4   /// 01 02 03 04
+  i8 utf8.list 'gba!'   /// 67 62 61 21
   i16 0x0100, 0x0302    /// 00 01 02 03
-  b16 0x0001, 0x0203    /// 00 01 02 03
+  ib16 0x0001, 0x0203   /// 00 01 02 03
   i16 {0x0100, 0x0302}  /// 00 01 02 03
-  b16 {0x0001, 0x0203}  /// 00 01 02 03
-  i16 1.5               /// 01 00
+  ib16 {0x0001, 0x0203} /// 00 01 02 03
+  i16 1.5, 1.9          /// 01 00 01 00
   i32 0x03020100        /// 00 01 02 03
-  b32 0x00010203        /// 00 01 02 03
+  ib32 0x00010203       /// 00 01 02 03
   i32 {0x03020100}      /// 00 01 02 03
-  b32 {0x00010203}      /// 00 01 02 03
+  ib32 {0x00010203}     /// 00 01 02 03
   i32 1.5               /// 01 00 00 00
   i8fill 4              /// 00 00 00 00
   i8fill 4, 3           /// 03 03 03 03
-  b8fill 4              /// 00 00 00 00
-  b8fill 4, 3           /// 03 03 03 03
+  ib8fill 4             /// 00 00 00 00
+  ib8fill 4, 3          /// 03 03 03 03
   i16fill 2             /// 00 00 00 00
   i16fill 2, 9          /// 09 00 09 00
-  b16fill 2             /// 00 00 00 00
-  b16fill 2, 9          /// 00 09 00 09
+  ib16fill 2            /// 00 00 00 00
+  ib16fill 2, 9         /// 00 09 00 09
   i32fill 2             /// 00 00 00 00 00 00 00 00
   i32fill 2, 9          /// 09 00 00 00 09 00 00 00
-  b32fill 2             /// 00 00 00 00 00 00 00 00
-  b32fill 2, 9          /// 00 00 00 09 00 00 00 09
+  ib32fill 2            /// 00 00 00 00 00 00 00 00
+  ib32fill 2, 9         /// 00 00 00 09 00 00 00 09
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'script.dot-bytes-misaligned',
+    desc: 'Misaligned data is an error',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.script
+  i8 0
+  i16 0
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'script.dot-bytes-realigned',
+    desc: 'Using align to realign data',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script
+  i8 0     /// 00
+  align 2  /// 00
+  i16 0    /// 00 00
 .end
 `,
     },

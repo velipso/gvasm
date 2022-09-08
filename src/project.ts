@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { ILexKeyValue, lex } from './lexer.ts';
+import { IFilePos, ILexKeyValue, ITok, lex } from './lexer.ts';
 import { CompError, parse } from './parser.ts';
 import { Import } from './import.ts';
+import { loadLibIntoContext, loadLibIntoScript } from './sinklib.ts';
 import * as sink from './sink.ts';
 import { Path } from './deps.ts';
+import { assertNever } from './util.ts';
 
 export type IMakeResult =
   | {
@@ -94,7 +96,7 @@ export class Project {
       return file.imp;
     }
     const txt = await this.readTextFile(filename);
-    const tks = await lex(filename, txt);
+    const tks = lex(filename, txt);
     const imp = await parse(this, filename, this.mainFilename === filename, this.defines, tks);
     if (file) {
       file.used = true;
@@ -179,7 +181,9 @@ export class Project {
       return { sections };
     } catch (e) {
       if (e instanceof CompError) {
-        if (e.filename) e.filename = this.path.relative(this.cwd, e.filename);
+        if (e.flp && e.flp.filename) {
+          e.flp.filename = this.path.relative(this.cwd, e.flp.filename);
+        }
         return { errors: [e.toString()] };
       }
       throw e;
@@ -196,5 +200,118 @@ export class Project {
 
   invalidate(filenames: string[]) {
     for (const filename of filenames) this.fileCache.delete(filename);
+  }
+
+  async runScript(flp: IFilePos, imp: Import, body: string): Promise<ITok[]> {
+    const { filename, line: startLine } = flp;
+    const resolvedStartFile = this.path.resolve(filename);
+    const startFile = this.path.basename(filename);
+    const scr = sink.scr_new(
+      {
+        f_fstype: async (_scr: sink.scr, file: string): Promise<sink.fstype> => {
+          if (file === resolvedStartFile) {
+            return sink.fstype.FILE;
+          }
+          return await this.fileType(file);
+        },
+        f_fsread: async (scr: sink.scr, file: string): Promise<boolean> => {
+          if (file === resolvedStartFile) {
+            await sink.scr_write(scr, body, startLine + 1);
+            return true;
+          }
+          try {
+            const data = await this.readBinaryFile(file);
+            let text = '';
+            for (const b of data) {
+              text += String.fromCharCode(b);
+            }
+            await sink.scr_write(scr, text);
+            return true;
+          } catch (_) {
+            // ignore errors
+          }
+          return false;
+        },
+      },
+      this.path.dirname(resolvedStartFile),
+      this.path.posix,
+      false,
+    );
+    sink.scr_addpath(scr, '.');
+    loadLibIntoScript(scr);
+
+    if (!await sink.scr_loadfile(scr, startFile)) {
+      const sinkErr = sink.scr_geterr(scr);
+      if (sinkErr) {
+        throw new CompError(false, sinkErr);
+      }
+      throw new CompError(flp, 'Failed to run script');
+    }
+
+    const ctx = sink.ctx_new(scr, {
+      f_say: async (_ctx, str) => {
+        this.log(str);
+        return sink.NIL;
+      },
+      f_warn: async () => sink.NIL,
+      f_ask: async () => sink.NIL,
+      f_xlookup: (ctx, path) => {
+        // validate path
+        if (!Array.isArray(path) || path.length <= 0) {
+          sink.abort(ctx, ['Invalid lookup']);
+          return sink.NIL;
+        }
+        for (let i = 0; i < path.length; i++) {
+          if (typeof path[i] !== 'number' && typeof path[i] !== 'string') {
+            sink.abort(ctx, [`Invalid lookup component: ${path[i]}`]);
+            return sink.NIL;
+          }
+        }
+        const pathError = () =>
+          path.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
+        const lk = imp.lookup(sink.ctx_source(ctx), imp.defHere, path as (string | number)[]);
+        if (lk === 'notfound' || lk === false) {
+          sink.abort(ctx, [`Cannot find symbol: ${pathError()}`]);
+          return sink.NIL;
+        }
+        if (typeof lk === 'number') {
+          return lk;
+        }
+        switch (lk.kind) {
+          case 'const': {
+            if (lk.body.paramSize >= 0) {
+              sink.abort(ctx, ['Cannot lookup function in script']);
+              return sink.NIL;
+            }
+            const n = lk.body.value(lk.context, 'allow');
+            if (n === false) {
+              sink.abort(ctx, ['Can\'t calculate value']);
+              return sink.NIL;
+            }
+            return n;
+          }
+          case 'scriptExport':
+            return sink.pickle_val(ctx, lk.data);
+          default:
+            return assertNever(lk);
+        }
+      },
+      f_xexport: (ctx, name, data) => {
+        imp.scriptExport(sink.ctx_source(ctx), name, data);
+      },
+    });
+
+    const put: ITok[] = [];
+    loadLibIntoContext(ctx, put, imp);
+
+    const run = await sink.ctx_run(ctx);
+    if (run !== sink.run.PASS) {
+      const sinkErr = sink.ctx_geterr(ctx);
+      if (sinkErr) {
+        throw new CompError(false, sinkErr);
+      }
+      throw new CompError(flp, 'Failed to run script');
+    }
+    return put;
   }
 }

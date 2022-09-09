@@ -272,29 +272,27 @@ export function load(def: (test: ITest) => void) {
     },
   });
 
-  /* TODO: defined and if
   def({
     name: 'expr.defined',
     desc: 'Use defined() in an expression',
     kind: 'make',
     files: {
       '/root/main': `
-.if defined($a)
+.if defined(a)
   .i8 1
 .else
   .i8 2 /// 02
-  .def $a = 3
+  .def a = 3
 .end
 
-.if defined($a)
-  .i8 $a /// 03
+.if defined(a)
+  .i8 a /// 03
 .else
   .i8 4
 .end
 `,
     },
   });
-  */
 
   def({
     name: 'expr.precedence-bug',

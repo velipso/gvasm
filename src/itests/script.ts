@@ -28,7 +28,6 @@ export function load(def: (test: ITest) => void) {
     },
   });
 
-  /* TODO: if
   def({
     name: 'script.if',
     desc: 'Wrap .script in .if',
@@ -46,7 +45,7 @@ export function load(def: (test: ITest) => void) {
 .end
 `,
     },
-  }); */
+  });
 
   def({
     name: 'script.missing-end',

@@ -401,7 +401,6 @@ main: .i32 main  /// 00 00 00 08
     },
   });
 
-  /* TODO: enable after pool works
   def({
     name: 'basic.base-affects-adr',
     desc: 'Using .base affects addresses in code',
@@ -414,7 +413,7 @@ ldr r0, =0x08000004  /// 00 a0
 ldr r0, =0x02000004  /// 00 a0
 `,
     },
-  }); */
+  });
 
   def({
     name: 'basic.base-relative-bug',

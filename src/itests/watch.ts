@@ -38,7 +38,7 @@ export function load(def: (test: ITest) => void) {
       'read: /root/test',
       '> 01 02',
       'watch: /root/main /root/test',
-      '! root/main:2:10: Failed to include: test',
+      '! root/main:2:10: Failed to include: /root/test',
       'watch: /root/main /root/test',
       'read: /root/main',
       'read: /root/test2',
@@ -75,6 +75,97 @@ export function load(def: (test: ITest) => void) {
       '/root/test': `.i8 2`,
     }, {
       '/root/test': `.i8 2, 3`,
+    }],
+  });
+
+  def({
+    name: 'watch.embed',
+    desc: 'Changing the embedded file',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test',
+      '> 01 02 04',
+      'watch: /root/main /root/test',
+      'read: /root/test',
+      '> 01 02 03 04',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `.i8 1\n.embed 'test'\n.i8 4`,
+      '/root/test': `/// 02`,
+    }, {
+      '/root/test': `/// 02 03`,
+    }],
+  });
+
+  def({
+    name: 'watch.embed-script',
+    desc: 'Changing the embedded file in a script',
+    kind: 'watch',
+    logBytes: true,
+    rawInclude: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test',
+      '> 01 61 04',
+      'watch: /root/main /root/test',
+      'read: /root/main',
+      'read: /root/test',
+      '> 01 61 62 04',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `
+.i8 1
+.script
+  i8 utf8.list embed 'test'
+.end
+.i8 4
+`,
+      '/root/test': `a`,
+    }, {
+      '/root/test': `ab`,
+    }],
+  });
+
+  def({
+    name: 'watch.include-script',
+    desc: 'Changing the included file in a script',
+    kind: 'watch',
+    logBytes: true,
+    rawInclude: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test',
+      '> 01 02 04',
+      'watch: /root/main /root/test',
+      'read: /root/main',
+      'read: /root/test',
+      '> 01 02 03 04',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `
+.i8 1
+.script
+  include 'test'
+  test
+.end
+.i8 4
+`,
+      '/root/test': `
+def test
+  i8 2
+end
+`,
+    }, {
+      '/root/test': `
+def test
+  i8 2, 3
+end
+`,
     }],
   });
 }

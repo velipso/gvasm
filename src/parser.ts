@@ -117,8 +117,8 @@ export class Parser {
     );
   }
 
-  checkEnd(): boolean {
-    if (this.i + 3 > this.tks.length) {
+  checkDotStatement(id: string): boolean {
+    if (this.i + 2 > this.tks.length) {
       return false;
     }
     const tk1 = this.tks[this.i];
@@ -126,15 +126,31 @@ export class Parser {
       return false;
     }
     const tk2 = this.tks[this.i + 1];
-    if (tk2.kind !== 'id' || tk2.id !== 'end') {
+    if (tk2.kind !== 'id' || tk2.id !== id) {
       return false;
     }
-    const tk3 = this.tks[this.i + 2];
-    if (tk3.kind !== 'newline') {
-      throw new CompError(tk3, 'Invalid `.end` statement');
-    }
-    this.i += 3;
+    this.i += 2;
     return true;
+  }
+
+  checkEnd(): boolean {
+    if (this.checkDotStatement('end')) {
+      this.forceNewline('`.end` statement');
+      return true;
+    }
+    return false;
+  }
+
+  checkElse(): boolean {
+    if (this.checkDotStatement('else')) {
+      this.forceNewline('`.else` statement');
+      return true;
+    }
+    return false;
+  }
+
+  checkElseif(): boolean {
+    return this.checkDotStatement('elseif');
   }
 
   checkNewline() {
@@ -787,6 +803,9 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.writeDataFill(tk, tk2.id.substr(0, tk2.id.length - 4) as DataType, amount, fill);
               break;
             }
+            case 'if':
+              await parseIf(tk, parser, imp);
+              break;
             case 'include':
               parseInclude(parser, imp);
               break;
@@ -1023,7 +1042,59 @@ async function parseBegin(parser: Parser, imp: Import) {
     }
     await parseBeginBody(parser, imp);
   }
-  imp.beginEnd();
+  imp.end();
+}
+
+async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
+  const condition = Expression.parse(parser, imp).value(
+    imp.pendingWriteContext(0),
+    'deny',
+  );
+  parser.forceNewline('`.if` statement');
+  if (condition === false) {
+    throw new CompError(flp, 'Condition unknown at time of execution');
+  }
+  let gotTrue = condition !== 0;
+  let gotElse = false;
+  imp.ifStart(gotTrue);
+  while (!parser.checkEnd()) {
+    if (!parser.hasTok()) {
+      throw new CompError(parser.here(), `Missing \`.end\` for \`.if\` on line ${flp.line}`);
+    }
+    if (parser.checkElseif()) {
+      if (gotElse) {
+        throw new CompError(parser.last(), `Can't have \`.elseif\` after \`.else\``);
+      }
+      imp.end();
+      const exflp = parser.here();
+      const elseif = Expression.parse(parser, imp).value(
+        imp.pendingWriteContext(0),
+        'deny',
+      );
+      if (gotTrue) {
+        imp.ifStart(false);
+      } else if (elseif === false) {
+        throw new CompError(exflp, 'Condition unknown at time of execution');
+      } else {
+        gotTrue = elseif !== 0;
+        imp.ifStart(gotTrue);
+      }
+    } else if (parser.checkElse()) {
+      if (gotElse) {
+        throw new CompError(parser.last(), `Can't have \`.else\` after \`.else\``);
+      }
+      imp.end();
+      gotElse = true;
+      if (gotTrue) {
+        imp.ifStart(false);
+      } else {
+        imp.ifStart(true);
+      }
+    } else {
+      await parseBeginBody(parser, imp);
+    }
+  }
+  imp.end();
 }
 
 function parseInclude(parser: Parser, imp: Import) {
@@ -1162,8 +1233,8 @@ async function parseScript(parser: Parser, imp: Import) {
   if (!parser.checkEnd()) {
     throw new CompError(parser.here(), `Missing \`.end\` for \`.script\` on line ${tk.line}`);
   }
-  parser.insert(await imp.proj.runScript(tk, imp, str.body));
-  imp.beginEnd();
+  parser.insert(await imp.runScript(tk, str.body));
+  imp.end();
 }
 
 async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {

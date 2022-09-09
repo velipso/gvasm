@@ -36,6 +36,7 @@ interface IFileCache {
   used: boolean;
   imp?: Import;
   blob?: Uint8Array;
+  scriptParents: Set<string>;
 }
 
 export class Project {
@@ -102,9 +103,32 @@ export class Project {
       file.used = true;
       file.imp = imp;
     } else {
-      this.fileCache.set(filename, { used: true, imp });
+      this.fileCache.set(filename, { used: true, imp, scriptParents: new Set() });
     }
     return imp;
+  }
+
+  async scriptEmbed(fromFilename: string, filename: string): Promise<Uint8Array | false> {
+    this.usedFilenames.add(filename);
+    const file = this.fileCache.get(filename);
+    if (file && file.blob) {
+      file.used = true;
+      file.scriptParents.add(fromFilename);
+      return file.blob;
+    }
+    try {
+      const blob = await this.readBinaryFile(filename);
+      if (file) {
+        file.used = true;
+        file.blob = blob;
+        file.scriptParents.add(fromFilename);
+      } else {
+        this.fileCache.set(filename, { used: true, blob, scriptParents: new Set([fromFilename]) });
+      }
+      return blob;
+    } catch (_) {
+      return false;
+    }
   }
 
   async embed(filename: string): Promise<Uint8Array> {
@@ -119,7 +143,7 @@ export class Project {
       file.used = true;
       file.blob = blob;
     } else {
-      this.fileCache.set(filename, { used: true, blob });
+      this.fileCache.set(filename, { used: true, blob, scriptParents: new Set() });
     }
     return blob;
   }
@@ -199,7 +223,13 @@ export class Project {
   }
 
   invalidate(filenames: string[]) {
-    for (const filename of filenames) this.fileCache.delete(filename);
+    for (const filename of filenames) {
+      const file = this.fileCache.get(filename);
+      if (file) {
+        this.fileCache.delete(filename);
+        this.invalidate(Array.from(file.scriptParents));
+      }
+    }
   }
 
   async runScript(flp: IFilePos, imp: Import, body: string): Promise<ITok[]> {
@@ -219,18 +249,16 @@ export class Project {
             await sink.scr_write(scr, body, startLine + 1);
             return true;
           }
-          try {
-            const data = await this.readBinaryFile(file);
-            let text = '';
-            for (const b of data) {
-              text += String.fromCharCode(b);
-            }
-            await sink.scr_write(scr, text);
-            return true;
-          } catch (_) {
-            // ignore errors
+          const data = await this.scriptEmbed(filename, file);
+          if (data === false) {
+            return false;
           }
-          return false;
+          let text = '';
+          for (const b of data) {
+            text += String.fromCharCode(b);
+          }
+          await sink.scr_write(scr, text);
+          return true;
         },
       },
       this.path.dirname(resolvedStartFile),

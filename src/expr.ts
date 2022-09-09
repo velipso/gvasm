@@ -100,7 +100,7 @@ interface IExprAssert {
 
 interface IExprDefined {
   kind: 'defined';
-  value: IExpr;
+  lookup: IExprLookup;
 }
 
 interface IExprFunc {
@@ -312,7 +312,11 @@ export class Expression {
         } else if (t.id === 'defined') {
           const params = readParams();
           checkParamSize(t, params.length, 1);
-          value = { kind: 'defined', value: params[0] };
+          const lookup = params[0];
+          if (lookup.kind !== 'lookup') {
+            throw 'Expecting identifier inside `defined(...)`';
+          }
+          value = { kind: 'defined', lookup };
         } else if (!imp.isRegister(t.id)) {
           const idPath: (string | Expression)[] = [t.id];
           while (true) {
@@ -645,7 +649,9 @@ export class Expression {
           return 1;
         }
         case 'defined':
-          throw 'TODO: defined';
+          return context.imp.lookup(ex.lookup.flp, context.defHere, ex.lookup.idPath) === 'notfound'
+            ? 0
+            : 1;
         case 'func': {
           const func = functions[ex.func];
           if (!func) {

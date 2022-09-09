@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IFilePos, ITokId } from './lexer.ts';
+import { IFilePos, ITok, ITokId } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever, printf } from './util.ts';
 import { Expression, LookupFailMode, reservedNames } from './expr.ts';
@@ -450,8 +450,11 @@ class SectionInclude extends Section {
   async flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
     try {
       return await this.proj.include(this.fullFile, state, startLength);
-    } catch (_) {
-      throw new CompError(this.flp, `Failed to include: ${this.filename}`);
+    } catch (e) {
+      if (e instanceof CompError) {
+        throw e;
+      }
+      throw new CompError(this.flp, `Failed to include: ${this.fullFile}`);
     }
   }
 }
@@ -1443,14 +1446,13 @@ class PendingWritePoolThumb extends PendingWritePoolCommon {
   }
 }
 
-interface ILevelBegin {
-  kind: 'begin';
+interface ILevel {
+  active: boolean;
   mode: Mode;
   regs: string[];
+  newScope: boolean;
   shiftState: boolean;
 }
-
-type ILevel = ILevelBegin;
 
 export class Import {
   static defaultRegs = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11'];
@@ -1461,7 +1463,13 @@ export class Import {
   main: boolean;
   defTable: DefMap = new Map();
   defHere = [this.defTable];
-  levels: ILevel[] = [{ kind: 'begin', mode: 'none', regs: Import.defaultRegs, shiftState: true }];
+  levels: ILevel[] = [{
+    active: true,
+    mode: 'none',
+    regs: Import.defaultRegs,
+    newScope: true,
+    shiftState: true,
+  }];
   sections: Section[] = [];
   pendingWrites: { pw: PendingWrite; remove: () => void }[] = [];
   pendingCRC: (IRewrite<number> & { flp: IFilePos })[] = [];
@@ -1549,11 +1557,17 @@ export class Import {
   }
 
   addSymNum(flp: IFilePos, name: string, num: number) {
+    if (!this.active()) {
+      return;
+    }
     this.validateNewName(flp, name);
     this.defHere[0].set(name, { kind: 'num', num });
   }
 
   addSymNamedLabel(tk: ITokId) {
+    if (!this.active()) {
+      return;
+    }
     this.validateNewName(tk, tk.id);
     const label: IDefLabel = { kind: 'label', addr: false };
     this.tailBytes().addAddrRecv(label);
@@ -1561,6 +1575,9 @@ export class Import {
   }
 
   addSymConst(flp: IFilePos, name: string, body: Expression) {
+    if (!this.active()) {
+      return;
+    }
     const context = this.pendingWriteContext(0);
     this.tailBytes().addAddrRecv(context);
     this.validateNewName(flp, name);
@@ -1568,6 +1585,9 @@ export class Import {
   }
 
   stdlib(flp: IFilePos) {
+    if (!this.active()) {
+      return;
+    }
     if (this.hasStdlib) {
       throw new CompError(flp, 'Cannot import `.stdlib` twice');
     }
@@ -1667,11 +1687,17 @@ export class Import {
   }
 
   include(flp: IFilePos, filename: string) {
+    if (!this.active()) {
+      return;
+    }
     const fullFile = this.proj.resolveFile(filename, this.filename);
     this.sections.push(new SectionInclude(flp, this.proj, fullFile, filename));
   }
 
   embed(flp: IFilePos, filename: string) {
+    if (!this.active()) {
+      return;
+    }
     const fullFile = this.proj.resolveFile(filename, this.filename);
     this.sections.push(new SectionEmbed(flp, this.proj, fullFile, filename));
   }
@@ -1687,21 +1713,49 @@ export class Import {
     this.tailBytes().addAddrRecv(entry);
     this.defHere[0].set(symName, entry);
     this.defHere = [entry.map, ...this.defHere];
-    this.levels.unshift({ kind: 'begin', mode: this.mode(), regs: this.regs(), shiftState: false });
+    this.levels.unshift({
+      active: this.active(),
+      mode: this.mode(),
+      regs: this.regs(),
+      newScope: true,
+      shiftState: false,
+    });
   }
 
-  beginEnd() {
-    if (this.levels.length <= 1 || this.levels[0].kind !== 'begin') {
+  ifStart(active: boolean) {
+    this.levels.unshift({
+      active: this.active() && active,
+      mode: this.mode(),
+      regs: this.regs(),
+      newScope: false,
+      shiftState: false,
+    });
+  }
+
+  end() {
+    const entry = this.levels.shift();
+    if (!entry || this.levels.length <= 0) {
       throw new Error(`Can't call beginEnd without matching beginStart`);
     }
-    this.defHere = this.defHere.slice(1);
-    const entry = this.levels.shift();
-    if (entry && entry.shiftState) {
+    if (entry.shiftState) {
       this.sections.push(new SectionStateShift());
     }
+    if (entry.newScope) {
+      this.defHere = this.defHere.slice(1);
+    }
+  }
+
+  async runScript(flp: IFilePos, body: string): Promise<ITok[]> {
+    if (!this.active()) {
+      return [];
+    }
+    return await this.proj.runScript(flp, this, body);
   }
 
   scriptExport(flp: IFilePos, name: string, data: string | number) {
+    if (!this.active()) {
+      return;
+    }
     this.validateNewName(flp, name);
     if (typeof data === 'number') {
       this.defHere[0].set(name, { kind: 'num', num: data });
@@ -1711,6 +1765,9 @@ export class Import {
   }
 
   pool() {
+    if (!this.active()) {
+      return;
+    }
     const pendingPools: PendingWritePoolCommon[] = [];
     for (const { pw } of this.pendingWrites) {
       if (pw instanceof PendingWritePoolCommon && !pw.captured) {
@@ -1728,14 +1785,23 @@ export class Import {
   }
 
   align(flp: IFilePos, amount: number, fill: number | 'nop') {
+    if (!this.active()) {
+      return;
+    }
     this.sections.push(new SectionAlign(flp, this.mode(), amount, fill));
   }
 
   writeLogo() {
+    if (!this.active()) {
+      return;
+    }
     this.tailBytes().logo();
   }
 
   writeTitle(flp: IFilePos, title: string) {
+    if (!this.active()) {
+      return;
+    }
     const data = new TextEncoder().encode(title);
     if (data.length > 12) {
       throw new CompError(flp, 'Invalid `.title` statement: title can\'t exceed 12 bytes');
@@ -1747,10 +1813,16 @@ export class Import {
   }
 
   writeCRC(flp: IFilePos) {
+    if (!this.active()) {
+      return;
+    }
     this.pendingCRC.push({ ...this.tailBytes().rewrite8(), flp });
   }
 
   writeInstARM(flp: IFilePos, op: ARM.IOp, syms: ISyms) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
@@ -1767,6 +1839,9 @@ export class Import {
     rd: number,
     expr: Expression,
   ) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
@@ -1776,6 +1851,9 @@ export class Import {
   }
 
   writeInstThumb(flp: IFilePos, op: Thumb.IOp, syms: ISyms) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
     const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
@@ -1785,6 +1863,9 @@ export class Import {
   }
 
   writePoolThumb(flp: IFilePos, rd: number, expr: Expression) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
     const rewrite = bytes.rewrite16();
@@ -1794,6 +1875,9 @@ export class Import {
   }
 
   writeData(flp: IFilePos, dataType: DataType, data: (number | Expression)[]) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.pendingWriteContext(dataSize >> 3);
@@ -1835,6 +1919,9 @@ export class Import {
   }
 
   writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: number | Expression) {
+    if (!this.active()) {
+      return;
+    }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.pendingWriteContext(dataSize >> 3);
@@ -1880,16 +1967,22 @@ export class Import {
   }
 
   writeStr(str: string) {
+    if (!this.active()) {
+      return;
+    }
     this.tailBytes().writeArray(new TextEncoder().encode(str));
   }
 
   printf(flp: IFilePos, format: string, args: Expression[], error: boolean) {
+    if (!this.active()) {
+      return;
+    }
     const context = this.pendingWriteContext(0);
     const pw = new PendingWritePrintf(flp, context, format, args, error, this.proj.getLog());
     this.addPendingWrite(pw);
   }
 
-  addPendingWrite(pw: PendingWrite) {
+  private addPendingWrite(pw: PendingWrite) {
     if (!pw.attemptWrite('allow')) {
       this.pendingWrites.push({ pw, remove: this.tailBytes().addAddrRecv(pw.context) });
     }
@@ -1908,53 +2001,33 @@ export class Import {
   }
 
   setBase(base: number) {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        // overwrite the base at this level if we already unshifted a base here
-        this.sections.push(new SectionBase(base, lv.shiftState));
-        lv.shiftState = true;
-        return;
-      }
+    if (!this.active()) {
+      return;
     }
-    throw new Error(`Can't set base set outside of begin block`);
+    const lv = this.levels[0];
+    // overwrite the base at this level if we already unshifted a base here
+    this.sections.push(new SectionBase(base, lv.shiftState));
+    lv.shiftState = true;
   }
 
   setMode(mode: Mode) {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        lv.mode = mode;
-        return;
-      }
-    }
-    throw new Error(`Can't set instruction set outside of begin block`);
+    this.levels[0].mode = mode;
   }
 
   mode(): Mode {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        return lv.mode;
-      }
-    }
-    return 'none';
+    return this.levels[0].mode;
   }
 
   setRegs(regs: string[]) {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        lv.regs = regs;
-        return;
-      }
-    }
-    throw new Error(`Can't set registers outside of begin block`);
+    this.levels[0].regs = regs;
   }
 
   regs(): string[] {
-    for (const lv of this.levels) {
-      if (lv.kind === 'begin') {
-        return lv.regs;
-      }
-    }
-    return Import.defaultRegs;
+    return this.levels[0].regs;
+  }
+
+  active(): boolean {
+    return this.levels[0].active;
   }
 
   async flatten(initialState: IFileState, startLength: number): Promise<Uint8Array[]> {
@@ -1964,16 +2037,14 @@ export class Import {
     for (const section of this.sections) {
       if (section instanceof SectionBase) {
         if (section.overwrite) {
-          states[0].base.addr = section.base;
-          states[0].base.relativeTo = length;
-        } else {
-          states.unshift({
-            base: {
-              addr: section.base,
-              relativeTo: length,
-            },
-          });
+          states.shift();
         }
+        states.unshift({
+          base: {
+            addr: section.base,
+            relativeTo: length,
+          },
+        });
       } else if (section instanceof SectionStateShift) {
         states.shift();
         if (states.length <= 0) {

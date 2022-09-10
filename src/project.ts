@@ -7,7 +7,7 @@
 
 import { IFilePos, ILexKeyValue, ITok, lex } from './lexer.ts';
 import { CompError, parse } from './parser.ts';
-import { Import } from './import.ts';
+import { IDebugStatement, Import } from './import.ts';
 import { loadLibIntoContext, loadLibIntoScript } from './sinklib.ts';
 import * as sink from './sink.ts';
 import { Path } from './deps.ts';
@@ -16,12 +16,9 @@ import { assertNever } from './util.ts';
 export type IMakeResult =
   | {
     sections: readonly Uint8Array[];
-    /*
-    TODO:
-      base: number;
-      arm: boolean;
-      debug: IDebugStatement[]
-    */
+    base: number;
+    arm: boolean;
+    debug: IDebugStatement[];
   }
   | { errors: string[] };
 
@@ -183,15 +180,19 @@ export class Project {
         }
         crc -= v;
       }
-      if (crc !== false) crc = crc & 0xff;
+      if (crc !== false) {
+        crc = crc & 0xff;
+      }
 
       // finalize
       const unused = new Set<string>();
+      let debug: IDebugStatement[] = [];
       for (const [filename, file] of this.fileCache.entries()) {
-        if (file.used) {
-          file.imp?.makeEnd(crc);
-        } else {
+        if (!file.used) {
           unused.add(filename);
+        } else if (file.imp) {
+          file.imp.makeEnd(crc);
+          debug = debug.concat(file.imp.debugStatements);
         }
       }
 
@@ -202,7 +203,16 @@ export class Project {
 
       this.usedFilenames = new Set(this.fileCache.keys());
 
-      return { sections };
+      const mainImp = this.fileCache.get(this.mainFilename)?.imp;
+      const base = mainImp?.firstWrittenBase ?? -1;
+      const arm = mainImp?.firstWrittenARM ?? true;
+
+      return {
+        sections,
+        base: base < 0 ? 0x08000000 : base,
+        arm,
+        debug,
+      };
     } catch (e) {
       if (e instanceof CompError) {
         if (e.flp && e.flp.filename) {
@@ -297,7 +307,12 @@ export class Project {
         }
         const pathError = () =>
           path.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
-        const lk = imp.lookup(sink.ctx_source(ctx), imp.defHere, path as (string | number)[]);
+        const lk = imp.lookup(
+          sink.ctx_source(ctx),
+          imp.expressionContext(0),
+          path as (string | number)[],
+          ctx,
+        );
         if (lk === 'notfound' || lk === false) {
           sink.abort(ctx, [`Cannot find symbol: ${pathError()}`]);
           return sink.NIL;

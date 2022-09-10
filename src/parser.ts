@@ -359,7 +359,7 @@ function validateStr(partStr: string, parser: Parser): boolean {
 }
 
 function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
-  return Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'allow') === partNum;
+  return Expression.parse(parser, imp).value(imp.expressionContext(0), 'allow') === partNum;
 }
 
 function validateSymExpr(
@@ -374,7 +374,7 @@ function validateSymExpr(
     syms[partSym] = ex;
     return true;
   }
-  const v = ex.value(imp.pendingWriteContext(0), 'deny');
+  const v = ex.value(imp.expressionContext(0), 'deny');
   if (v === false || v >= 0) {
     return false;
   }
@@ -635,6 +635,15 @@ async function parseBeginBody(parser: Parser, imp: Import) {
   const tk = parser.nextTok();
   switch (tk.kind) {
     case 'punc': {
+      if (tk.punc === '-' || tk.punc === '+') {
+        let label = tk.punc;
+        while (parser.hasTok() && parser.isNext(tk.punc)) {
+          parser.nextTok();
+          label += tk.punc;
+        }
+        imp.addSymRelativeLabel(label);
+        break;
+      }
       if (tk.punc !== '.' || !parser.hasTok()) {
         throw new CompError(tk, 'Invalid statement');
       }
@@ -643,7 +652,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
         case 'id':
           switch (tk2.id) {
             case 'align': {
-              const context = imp.pendingWriteContext(0);
+              const context = imp.expressionContext(0);
               const amount = Expression.parse(parser, imp).value(context, 'deny');
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
@@ -671,7 +680,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.setMode('arm');
               break;
             case 'base': {
-              const base = Expression.parse(parser, imp).value(imp.pendingWriteContext(0), 'deny');
+              const base = Expression.parse(parser, imp).value(imp.expressionContext(0), 'deny');
               if (base === false) {
                 throw new CompError(tk, 'Base must be constant');
               }
@@ -788,7 +797,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
             case 'um32fill':
             case 'ubm32fill': {
               const amount = Expression.parse(parser, imp).value(
-                imp.pendingWriteContext(0),
+                imp.expressionContext(0),
                 'deny',
               );
               if (amount === false) {
@@ -821,7 +830,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
             case 'error': {
               const tk3 = parser.nextTokOptional();
               if (!tk3 || tk3.kind !== 'str') {
-                throw new CompError(tk3 ?? tk2, 'Expecting `.printf "message"`');
+                throw new CompError(parser.last(), 'Expecting `.printf "message"`');
               }
               const args: Expression[] = [];
               while (parser.isNext(',')) {
@@ -832,6 +841,8 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.printf(tk, tk3.str, args, tk2.id === 'error');
               break;
             }
+            case 'end':
+              throw new CompError(parser.last(), 'Unbalanced `.end`');
             case 'regs':
               parseRegs(tk, parser, imp);
               break;
@@ -843,7 +854,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               while (true) {
                 const tk3 = parser.nextTokOptional();
                 if (!tk3 || tk3.kind !== 'str') {
-                  throw new CompError(tk3 ?? tk2, 'Expecting `.str "string"`');
+                  throw new CompError(parser.last(), 'Expecting `.str "string"`');
                 }
                 str += tk3.str;
                 if (parser.isNext(',')) {
@@ -897,14 +908,27 @@ async function parseBeginBody(parser: Parser, imp: Import) {
       }
 
       if (tk.id.charAt(0) === '_') {
-        // TODO: debug statement
-        console.log('TODO: debug:', tk.id);
-        while (true) {
-          const tk3 = parser.peekTokOptional();
-          if (!tk3 || tk3.kind === 'newline') {
+        switch (tk.id) {
+          case '_log': {
+            const tk3 = parser.nextTokOptional();
+            if (!tk3 || tk3.kind !== 'str') {
+              throw new CompError(parser.last(), 'Expecting `_log "message"`');
+            }
+            const args: Expression[] = [];
+            while (parser.isNext(',')) {
+              parser.nextTok();
+              args.push(Expression.parse(parser, imp, undefined, true));
+            }
+            parser.forceNewline('`_log` statement');
+            imp.debugLog(tk3.str, args);
             break;
           }
-          parser.nextTok();
+          case '_exit':
+            parser.forceNewline('`_exit` statement');
+            imp.debugExit();
+            break;
+          default:
+            throw new CompError(tk, `Unknown debug command: ${tk.id}`);
         }
       } else {
         let opName = tk.id;
@@ -1047,7 +1071,7 @@ async function parseBegin(parser: Parser, imp: Import) {
 
 async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
   const condition = Expression.parse(parser, imp).value(
-    imp.pendingWriteContext(0),
+    imp.expressionContext(0),
     'deny',
   );
   parser.forceNewline('`.if` statement');
@@ -1068,7 +1092,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
       imp.end();
       const exflp = parser.here();
       const elseif = Expression.parse(parser, imp).value(
-        imp.pendingWriteContext(0),
+        imp.expressionContext(0),
         'deny',
       );
       if (gotTrue) {

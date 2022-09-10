@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IDebugStatement } from './make.ts';
+import { IDebugStatement } from './import.ts';
 import { ILexKeyValue } from './lexer.ts';
-/*
 import { parseARM, parseThumb } from './dis.ts';
-import { assertNever, hex16, hex32 } from './util.ts';
-*/
+import { makeResult } from './make.ts';
+import { assertNever, hex16, hex32, printf } from './util.ts';
+
 export interface IRunArgs {
   input: string;
   defines: ILexKeyValue[];
@@ -225,13 +225,12 @@ export class CPU {
 }
 
 export function runResult(
-  _bytes: readonly number[],
-  _base: number,
-  _arm: boolean,
-  _debug: IDebugStatement[],
-  _log: (str: string) => void,
+  bytes: readonly number[],
+  base: number,
+  arm: boolean,
+  debug: IDebugStatement[],
+  log: (str: string) => void,
 ) {
-  /*
   const cpu = new CPU();
   cpu.addROM(base, bytes);
   cpu.addRAM(0x02000000, 0x40000); // EWRAM
@@ -252,16 +251,14 @@ export function runResult(
       if (dbg.addr === pc) {
         switch (dbg.kind) {
           case 'log': {
-            /* TODO:
             const args = dbg.args.map((arg) => {
-              const v = arg.value(cpu);
+              const v = arg.value(dbg.context, 'deny', undefined, cpu);
               if (v === false) {
                 throw `Unknown value at run-time`;
               }
               return v;
             });
             log(printf(dbg.format, ...args));
-            * /
             break;
           }
           case 'exit':
@@ -271,14 +268,18 @@ export function runResult(
             assertNever(dbg);
         }
       }
-      if (done) break;
+      if (done) {
+        break;
+      }
     }
 
     if (pc === base + bytes.length) {
       done = true;
     }
 
-    if (done) break;
+    if (done) {
+      break;
+    }
 
     // run code here
     const opcode16 = cpu.read16(pc);
@@ -315,29 +316,26 @@ export function runResult(
       });
     }
   }
-  */
 }
 
-export async function run({ input: _input, defines: _defines }: IRunArgs): Promise<number> {
-  return 1;
-  /*
+export async function run({ input, defines }: IRunArgs): Promise<number> {
   try {
-    const result = await makeResult(input, defines);
-
-    if ('errors' in result) {
-      for (const e of result.errors) {
-        console.error(e);
+    await makeResult(input, defines, false, async (result) => {
+      if ('errors' in result) {
+        for (const e of result.errors) {
+          console.error(e);
+        }
+        throw false;
       }
-      throw false;
-    }
 
-    runResult(
-      result.result,
-      result.base,
-      result.arm,
-      result.debug,
-      (str: string) => console.log(str),
-    );
+      runResult(
+        result.sections.map((a) => Array.from(a)).flat(),
+        result.base,
+        result.arm,
+        result.debug,
+        (str: string) => console.log(str),
+      );
+    });
 
     return 0;
   } catch (e) {
@@ -347,5 +345,4 @@ export async function run({ input: _input, defines: _defines }: IRunArgs): Promi
     }
     return 1;
   }
-  */
 }

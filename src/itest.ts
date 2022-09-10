@@ -12,7 +12,7 @@ import { load as armLoad } from './itests/arm.ts';
 import { load as thumbLoad } from './itests/thumb.ts';
 import { load as poolLoad } from './itests/pool.ts';
 import { load as constLoad } from './itests/const.ts';
-//import { load as scopeLoad } from './itests/scope.ts';
+import { load as scopeLoad } from './itests/scope.ts';
 import { load as printfLoad } from './itests/printf.ts';
 import { load as ifLoad } from './itests/if.ts';
 //import { load as structLoad } from './itests/struct.ts';
@@ -20,10 +20,10 @@ import { load as scriptLoad } from './itests/script.ts';
 import { load as sinkLoad } from './itests/sink.ts';
 import { load as stdlibLoad } from './itests/stdlib.ts';
 import { load as regsLoad } from './itests/regs.ts';
-//import { load as runLoad } from './itests/run.ts';
+import { load as runLoad } from './itests/run.ts';
 import { load as watchLoad } from './itests/watch.ts';
 import { IMakeResult, makeFromFile } from './make.ts';
-//import { runResult } from './run.ts';
+import { runResult } from './run.ts';
 import * as sink from './sink.ts';
 import { assertNever, waitForever } from './util.ts';
 import { Path } from './deps.ts';
@@ -357,13 +357,13 @@ async function itestRun(test: ITestRun): Promise<boolean> {
     return false;
   }
 
-  /* TODO: runResult(
-    res.sections,
+  runResult(
+    res.sections.map((a) => Array.from(a)).flat(),
     res.base,
     res.arm,
     res.debug,
     (str: string) => stdout.push(str),
-  );*/
+  );
 
   for (let i = 0; i < Math.max(test.stdout.length, stdout.length); i++) {
     const exp = test.stdout[i];
@@ -484,7 +484,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   thumbLoad(def);
   poolLoad(def);
   constLoad(def);
-  // TODO: scopeLoad(def);
+  scopeLoad(def);
   printfLoad(def);
   ifLoad(def);
   // TODO: structLoad(def);
@@ -492,7 +492,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   sinkLoad(def);
   stdlibLoad(def);
   regsLoad(def);
-  // TODO: runLoad(def);
+  runLoad(def);
   watchLoad(def);
 
   // execute the tests that match any filter

@@ -17,6 +17,21 @@ export type Mode = 'none' | 'arm' | 'thumb';
 
 export type ISyms = { [sym: string]: Expression | number };
 
+interface IDebugStatementLog {
+  kind: 'log';
+  addr: number | false;
+  format: string;
+  context: IExpressionContext;
+  args: Expression[];
+}
+
+interface IDebugStatementExit {
+  kind: 'exit';
+  addr: number | false;
+}
+
+export type IDebugStatement = IDebugStatementLog | IDebugStatementExit;
+
 export type DataType =
   | 'i8'
   | 'ib8'
@@ -158,6 +173,7 @@ class SectionBytes extends Section {
   }[] = [];
   private alignments: { flp: IFilePos; align: number; msg: string; i: number }[] = [];
   private addr: { base: { addr: number; relativeTo: number }; startLength: number } | false = false;
+  firstWrittenARM: boolean | undefined;
 
   async flatten(state: IFileState, startLength: number): Promise<Uint8Array[]> {
     this.addr = { base: state.base, startLength };
@@ -181,6 +197,12 @@ class SectionBytes extends Section {
       this.byteArray = new Uint8Array(this.array);
     }
     return [this.byteArray];
+  }
+
+  setARM(arm: boolean) {
+    if (this.firstWrittenARM === undefined) {
+      this.firstWrittenARM = arm;
+    }
   }
 
   clearAddr() {
@@ -713,7 +735,7 @@ interface IDefImportName {
 
 interface IDefConst {
   kind: 'const';
-  context: IPendingWriteContext;
+  context: IExpressionContext;
   body: Expression;
 }
 
@@ -730,6 +752,19 @@ export type IDef =
   | IDefNum
   | IDefConst
   | IDefScriptExport;
+
+interface IReverseLabel {
+  name: string;
+  addr: number | false;
+  level: number;
+}
+
+interface IForwardLabel {
+  name: string;
+  addr: number | false;
+  defined: boolean;
+  usedBy: unknown[];
+}
 
 type ILookup =
   | number
@@ -758,9 +793,10 @@ class BitNumber {
   }
 }
 
-export interface IPendingWriteContext {
+export interface IExpressionContext {
   imp: Import;
   defHere: DefMap[];
+  reverseLabels: IReverseLabel[];
   mode: Mode;
   addr: number | false;
   base: number | false;
@@ -770,9 +806,9 @@ export interface IPendingWriteContext {
 
 abstract class PendingWrite {
   flp: IFilePos;
-  context: IPendingWriteContext;
+  context: IExpressionContext;
 
-  constructor(flp: IFilePos, context: IPendingWriteContext) {
+  constructor(flp: IFilePos, context: IExpressionContext) {
     this.flp = flp;
     this.context = context;
   }
@@ -787,7 +823,7 @@ abstract class PendingWriteInstCommon<T> extends PendingWrite {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     op: T,
     syms: ISyms,
     rewrite: IRewrite<number>,
@@ -1039,7 +1075,7 @@ class PendingWriteData extends PendingWrite {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     data: (number | Expression)[],
     rewrite: IRewrite<number[]>,
   ) {
@@ -1096,7 +1132,7 @@ class PendingWriteDataFill extends PendingWrite {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     amount: number,
     fill: number | Expression,
     rewrite: IRewrite<number[]>,
@@ -1150,7 +1186,7 @@ class PendingWritePrintf extends PendingWrite {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     format: string,
     args: Expression[],
     error: boolean,
@@ -1224,7 +1260,7 @@ abstract class PendingWritePoolCommon extends PendingWrite {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     cmdSize: number,
     rd: number,
     expr: Expression,
@@ -1244,7 +1280,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
 
   constructor(
     flp: IFilePos,
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     cmdSize: number,
     cmdSigned: boolean,
     cond: number,
@@ -1471,10 +1507,15 @@ export class Import {
     shiftState: true,
   }];
   sections: Section[] = [];
+  reverseLabels: IReverseLabel[] = [];
+  forwardLabels: IForwardLabel[] = [];
+  debugStatements: IDebugStatement[] = [];
   pendingWrites: { pw: PendingWrite; remove: () => void }[] = [];
   pendingCRC: (IRewrite<number> & { flp: IFilePos })[] = [];
   uniqueId = 0;
   hasStdlib = false;
+  firstWrittenBase = -1;
+  firstWrittenARM = true;
 
   constructor(proj: Project, filename: string, main: boolean) {
     this.proj = proj;
@@ -1492,10 +1533,11 @@ export class Import {
     return bytes;
   }
 
-  pendingWriteContext(hereOffset: number): IPendingWriteContext {
+  expressionContext(hereOffset: number): IExpressionContext {
     return {
       imp: this,
       defHere: this.defHere,
+      reverseLabels: this.reverseLabels.concat(),
       mode: this.mode(),
       addr: false,
       base: false,
@@ -1574,11 +1616,41 @@ export class Import {
     this.defHere[0].set(tk.id, label);
   }
 
+  addSymRelativeLabel(name: string) {
+    if (!this.active()) {
+      return;
+    }
+    if (name.charAt(0) === '-') {
+      const label: IReverseLabel = { name, addr: false, level: this.defHere.length };
+      this.reverseLabels.unshift(label);
+      this.tailBytes().addAddrRecv(label);
+    } else {
+      for (const fwd of this.forwardLabels) {
+        if (fwd.name === name && !fwd.defined) {
+          fwd.defined = true;
+          this.tailBytes().addAddrRecv(fwd);
+          return;
+        }
+      }
+    }
+  }
+
+  getForwardLabel(uniqueId: unknown, name: string): number | false {
+    for (const fwd of this.forwardLabels) {
+      if (fwd.usedBy.includes(uniqueId)) {
+        return fwd.addr;
+      }
+    }
+    const label: IForwardLabel = { name, addr: false, defined: false, usedBy: [uniqueId] };
+    this.forwardLabels.push(label);
+    return false;
+  }
+
   addSymConst(flp: IFilePos, name: string, body: Expression) {
     if (!this.active()) {
       return;
     }
-    const context = this.pendingWriteContext(0);
+    const context = this.expressionContext(0);
     this.tailBytes().addAddrRecv(context);
     this.validateNewName(flp, name);
     this.defHere[0].set(name, { kind: 'const', context, body });
@@ -1599,8 +1671,9 @@ export class Import {
 
   lookup(
     flp: IFilePos,
-    defHere: DefMap[],
+    context: IExpressionContext,
     idPath: (string | number | Expression)[],
+    uniqueId: unknown,
   ): ILookup | 'notfound' | false {
     const lookup = (i: number, here: DefMap): ILookup | 'notfound' | false => {
       const p = idPath[i];
@@ -1653,7 +1726,23 @@ export class Import {
       }
     };
 
-    for (const here of defHere) {
+    if (idPath.length === 1) {
+      const label = idPath[0];
+      if (typeof label === 'string' && label.charAt(0) === '-') {
+        // lookup reverse label
+        for (const rel of context.reverseLabels) {
+          if (label === rel.name) {
+            return rel.addr;
+          }
+        }
+        return 'notfound';
+      } else if (typeof label === 'string' && label.charAt(0) === '+') {
+        // lookup forward label
+        return this.getForwardLabel(uniqueId, label);
+      }
+    }
+
+    for (const here of context.defHere) {
       const v = lookup(0, here);
       if (v !== 'notfound') {
         return v;
@@ -1742,6 +1831,10 @@ export class Import {
     }
     if (entry.newScope) {
       this.defHere = this.defHere.slice(1);
+      // remove stale '---' labels
+      while (this.reverseLabels.length > 0 && this.reverseLabels[0].level > this.defHere.length) {
+        this.reverseLabels.shift();
+      }
     }
   }
 
@@ -1824,9 +1917,10 @@ export class Import {
       return;
     }
     const bytes = this.tailBytes();
+    bytes.setARM(true);
     bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
-    const context = this.pendingWriteContext(4);
+    const context = this.expressionContext(4);
     const pw = new PendingWriteInstARM(flp, context, op, syms, rewrite);
     this.addPendingWrite(pw);
   }
@@ -1843,9 +1937,10 @@ export class Import {
       return;
     }
     const bytes = this.tailBytes();
+    bytes.setARM(true);
     bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
     const rewrite = bytes.rewrite32();
-    const context = this.pendingWriteContext(4);
+    const context = this.expressionContext(4);
     const pw = new PendingWritePoolARM(flp, context, cmdSize, cmdSigned, cond, rd, expr, rewrite);
     this.addPendingWrite(pw);
   }
@@ -1855,9 +1950,10 @@ export class Import {
       return;
     }
     const bytes = this.tailBytes();
+    bytes.setARM(false);
     bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
     const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
-    const context = this.pendingWriteContext(op.doubleInstruction ? 4 : 2);
+    const context = this.expressionContext(op.doubleInstruction ? 4 : 2);
     const pw = new PendingWriteInstThumb(flp, context, op, syms, rewrite);
     this.addPendingWrite(pw);
   }
@@ -1867,9 +1963,10 @@ export class Import {
       return;
     }
     const bytes = this.tailBytes();
+    bytes.setARM(false);
     bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
     const rewrite = bytes.rewrite16();
-    const context = this.pendingWriteContext(2);
+    const context = this.expressionContext(2);
     const pw = new PendingWritePoolThumb(flp, context, 4, rd, expr, rewrite);
     this.addPendingWrite(pw);
   }
@@ -1880,7 +1977,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
-    const context = this.pendingWriteContext(dataSize >> 3);
+    const context = this.expressionContext(dataSize >> 3);
     let pw: PendingWrite;
     switch (dataSize) {
       case 8: {
@@ -1924,7 +2021,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
-    const context = this.pendingWriteContext(dataSize >> 3);
+    const context = this.expressionContext(dataSize >> 3);
     let pw: PendingWrite;
     switch (dataSize) {
       case 8: {
@@ -1977,9 +2074,27 @@ export class Import {
     if (!this.active()) {
       return;
     }
-    const context = this.pendingWriteContext(0);
+    const context = this.expressionContext(0);
     const pw = new PendingWritePrintf(flp, context, format, args, error, this.proj.getLog());
     this.addPendingWrite(pw);
+  }
+
+  debugLog(format: string, args: Expression[]) {
+    const stmt: IDebugStatementLog = {
+      kind: 'log',
+      format,
+      context: this.expressionContext(0),
+      args,
+      addr: false,
+    };
+    this.tailBytes().addAddrRecv(stmt);
+    this.debugStatements.push(stmt);
+  }
+
+  debugExit() {
+    const stmt: IDebugStatementExit = { kind: 'exit', addr: false };
+    this.tailBytes().addAddrRecv(stmt);
+    this.debugStatements.push(stmt);
   }
 
   private addPendingWrite(pw: PendingWrite) {
@@ -2031,6 +2146,8 @@ export class Import {
   }
 
   async flatten(initialState: IFileState, startLength: number): Promise<Uint8Array[]> {
+    this.firstWrittenBase = -1;
+    this.firstWrittenARM = true;
     const sections: Uint8Array[] = [];
     const states = [initialState];
     let length = startLength;
@@ -2051,9 +2168,18 @@ export class Import {
           throw new Error('Unbalanced state shift');
         }
       } else {
+        const baseAddr = states[0].base.addr;
         const sects = await section.flatten(states[0], length);
         for (const sect of sects) {
-          if (sect.length <= 0) continue;
+          if (sect.length <= 0) {
+            continue;
+          }
+          if (this.firstWrittenBase < 0) {
+            this.firstWrittenBase = baseAddr;
+            if (section instanceof SectionBytes) {
+              this.firstWrittenARM = section.firstWrittenARM ?? true;
+            }
+          }
           length += sect.length;
           sections.push(sect);
         }

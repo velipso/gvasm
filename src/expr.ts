@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { assertNever } from './util.ts';
+import { assertNever, b16, b32 } from './util.ts';
 import { CompError, Parser } from './parser.ts';
-import { Import, IPendingWriteContext } from './import.ts';
+import { IExpressionContext, Import } from './import.ts';
 import { IFilePos, ITok } from './lexer.ts';
 import { version } from './main.ts';
+import { CPU } from './run.ts';
 
 interface IFunctions {
   [name: string]: {
@@ -83,6 +84,11 @@ export interface IExprLookup {
   flp: IFilePos;
   idPath: (string | Expression)[];
   params: IExpr[] | false;
+}
+
+interface IExprRegister {
+  kind: 'register';
+  index: number;
 }
 
 interface IExprRead {
@@ -180,11 +186,12 @@ interface IExprTernary {
   iffalse: IExpr;
 }
 
-type IExpr =
+export type IExpr =
   | IExprNum
   | IExprReserved
   | IExprLookup
   | IExprParam
+  | IExprRegister
   | IExprRead
   | IExprAssert
   | IExprDefined
@@ -238,7 +245,12 @@ export class Expression {
     return new Expression({ kind: 'num', value: num }, -1);
   }
 
-  static parse(parser: Parser, imp: Import, paramNames?: string[]): Expression {
+  static parse(
+    parser: Parser,
+    imp: Import,
+    paramNames?: string[],
+    debugStatement = false,
+  ): Expression {
     const readParams = (): IExpr[] => {
       const params: IExpr[] = [];
       if (!parser.isNext('(')) {
@@ -262,12 +274,13 @@ export class Expression {
 
     const term = (): IExpr => {
       // collect all unary operators
-      let t = parser.nextTokOptional();
+      let t = parser.peekTokOptional();
       const unary: ITokUnary[] = [];
       while (t) {
         if (t && isTokUnary(t)) {
+          parser.nextTok();
           unary.push(t);
-          t = parser.nextTokOptional();
+          t = parser.peekTokOptional();
         } else {
           break;
         }
@@ -276,21 +289,33 @@ export class Expression {
       // get the terminal
       let value: IExpr | undefined;
       if (t && t.kind === 'num') {
+        parser.nextTok();
         value = { kind: 'num', value: t.num };
       } else if (t && t.kind === 'punc' && t.punc === '(') {
+        parser.nextTok();
         value = { kind: 'unary', op: '(', value: term() };
         if (!parser.isNext(')')) {
           throw 'Expecting close parenthesis';
         }
         parser.nextTok();
+      } else if (debugStatement && t && t.kind === 'punc' && t.punc === '[') {
+        parser.nextTok();
+        const addr = term();
+        if (!parser.isNext(']')) {
+          throw 'Expecting `]` at end of memory read';
+        }
+        parser.nextTok();
+        value = { kind: 'read', size: 'i32', addr };
       } else if (t && t.kind === 'id') {
         if (t.id in functions) {
+          parser.nextTok();
           const params = readParams();
           if (functions[t.id].size >= 0) {
             checkParamSize(t, params.length, functions[t.id].size);
           }
           value = { kind: 'func', func: t.id, params };
         } else if (t.id === 'assert') {
+          parser.nextTok();
           if (!parser.isNext('(')) {
             throw 'Expecting \'(\' at start of call';
           }
@@ -310,6 +335,7 @@ export class Expression {
           parser.nextTok();
           value = { kind: 'assert', flp: t, hint: hint.str, value: v };
         } else if (t.id === 'defined') {
+          parser.nextTok();
           const params = readParams();
           checkParamSize(t, params.length, 1);
           const lookup = params[0];
@@ -317,7 +343,32 @@ export class Expression {
             throw 'Expecting identifier inside `defined(...)`';
           }
           value = { kind: 'defined', lookup };
+        } else if (debugStatement && imp.decodeRegister(t, true) >= 0) {
+          parser.nextTok();
+          value = { kind: 'register', index: imp.decodeRegister(t, true) };
+        } else if (
+          debugStatement && (
+            t.id === 'i8' ||
+            t.id === 'i16' ||
+            t.id === 'i32' ||
+            t.id === 'b8' ||
+            t.id === 'b16' ||
+            t.id === 'b32'
+          )
+        ) {
+          parser.nextTok();
+          if (!parser.isNext('[')) {
+            throw 'Expecting \'[\' at start of memory read';
+          }
+          parser.nextTok();
+          const addr = term();
+          if (!parser.isNext(']')) {
+            throw 'Expecting \']\' at end of memory read';
+          }
+          parser.nextTok();
+          value = { kind: 'read', size: t.id, addr };
         } else if (!imp.isRegister(t.id)) {
+          parser.nextTok();
           const idPath: (string | Expression)[] = [t.id];
           while (true) {
             if (parser.isNext('.')) {
@@ -382,35 +433,6 @@ export class Expression {
                 break;
             }
           }
-          /*
-        } else if (regs && t.id === '[') {
-          const addr = term();
-          if (!isNextId(line, ']')) {
-            throw 'Expecting \']\' at end of memory read';
-          }
-          line.shift();
-          value = { kind: 'read', size: 'i32', addr };
-        } else if (
-          regs && (
-            t.id === 'i8' ||
-            t.id === 'i16' ||
-            t.id === 'i32' ||
-            t.id === 'b8' ||
-            t.id === 'b16' ||
-            t.id === 'b32'
-          )
-        ) {
-          if (!isNextId(line, '[')) {
-            throw 'Expecting \'[\' at start of memory read';
-          }
-          line.shift();
-          const addr = term();
-          if (!isNextId(line, ']')) {
-            throw 'Expecting \']\' at end of memory read';
-          }
-          line.shift();
-          value = { kind: 'read', size: t.id, addr };
-          */
         }
       }
       if (!value) {
@@ -423,11 +445,15 @@ export class Expression {
         ) {
           // interpret the tail of the unary array as an anonymous label
           let flp = unary.pop();
-          if (!flp) throw new Error('Expecting unary token');
+          if (!flp) {
+            throw new Error('Expecting unary token');
+          }
           let label = flp.punc;
           while (unary.length > 0 && unary[unary.length - 1].punc === label.charAt(0)) {
             flp = unary.pop();
-            if (!flp) throw new Error('Expecting unary token');
+            if (!flp) {
+              throw new Error('Expecting unary token');
+            }
             label += flp.punc;
           }
           value = { kind: 'lookup', flp, idPath: [label], params: false };
@@ -531,9 +557,10 @@ export class Expression {
   }
 
   value(
-    context: IPendingWriteContext,
+    context: IExpressionContext,
     lookupFailMode: LookupFailMode,
     params?: number[],
+    cpu?: CPU,
   ): number | false {
     const get = (ex: IExpr): number | false => {
       switch (ex.kind) {
@@ -570,7 +597,7 @@ export class Expression {
               return assertNever(ex.name);
           }
         case 'lookup': {
-          const v = context.imp.lookup(ex.flp, context.defHere, ex.idPath);
+          const v = context.imp.lookup(ex.flp, context, ex.idPath, ex);
           const pathError = () =>
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
@@ -618,11 +645,19 @@ export class Expression {
         }
         case 'param':
           return params?.[ex.param] ?? false;
+        case 'register':
+          if (!cpu) {
+            throw new Error('Cannot have register in expression at compile-time');
+          }
+          return cpu.reg(ex.index);
         case 'read': {
-          //if (!cpu) {
-          throw 'Cannot have memory read in expression at compile-time';
-          /*}
+          if (!cpu) {
+            throw new Error('Cannot have memory read in expression at compile-time');
+          }
           const addr = get(ex.addr);
+          if (addr === false) {
+            return false;
+          }
           switch (ex.size) {
             case 'i8':
             case 'b8':
@@ -638,7 +673,7 @@ export class Expression {
             default:
               assertNever(ex.size);
           }
-          return 0;*/
+          return 0;
         }
         case 'assert': {
           const a = get(ex.value);
@@ -649,7 +684,7 @@ export class Expression {
           return 1;
         }
         case 'defined':
-          return context.imp.lookup(ex.lookup.flp, context.defHere, ex.lookup.idPath) === 'notfound'
+          return context.imp.lookup(ex.lookup.flp, context, ex.lookup.idPath, ex) === 'notfound'
             ? 0
             : 1;
         case 'func': {

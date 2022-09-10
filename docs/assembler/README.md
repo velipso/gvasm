@@ -139,16 +139,16 @@ Constants beginning with an underscore are reserved for the assembler.
 
 The following constants are always defined and depend on the assembler state:
 
-| Constant    | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `$_arm`     | True if in ARM mode (`.arm`)                                                |
-| `$_base`    | The base value (set by `.base <base>`)                                      |
-| `$_bytes`   | The length of the output so far, in bytes                                   |
-| `$_here`    | The next address to be output                                               |
-| `$_main`    | True if the current file is the start file, not included from another       |
-| `$_pc`      | The PC value at this address (`$_here + 8` for ARM, `$_here + 4` for Thumb) |
-| `$_thumb`   | True if in Thumb mode (`.thumb`)                                            |
-| `$_version` | Version of the assembler (1002003 is v1.2.3)                                |
+| Constant   | Description                                                               |
+|------------|---------------------------------------------------------------------------|
+| `_arm`     | True if in ARM mode (`.arm`)                                              |
+| `_base`    | The base value (set by `.base <base>`)                                    |
+| `_bytes`   | The length of the output so far, in bytes                                 |
+| `_here`    | The next address to be output                                             |
+| `_main`    | True if the current file is the start file, not included from another     |
+| `_pc`      | The PC value at this address (`_here + 8` for ARM, `_here + 4` for Thumb) |
+| `_thumb`   | True if in Thumb mode (`.thumb`)                                          |
+| `_version` | Version of the assembler (1002003 is v1.2.3)                              |
 
 Constant Expressions
 --------------------
@@ -478,12 +478,12 @@ Sets the base address of the following code.  For regular GBA games, this is `0x
 Note that `.base` is scoped to the closest `.begin`/`.end` block:
 
 ```
-.printf "%#08X", $_base   // 0x08000000
+.printf "%#08X", _base   // 0x08000000
 .begin
   .base 0x02000000
-  .printf "%#08X", $_base // 0x02000000
+  .printf "%#08X", _base // 0x02000000
 .end
-.printf "%#08X", $_base   // 0x08000000
+.printf "%#08X", _base   // 0x08000000
 ```
 
 ### `.begin` / `.end`
@@ -563,22 +563,6 @@ Includes a text file by essentially copy/pasting it into the location.
 
 Outputs the Nintendo logo, used in the GBA header.
 
-### `.macro <name> [<params, ...>]` / `.endm` (WIP)
-
-Macros (not implemented yet).
-
-### `.once` / `.elseif <condition>` / `.else` / `.end`
-
-Only include the block of code once.  Can also use `.elseif` and `.else` inside the block.
-
-Equivalent to:
-
-```
-.if this code hasn't been seen yet
-  ...
-.end
-```
-
 ### `.pool`
 
 Outputs a literal pool, for use with the `ldr rX, =constant` pseudo-instructions.
@@ -623,7 +607,7 @@ See the [scripting guide](./script.md), and the available [standard library](./l
 
 ### `.stdlib`
 
-Includes the standard library, which defines useful constants like `$REG_DISPCNT`, etc.
+Includes the standard library, which defines useful constants like `REG_DISPCNT`, etc.
 
 ### `.struct <prefix>` / `.end`
 

@@ -14,48 +14,47 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.def $one = 1
-.i8 $one             /// 01
-.def $$two = 2
-.i8 $$two            /// 02
+.def one = 1
+.i8 one           /// 01
+.def two = 2
+.i8 two           /// 02
 .begin
-  .i8 $one           /// 01
-  .def $$two = 3
-  .i8 $$two          /// 03
+  .i8 one         /// 01
+  .def two = 3
+  .i8 two         /// 03
   .begin
-    .i8 $one         /// 01
-    .def $$two = 4
-    .i8 $$two        /// 04
+    .i8 one       /// 01
+    .def two = 4
+    .i8 two       /// 04
   .end
-  .i8 $$two          /// 03
+  .i8 two         /// 03
 .end
-.i8 $$two            /// 02
+.i8 two           /// 02
 `,
     },
   });
 
   def({
-    name: 'scope.missing-const',
-    desc: 'Constants are strictly local to scope',
+    name: 'scope.const-lookup',
+    desc: 'Constants are searched up the scope',
     kind: 'make',
-    error: true,
     files: {
       '/root/main': `
-.def $one = 1
-.i8 $one
-.def $$two = 2
-.i8 $$two
+.def one = 1
+.i8 one         /// 01
+.def two = 2
+.i8 two         /// 02
 .begin
-  .i8 $one
-  .def $$two = 3
-  .i8 $$two
+  .i8 one       /// 01
+  .def two = 3
+  .i8 two       /// 03
   .begin
-    .i8 $one
-    .i8 $$two
+    .i8 one     /// 01
+    .i8 two     /// 03
   .end
-  .i8 $$two
+  .i8 two       /// 03
 .end
-.i8 $$two
+.i8 two         /// 02
 `,
     },
   });
@@ -99,19 +98,18 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
-    name: 'scope.missing-label',
-    desc: 'Local labels must exist at scope level',
+    name: 'scope.late-label',
+    desc: 'Late local labels should override higher scope labels',
     kind: 'make',
-    error: true,
     files: {
       '/root/main': `
-@@L:
-.i32 @@L
+L:
+.i32 L      /// 00 00 00 08
 .begin
-  .i32 @@L
+  .i32 L    /// 00 00 00 08
   .begin
-    .i32 @@L
-    @@L:
+    .i32 L  /// 0c 00 00 08
+    L:
   .end
 .end
 `,
@@ -124,20 +122,20 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-@@L:
-.i32 @@L      /// 00 00 00 08
+L:
+.i32 L      /// 00 00 00 08
 .begin
-  .i32 @@L    /// 14 00 00 08
+  .i32 L    /// 14 00 00 08
   .begin
-    .i32 @@L  /// 10 00 00 08
-    .i32 1    /// 01 00 00 00
-    @@L:
-    .i32 2    /// 02 00 00 00
+    .i32 L  /// 10 00 00 08
+    .i32 1  /// 01 00 00 00
+    L:
+    .i32 2  /// 02 00 00 00
   .end
-  @@L:
-  .i32 3      /// 03 00 00 00
+  L:
+  .i32 3    /// 03 00 00 00
 .end
-.i32 @@L      /// 00 00 00 08
+.i32 L      /// 00 00 00 08
 `,
     },
   });
@@ -147,63 +145,34 @@ export function load(def: (test: ITest) => void) {
     desc: '.arm and .thumb should be scoped',
     kind: 'make',
     files: {
-      '/root/main': `
-.if $_arm
-  .i32 1 /// 01 00 00 00
+      '/root/main': `.arm
+.if _arm
+  .i8 1      /// 01
 .end
 
 .begin
   .thumb
-  .if $_thumb
-    .i32 2 /// 02 00 00 00
+  .if _thumb
+    .i8 2    /// 02
   .end
 
   .begin
-    .if $_thumb
-      .i32 3 /// 03 00 00 00
+    .if _thumb
+      .i8 3  /// 03
     .end
     .arm
-    .if $_arm
-      .i32 4 /// 04 00 00 00
+    .if _arm
+      .i8 4  /// 04
     .end
   .end
 
-  .if $_thumb
-    .i16 5 /// 05 00
+  .if _thumb
+    .i8 5    /// 05
   .end
-.end /// 00 00
-
-.if $_arm
-  .i32 6 /// 06 00 00 00
 .end
-`,
-    },
-  });
 
-  def({
-    name: 'scope.once',
-    desc: 'Use .once to skip previously included code',
-    kind: 'make',
-    stdout: [
-      'inside test',
-      'first',
-      'inside test',
-      'not first',
-      'inside test',
-      'not first',
-    ],
-    files: {
-      '/root/main': `
-.include "test"
-.include "test"
-.include "test"
-`,
-      '/root/test': `
-.printf "inside test"
-.once
-  .printf "first"
-.else
-  .printf "not first"
+.if _arm
+  .i8 6      /// 06
 .end
 `,
     },
@@ -214,11 +183,11 @@ export function load(def: (test: ITest) => void) {
     desc: 'Using - for anonymous backward labels',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
     mov   r0, #0   /// 00 00 a0 e3
-@a: add   r0, #1   /// 01 00 80 e2
+a:  add   r0, #1   /// 01 00 80 e2
     cmp   r0, #50  /// 32 00 50 e3
-    blt   @a       /// fc ff ff ba
+    blt   a        /// fc ff ff ba
 
     mov   r0, #0   /// 00 00 a0 e3
 -   add   r0, #1   /// 01 00 80 e2
@@ -254,11 +223,11 @@ export function load(def: (test: ITest) => void) {
     desc: 'Using + for anonymous forward labels',
     kind: 'make',
     files: {
-      '/root/main': `
+      '/root/main': `.arm
     cmp   r0, #50  /// 32 00 50 e3
-    blt   @a       /// 00 00 00 ba
+    blt   a        /// 00 00 00 ba
     mov   r0, #0   /// 00 00 a0 e3
-@a: add   r0, #1   /// 01 00 80 e2
+a:  add   r0, #1   /// 01 00 80 e2
 
     cmp   r0, #50  /// 32 00 50 e3
     blt   +        /// 00 00 00 ba

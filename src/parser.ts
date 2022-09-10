@@ -10,7 +10,7 @@ import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
 import { Expression } from './expr.ts';
 import { Project } from './project.ts';
-import { DataType, Import, ISyms } from './import.ts';
+import { DataType, Import, IStruct, IStructMember, ISyms } from './import.ts';
 
 export class Parser {
   i = 0;
@@ -867,6 +867,11 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.writeStr(str);
               break;
             }
+            case 'struct': {
+              const { name, base, struct } = parseStruct(parser, imp, true);
+              imp.addSymStruct(tk, name, base, struct);
+              break;
+            }
             case 'thumb':
               parser.forceNewline('`.thumb` statement');
               imp.setMode('thumb');
@@ -1109,11 +1114,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
       }
       imp.end();
       gotElse = true;
-      if (gotTrue) {
-        imp.ifStart(false);
-      } else {
-        imp.ifStart(true);
-      }
+      imp.ifStart(!gotTrue);
     } else {
       await parseBeginBody(parser, imp);
     }
@@ -1322,6 +1323,242 @@ async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
   parser.forceNewline('`.import` statement');
 
   return true;
+}
+
+function parseStruct(
+  parser: Parser,
+  imp: Import,
+  allowBase: boolean,
+): { name: string; base: Expression | false; struct: IStruct } {
+  const name = parser.nextTok();
+  if (name.kind !== 'id') {
+    throw new CompError(name, 'Expecting `.struct Name`');
+  }
+  let length: Expression | false = false;
+  if (parser.isNext('[')) {
+    parser.nextTok();
+    length = Expression.parse(parser, imp);
+    if (!parser.isNext(']')) {
+      throw new CompError(parser.here(), 'Expecting `.struct Name[length]`');
+    }
+    parser.nextTok();
+  }
+  let base: Expression | false = false;
+  if (parser.isNext('=')) {
+    if (!allowBase) {
+      throw new CompError(parser.here(), 'Cannot set struct base inside another struct');
+    }
+    parser.nextTok();
+    base = Expression.parse(parser, imp);
+  }
+  parser.forceNewline('`.struct` statement');
+
+  const struct: IStruct = { kind: 'struct', flp: name, length, members: [] };
+  while (!parser.checkEnd()) {
+    parseStructBody(parser, imp, struct, true);
+  }
+  return { name: name.id, base, struct };
+}
+
+function structPushMember(
+  flp: IFilePos,
+  struct: IStruct,
+  name: string | false,
+  member: IStructMember,
+) {
+  if (name) {
+    if (/^_[a-z]/.test(name)) {
+      throw new CompError(flp, `Cannot start name with reserved prefix \`_[a-z]\`: ${name}`);
+    }
+    for (const { name: name2 } of struct.members) {
+      if (name === name2) {
+        throw new CompError(flp, `Cannot redefine: ${name}`);
+      }
+    }
+  }
+  struct.members.push({ name, member });
+}
+
+function parseStructBody(parser: Parser, imp: Import, struct: IStruct, active: boolean) {
+  const tk = parser.nextTok();
+  switch (tk.kind) {
+    case 'punc': {
+      if (tk.punc !== '.' || !parser.hasTok()) {
+        throw new CompError(tk, 'Invalid statement');
+      }
+      const tk2 = parser.nextTok();
+      switch (tk2.kind) {
+        case 'id':
+          switch (tk2.id) {
+            case 'align': {
+              const context = imp.expressionContext(0);
+              const amount = Expression.parse(parser, imp).value(context, 'deny');
+              if (amount === false) {
+                throw new CompError(tk, 'Align amount must be constant');
+              }
+              parser.forceNewline('`.align` statement');
+              if (active) {
+                structPushMember(tk, struct, false, { kind: 'align', amount });
+              }
+              break;
+            }
+            case 'i8':
+            case 'ib8':
+            case 'im8':
+            case 'ibm8':
+            case 'i16':
+            case 'ib16':
+            case 'im16':
+            case 'ibm16':
+            case 'i32':
+            case 'ib32':
+            case 'im32':
+            case 'ibm32':
+            case 'u8':
+            case 'ub8':
+            case 'um8':
+            case 'ubm8':
+            case 'u16':
+            case 'ub16':
+            case 'um16':
+            case 'ubm16':
+            case 'u32':
+            case 'ub32':
+            case 'um32':
+            case 'ubm32':
+              while (true) {
+                const name = parser.nextTokOptional();
+                if (!name || name.kind !== 'id') {
+                  throw new CompError(parser.here(), `Expecting \`.${tk2.id} Name\``);
+                }
+                let length: Expression | false = false;
+                if (parser.isNext('[')) {
+                  parser.nextTok();
+                  length = Expression.parse(parser, imp);
+                  if (!parser.isNext(']')) {
+                    throw new CompError(parser.here(), `Expecting \`.${tk2.id} Name[length]\``);
+                  }
+                  parser.nextTok();
+                }
+                if (active) {
+                  structPushMember(name, struct, name.id, {
+                    kind: 'data',
+                    flp: name,
+                    length,
+                    dataType: tk2.id,
+                  });
+                }
+                if (parser.isNext(',')) {
+                  parser.nextTok();
+                  continue;
+                }
+                parser.forceNewline(`\`.${tk2.id}\` statement`);
+                break;
+              }
+              break;
+            case 'if':
+              parseStructIf(tk, parser, imp, struct);
+              break;
+            case 'end':
+              throw new CompError(parser.last(), 'Unbalanced `.end`');
+            case 'struct': {
+              const flp = parser.peekTokOptional();
+              const { name, struct: member } = parseStruct(parser, imp, false);
+              if (active) {
+                structPushMember(flp ?? tk, struct, name, member);
+              }
+              break;
+            }
+            default:
+              throw new CompError(tk2, `Unknown statement: \`.${tk2.id}\``);
+          }
+          break;
+        case 'punc':
+        case 'newline':
+        case 'num':
+        case 'str':
+        case 'script':
+          throw new CompError(tk2, 'Invalid statement');
+        case 'error':
+          throw new CompError(tk2, tk2.msg);
+        case 'closure':
+          tk2.closure();
+          break;
+        default:
+          assertNever(tk2);
+      }
+      break;
+    }
+    case 'id': {
+      if (parser.isNext(':')) {
+        if (active) {
+          structPushMember(tk, struct, tk.id, { kind: 'label' });
+        }
+        parser.nextTok();
+      } else {
+        throw new CompError(tk, 'Invalid statement inside `.struct`');
+      }
+      break;
+    }
+    case 'newline':
+      break;
+    case 'num':
+    case 'str':
+    case 'script':
+      throw new CompError(tk, 'Invalid statement inside `.struct`');
+    case 'error':
+      throw new CompError(tk, tk.msg);
+    case 'closure':
+      tk.closure();
+      break;
+    default:
+      assertNever(tk);
+  }
+}
+
+function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStruct) {
+  const condition = Expression.parse(parser, imp).value(
+    imp.expressionContext(0),
+    'deny',
+  );
+  parser.forceNewline('`.if` statement');
+  if (condition === false) {
+    throw new CompError(flp, 'Condition unknown at time of execution');
+  }
+  let gotTrue = condition !== 0;
+  let gotElse = false;
+  let active = gotTrue;
+  while (!parser.checkEnd()) {
+    if (!parser.hasTok()) {
+      throw new CompError(parser.here(), `Missing \`.end\` for \`.if\` on line ${flp.line}`);
+    }
+    if (parser.checkElseif()) {
+      if (gotElse) {
+        throw new CompError(parser.last(), `Can't have \`.elseif\` after \`.else\``);
+      }
+      const exflp = parser.here();
+      const elseif = Expression.parse(parser, imp).value(
+        imp.expressionContext(0),
+        'deny',
+      );
+      if (gotTrue) {
+        active = false;
+      } else if (elseif === false) {
+        throw new CompError(exflp, 'Condition unknown at time of execution');
+      } else {
+        gotTrue = elseif !== 0;
+        active = gotTrue;
+      }
+    } else if (parser.checkElse()) {
+      if (gotElse) {
+        throw new CompError(parser.last(), `Can't have \`.else\` after \`.else\``);
+      }
+      gotElse = true;
+      active = !gotTrue;
+    } else {
+      parseStructBody(parser, imp, struct, active);
+    }
+  }
 }
 
 export async function parse(

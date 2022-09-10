@@ -15,7 +15,7 @@ import { load as constLoad } from './itests/const.ts';
 import { load as scopeLoad } from './itests/scope.ts';
 import { load as printfLoad } from './itests/printf.ts';
 import { load as ifLoad } from './itests/if.ts';
-//import { load as structLoad } from './itests/struct.ts';
+import { load as structLoad } from './itests/struct.ts';
 import { load as scriptLoad } from './itests/script.ts';
 import { load as sinkLoad } from './itests/sink.ts';
 import { load as stdlibLoad } from './itests/stdlib.ts';
@@ -487,7 +487,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   scopeLoad(def);
   printfLoad(def);
   ifLoad(def);
-  // TODO: structLoad(def);
+  structLoad(def);
   scriptLoad(def);
   sinkLoad(def);
   stdlibLoad(def);

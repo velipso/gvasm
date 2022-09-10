@@ -310,6 +310,7 @@ export class Project {
         const lk = imp.lookup(
           sink.ctx_source(ctx),
           imp.expressionContext(0),
+          'allow',
           path as (string | number)[],
           ctx,
         );

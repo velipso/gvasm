@@ -597,7 +597,7 @@ export class Expression {
               return assertNever(ex.name);
           }
         case 'lookup': {
-          const v = context.imp.lookup(ex.flp, context, ex.idPath, ex);
+          const v = context.imp.lookup(ex.flp, context, lookupFailMode, ex.idPath, ex);
           const pathError = () =>
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
@@ -684,7 +684,13 @@ export class Expression {
           return 1;
         }
         case 'defined':
-          return context.imp.lookup(ex.lookup.flp, context, ex.lookup.idPath, ex) === 'notfound'
+          return context.imp.lookup(
+              ex.lookup.flp,
+              context,
+              lookupFailMode,
+              ex.lookup.idPath,
+              ex,
+            ) === 'notfound'
             ? 0
             : 1;
         case 'func': {

@@ -144,9 +144,12 @@ export function dataTypeToMisaligned(dataType: DataType): DataType {
 
 export function dataTypeSize(dataType: DataType) {
   const t = dataType.charAt(dataType.length - 1);
-  if (t === '8') return 8;
-  else if (t === '6') return 16;
-  return 32;
+  if (t === '8') {
+    return 1;
+  } else if (t === '6') {
+    return 2;
+  }
+  return 4;
 }
 
 abstract class Section {
@@ -744,6 +747,14 @@ interface IDefScriptExport {
   data: string;
 }
 
+interface IDefStruct {
+  kind: 'struct';
+  flp: IFilePos;
+  context: IExpressionContext;
+  base: Expression | false;
+  struct: IStruct;
+}
+
 export type IDef =
   | IDefBegin
   | IDefImportAll
@@ -751,7 +762,37 @@ export type IDef =
   | IDefLabel
   | IDefNum
   | IDefConst
-  | IDefScriptExport;
+  | IDefScriptExport
+  | IDefStruct;
+
+export interface IStruct {
+  kind: 'struct';
+  flp: IFilePos;
+  length: Expression | false;
+  members: { name: string | false; member: IStructMember }[];
+}
+
+interface IStructData {
+  kind: 'data';
+  flp: IFilePos;
+  length: Expression | false;
+  dataType: DataType;
+}
+
+interface IStructLabel {
+  kind: 'label';
+}
+
+interface IStructAlign {
+  kind: 'align';
+  amount: number;
+}
+
+export type IStructMember =
+  | IStruct
+  | IStructData
+  | IStructLabel
+  | IStructAlign;
 
 interface IReverseLabel {
   name: string;
@@ -1512,6 +1553,7 @@ export class Import {
   debugStatements: IDebugStatement[] = [];
   pendingWrites: { pw: PendingWrite; remove: () => void }[] = [];
   pendingCRC: (IRewrite<number> & { flp: IFilePos })[] = [];
+  structs: IDefStruct[] = [];
   uniqueId = 0;
   hasStdlib = false;
   firstWrittenBase = -1;
@@ -1656,6 +1698,17 @@ export class Import {
     this.defHere[0].set(name, { kind: 'const', context, body });
   }
 
+  addSymStruct(flp: IFilePos, name: string, base: Expression | false, struct: IStruct) {
+    if (!this.active()) {
+      return;
+    }
+    const context = this.expressionContext(0);
+    this.validateNewName(flp, name);
+    const defStruct: IDefStruct = { kind: 'struct', flp, context, base, struct };
+    this.structs.push(defStruct);
+    this.defHere[0].set(name, defStruct);
+  }
+
   stdlib(flp: IFilePos) {
     if (!this.active()) {
       return;
@@ -1669,12 +1722,254 @@ export class Import {
     }
   }
 
+  structSize(
+    context: IExpressionContext,
+    lookupFailMode: LookupFailMode,
+    struct: IStruct,
+    base: number,
+  ): { alignment: number; size: number } | false {
+    let alignment = 1;
+    let here = base;
+    for (const { member } of struct.members) {
+      switch (member.kind) {
+        case 'align':
+          alignment = Math.max(alignment, member.amount);
+          if (member.amount > 1 && (here % member.amount) > 0) {
+            here += member.amount - (here % member.amount);
+          }
+          break;
+        case 'data': {
+          const dsize = dataTypeSize(member.dataType);
+          if (dataTypeAligned(member.dataType)) {
+            alignment = Math.max(alignment, dsize);
+            if ((here % dsize) !== 0) {
+              throw new CompError(
+                member.flp,
+                `Misaligned member; add \`.align ${dsize}\` or change to \`.${
+                  dataTypeToMisaligned(member.dataType)
+                }\``,
+              );
+            }
+          }
+          if (member.length) {
+            const length = member.length.value(context, lookupFailMode);
+            if (length === false) {
+              return false;
+            }
+            if (length < 1) {
+              throw new CompError(member.flp, `Invalid array length: ${length}`);
+            }
+            here += dsize * length;
+          } else {
+            here += dsize;
+          }
+          break;
+        }
+        case 'label':
+          break;
+        case 'struct': {
+          const s = this.structSize(context, lookupFailMode, member, here);
+          if (s === false) {
+            return false;
+          }
+          alignment = Math.max(alignment, s.alignment);
+          here += s.size;
+          break;
+        }
+        default:
+          assertNever(member);
+      }
+    }
+
+    if (struct.length) {
+      const length = struct.length.value(context, lookupFailMode);
+      if (length === false) {
+        return false;
+      }
+      if (length < 1) {
+        throw new CompError(struct.flp, `Invalid array length: ${length}`);
+      } else if (length > 1) {
+        const oneSize = here - base;
+        if ((base % alignment) !== (here % alignment)) {
+          throw new CompError(
+            struct.flp,
+            `Array becomes misaligned; add \`.align ${alignment}\` at end of struct`,
+          );
+        }
+        here += (length - 1) * oneSize;
+      }
+    }
+
+    return { alignment, size: here - base };
+  }
+
   lookup(
     flp: IFilePos,
     context: IExpressionContext,
+    lookupFailMode: LookupFailMode,
     idPath: (string | number | Expression)[],
     uniqueId: unknown,
   ): ILookup | 'notfound' | false {
+    const lookupStruct = (
+      i: number,
+      struct: IStruct,
+      base: number,
+    ): ILookup | 'notfound' | false => {
+      if (i >= idPath.length) {
+        return base;
+      }
+      const idHere = idPath[i];
+
+      // numeric index
+      if (typeof idHere === 'number' || idHere instanceof Expression) {
+        const index = typeof idHere === 'number' ? idHere : idHere.value(context, lookupFailMode);
+        if (index === false) {
+          return false;
+        }
+        if (struct.length === false) {
+          throw new CompError(flp, 'Cannot index into non-array');
+        }
+        const length = struct.length.value(context, lookupFailMode);
+        if (length === false) {
+          return false;
+        }
+        if (index < 0 || index >= length) {
+          throw new CompError(flp, 'Index outside array boundary');
+        }
+        const s = this.structSize(context, lookupFailMode, struct, base);
+        if (s === false) {
+          return false;
+        }
+        return lookupStruct(i + 1, struct, base + s.size * index);
+      }
+
+      // special index
+      if (idHere === '_length') {
+        if (i + 1 < idPath.length) {
+          throw new CompError(flp, 'Cannot index into constant number');
+        }
+        const length = struct.length === false ? 1 : struct.length.value(context, lookupFailMode);
+        if (length === false) {
+          return false;
+        }
+        return length;
+      } else if (idHere === '_bytes') {
+        if (i + 1 < idPath.length) {
+          throw new CompError(flp, 'Cannot index into constant number');
+        }
+        const s = this.structSize(context, lookupFailMode, struct, base);
+        if (s === false) {
+          return false;
+        }
+        return s.size;
+      }
+
+      if (struct.length) {
+        throw new CompError(flp, 'Expecting index into array');
+      }
+
+      // member index
+      let here = base;
+      for (const { name, member } of struct.members) {
+        switch (member.kind) {
+          case 'align':
+            if (member.amount > 1 && (here % member.amount) > 0) {
+              here += member.amount - (here % member.amount);
+            }
+            break;
+          case 'data': {
+            const dsize = dataTypeSize(member.dataType);
+            if (name === idHere) {
+              if (i + 1 >= idPath.length) {
+                return here;
+              }
+              const idNext = idPath[i + 1];
+
+              // numeric index
+              if (typeof idNext === 'number' || idNext instanceof Expression) {
+                const index = typeof idNext === 'number'
+                  ? idNext
+                  : idNext.value(context, lookupFailMode);
+                if (index === false) {
+                  return false;
+                }
+                if (member.length === false) {
+                  throw new CompError(flp, 'Cannot index into non-array');
+                }
+                const length = member.length.value(context, lookupFailMode);
+                if (length === false) {
+                  return false;
+                }
+                if (index < 0 || index >= length) {
+                  throw new CompError(flp, 'Index outside array boundary');
+                }
+                if (i + 2 < idPath.length) {
+                  throw new CompError(flp, 'Cannot index into constant number');
+                }
+                return here + dsize * index;
+              }
+
+              // special index
+              if (idNext === '_length') {
+                if (i + 2 < idPath.length) {
+                  throw new CompError(flp, 'Cannot index into constant number');
+                }
+                const length = member.length === false
+                  ? 1
+                  : member.length.value(context, lookupFailMode);
+                if (length === false) {
+                  return false;
+                }
+                return length;
+              } else if (idNext === '_bytes') {
+                if (i + 2 < idPath.length) {
+                  throw new CompError(flp, 'Cannot index into constant number');
+                }
+                const length = member.length === false
+                  ? 1
+                  : member.length.value(context, lookupFailMode);
+                if (length === false) {
+                  return false;
+                }
+                return dsize * length;
+              }
+            }
+            if (member.length) {
+              const length = member.length.value(context, lookupFailMode);
+              if (length === false) {
+                return false;
+              }
+              here += dsize * length;
+            } else {
+              here += dsize;
+            }
+            break;
+          }
+          case 'label':
+            if (name === idHere) {
+              if (i + 1 < idPath.length) {
+                throw new CompError(flp, 'Cannot index into constant number');
+              }
+              return here;
+            }
+            break;
+          case 'struct': {
+            if (name === idHere) {
+              return lookupStruct(i + 1, member, here);
+            }
+            const s = this.structSize(context, lookupFailMode, member, here);
+            if (s === false) {
+              return false;
+            }
+            here += s.size;
+            break;
+          }
+          default:
+            assertNever(member);
+        }
+      }
+      return 'notfound';
+    };
     const lookup = (i: number, here: DefMap): ILookup | 'notfound' | false => {
       const p = idPath[i];
       if (typeof p !== 'string') {
@@ -1721,6 +2016,13 @@ export class Import {
             throw new CompError(flp, 'Cannot index into script export');
           }
           return root;
+        case 'struct': {
+          const base = root.base === false ? 0 : root.base.value(root.context, lookupFailMode);
+          if (typeof base !== 'number') {
+            return false;
+          }
+          return lookupStruct(i + 1, root.struct, base);
+        }
         default:
           return assertNever(root);
       }
@@ -1977,42 +2279,31 @@ export class Import {
     }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
-    const context = this.expressionContext(dataSize >> 3);
-    let pw: PendingWrite;
+    const context = this.expressionContext(dataSize);
+    if (dataSize > 1 && dataTypeAligned(dataType)) {
+      bytes.forceAlignment(
+        flp,
+        dataSize,
+        `Misaligned data; add \`.align ${dataSize}\` or change to \`.${
+          dataTypeToMisaligned(dataType)
+        }\``,
+      );
+    }
+    let rewrite: IRewrite<number[]>;
     switch (dataSize) {
-      case 8: {
-        const rewrite = bytes.rewriteArray8(data.length);
-        pw = new PendingWriteData(flp, context, data, rewrite);
+      case 1:
+        rewrite = bytes.rewriteArray8(data.length);
         break;
-      }
-      case 16: {
-        if (dataTypeAligned(dataType)) {
-          bytes.forceAlignment(
-            flp,
-            2,
-            `Misaligned data; add \`.align 2\` or change to \`.${dataTypeToMisaligned(dataType)}\``,
-          );
-        }
-        const rewrite = bytes.rewriteArray16(data.length, dataTypeLE(dataType));
-        pw = new PendingWriteData(flp, context, data, rewrite);
+      case 2:
+        rewrite = bytes.rewriteArray16(data.length, dataTypeLE(dataType));
         break;
-      }
-      case 32: {
-        if (dataTypeAligned(dataType)) {
-          bytes.forceAlignment(
-            flp,
-            4,
-            `Misaligned data; add \`.align 4\` or change to \`.${dataTypeToMisaligned(dataType)}\``,
-          );
-        }
-        const rewrite = bytes.rewriteArray32(data.length, dataTypeLE(dataType));
-        pw = new PendingWriteData(flp, context, data, rewrite);
+      case 4:
+        rewrite = bytes.rewriteArray32(data.length, dataTypeLE(dataType));
         break;
-      }
       default:
         throw new Error(`Invalid data type size? ${dataType}`);
     }
-    this.addPendingWrite(pw);
+    this.addPendingWrite(new PendingWriteData(flp, context, data, rewrite));
   }
 
   writeDataFill(flp: IFilePos, dataType: DataType, amount: number, fill: number | Expression) {
@@ -2021,46 +2312,31 @@ export class Import {
     }
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
-    const context = this.expressionContext(dataSize >> 3);
-    let pw: PendingWrite;
+    const context = this.expressionContext(dataSize);
+    if (dataSize > 1 && dataTypeAligned(dataType)) {
+      bytes.forceAlignment(
+        flp,
+        dataSize,
+        `Misaligned data; add \`.align ${dataSize}\` or change to \`.${
+          dataTypeToMisaligned(dataType)
+        }fill\``,
+      );
+    }
+    let rewrite: IRewrite<number[]>;
     switch (dataSize) {
-      case 8: {
-        const rewrite = bytes.rewriteArray8(amount);
-        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+      case 1:
+        rewrite = bytes.rewriteArray8(amount);
         break;
-      }
-      case 16: {
-        if (dataTypeAligned(dataType)) {
-          bytes.forceAlignment(
-            flp,
-            2,
-            `Misaligned data; add \`.align 2\` or change to \`.${
-              dataTypeToMisaligned(dataType)
-            }fill\``,
-          );
-        }
-        const rewrite = bytes.rewriteArray16(amount, dataTypeLE(dataType));
-        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+      case 2:
+        rewrite = bytes.rewriteArray16(amount, dataTypeLE(dataType));
         break;
-      }
-      case 32: {
-        if (dataTypeAligned(dataType)) {
-          bytes.forceAlignment(
-            flp,
-            4,
-            `Misaligned data; add \`.align 4\` or change to \`.${
-              dataTypeToMisaligned(dataType)
-            }fill\``,
-          );
-        }
-        const rewrite = bytes.rewriteArray32(amount, dataTypeLE(dataType));
-        pw = new PendingWriteDataFill(flp, context, amount, fill, rewrite);
+      case 4:
+        rewrite = bytes.rewriteArray32(amount, dataTypeLE(dataType));
         break;
-      }
       default:
         throw new Error(`Invalid data type size? ${dataType}`);
     }
-    this.addPendingWrite(pw);
+    this.addPendingWrite(new PendingWriteDataFill(flp, context, amount, fill, rewrite));
   }
 
   writeStr(str: string) {
@@ -2197,12 +2473,24 @@ export class Import {
 
   makeEnd(crc: number | false) {
     for (const rw of this.pendingCRC) {
-      if (crc === false) throw new CompError(rw.flp, 'Cannot calculate CRC value');
+      if (crc === false) {
+        throw new CompError(rw.flp, 'Cannot calculate CRC value');
+      }
       rw.write(crc);
     }
     for (const { pw } of this.pendingWrites) {
       if (!pw.attemptWrite('deny')) {
         throw new CompError(pw.flp, 'Failed to write instruction');
+      }
+    }
+    // validate all structs by walking them
+    for (const { flp, context, base, struct } of this.structs) {
+      const baseNum = base === false ? 0 : base.value(context, 'deny');
+      if (baseNum === false) {
+        throw new CompError(flp, 'Cannot calculate struct base');
+      }
+      if (!this.structSize(context, 'deny', struct, baseNum)) {
+        throw new CompError(flp, 'Cannot calculate struct layout');
       }
     }
   }

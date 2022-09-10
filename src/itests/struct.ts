@@ -14,20 +14,20 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s
-  .s8 one, two
-  .s16 three
-  .s32 four
-  .s0 five
-  .s32 six
+.struct s
+  .i8 one, two
+  .i16 three
+  .i32 four
+five:
+  .i32 six
 .end
 
-.i8 $s.one    /// 00
-.i8 $s.two    /// 01
-.i8 $s.three  /// 02
-.i8 $s.four   /// 04
-.i8 $s.five   /// 08
-.i8 $s.six    /// 08
+.i8 s.one    /// 00
+.i8 s.two    /// 01
+.i8 s.three  /// 02
+.i8 s.four   /// 04
+.i8 s.five   /// 08
+.i8 s.six    /// 08
 `,
     },
   });
@@ -38,21 +38,54 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s
-  .s8 one
-  .s32 two
-  .s8 three
-  .s16 four
-  .s8 five
-  .s32 six
+.struct s
+  .i8 one
+  .align 4
+  .i32 two
+  .i8 three
+  .align 2
+  .i16 four
+  .i8 five
+  .align 4
+  .i32 six
 .end
 
-.i8 $s.one    /// 00
-.i8 $s.two    /// 04
-.i8 $s.three  /// 08
-.i8 $s.four   /// 0a
-.i8 $s.five   /// 0c
-.i8 $s.six    /// 10
+.i8 s.one    /// 00
+.i8 s.two    /// 04
+.i8 s.three  /// 08
+.i8 s.four   /// 0a
+.i8 s.five   /// 0c
+.i8 s.six    /// 10
+`,
+    },
+  });
+
+  def({
+    name: 'struct.misalign',
+    desc: 'Struct should error if members are misaligned',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct s
+  .i8 one
+  .i32 two
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'struct.misalign-array',
+    desc: 'Struct should become misaligned due to array',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct s[2]
+  .i16 one
+  .i8 two
+.end
 `,
     },
   });
@@ -63,23 +96,26 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s
-  .s8 one
+.struct s
+  .i8 one
+  .align 2
   .struct two
-    .s16 one
-    .s8 two
-    .s32 three
+    .i16 one
+    .i8 two
+    .align 4
+    .i32 three
   .end
-  .s8 three
-  .s16 four
+  .i8 three
+  .align 2
+  .i16 four
 .end
 
-.i8 $s.one        /// 00
-.i8 $s.two.one    /// 02
-.i8 $s.two.two    /// 04
-.i8 $s.two.three  /// 08
-.i8 $s.three      /// 0c
-.i8 $s.four       /// 0e
+.i8 s.one        /// 00
+.i8 s.two.one    /// 02
+.i8 s.two.two    /// 04
+.i8 s.two.three  /// 08
+.i8 s.three      /// 0c
+.i8 s.four       /// 0e
 `,
     },
   });
@@ -90,20 +126,22 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s
-  .s8 one, two
+.struct s
+  .i8 one, two
   .if 0
-    .s32 three
+    .align 4
+    .i32 three
   .else
-    .s16 three
+    .i16 three
   .end
-  .s32 four
+  .align 4
+  .i32 four
 .end
 
-.i8 $s.one    /// 00
-.i8 $s.two    /// 01
-.i8 $s.three  /// 02
-.i8 $s.four   /// 04
+.i8 s.one    /// 00
+.i8 s.two    /// 01
+.i8 s.three  /// 02
+.i8 s.four   /// 04
 `,
     },
   });
@@ -115,8 +153,38 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       '/root/main': `
-.struct $a
+.struct a
 mov r0, r1
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'struct.reject-reserved-names',
+    desc: 'Reject _name',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct a
+  .i8 _someName
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'struct.reject-duplicate-names',
+    desc: 'Reject duplicate member names',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct a
+  .i8 foo
+  .i8 bar
+  .i16 foo[2]
 .end
 `,
     },
@@ -128,17 +196,18 @@ mov r0, r1
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s
-  .s16 one[5]
-  .s32 two
+.struct s
+  .i16 one[5]
+  .align 4
+  .i32 two
 .end
 
-.i8 $s.one         /// 00
-.i8 $s.one.length  /// 05
-.i8 $s.one.bytes   /// 0a
-.i8 $s.two         /// 0c
-.i8 $s.two.length  /// 01
-.i8 $s.two.bytes   /// 04
+.i8 s.one          /// 00
+.i8 s.one._length  /// 05
+.i8 s.one._bytes   /// 0a
+.i8 s.two          /// 0c
+.i8 s.two._length  /// 01
+.i8 s.two._bytes   /// 04
 `,
     },
   });
@@ -149,13 +218,13 @@ mov r0, r1
     kind: 'make',
     files: {
       '/root/main': `
-.struct $s = 0x03000000
-  .s8 one
-  .s8 two
+.struct s = 0x03000000
+  .i8 one
+  .i8 two
 .end
 
-.i32 $s.one      /// 00 00 00 03
-.i32 $s.two      /// 01 00 00 03
+.i32 s.one      /// 00 00 00 03
+.i32 s.two      /// 01 00 00 03
 `,
     },
   });

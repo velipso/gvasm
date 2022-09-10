@@ -1034,7 +1034,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
     case 'newline':
       break;
     case 'num':
-      throw 'TODO: numbered labels';
+      throw new Error('TODO: Not implemented: numbered labels');
     case 'str':
     case 'script':
       throw new CompError(tk, 'Invalid statement inside `.begin`');
@@ -1150,6 +1150,7 @@ function parseRegs(cmdFlp: IFilePos, parser: Parser, imp: Import) {
     if (name1.kind !== 'id') {
       throw new CompError(name1, 'Expecting register name');
     }
+    const n1 = name1.id;
 
     if (parser.isNext('-')) {
       parser.nextTok();
@@ -1157,52 +1158,53 @@ function parseRegs(cmdFlp: IFilePos, parser: Parser, imp: Import) {
       if (!name2 || name2.kind !== 'id') {
         throw new CompError(parser.last(), 'Expecting register name');
       }
-      const m1 = name1.id.match(/[0-9]+$/);
-      const m2 = name2.id.match(/[0-9]+$/);
+      const n2 = name2.id;
+      const m1 = n1.match(/[0-9]+$/);
+      const m2 = n2.match(/[0-9]+$/);
       if (m1 === null || m2 === null) {
         throw new CompError(
           name1,
-          `Invalid range in \`.regs\` statement; names must end with numbers: ${name1.id}-${name2.id}`,
+          `Invalid range in \`.regs\` statement; names must end with numbers: ${n1}-${n2}`,
         );
       }
-      const prefix1 = name1.id.substr(0, name1.id.length - m1[0].length);
-      const prefix2 = name2.id.substr(0, name2.id.length - m2[0].length);
+      const prefix1 = n1.substr(0, n1.length - m1[0].length);
+      const prefix2 = n2.substr(0, n2.length - m2[0].length);
       if (prefix1 !== prefix2) {
         throw new CompError(
           name1,
-          `Invalid range in \`.regs\` statement; prefix mismatch: ${name1.id}-${name2.id}`,
+          `Invalid range in \`.regs\` statement; prefix mismatch: ${n1}-${n2}`,
         );
       }
-      const n1 = parseFloat(m1[0]);
-      const n2 = parseFloat(m2[0]);
-      if (n2 < n1) {
-        if (n1 - n2 + 1 > 12) {
+      const num1 = parseFloat(m1[0]);
+      const num2 = parseFloat(m2[0]);
+      if (num2 < num1) {
+        if (num1 - num2 + 1 > 12) {
           throw new CompError(
             name1,
-            `Invalid range in \`.regs\` statement; range too large: ${name1.id}-${name2.id}`,
+            `Invalid range in \`.regs\` statement; range too large: ${n1}-${n2}`,
           );
         }
-        for (let i = n1; i >= n2; i--) {
+        for (let i = num1; i >= num2; i--) {
           const name = `${prefix1}${i}`;
           imp.validateRegName(name2, name);
           regs.push(name);
         }
       } else {
-        if (n2 - n1 + 1 > 12) {
+        if (num2 - num1 + 1 > 12) {
           throw new CompError(
             name1,
-            `Invalid range in \`.regs\` statement; range too large: ${name1.id}-${name2.id}`,
+            `Invalid range in \`.regs\` statement; range too large: ${n1}-${n2}`,
           );
         }
-        for (let i = n1; i <= n2; i++) {
+        for (let i = num1; i <= num2; i++) {
           const name = `${prefix1}${i}`;
           imp.validateRegName(name2, name);
           regs.push(name);
         }
       }
     } else {
-      imp.validateRegName(name1, name1.id);
-      regs.push(name1.id);
+      imp.validateRegName(name1, n1);
+      regs.push(n1);
     }
     if (parser.isNext(',')) {
       parser.nextTok();

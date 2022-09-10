@@ -201,6 +201,8 @@ mov r0, r1
   .align 4
   .i32 two
 .end
+.struct s2
+.end
 
 .i8 s.one          /// 00
 .i8 s.one._length  /// 05
@@ -208,6 +210,35 @@ mov r0, r1
 .i8 s.two          /// 0c
 .i8 s.two._length  /// 01
 .i8 s.two._bytes   /// 04
+.i8 s2._bytes      /// 00
+`,
+    },
+  });
+
+  def({
+    name: 'struct.array-multiple',
+    desc: 'Multiple arrays inside structs',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct s
+  .i8 one[5]
+  .struct two[3]
+    .i8 three[5]
+  .end
+  .struct four[2]
+    .struct five[3]
+      .i8 six[9]
+    .end
+    .i8 seven
+  .end
+  .i8 eight[1]
+  .i8 nine
+.end
+
+.i8 s.four[1].five[2].six[4]  /// 46
+.i8 s.nine                    /// 4d
+.i8 s._bytes                  /// 4e
 `,
     },
   });
@@ -225,6 +256,39 @@ mov r0, r1
 
 .i32 s.one      /// 00 00 00 03
 .i32 s.two      /// 01 00 00 03
+`,
+    },
+  });
+
+  def({
+    name: 'struct.align-misaligned-start',
+    desc: 'Aligning a struct that starts misaligned',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct s = 0x03000001
+  .i8 one
+  .align 4
+  .i8 two
+.end
+
+.i32 s.one      /// 01 00 00 03
+.i32 s.two      /// 04 00 00 03
+`,
+    },
+  });
+
+  def({
+    name: 'struct.reject-misaligned-start',
+    desc: 'Alignment should be based on final location',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct s = 0x03000001
+  .i8 one, two
+  .i16 three
+.end
 `,
     },
   });

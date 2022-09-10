@@ -26,86 +26,90 @@ Helpful Tidbits
 ### Generic ARM subroutine
 
 ```
-@subroutine.thumb:
-  .begin
+.begin subroutine
+  .begin thumb
     .thumb
     .align 4, nop
     bx    pc // change to ARM mode
   .end
-@subroutine.arm:
-  .begin
+  .begin arm
     .arm
     // ARM code here
     bx    lr // returns
   .end
+.end
 ```
 
 Calling from ARM:
 
 ```
   .arm
-  bl    @subroutine.arm
+  bl    subroutine.arm
 ```
 
 Calling from Thumb:
 
 ```
   .thumb
-  bl    @subroutine.thumb
+  bl    subroutine.thumb
 ```
 
 ### Generic Thumb subroutine
 
 ```
-@subroutine.arm:
-  .begin
+.begin subroutine
+  .begin arm
     .arm
     add   ip, pc, #1
     bx    ip // change to Thumb mode
   .end
-@subroutine.thumb:
-  .begin
+  .begin thumb
     .thumb
     // Thumb code here
     bx    lr // returns
   .end
+.end
 ```
 
 Calling from ARM:
 
 ```
   .arm
-  bl    @subroutine.arm
+  bl    subroutine.arm
 ```
 
 Calling from Thumb:
 
 ```
   .thumb
-  bl    @subroutine.thumb
+  bl    subroutine.thumb
 ```
 
 ### Using the stack for local variables
 
 ```
 .begin
-  .struct $$S
-    .s32 temp1
-    .s32 temp2
-    .s0  size
+  .thumb
+  .struct S
+    .i32 temp1
+    .i32 temp2
   .end
-  sub   sp, #$$S.size
+  .if S._bytes > 0
+    sub   sp, #S._bytes
+  .end
 
   // write to the local variables
   ldr   r0, =0
-  str   r0, [sp, #$$S.temp1]
-  str   r0, [sp, #$$S.temp2]
+  str   r0, [sp, #S.temp1]
+  str   r0, [sp, #S.temp2]
 
   // read from the local variables
-  ldr   r0, [sp, #$$S.temp1]
-  ldr   r1, [sp, #$$S.temp2]
+  ldr   r0, [sp, #S.temp1]
+  ldr   r1, [sp, #S.temp2]
 
-  add   sp, #$$S.size
+  .if S._bytes > 0
+    add   sp, #S._bytes
+  .end
   bx    lr
   .pool
 .end

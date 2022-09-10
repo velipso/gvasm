@@ -60,10 +60,10 @@ ldr   r0, =data
 nop
 nop
 _log  "%08x", [r0]
-_log  "%04x", b16[r0]
+_log  "%04x", ib16[r0]
 ldr   r0, =data
 _log  "%08x", [r0]
-_log  "%04x", b16[r0]
+_log  "%04x", ib16[r0]
 _exit
 data:
 .i32  0x12345678

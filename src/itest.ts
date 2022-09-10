@@ -517,7 +517,6 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
     }
 
     try {
-      // TODO: switch on different test types
       let pass;
       switch (test.test.kind) {
         case 'make':

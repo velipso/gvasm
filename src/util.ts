@@ -66,6 +66,30 @@ export function b32(v: number) {
   return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
 }
 
+export function i8(v: number) {
+  return v >= 128 ? v - 256 : v;
+}
+
+export function i16(v: number) {
+  return v >= 32768 ? v - 65536 : v;
+}
+
+export function i32(v: number) {
+  return v >= 2147483648 ? v - 4294967296 : v;
+}
+
+export function u8(v: number) {
+  return v < 0 ? 256 + v : v;
+}
+
+export function u16(v: number) {
+  return v < 0 ? 65536 + v : v;
+}
+
+export function u32(v: number) {
+  return v < 0 ? 4294967296 + v : v;
+}
+
 export function waitForever<T>(): Promise<T> {
   return new Promise(() => {
     setInterval(() => {}, 9999999);
@@ -79,6 +103,18 @@ export function dig2(n: number) {
 export function timestamp() {
   const now = new Date();
   return `[${dig2(now.getHours())}:${dig2(now.getMinutes())}:${dig2(now.getSeconds())}]`;
+}
+
+export function calcRotImm(v: number): number | false {
+  let r = 0;
+  while (v !== 0 && (v & 3) === 0) {
+    v >>>= 2;
+    r++;
+  }
+  if ((v & 0xff) !== v) {
+    return false;
+  }
+  return (((16 - r) & 0xf) << 8) | (v & 0xff);
 }
 
 export function printf(format: string, ...args: number[]): string {

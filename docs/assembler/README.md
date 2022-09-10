@@ -1,19 +1,12 @@
 Assembler
 =========
 
-The assembler processes the file from top to bottom in a single pass.  As instructions are
-encountered, they are encoded as binary, and added to the output.
+The assembler can be thought of as running in four passes:
 
-Statements are processed line by line, and newlines signify the end of a statement.  Indentation and
-spacing within a line doesn't matter.  The backslash character can be used to continue a statement
-on the next line:
-
-```
-.printf "%i, %i, %i", \
-  100,                \
-  200,                \
-  300
-```
+1. Load the files and run scripts
+2. Rewrite constants if possible
+3. Output the binary
+4. Rewrite any remaining constants
 
 Comments copy C, where `//` is used for end-of-line comments, and `/* */` is used for block
 comments.
@@ -49,8 +42,8 @@ seperator.
 Strings copy C, enclosed with double quotes, and using `\` for escape sequences.
 
 ```
-.printf "hello, world"   // output string to console
-.i8 "one\ntwo\nthree\0"  // output string to file
+.printf "hello, world"    // output string to console
+.str "one\ntwo\nthree\0"  // output string to file
 ```
 
 Labels
@@ -63,19 +56,20 @@ address in memory that they point to.  Note that `.base` will affect this value 
 `0x08000000` for normal games).
 
 Labels can be used before they're known in certain circumstances, like for branching instructions or
-defined constants, but not for `.align`, `.base`, `.i8fill`, `.if`, `.printf`, or `.error`.
+defined constants, but not for `.align`, `.base`, `.i8fill`, or `.if`.
 
 ### Named Labels
 
-Named labels must be prefixed with either `@` for global labels, or `@@` for local labels.  Local
-labels will be removed upon processing an `.end` that matches a `.begin`.
-
 ```
-@main:     // global label
+label1:
 .begin
-  @@main:  // local label
+  label2:
 .end
-// @@main is no longer accessible
+// label2 is no longer accessible
+.begin label3
+  label4:
+.end
+// label4 is accessible via: label3.label4
 ```
 
 ### Anonymous Labels
@@ -101,7 +95,7 @@ Use `-` for backward jumps and `+` for forward jumps.
    // double loop using - for outer loop, and -- for inner loop
    mov r4, #0
 -  mov r5, #0
--- bl  @routine
+-- bl  routine
    add r5, #1
    cmp r5, #10
    blt --
@@ -115,22 +109,23 @@ Defined Constants
 
 Constant numbers and expressions can be given names using the `.def` statement.
 
-Names must be prefixed with either `$` for global constants, or `$$` for local constants.  Local
-constants will be removed upon processing an `.end` that matches a `.begin`.
-
 ```
-.def $MaxHealth = 10   // global constant
+.def MaxHealth = 10
 .begin
-  .def $$Velocity = 2  // local constant
+  .def Velocity = 2  // local constant
 .end
-// $$Velocity is no longer accessible
+// Velocity is no longer accessible
+.begin User
+  .def Height = 12
+.end
+// Height is accessible via: User.Height
 ```
 
 Constants can also take parameters:
 
 ```
-.def $lerp($a, $b, $t) = $a + ($b - $a) * $t / 100
-.printf "%i", $lerp(10, 20, 80) // prints 18 to console
+.def lerp(a, b, t) = a + (b - a) * t / 100
+.printf "%i", lerp(10, 20, 80) // prints 18 to console
 ```
 
 ### Reserved Constants
@@ -156,51 +151,51 @@ Constant Expressions
 Operators mostly copy from C.  Operators will return 1 for true, and 0 for false, though any
 non-zero number is considered true.  Parenthesis can be used to override default precedence.
 
-| Operator                  | Description                                             |
-|---------------------------|---------------------------------------------------------|
-| `-$a`                     | Negation                                                |
-| `~$a`                     | Bit NOT                                                 |
-| `!$a`                     | Logical NOT                                             |
-| `$a + $b`                 | Addition                                                |
-| `$a - $b`                 | Subtraction                                             |
-| `$a * $b`                 | Multiplication                                          |
-| `$a / $b`                 | Division (integer)                                      |
-| `$a % $b`                 | Modulo                                                  |
-| `$a << $b`                | Shift left                                              |
-| `$a >> $b`                | Sign-extended shift right                               |
-| `$a >>> $b`               | Logical shift right                                     |
-| `$a & $b`                 | Bit AND                                                 |
-| `$a ^ $b`                 | Bit XOR                                                 |
-| `$a < $b`                 | Test if less than                                       |
-| `$a <= $b`                | Test if less than or equal                              |
-| `$a > $b`                 | Test if greater than                                    |
-| `$a >= $b`                | Test if greater than or equal                           |
-| `$a == $b`                | Test if equal                                           |
-| `$a != $b`                | Test if not equal                                       |
-| `$a && $b`                | Logical AND (short circuited)                           |
-| `$a \|\| $b`              | Logical OR (short circuited)                            |
-| `assert("msg", $cond)`    | Returns 1 if `$cond` is true, otherwise generates error |
-| `abs($a)`                 | Absolute value                                          |
-| `clamp($a, $low, $high)`  | Clamp `$a` between `$low` and `$high` (inclusive)       |
-| `defined($a)`             | Returns 1 if `$a` is defined, otherwise 0               |
-| `log2($a)`                | Log base 2                                              |
-| `max($a, ...)`            | Maximum of all arguments                                |
-| `min($a, ...)`            | Minimum of all arguments                                |
-| `nrt($a, $b)`             | Nth root, returns `pow($a, 1 / $b)`                     |
-| `pow($a, $b)`             | Power                                                   |
-| `rgb($r, $g, $b)`         | Returns 15-bit value using each color component (0-31)  |
-| `sign($a)`                | Returns -1, 0, or 1 based on the sign of `$a`           |
-| `sqrt($a)`                | Square root of `$a`                                     |
+| Operator              | Description                                            |
+|-----------------------|--------------------------------------------------------|
+| `-a`                  | Negation                                               |
+| `~a`                  | Bit NOT                                                |
+| `!a`                  | Logical NOT                                            |
+| `a + b`               | Addition                                               |
+| `a - b`               | Subtraction                                            |
+| `a * b`               | Multiplication                                         |
+| `a / b`               | Division (integer)                                     |
+| `a % b`               | Modulo                                                 |
+| `a << b`              | Shift left                                             |
+| `a >> b`              | Sign-extended shift right                              |
+| `a >>> b`             | Logical shift right                                    |
+| `a & b`               | Bit AND                                                |
+| `a ^ b`               | Bit XOR                                                |
+| `a < b`               | Test if less than                                      |
+| `a <= b`              | Test if less than or equal                             |
+| `a > b`               | Test if greater than                                   |
+| `a >= b`              | Test if greater than or equal                          |
+| `a == b`              | Test if equal                                          |
+| `a != b`              | Test if not equal                                      |
+| `a && b`              | Logical AND (short circuited)                          |
+| `a \|\| b`            | Logical OR (short circuited)                           |
+| `assert("msg", cond)` | Returns 1 if `cond` is true, otherwise generates error |
+| `abs(a)`              | Absolute value                                         |
+| `clamp(a, low, high)` | Clamp `a` between `low` and `high` (inclusive)         |
+| `defined(a)`          | Returns 1 if `a` is defined, otherwise 0               |
+| `log2(a)`             | Log base 2                                             |
+| `max(a, ...)`         | Maximum of all arguments                               |
+| `min(a, ...)`         | Minimum of all arguments                               |
+| `nrt(a, b)`           | Nth root, returns `pow(a, 1 / b)`                      |
+| `pow(a, b)`           | Power                                                  |
+| `rgb(r, g, b)`        | Returns 15-bit value using each color component (0-31) |
+| `sign(a)`             | Returns -1, 0, or 1 based on the sign of `a`           |
+| `sqrt(a)`             | Square root of `a`                                     |
 
 Note: `assert` is useful to verify values at compile-time, for example:
 
 ```
-.def $offset($a) =                                        \
-  assert("Offset is out of range", $a >= 0 && $a < 5) * ( \
-    $a * 100 + 30                                         \
+.def offset(a) =                                        \
+  assert("offset is between 1-4", a >= 0 && a < 5) * (  \
+    a * 100 + 30                                        \
   )
 
-.i8 $offset(-5) // generates compile-time error
+.i8 offset(-5) // generates compile-time error
 ```
 
 Structs
@@ -338,12 +333,12 @@ can read the memory to load the register.
 For example:
 
 ```
-@main:
+main:
 
 ldrh r0, =rgb(12, 31, 5)
 // ... more code ...
 
-@loop: b @loop  // infinite loop
+loop: b loop  // infinite loop
 
 .pool // this is where rgb(12, 31, 5) will actually be stored
 ```
@@ -422,7 +417,7 @@ Supports padding using a `nop` statement by setting `<fill>` to `nop`, ex: `.ali
 
 ### `.arm`
 
-Switches the assembler into ARM mode (default).  Automatically aligns to word boundary.
+Switches the assembler into ARM mode (default).
 
 Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
 
@@ -437,39 +432,6 @@ Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
 ```
 
 See also: `.thumb`.
-
-### `.b8 <value, ...>`
-
-Alias for `.i8`.
-
-### `.b8fill <amount>[, <fill>]`
-
-Alias for `.i8fill`.
-
-### `.b16 <value, ...>`
-
-Outputs big-endian 16-bit numbers.
-
-Note that the value is truncated to 16-bits, so for example, `.b16 0xabcdef` will output
-`0xcd 0xef`.
-
-### `.b16fill <amount>[, <fill>]`
-
-Outputs `<amount>` half-words of `<fill>` (default `0x0000`) in big-endian.
-
-For example, `.b16fill 10` is equivalent to `.b16 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
-
-### `.b32 <value, ...>`
-
-Outputs big-endian 32-bit numbers.
-
-Note that all constant numbers in gvasm are 32-bit, so no truncation is performed.
-
-### `.b32fill <amount>[, <fill>]`
-
-Outputs `<amount>` words of `<fill>` (default `0x00000000`) in big-endian.
-
-For example, `.b32fill 10` is equivalent to `.b32 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
 
 ### `.base <base>`
 
@@ -486,11 +448,9 @@ Note that `.base` is scoped to the closest `.begin`/`.end` block:
 .printf "%#08X", _base   // 0x08000000
 ```
 
-### `.begin` / `.end`
+### `.begin [<name>]` / `.end`
 
 Creates a new scope for local labels and constants.
-
-If assembler mode changes upon `.end`, then it will auto-align.
 
 ### `.crc`
 
@@ -507,49 +467,6 @@ Includes a binary file by outputting the bytes in `<filename>`.
 ### `.error <format>[, <args...>]`
 
 Aborts the assembler with the error message provided.  Allows same formatting as `.printf`.
-
-### `.extlib` (WIP)
-
-Includes the extended library, which is intended to include things like fonts and print routines.
-
-This doesn't currently work and is under development.
-
-### `.i8 <value, ...>`
-
-Outputs raw bytes.
-
-Note that the value is truncated to a byte, so for example, `.i8 0xabcd` will output `0xcd`.
-
-### `.i8fill <amount>[, <fill>]`
-
-Outputs `<amount>` bytes of `<fill>` (default `0x00`).
-
-For example, `.i8fill 10` is equivalent to `.i8 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
-
-### `.i16 <value, ...>`
-
-Outputs little-endian 16-bit numbers.
-
-Note that the value is truncated to 16-bits, so for example, `.i16 0xabcdef` will output
-`0xef 0xcd`.
-
-### `.i16fill <amount>[, <fill>]`
-
-Outputs `<amount>` half-words of `<fill>` (default `0x0000`) in little-endian.
-
-For example, `.i16fill 10` is equivalent to `.i16 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
-
-### `.i32 <value, ...>`
-
-Outputs little-endian 32-bit numbers.
-
-Note that all constant numbers in gvasm are 32-bit, so no truncation is performed.
-
-### `.i32fill <amount>[, <fill>]`
-
-Outputs `<amount>` words of `<fill>` (default `0x00000000`) in little-endian.
-
-For example, `.i32fill 10` is equivalent to `.i32 0, 0, 0, 0, 0, 0, 0, 0, 0, 0`.
 
 ### `.if <condition>` / `.elseif <condition>` / `.else` / `.end`
 
@@ -599,7 +516,7 @@ register renaming.
 
 If no names are provided, then the current register names are printed to the console.
 
-### `.script` / `.end`
+### `.script [<name>]` / `.end`
 
 Embeds a script to execute at compile-time.
 
@@ -609,13 +526,17 @@ See the [scripting guide](./script.md), and the available [standard library](./l
 
 Includes the standard library, which defines useful constants like `REG_DISPCNT`, etc.
 
-### `.struct <prefix>` / `.end`
+### `.str "<string>"`
+
+Outputs UTF-8 string.
+
+### `.struct <name> [= <base>]` / `.end`
 
 Defines constants as offsets from zero, using `.s0`, `.s8`, `.s16`, and `.s32`.
 
 ### `.thumb`
 
-Switches the assembler into Thumb mode.  Automatically aligns to halfword boundary.
+Switches the assembler into Thumb mode.
 
 Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
 
@@ -626,11 +547,11 @@ Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
   .thumb
   // Thumb mode
 .end
-// back to ARM mode, with auto alignment
+// back to ARM mode
 ```
 
 See also, `.arm`.
 
-### `.title <title>`
+### `.title "<title>"`
 
 Outputs the ASCII title of the game, used in the GBA header.

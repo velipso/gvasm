@@ -22,11 +22,9 @@ export type IMakeResult =
   }
   | { errors: string[] };
 
-export interface IFileState {
-  base: {
-    addr: number;
-    relativeTo: number;
-  };
+export interface IBase {
+  addr: number;
+  relativeTo: number;
 }
 
 interface IFileCache {
@@ -156,10 +154,8 @@ export class Project {
       // generate the sections
       this.usedFilenames = new Set([this.mainFilename]);
       const sections = await this.include(this.mainFilename, {
-        base: {
-          addr: 0x08000000,
-          relativeTo: 0,
-        },
+        addr: 0x08000000,
+        relativeTo: 0,
       }, 0);
 
       // calculate CRC
@@ -224,8 +220,8 @@ export class Project {
     }
   }
 
-  async include(filename: string, state: IFileState, startLength: number): Promise<Uint8Array[]> {
-    return await (await this.import(filename)).flatten(state, startLength);
+  async include(filename: string, base: IBase, startLength: number): Promise<Uint8Array[]> {
+    return await (await this.import(filename)).flatten(base, startLength);
   }
 
   filenames(): string[] {
@@ -336,6 +332,12 @@ export class Project {
           }
           case 'scriptExport':
             return sink.pickle_val(ctx, lk.data);
+          case 'lookupData':
+            if (lk.value === false) {
+              sink.abort(ctx, ['Can\'t calculate value']);
+              return sink.NIL;
+            }
+            return lk.value;
           default:
             return assertNever(lk);
         }

@@ -4,7 +4,7 @@ gvasm
 Assembler and disassembler designed specifically for Game Boy Advance homebrew.
 
 The assembler works for ARM and Thumb code, and has features like conditional compilation, defined
-constants and functions, struct layout, compile-time scripts, and literal pools.
+constants and functions, struct layout, compile-time scripts, literal pools, and incremental builds.
 
 The disassembler is experimental, and includes a partially implemented ARM emulator.
 
@@ -21,7 +21,7 @@ deno upgrade
 
 # install the latest release of gvasm
 deno install --allow-read --allow-write -f -r \
-  https://raw.githubusercontent.com/velipso/gvasm/master/gvasm.ts
+  https://raw.githubusercontent.com/velipso/gvasm/v2/gvasm.ts
 ```
 
 If this is your first time running `deno install`, you will need to add the deno binary directory to
@@ -76,11 +76,11 @@ this works:
 // test.gvasm
 .thumb
 ldr   r0, =300
-@again:
+again:
 _log  "r0 = %d", r0
 subs  r0, #1
 cmp   r0, #250
-bne   @again
+bne   again
 _log  "done"
 _exit
 .pool

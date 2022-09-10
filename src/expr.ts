@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { assertNever, b16, b32 } from './util.ts';
+import { assertNever, b16, b32, i16, i32, i8, u16, u32, u8 } from './util.ts';
 import { CompError, Parser } from './parser.ts';
 import { IExpressionContext, Import } from './import.ts';
 import { IFilePos, ITok } from './lexer.ts';
@@ -79,7 +79,7 @@ interface IExprParam {
   param: number;
 }
 
-export interface IExprLookup {
+interface IExprLookup {
   kind: 'lookup';
   flp: IFilePos;
   idPath: (string | Expression)[];
@@ -93,7 +93,19 @@ interface IExprRegister {
 
 interface IExprRead {
   kind: 'read';
-  size: 'i8' | 'i16' | 'i32' | 'b8' | 'b16' | 'b32';
+  size:
+    | 'i8'
+    | 'i16'
+    | 'i32'
+    | 'ib8'
+    | 'ib16'
+    | 'ib32'
+    | 'u8'
+    | 'u16'
+    | 'u32'
+    | 'ub8'
+    | 'ub16'
+    | 'ub32';
   addr: IExpr;
 }
 
@@ -351,9 +363,15 @@ export class Expression {
             t.id === 'i8' ||
             t.id === 'i16' ||
             t.id === 'i32' ||
-            t.id === 'b8' ||
-            t.id === 'b16' ||
-            t.id === 'b32'
+            t.id === 'ib8' ||
+            t.id === 'ib16' ||
+            t.id === 'ib32' ||
+            t.id === 'u8' ||
+            t.id === 'u16' ||
+            t.id === 'u32' ||
+            t.id === 'ub8' ||
+            t.id === 'ub16' ||
+            t.id === 'ub32'
           )
         ) {
           parser.nextTok();
@@ -639,6 +657,8 @@ export class Expression {
               }
             case 'scriptExport':
               throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
+            case 'lookupData':
+              return v.value;
             default:
               return assertNever(v);
           }
@@ -660,16 +680,27 @@ export class Expression {
           }
           switch (ex.size) {
             case 'i8':
-            case 'b8':
-              return cpu.read8(addr);
+            case 'ib8':
+              return i8(cpu.read8(addr));
             case 'i16':
-              return cpu.read16(addr);
-            case 'b16':
-              return b16(cpu.read16(addr));
+              return i16(cpu.read16(addr));
+            case 'ib16':
+              return i16(b16(cpu.read16(addr)));
             case 'i32':
-              return cpu.read32(addr);
-            case 'b32':
-              return b32(cpu.read32(addr));
+              return i32(cpu.read32(addr));
+            case 'ib32':
+              return i32(b32(cpu.read32(addr)));
+            case 'u8':
+            case 'ub8':
+              return u8(cpu.read8(addr));
+            case 'u16':
+              return u16(cpu.read16(addr));
+            case 'ub16':
+              return u16(b16(cpu.read16(addr)));
+            case 'u32':
+              return u32(cpu.read32(addr));
+            case 'ub32':
+              return u32(b32(cpu.read32(addr)));
             default:
               assertNever(ex.size);
           }

@@ -32,10 +32,10 @@ export async function makeFromFile(
   watchFileChanges: (filenames: string[]) => Promise<string[] | false>,
   log: (str: string) => void,
 ): Promise<void> {
-  const mainFilename = path.isAbsolute(input) ? input : path.resolve(cwd, input);
+  const mainFullFile = path.isAbsolute(input) ? input : path.resolve(cwd, input);
 
   const proj = new Project(
-    mainFilename,
+    mainFullFile,
     defines,
     cwd,
     path,

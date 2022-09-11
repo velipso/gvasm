@@ -220,4 +220,36 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: 'files.import-error',
+    desc: 'Import a missing file',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.import 'foo' { foo }
+.i32 0
+`,
+    },
+  });
+
+  def({
+    name: 'files.import-struct-scope',
+    desc: 'A struct being imported will use the correct scope',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.def FOO = 1
+.struct bar
+  .i8 baz[FOO]
+.end
+.include 'test' /// 01
+`,
+      '/root/test': `
+.import 'main' { bar }
+.i8 bar.baz._length
+`,
+    },
+  });
 }

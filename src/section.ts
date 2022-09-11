@@ -85,7 +85,9 @@ export class SectionBytes extends Section {
     this.addrRecvs.push(ar);
     return () => {
       const i = this.addrRecvs.indexOf(ar);
-      if (i >= 0) this.addrRecvs.splice(i, 1);
+      if (i >= 0) {
+        this.addrRecvs.splice(i, 1);
+      }
     };
   }
 
@@ -321,25 +323,16 @@ export class SectionInclude extends Section {
   flp: IFilePos;
   proj: Project;
   fullFile: string;
-  filename: string;
 
-  constructor(flp: IFilePos, proj: Project, fullFile: string, filename: string) {
+  constructor(flp: IFilePos, proj: Project, fullFile: string) {
     super();
     this.flp = flp;
     this.proj = proj;
     this.fullFile = fullFile;
-    this.filename = filename;
   }
 
   async flatten(base: IBase, startLength: number): Promise<Uint8Array[]> {
-    try {
-      return await this.proj.include(this.fullFile, base, startLength);
-    } catch (e) {
-      if (e instanceof CompError) {
-        throw e;
-      }
-      throw new CompError(this.flp, `Failed to include: ${this.fullFile}`);
-    }
+    return await this.proj.include(this.flp, this.fullFile, base, startLength);
   }
 }
 
@@ -347,28 +340,16 @@ export class SectionEmbed extends Section {
   flp: IFilePos;
   proj: Project;
   fullFile: string;
-  filename: string;
 
-  constructor(flp: IFilePos, proj: Project, fullFile: string, filename: string) {
+  constructor(flp: IFilePos, proj: Project, fullFile: string) {
     super();
     this.flp = flp;
     this.proj = proj;
     this.fullFile = fullFile;
-    this.filename = filename;
   }
 
   async flatten(_base: IBase, _startLength: number): Promise<Uint8Array[]> {
-    try {
-      return [await this.proj.embed(this.fullFile)];
-    } catch (e) {
-      const err = `Failed to embed: ${this.filename}`;
-      if (e instanceof CompError) {
-        e.addError(this.flp, err);
-        throw e;
-      } else {
-        throw new CompError(this.flp, err);
-      }
-    }
+    return [await this.proj.embed(this.flp, this.fullFile)];
   }
 }
 

@@ -192,6 +192,17 @@ export class CompError extends Error {
     return `${filename}:${line}:${chr}: ${msg}`;
   }
 
+  static extend(e: unknown, flp: IFilePos | false, message: string) {
+    if (e instanceof CompError) {
+      e.addError(flp, message);
+      return e;
+    }
+    if (e instanceof Error) {
+      throw e;
+    }
+    return new CompError(flp, message);
+  }
+
   addError(flp: IFilePos | false, message: string) {
     this.errors.push({ flp, message });
   }
@@ -1091,10 +1102,15 @@ async function parseBegin(parser: Parser, imp: Import) {
 }
 
 async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
-  const condition = Expression.parse(parser, imp).value(
-    imp.expressionContext(0),
-    'deny',
-  );
+  let condition;
+  try {
+    condition = Expression.parse(parser, imp).value(
+      imp.expressionContext(0),
+      'deny',
+    );
+  } catch (e) {
+    throw CompError.extend(e, flp, 'Condition unknown at time of execution');
+  }
   parser.forceNewline('`.if` statement');
   if (condition === false) {
     throw new CompError(flp, 'Condition unknown at time of execution');
@@ -1581,15 +1597,15 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
 
 export async function parse(
   proj: Project,
-  filename: string,
+  fullFile: string,
   main: boolean,
   defines: ILexKeyValue[],
   tks: ITok[],
 ): Promise<Import> {
-  const imp = new Import(proj, filename, main);
+  const imp = new Import(proj, fullFile, main);
 
   for (const d of defines) {
-    imp.addSymNum({ filename, line: 1, chr: 1 }, d.key, d.value);
+    imp.addSymNum({ filename: fullFile, line: 1, chr: 1 }, d.key, d.value);
   }
 
   const parser = new Parser(tks);

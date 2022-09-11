@@ -38,7 +38,7 @@ export function load(def: (test: ITest) => void) {
       'read: /root/test',
       '> 01 02',
       'watch: /root/main /root/test',
-      '! root/main:2:10: Failed to include: /root/test',
+      '! root/main:2:10: Failed to import file: /root/test',
       'watch: /root/main /root/test',
       'read: /root/main',
       'read: /root/test2',

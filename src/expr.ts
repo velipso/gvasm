@@ -623,7 +623,7 @@ export class Expression {
           }
           if (v === false) {
             if (lookupFailMode === 'deny') {
-              throw new CompError(ex.flp, `Missing symbol: ${pathError()}`);
+              throw new CompError(ex.flp, `Unknown value: ${pathError()}`);
             }
             return false;
           }

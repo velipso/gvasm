@@ -37,7 +37,7 @@ interface IFileCache {
 export class Project {
   private fileCache = new Map<string, IFileCache>();
   private usedFilenames = new Set<string>();
-  private mainFilename: string;
+  private mainFullFile: string;
   private defines: ILexKeyValue[];
   private cwd: string;
   private path: Path;
@@ -47,7 +47,7 @@ export class Project {
   private log: (str: string) => void;
 
   constructor(
-    mainFilename: string,
+    mainFullFile: string,
     defines: ILexKeyValue[],
     cwd: string,
     path: Path,
@@ -56,7 +56,7 @@ export class Project {
     readBinaryFile: (filename: string) => Promise<Uint8Array>,
     log: (str: string) => void,
   ) {
-    this.mainFilename = mainFilename;
+    this.mainFullFile = mainFullFile;
     this.defines = defines;
     this.cwd = cwd;
     this.path = path;
@@ -80,27 +80,38 @@ export class Project {
   }
 
   resolveFile(filename: string, fromFilename: string) {
-    if (this.path.isAbsolute(filename)) return filename;
+    if (this.path.isAbsolute(filename)) {
+      return filename;
+    }
     return this.path.resolve(this.path.dirname(fromFilename), filename);
   }
 
-  async import(filename: string): Promise<Import> {
-    this.usedFilenames.add(filename);
-    const file = this.fileCache.get(filename);
+  async import(flp: IFilePos | false, fullFile: string): Promise<Import> {
+    this.usedFilenames.add(fullFile);
+    const file = this.fileCache.get(fullFile);
     if (file && file.imp) {
       file.used = true;
       return file.imp;
     }
-    const txt = await this.readTextFile(filename);
-    const tks = lex(filename, txt);
-    const imp = await parse(this, filename, this.mainFilename === filename, this.defines, tks);
-    if (file) {
-      file.used = true;
-      file.imp = imp;
-    } else {
-      this.fileCache.set(filename, { used: true, imp, scriptParents: new Set() });
+    let txt;
+    try {
+      txt = await this.readTextFile(fullFile);
+    } catch (_) {
+      throw new CompError(flp, `Failed to import file: ${fullFile}`);
     }
-    return imp;
+    try {
+      const tks = lex(fullFile, txt);
+      const imp = await parse(this, fullFile, this.mainFullFile === fullFile, this.defines, tks);
+      if (file) {
+        file.used = true;
+        file.imp = imp;
+      } else {
+        this.fileCache.set(fullFile, { used: true, imp, scriptParents: new Set() });
+      }
+      return imp;
+    } catch (e) {
+      throw CompError.extend(e, flp, `Failed to import file: ${fullFile}`);
+    }
   }
 
   async scriptEmbed(fromFilename: string, filename: string): Promise<Uint8Array | false> {
@@ -126,19 +137,24 @@ export class Project {
     }
   }
 
-  async embed(filename: string): Promise<Uint8Array> {
-    this.usedFilenames.add(filename);
-    const file = this.fileCache.get(filename);
+  async embed(flp: IFilePos | false, fullFile: string): Promise<Uint8Array> {
+    this.usedFilenames.add(fullFile);
+    const file = this.fileCache.get(fullFile);
     if (file && file.blob) {
       file.used = true;
       return file.blob;
     }
-    const blob = await this.readBinaryFile(filename);
+    let blob;
+    try {
+      blob = await this.readBinaryFile(fullFile);
+    } catch (_) {
+      throw new CompError(flp, `Failed to embed file: ${fullFile}`);
+    }
     if (file) {
       file.used = true;
       file.blob = blob;
     } else {
-      this.fileCache.set(filename, { used: true, blob, scriptParents: new Set() });
+      this.fileCache.set(fullFile, { used: true, blob, scriptParents: new Set() });
     }
     return blob;
   }
@@ -152,11 +168,13 @@ export class Project {
       }
 
       // generate the sections
-      this.usedFilenames = new Set([this.mainFilename]);
-      const sections = await this.include(this.mainFilename, {
-        addr: 0x08000000,
-        relativeTo: 0,
-      }, 0);
+      this.usedFilenames = new Set([this.mainFullFile]);
+      const sections = await this.include(
+        false,
+        this.mainFullFile,
+        { addr: 0x08000000, relativeTo: 0 },
+        0,
+      );
 
       // calculate CRC
       let crc: number | false = -0x19;
@@ -199,7 +217,7 @@ export class Project {
 
       this.usedFilenames = new Set(this.fileCache.keys());
 
-      const mainImp = this.fileCache.get(this.mainFilename)?.imp;
+      const mainImp = this.fileCache.get(this.mainFullFile)?.imp;
       const base = mainImp?.firstWrittenBase ?? -1;
       const arm = mainImp?.firstWrittenARM ?? true;
 
@@ -218,8 +236,13 @@ export class Project {
     }
   }
 
-  async include(filename: string, base: IBase, startLength: number): Promise<Uint8Array[]> {
-    return await (await this.import(filename)).flatten(base, startLength);
+  async include(
+    flp: IFilePos | false,
+    fullFile: string,
+    base: IBase,
+    startLength: number,
+  ): Promise<Uint8Array[]> {
+    return await (await this.import(flp, fullFile)).flatten(base, startLength);
   }
 
   filenames(): string[] {

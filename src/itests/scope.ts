@@ -219,6 +219,42 @@ a:  add   r0, #1   /// 01 00 80 e2
   });
 
   def({
+    name: 'scope.multiple-minus',
+    desc: 'Using - for anonymous backward labels',
+    kind: 'make',
+    files: {
+      '/root/main': `.arm
+    mov   r0, #0   /// 00 00 a0 e3
+a:  add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   a        /// fc ff ff ba
+    blt   a        /// fb ff ff ba
+    blt   a        /// fa ff ff ba
+    blt   a        /// f9 ff ff ba
+    blt   a        /// f8 ff ff ba
+
+    mov   r0, #0   /// 00 00 a0 e3
+-   add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   -        /// fc ff ff ba
+    blt   -        /// fb ff ff ba
+    blt   -        /// fa ff ff ba
+    blt   -        /// f9 ff ff ba
+    blt   -        /// f8 ff ff ba
+
+    mov   r0, #0   /// 00 00 a0 e3
+-   add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   -        /// fc ff ff ba
+    blt   -        /// fb ff ff ba
+    blt   -        /// fa ff ff ba
+    blt   -        /// f9 ff ff ba
+    blt   -        /// f8 ff ff ba
+`,
+    },
+  });
+
+  def({
     name: 'scope.relative-plus',
     desc: 'Using + for anonymous forward labels',
     kind: 'make',
@@ -254,6 +290,42 @@ a:  add   r0, #1   /// 01 00 80 e2
     mov   r0, #0   /// 00 00 a0 e3
 +
     add   r0, #1   /// 01 00 80 e2
+`,
+    },
+  });
+
+  def({
+    name: 'scope.multiple-plus',
+    desc: 'Using multiple + for anonymous forward labels',
+    kind: 'make',
+    files: {
+      '/root/main': `.arm
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   a        /// 04 00 00 ba
+    blt   a        /// 03 00 00 ba
+    blt   a        /// 02 00 00 ba
+    blt   a        /// 01 00 00 ba
+    blt   a        /// 00 00 00 ba
+    mov   r0, #0   /// 00 00 a0 e3
+a:  add   r0, #1   /// 01 00 80 e2
+
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   +        /// 04 00 00 ba
+    blt   +        /// 03 00 00 ba
+    blt   +        /// 02 00 00 ba
+    blt   +        /// 01 00 00 ba
+    blt   +        /// 00 00 00 ba
+    mov   r0, #0   /// 00 00 a0 e3
++   add   r0, #1   /// 01 00 80 e2
+
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   +        /// 04 00 00 ba
+    blt   +        /// 03 00 00 ba
+    blt   +        /// 02 00 00 ba
+    blt   +        /// 01 00 00 ba
+    blt   +        /// 00 00 00 ba
+    mov   r0, #0   /// 00 00 a0 e3
++   add   r0, #1   /// 01 00 80 e2
 `,
     },
   });

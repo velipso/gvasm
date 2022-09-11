@@ -183,12 +183,12 @@ interface IDefLabel {
 
 interface IDefImportAll {
   kind: 'importAll';
-  filename: string;
+  fullFile: string;
 }
 
 interface IDefImportName {
   kind: 'importName';
-  filename: string;
+  fullFile: string;
   name: string;
 }
 
@@ -838,7 +838,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
       }
 
       if (typeof this.poolAddr !== 'number') {
-        throw new CompError(this.flp, 'Missing `.pool` statement for load');
+        throw new CompError(this.flp, 'Cannot resolve pool; missing `.include` for this file');
       }
 
       const address = this.rewrite.addr();
@@ -987,7 +987,7 @@ export class Import {
   static reservedRegs = ['r12', 'ip', 'r13', 'sp', 'r14', 'lr', 'r15', 'pc'];
 
   proj: Project;
-  filename: string;
+  fullFile: string;
   main: boolean;
   defTable: DefMap = new Map();
   defHere = [this.defTable];
@@ -1010,9 +1010,9 @@ export class Import {
   firstWrittenBase = -1;
   firstWrittenARM = true;
 
-  constructor(proj: Project, filename: string, main: boolean) {
+  constructor(proj: Project, fullFile: string, main: boolean) {
     this.proj = proj;
-    this.filename = filename;
+    this.fullFile = fullFile;
     this.main = main;
   }
 
@@ -1131,6 +1131,10 @@ export class Import {
   getForwardLabel(uniqueId: unknown, name: string): number | false {
     for (const fwd of this.forwardLabels) {
       if (fwd.usedBy.includes(uniqueId)) {
+        return fwd.addr;
+      }
+      if (fwd.name === name && !fwd.defined) {
+        fwd.usedBy.push(uniqueId);
         return fwd.addr;
       }
     }
@@ -1266,6 +1270,7 @@ export class Import {
   ): ILookup | 'notfound' | false {
     const lookupStruct = (
       i: number,
+      structCtx: IExpressionContext,
       struct: IStruct,
       base: number,
       didIndex: boolean,
@@ -1280,7 +1285,7 @@ export class Import {
         if (i + 1 < idPath.length) {
           throw new CompError(flp, 'Cannot index into constant number');
         }
-        const length = struct.length === false ? 1 : struct.length.value(context, lookupFailMode);
+        const length = struct.length === false ? 1 : struct.length.value(structCtx, lookupFailMode);
         if (length === false) {
           return false;
         }
@@ -1289,7 +1294,7 @@ export class Import {
         if (i + 1 < idPath.length) {
           throw new CompError(flp, 'Cannot index into constant number');
         }
-        const s = Import.structSize(context, lookupFailMode, struct, base, true);
+        const s = Import.structSize(structCtx, lookupFailMode, struct, base, true);
         if (s === false) {
           return false;
         }
@@ -1305,18 +1310,18 @@ export class Import {
         if (index === false) {
           return false;
         }
-        const length = struct.length.value(context, lookupFailMode);
+        const length = struct.length.value(structCtx, lookupFailMode);
         if (length === false) {
           return false;
         }
         if (index < 0 || index >= length) {
           throw new CompError(flp, 'Index outside array boundary');
         }
-        const s = Import.structSize(context, lookupFailMode, struct, base, false);
+        const s = Import.structSize(structCtx, lookupFailMode, struct, base, false);
         if (s === false) {
           return false;
         }
-        return lookupStruct(i + 1, struct, base + s.size * index, true);
+        return lookupStruct(i + 1, structCtx, struct, base + s.size * index, true);
       }
 
       // member index
@@ -1351,7 +1356,7 @@ export class Import {
                 if (member.length === false) {
                   throw new CompError(flp, 'Cannot index into non-array');
                 }
-                const length = member.length.value(context, lookupFailMode);
+                const length = member.length.value(structCtx, lookupFailMode);
                 if (length === false) {
                   return false;
                 }
@@ -1375,7 +1380,7 @@ export class Import {
                 }
                 const length = member.length === false
                   ? 1
-                  : member.length.value(context, lookupFailMode);
+                  : member.length.value(structCtx, lookupFailMode);
                 if (length === false) {
                   return false;
                 }
@@ -1386,7 +1391,7 @@ export class Import {
                 }
                 const length = member.length === false
                   ? 1
-                  : member.length.value(context, lookupFailMode);
+                  : member.length.value(structCtx, lookupFailMode);
                 if (length === false) {
                   return false;
                 }
@@ -1394,7 +1399,7 @@ export class Import {
               }
             }
             if (member.length) {
-              const length = member.length.value(context, lookupFailMode);
+              const length = member.length.value(structCtx, lookupFailMode);
               if (length === false) {
                 return false;
               }
@@ -1414,9 +1419,9 @@ export class Import {
             break;
           case 'struct': {
             if (name === idHere) {
-              return lookupStruct(i + 1, member, here, false);
+              return lookupStruct(i + 1, structCtx, member, here, false);
             }
-            const s = Import.structSize(context, lookupFailMode, member, here, true);
+            const s = Import.structSize(structCtx, lookupFailMode, member, here, true);
             if (s === false) {
               return false;
             }
@@ -1445,16 +1450,16 @@ export class Import {
           if (i + 1 >= idPath.length) {
             throw new CompError(flp, 'Cannot use imported name as value');
           }
-          const pf = this.proj.readFileCacheImport(root.filename);
+          const pf = this.proj.readFileCacheImport(root.fullFile);
           if (!pf) {
-            throw new Error(`Failed to reimport: ${root.filename}`);
+            throw new Error(`Failed to reimport: ${root.fullFile}`);
           }
           return lookup(i + 1, pf.defTable);
         }
         case 'importName': {
-          const pf = this.proj.readFileCacheImport(root.filename);
+          const pf = this.proj.readFileCacheImport(root.fullFile);
           if (!pf) {
-            throw new Error(`Failed to reimport: ${root.filename}`);
+            throw new Error(`Failed to reimport: ${root.fullFile}`);
           }
           return lookup(i, pf.defTable);
         }
@@ -1480,7 +1485,7 @@ export class Import {
           if (typeof base !== 'number') {
             return false;
           }
-          return lookupStruct(i + 1, root.struct, base, false);
+          return lookupStruct(i + 1, root.context, root.struct, base, false);
         }
         default:
           return assertNever(root);
@@ -1513,38 +1518,18 @@ export class Import {
   }
 
   async importAll(flp: IFilePos, filename: string, name: string) {
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    try {
-      await this.proj.import(fullFile);
-    } catch (e) {
-      const err = `Failed to import file: ${filename}`;
-      if (e instanceof CompError) {
-        e.addError(flp, err);
-        throw e;
-      } else {
-        throw new CompError(flp, err);
-      }
-    }
+    const fullFile = this.proj.resolveFile(filename, this.fullFile);
+    await this.proj.import(flp, fullFile);
     this.validateNewName(flp, name);
-    this.defTable.set(name, { kind: 'importAll', filename: fullFile });
+    this.defTable.set(name, { kind: 'importAll', fullFile });
   }
 
   async importNames(flp: IFilePos, filename: string, names: string[]) {
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    try {
-      await this.proj.import(fullFile);
-    } catch (e) {
-      const err = `Failed to import file: ${filename}`;
-      if (e instanceof CompError) {
-        e.addError(flp, err);
-        throw e;
-      } else {
-        throw new CompError(flp, err);
-      }
-    }
+    const fullFile = this.proj.resolveFile(filename, this.fullFile);
+    await this.proj.import(flp, fullFile);
     for (const name of names) {
       this.validateNewName(flp, name);
-      this.defTable.set(name, { kind: 'importName', filename: fullFile, name });
+      this.defTable.set(name, { kind: 'importName', fullFile, name });
     }
   }
 
@@ -1552,16 +1537,16 @@ export class Import {
     if (!this.active()) {
       return;
     }
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    this.sections.push(new SectionInclude(flp, this.proj, fullFile, filename));
+    const fullFile = this.proj.resolveFile(filename, this.fullFile);
+    this.sections.push(new SectionInclude(flp, this.proj, fullFile));
   }
 
   embed(flp: IFilePos, filename: string) {
     if (!this.active()) {
       return;
     }
-    const fullFile = this.proj.resolveFile(filename, this.filename);
-    this.sections.push(new SectionEmbed(flp, this.proj, fullFile, filename));
+    const fullFile = this.proj.resolveFile(filename, this.fullFile);
+    this.sections.push(new SectionEmbed(flp, this.proj, fullFile));
   }
 
   beginStart(flp: IFilePos, name: string | undefined) {

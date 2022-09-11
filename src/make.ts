@@ -151,12 +151,7 @@ export async function make({ input, output, defines, watch }: IMakeArgs): Promis
           await file.write(section);
         }
         file.close();
-        console.log(
-          `${ts}Success! Output: ${output}`,
-          result.sections.map((n) => Array.from(n)).flat().map((n) =>
-            `0${n.toString(16)}`.substr(-2)
-          ).join(' '),
-        );
+        console.log(`${ts}Success! Output: ${output}`);
       }
     };
     await makeResult(input, defines, watch, onResult);

@@ -1516,8 +1516,14 @@ export class Import {
     const fullFile = this.proj.resolveFile(filename, this.filename);
     try {
       await this.proj.import(fullFile);
-    } catch (_) {
-      throw new CompError(flp, `Failed to import file: ${filename}`);
+    } catch (e) {
+      const err = `Failed to import file: ${filename}`;
+      if (e instanceof CompError) {
+        e.addError(flp, err);
+        throw e;
+      } else {
+        throw new CompError(flp, err);
+      }
     }
     this.validateNewName(flp, name);
     this.defTable.set(name, { kind: 'importAll', filename: fullFile });
@@ -1527,8 +1533,14 @@ export class Import {
     const fullFile = this.proj.resolveFile(filename, this.filename);
     try {
       await this.proj.import(fullFile);
-    } catch (_) {
-      throw new CompError(flp, `Failed to import file: ${filename}`);
+    } catch (e) {
+      const err = `Failed to import file: ${filename}`;
+      if (e instanceof CompError) {
+        e.addError(flp, err);
+        throw e;
+      } else {
+        throw new CompError(flp, err);
+      }
     }
     for (const name of names) {
       this.validateNewName(flp, name);

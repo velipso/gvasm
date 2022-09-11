@@ -19,6 +19,7 @@ Helpful Tidbits
   // Thumb code here
   .align 4, nop
   bx    pc
+  nop
   .arm
   // ARM code here
 ```
@@ -31,6 +32,7 @@ Helpful Tidbits
     .thumb
     .align 4, nop
     bx    pc // change to ARM mode
+    nop
   .end
   .begin arm
     .arm

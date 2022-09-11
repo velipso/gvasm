@@ -211,10 +211,8 @@ export class Project {
       };
     } catch (e) {
       if (e instanceof CompError) {
-        if (e.flp && e.flp.filename) {
-          e.flp.filename = this.path.relative(this.cwd, e.flp.filename);
-        }
-        return { errors: [e.toString()] };
+        e.mapFilenames((filename) => this.path.relative(this.cwd, filename));
+        return { errors: e.toErrors() };
       }
       throw e;
     }

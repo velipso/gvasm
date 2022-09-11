@@ -360,8 +360,14 @@ export class SectionEmbed extends Section {
   async flatten(_base: IBase, _startLength: number): Promise<Uint8Array[]> {
     try {
       return [await this.proj.embed(this.fullFile)];
-    } catch (_) {
-      throw new CompError(this.flp, `Failed to embed: ${this.filename}`);
+    } catch (e) {
+      const err = `Failed to embed: ${this.filename}`;
+      if (e instanceof CompError) {
+        e.addError(this.flp, err);
+        throw e;
+      } else {
+        throw new CompError(this.flp, err);
+      }
     }
   }
 }

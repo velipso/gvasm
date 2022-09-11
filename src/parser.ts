@@ -178,11 +178,11 @@ export class Parser {
 }
 
 export class CompError extends Error {
-  flp: IFilePos | false;
+  errors: { flp: IFilePos | false; message: string }[];
 
-  constructor(flp: IFilePos | false, msg: string) {
-    super(msg);
-    this.flp = flp;
+  constructor(flp: IFilePos | false, message: string) {
+    super(message);
+    this.errors = [{ flp, message }];
   }
 
   static errorString({ filename, line, chr }: IFilePos, msg: string) {
@@ -192,8 +192,24 @@ export class CompError extends Error {
     return `${filename}:${line}:${chr}: ${msg}`;
   }
 
+  addError(flp: IFilePos | false, message: string) {
+    this.errors.push({ flp, message });
+  }
+
+  mapFilenames(cb: (filename: string) => string) {
+    for (const e of this.errors) {
+      if (e.flp && e.flp.filename) {
+        e.flp.filename = cb(e.flp.filename);
+      }
+    }
+  }
+
+  toErrors(): string[] {
+    return this.errors.map((e) => e.flp ? CompError.errorString(e.flp, e.message) : e.message);
+  }
+
   toString() {
-    return this.flp ? CompError.errorString(this.flp, this.message) : this.message;
+    return this.toErrors().join('\n');
   }
 }
 
@@ -1216,7 +1232,7 @@ function parseRegs(cmdFlp: IFilePos, parser: Parser, imp: Import) {
   }
 
   if (regs.length <= 0) {
-    imp.proj.getLog()(`${new CompError(cmdFlp, `Registers: ${imp.regs().join(', ')}`)}`);
+    imp.proj.getLog()(CompError.errorString(cmdFlp, `Registers: ${imp.regs().join(', ')}`));
     return;
   }
 

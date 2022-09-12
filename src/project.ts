@@ -101,13 +101,14 @@ export class Project {
     }
     try {
       const tks = lex(fullFile, txt);
-      const imp = await parse(this, fullFile, this.mainFullFile === fullFile, this.defines, tks);
+      const imp = new Import(this, fullFile, this.mainFullFile === fullFile);
       if (file) {
         file.used = true;
         file.imp = imp;
       } else {
         this.fileCache.set(fullFile, { used: true, imp, scriptParents: new Set() });
       }
+      await parse(imp, fullFile, this.defines, tks);
       return imp;
     } catch (e) {
       throw CompError.extend(e, flp, `Failed to import file: ${fullFile}`);
@@ -262,7 +263,8 @@ export class Project {
   async runScript(flp: IFilePos, imp: Import, body: string): Promise<ITok[]> {
     const { filename, line: startLine } = flp;
     const resolvedStartFile = this.path.resolve(filename);
-    const startFile = this.path.basename(filename);
+    const rootDir = this.path.dirname(this.mainFullFile);
+    const startFile = this.path.relative(rootDir, resolvedStartFile);
     const scr = sink.scr_new(
       {
         f_fstype: async (_scr: sink.scr, file: string): Promise<sink.fstype> => {
@@ -288,7 +290,7 @@ export class Project {
           return true;
         },
       },
-      this.path.dirname(resolvedStartFile),
+      rootDir,
       this.path.posix,
       false,
     );
@@ -298,7 +300,7 @@ export class Project {
     if (!await sink.scr_loadfile(scr, startFile)) {
       const sinkErr = sink.scr_geterr(scr);
       if (sinkErr) {
-        throw new CompError(false, sinkErr);
+        throw new CompError(false, sinkErr.replace(/^Error: /, ''));
       }
       throw new CompError(flp, 'Failed to run script');
     }
@@ -327,7 +329,7 @@ export class Project {
         const lk = imp.lookup(
           sink.ctx_source(ctx),
           imp.expressionContext(0),
-          'allow',
+          false,
           path as (string | number)[],
           ctx,
         );
@@ -344,7 +346,7 @@ export class Project {
               sink.abort(ctx, ['Cannot lookup function in script']);
               return sink.NIL;
             }
-            const n = lk.body.value(lk.context, 'allow');
+            const n = lk.body.value(lk.context, false);
             if (n === false) {
               sink.abort(ctx, ['Can\'t calculate value']);
               return sink.NIL;
@@ -364,7 +366,13 @@ export class Project {
         }
       },
       f_xexport: (ctx, name, data) => {
-        imp.scriptExport(sink.ctx_source(ctx), name, data);
+        put.push({
+          ...sink.ctx_source(ctx),
+          kind: 'closure',
+          closure: () => {
+            imp.scriptExport(sink.ctx_source(ctx), name, data);
+          },
+        });
       },
     });
 

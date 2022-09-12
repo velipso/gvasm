@@ -3132,13 +3132,13 @@ say {1} ~ {2} ~ {3} ~ {4}
   def({
     name: 'sink.67.stacktrace',
     kind: 'sink',
-    stdout: `gt2 (/root/main.sink:5:14)
-gt1 (/root/main.sink:7:12)
-gettrace (/root/main.sink:9:23)
-gettrace (/root/main.sink:9:28)
-gettrace (/root/main.sink:9:28)
-gettrace (/root/main.sink:9:28)
-/root/main.sink:12:12
+    stdout: `gt2 (main.sink:5:14)
+gt1 (main.sink:7:12)
+gettrace (main.sink:9:23)
+gettrace (main.sink:9:28)
+gettrace (main.sink:9:28)
+gettrace (main.sink:9:28)
+main.sink:12:12
 `,
     files: {
       '/root/main.sink': `

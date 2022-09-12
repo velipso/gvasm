@@ -252,7 +252,7 @@ export function runResult(
         switch (dbg.kind) {
           case 'log': {
             const args = dbg.args.map((arg) => {
-              const v = arg.value(dbg.context, 'deny', undefined, cpu);
+              const v = arg.value(dbg.context, true, undefined, cpu);
               if (v === false) {
                 throw `Unknown value at run-time`;
               }

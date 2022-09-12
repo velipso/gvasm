@@ -239,11 +239,6 @@ function isTokUnary(t: ITok): t is ITokUnary {
   );
 }
 
-// 'allow'      - allow lookups to fail
-// 'unresolved' - fail if lookup isn't found
-// 'deny'       - fail if lookup isn't found, or doesn't have a value
-export type LookupFailMode = 'allow' | 'unresolved' | 'deny';
-
 export class Expression {
   private expr: IExpr;
   paramSize: number;
@@ -576,7 +571,7 @@ export class Expression {
 
   value(
     context: IExpressionContext,
-    lookupFailMode: LookupFailMode,
+    failNotFound: boolean,
     params?: number[],
     cpu?: CPU,
   ): number | false {
@@ -615,20 +610,20 @@ export class Expression {
               return assertNever(ex.name);
           }
         case 'lookup': {
-          const v = context.imp.lookup(ex.flp, context, lookupFailMode, ex.idPath, ex);
+          const v = context.imp.lookup(ex.flp, context, failNotFound, ex.idPath, ex);
           const pathError = () =>
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
             return v;
           }
           if (v === false) {
-            if (lookupFailMode === 'deny') {
+            if (failNotFound) {
               throw new CompError(ex.flp, `Unknown value: ${pathError()}`);
             }
             return false;
           }
           if (v === 'notfound') {
-            if (lookupFailMode !== 'allow') {
+            if (failNotFound) {
               throw new CompError(ex.flp, `Can't find symbol: ${pathError()}`);
             }
             return false;
@@ -648,12 +643,12 @@ export class Expression {
                   }
                   pvalues.push(pv);
                 }
-                return v.body.value(v.context, lookupFailMode, pvalues);
+                return v.body.value(v.context, failNotFound, pvalues);
               } else {
                 if (v.body.paramSize >= 0) {
                   throw new CompError(ex.flp, 'Constant expecting to be called with parameters');
                 }
-                return v.body.value(v.context, lookupFailMode);
+                return v.body.value(v.context, failNotFound);
               }
             case 'scriptExport':
               throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
@@ -718,7 +713,7 @@ export class Expression {
           return context.imp.lookup(
               ex.lookup.flp,
               context,
-              lookupFailMode,
+              failNotFound,
               ex.lookup.idPath,
               ex,
             ) === 'notfound'

@@ -130,6 +130,25 @@ export function load(def: (test: ITest) => void) {
   }); */
 
   def({
+    name: 'files.import-circular',
+    desc: 'Import circular files',
+    kind: 'make',
+    stdout: ['FOO = 2', 'BAR = 1'],
+    files: {
+      '/root/main': `
+.import 'test' { FOO }
+.def BAR = 1
+.printf "FOO = %d", FOO
+`,
+      '/root/test': `
+.import 'main' { BAR }
+.def FOO = 2
+.printf "BAR = %d", BAR
+`,
+    },
+  });
+
+  def({
     name: 'files.embed-basic',
     desc: 'Embed another file',
     kind: 'make',

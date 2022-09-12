@@ -452,7 +452,7 @@ async function itestSink(test: ITestSink): Promise<boolean> {
           `\nLine ${
             i +
             1
-          } mismatch:\n  expetected:  ${correctLine}\n  instead got: ${line}`,
+          } mismatch:\n  expected:    ${correctLine}\n  instead got: ${line}`,
         );
         done++;
       }

@@ -5729,6 +5729,7 @@ interface script_st {
   curdir: strnil;
   posix: boolean;
   file: strnil;
+  relfile: strnil;
   err: strnil;
   mode: scriptmode_enum;
   binstate: binstate_st;
@@ -5803,7 +5804,7 @@ function pathjoin(prev: string, next: string, posix: boolean): string {
 // file resolver
 //
 
-type fileres_begin_f = (file: string, fuser: unknown) => boolean;
+type fileres_begin_f = (file: string, relfile: string, fuser: unknown) => boolean;
 type fileres_end_f = (
   success: boolean,
   file: string,
@@ -5814,6 +5815,7 @@ async function fileres_try(
   scr: script_st,
   _postfix: boolean,
   file: string,
+  relfile: string,
   f_begin: fileres_begin_f,
   f_end: fileres_end_f,
   fuser: unknown,
@@ -5822,7 +5824,7 @@ async function fileres_try(
   const fst = await inc.f_fstype(scr, file, inc.user);
   switch (fst) {
     case fstype.FILE:
-      if (f_begin(file, fuser)) {
+      if (f_begin(file, relfile, fuser)) {
         const readRes = await inc.f_fsread(scr, file, inc.user);
         await f_end(readRes, file, fuser);
       }
@@ -5853,7 +5855,7 @@ async function fileres_read(
 ): Promise<boolean> {
   // if an absolute path, there is no searching, so just try to read it directly
   if (isabs(file, scr.posix)) {
-    return fileres_try(scr, postfix, file, f_begin, f_end, fuser);
+    return fileres_try(scr, postfix, file, file, f_begin, f_end, fuser);
   }
   // otherwise, we have a relative path, so we need to go through our search list
   if (cwd === null) {
@@ -5871,7 +5873,15 @@ async function fileres_read(
       }
       join = pathjoin(pathjoin(cwd, path, scr.posix), file, scr.posix);
     }
-    const found = await fileres_try(scr, postfix, join, f_begin, f_end, fuser);
+    let relfile = join;
+    if (scr.curdir !== null) {
+      // TODO: path.relative
+      const curdir = `${scr.curdir}${scr.posix ? '/' : '\\'}`;
+      if (join.startsWith(curdir)) {
+        relfile = join.substr(curdir.length);
+      }
+    }
+    const found = await fileres_try(scr, postfix, join, relfile, f_begin, f_end, fuser);
     if (found) {
       return true;
     }
@@ -7019,7 +7029,7 @@ interface efu_st {
   pe: per_st;
 }
 
-function embed_begin(_file: string, efu: efu_st): boolean {
+function embed_begin(_file: string, _relfile: string, efu: efu_st): boolean {
   // in order to capture the `scr_write`, we need to set `capture_write`
   efu.pgen.scr.capture_write = '';
   return true;
@@ -14713,6 +14723,7 @@ function compiler_new(
   sinc: staticinc_st,
   inc: inc_st,
   file: strnil,
+  relfile: strnil,
   paths: string[],
   startLine = 1,
 ): compiler_st {
@@ -14725,7 +14736,7 @@ function compiler_new(
     sym: symtbl_new(prg.repl),
     flpn: flpn_new(
       script_addfile(scr, file),
-      program_addfile(prg, file),
+      program_addfile(prg, relfile),
       null,
       startLine,
     ),
@@ -14752,10 +14763,11 @@ function compiler_begininc(
   cmp: compiler_st,
   names: string[] | true | null,
   file: string,
+  relfile: string,
 ): boolean {
   cmp.flpn = flpn_new(
     script_addfile(cmp.scr, file),
-    program_addfile(cmp.prg, file),
+    program_addfile(cmp.prg, relfile),
     cmp.flpn,
   );
   if (names) {
@@ -14779,9 +14791,10 @@ interface compiler_fileres_user_st {
 
 function compiler_begininc_cfu(
   file: string,
+  relfile: string,
   cfu: compiler_fileres_user_st,
 ): boolean {
-  return compiler_begininc(cfu.cmp, cfu.names, file);
+  return compiler_begininc(cfu.cmp, cfu.names, file, relfile);
 }
 
 function compiler_endinc(cmp: compiler_st, ns: boolean): void {
@@ -14812,9 +14825,10 @@ async function compiler_staticinc(
   cmp: compiler_st,
   names: string[] | true | null,
   file: string,
+  relfile: string,
   body: string,
 ): Promise<boolean> {
-  if (!compiler_begininc(cmp, names, file)) {
+  if (!compiler_begininc(cmp, names, file, relfile)) {
     return false;
   }
   let err = await compiler_write(cmp, body);
@@ -14893,6 +14907,7 @@ async function compiler_process(cmp: compiler_st): Promise<strnil> {
                 success = await compiler_staticinc(
                   cmp,
                   inc.names,
+                  file,
                   file,
                   sinc_content,
                 );
@@ -15061,6 +15076,7 @@ export function scr_new(
     curdir,
     posix,
     file: null,
+    relfile: null,
     err: null,
     mode: scriptmode_enum.UNKNOWN,
     binstate: {
@@ -15113,12 +15129,18 @@ export function scr_incfile(scr: scr, name: string, file: string): void {
   staticinc_addfile(scr.sinc, name, file);
 }
 
-function sfr_begin(file: string, sc: script_st): boolean {
+function sfr_begin(file: string, relfile: string, sc: script_st): boolean {
   if (sc.file) {
     sc.file = null;
   }
   if (file) {
     sc.file = file;
+  }
+  if (sc.relfile) {
+    sc.relfile = null;
+  }
+  if (relfile) {
+    sc.relfile = relfile;
   }
   return true;
 }
@@ -15248,6 +15270,7 @@ export async function scr_write(
         scr.sinc,
         scr.inc,
         scr.file,
+        scr.relfile,
         scr.paths,
         startLine,
       );

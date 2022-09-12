@@ -300,9 +300,10 @@ pickle.valid 'null'      // => 1, JSON formatted serialized value (`null` maps t
 Image
 -----
 
-| Function              | Description                                          |
-|-----------------------|------------------------------------------------------|
-| `image.load data`     | Load an image file (.PNG, etc) into a list of pixels |
+| Function              | Description                                                |
+|-----------------------|------------------------------------------------------------|
+| `image.load data`     | Load an image file (.PNG, etc) into a list of pixels       |
+| `image.rgb img, x, y` | Converts pixel to GBA palette format, `-1` for transparent |
 
 You can decode common image formats into raw pixel data for processing.
 
@@ -316,6 +317,10 @@ for var row, y: sprite
   for var pixel, x: row
     var {r, g, b, a} = pixel
     // each component ranges from 0-255
+
+    // alternatively:
+    var col = image.rgb sprite, x, y
+    // col is -1 for transparent, or a 15-bit RGB number (GBA format)
   end
 end
 ```

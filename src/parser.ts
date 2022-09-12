@@ -9,7 +9,6 @@ import { IFilePos, ILexKeyValue, ITok } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
 import { Expression } from './expr.ts';
-import { Project } from './project.ts';
 import { DataType, Import, IStruct, IStructMember, ISyms } from './import.ts';
 
 export class Parser {
@@ -386,7 +385,7 @@ function validateStr(partStr: string, parser: Parser): boolean {
 }
 
 function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
-  return Expression.parse(parser, imp).value(imp.expressionContext(0), 'allow') === partNum;
+  return Expression.parse(parser, imp).value(imp.expressionContext(0), false) === partNum;
 }
 
 function validateSymExpr(
@@ -401,7 +400,7 @@ function validateSymExpr(
     syms[partSym] = ex;
     return true;
   }
-  const v = ex.value(imp.expressionContext(0), 'deny');
+  const v = ex.value(imp.expressionContext(0), true);
   if (v === false || v >= 0) {
     return false;
   }
@@ -680,7 +679,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
           switch (tk2.id) {
             case 'align': {
               const context = imp.expressionContext(0);
-              const amount = Expression.parse(parser, imp).value(context, 'deny');
+              const amount = Expression.parse(parser, imp).value(context, true);
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
               }
@@ -691,7 +690,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
                   fill = 'nop';
                   parser.nextTok();
                 } else {
-                  const fillx = Expression.parse(parser, imp).value(context, 'deny');
+                  const fillx = Expression.parse(parser, imp).value(context, true);
                   if (fillx === false) {
                     throw new CompError(tk, 'Align fill must be constant');
                   }
@@ -707,7 +706,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.setMode('arm');
               break;
             case 'base': {
-              const base = Expression.parse(parser, imp).value(imp.expressionContext(0), 'deny');
+              const base = Expression.parse(parser, imp).value(imp.expressionContext(0), true);
               if (base === false) {
                 throw new CompError(tk, 'Base must be constant');
               }
@@ -825,7 +824,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
             case 'ubm32fill': {
               const amount = Expression.parse(parser, imp).value(
                 imp.expressionContext(0),
-                'deny',
+                true,
               );
               if (amount === false) {
                 throw new CompError(tk, 'Data fill amount must be constant');
@@ -1106,7 +1105,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
   try {
     condition = Expression.parse(parser, imp).value(
       imp.expressionContext(0),
-      'deny',
+      true,
     );
   } catch (e) {
     throw CompError.extend(e, flp, 'Condition unknown at time of execution');
@@ -1130,7 +1129,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
       const exflp = parser.here();
       const elseif = Expression.parse(parser, imp).value(
         imp.expressionContext(0),
-        'deny',
+        true,
       );
       if (gotTrue) {
         imp.ifStart(false);
@@ -1275,12 +1274,12 @@ async function parseScript(parser: Parser, imp: Import) {
   if (tk.kind === 'id') {
     name = tk.id;
     if (!parser.hasTok()) {
-      throw new CompError(tk, 'Missing `.end` for `.begin`');
+      throw new CompError(tk, 'Missing `.end` for `.script`');
     }
     tk = parser.nextTok();
   }
   if (tk.kind !== 'newline') {
-    throw new CompError(tk, 'Expecting `.begin` or `.begin Name`');
+    throw new CompError(tk, 'Expecting `.script` or `.script Name`');
   }
 
   // parse script body
@@ -1292,8 +1291,28 @@ async function parseScript(parser: Parser, imp: Import) {
   if (!parser.checkEnd()) {
     throw new CompError(parser.here(), `Missing \`.end\` for \`.script\` on line ${tk.line}`);
   }
-  parser.insert(await imp.runScript(tk, str.body));
+  const tks = await imp.runScript(tk, str.body);
   imp.end();
+
+  if (tks.length > 0 && name) {
+    // enter the existing scope
+    const cname = name;
+    tks.unshift({
+      ...tk1,
+      kind: 'closure',
+      closure: () => {
+        imp.enterScope(cname);
+      },
+    });
+    tks.push({
+      ...tk1,
+      kind: 'closure',
+      closure: () => {
+        imp.end();
+      },
+    });
+  }
+  parser.insert(tks);
 }
 
 async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
@@ -1426,7 +1445,7 @@ function parseStructBody(parser: Parser, imp: Import, struct: IStruct, active: b
           switch (tk2.id) {
             case 'align': {
               const context = imp.expressionContext(0);
-              const amount = Expression.parse(parser, imp).value(context, 'deny');
+              const amount = Expression.parse(parser, imp).value(context, true);
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
               }
@@ -1553,7 +1572,7 @@ function parseStructBody(parser: Parser, imp: Import, struct: IStruct, active: b
 function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStruct) {
   const condition = Expression.parse(parser, imp).value(
     imp.expressionContext(0),
-    'deny',
+    true,
   );
   parser.forceNewline('`.if` statement');
   if (condition === false) {
@@ -1573,7 +1592,7 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
       const exflp = parser.here();
       const elseif = Expression.parse(parser, imp).value(
         imp.expressionContext(0),
-        'deny',
+        true,
       );
       if (gotTrue) {
         active = false;
@@ -1596,14 +1615,11 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
 }
 
 export async function parse(
-  proj: Project,
+  imp: Import,
   fullFile: string,
-  main: boolean,
   defines: ILexKeyValue[],
   tks: ITok[],
 ): Promise<Import> {
-  const imp = new Import(proj, fullFile, main);
-
   for (const d of defines) {
     imp.addSymNum({ filename: fullFile, line: 1, chr: 1 }, d.key, d.value);
   }

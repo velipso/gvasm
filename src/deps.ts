@@ -68,6 +68,7 @@ export class Path {
   }
 
   relative(from: string, to: string): string {
+    // TODO: this implicitly uses Deno.cwd(), which seems odd... replace eventually
     return this.posix ? path.posix.relative(from, to) : path.win32.relative(from, to);
   }
 

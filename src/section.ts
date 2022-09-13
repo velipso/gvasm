@@ -376,6 +376,7 @@ export class SectionPool extends Section {
     const array: number[] = [];
     let bytes: Uint8Array | undefined = undefined;
     const startAddr = base.addr + startLength - base.relativeTo;
+    const lateWrites: { i: number; cmdSize: number }[] = [];
     for (const p of this.pendingPools) {
       if (p.poolAddr === 'inline') {
         // instruction doesn't need pool
@@ -395,6 +396,18 @@ export class SectionPool extends Section {
         }
         let found = false;
         while (searchStart + cmdSize <= array.length) {
+          // is this address range going to be stomped later? then don't rely on it!
+          let lateWrite = false;
+          for (const lw of lateWrites) {
+            if (searchStart < lw.i + lw.cmdSize && searchStart + cmdSize > lw.i) {
+              lateWrite = true;
+              break;
+            }
+          }
+          if (lateWrite) {
+            searchStart += cmdSize;
+            continue;
+          }
           switch (cmdSize) {
             case 1:
               found = array[searchStart] === (ex & 0xff);
@@ -434,7 +447,6 @@ export class SectionPool extends Section {
       }
       // store the final address
       p.poolAddr = startAddr + array.length;
-      const i = array.length;
       if (typeof p.expr === 'number') {
         // early write
         const ex = p.expr;
@@ -454,6 +466,8 @@ export class SectionPool extends Section {
         p.poolWriteExpr = () => {};
       } else {
         // late write
+        const i = array.length;
+        lateWrites.push({ i, cmdSize });
         for (let j = 0; j < cmdSize; j++) {
           array.push(0);
         }

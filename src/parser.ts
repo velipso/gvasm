@@ -1340,28 +1340,30 @@ async function parseFileImport(parser: Parser, imp: Import): Promise<boolean> {
     await imp.importAll(tk0, filename, tk.id);
   } else if (tk && tk.kind === 'punc' && tk.punc === '{') {
     const names: string[] = [];
-    if (!parser.isNext('}')) {
-      let flp: IFilePos = tk;
-      while (true) {
-        const tk2 = parser.nextTokOptional();
-        if (tk2 && tk2.kind === 'id') {
-          if (names.includes(tk2.id)) {
-            throw new CompError(tk2, `Cannot import symbol twice: ${tk2.id}`);
-          }
-          names.push(tk2.id);
+    let flp: IFilePos = tk;
+    while (!parser.isNext('}')) {
+      const tk2 = parser.nextTokOptional();
+      if (tk2 && tk2.kind === 'id') {
+        if (names.includes(tk2.id)) {
+          throw new CompError(tk2, `Cannot import symbol twice: ${tk2.id}`);
+        }
+        names.push(tk2.id);
+        if (parser.isNext('}')) {
+          break;
+        } else if (parser.isNext(',')) {
+          flp = parser.nextTok();
           if (parser.isNext('}')) {
             break;
-          } else if (parser.isNext(',')) {
-            flp = parser.nextTok();
-            if (parser.isNext('}')) {
-              break;
-            }
-          } else {
-            throw new CompError(tk2, 'Expecting list of names, `{ Name1, Name2, Name3 }`');
           }
+        } else if (parser.checkNewline()) {
+          // do nothing
         } else {
-          throw new CompError(flp, 'Expecting list of names, `{ Name1, Name2, Name3 }`');
+          throw new CompError(tk2, 'Expecting list of names, `{ Name1, Name2, Name3 }`');
         }
+      } else if (tk2 && tk2.kind === 'newline') {
+        // do nothing
+      } else {
+        throw new CompError(flp, 'Expecting list of names, `{ Name1, Name2, Name3 }`');
       }
     }
     parser.nextTok(); // '}'

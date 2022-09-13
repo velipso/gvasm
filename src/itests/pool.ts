@@ -256,7 +256,7 @@ here:
     files: {
       '/root/main': `.arm
 ldr r2, =here - 8  /// 02 23 a0 e3
-.pool               /// 00 00 00 00
+.pool              /// 00 00 00 00
 here:
 `,
     },
@@ -274,6 +274,22 @@ ldr r2, =12345
 .i32 0
 .i8 0
 .pool
+`,
+    },
+  });
+
+  def({
+    name: 'pool.late-write-nonzero',
+    desc: 'Can\'t rely on zero in pool if it will be stomped later',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.base 0
+.def one = _base + 1
+.thumb
+ldr r0, =one   /// 00 48
+ldr r0, =0     /// 01 48
+.pool          /// 01 00 00 00 00 00 00 00
 `,
     },
   });

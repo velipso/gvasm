@@ -33,7 +33,7 @@ export class SectionBytes extends Section {
       bytes?: number | false;
     };
   }[] = [];
-  private alignments: { flp: IFilePos; align: number; msg: string; i: number }[] = [];
+  private alignments: { flp: IFilePos; align: 2 | 4; msg: string; i: number }[] = [];
   private addr: { base: IBase; startLength: number } | false = false;
   firstWrittenARM: boolean | undefined;
 
@@ -91,8 +91,17 @@ export class SectionBytes extends Section {
     };
   }
 
-  forceAlignment(flp: IFilePos, align: number, msg: string) {
-    this.alignments.push({ flp, align, msg, i: this.array.length });
+  forceAlignment(flp: IFilePos, align: 2 | 4, msg: string) {
+    // see if we already check for this alignment
+    const alignments = this.alignments;
+    const i = this.array.length;
+    for (let j = 0; j < alignments.length; j++) {
+      const a = alignments[j];
+      if (align === a.align && (i % align) === (a.i % align)) {
+        return;
+      }
+    }
+    alignments.push({ flp, align, msg, i });
   }
 
   logo() {

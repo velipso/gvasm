@@ -1689,7 +1689,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     bytes.setARM(true);
-    bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
+    bytes.forceAlignment(flp, 4, 'Misaligned instruction; add `.align 4`');
     const rewrite = bytes.rewrite32();
     const context = this.expressionContext(4);
     const pw = new PendingWriteInstARM(flp, context, op, syms, rewrite);
@@ -1709,7 +1709,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     bytes.setARM(true);
-    bytes.forceAlignment(flp, 4, `Misaligned instruction; add \`.align 4\``);
+    bytes.forceAlignment(flp, 4, 'Misaligned instruction; add `.align 4`');
     const rewrite = bytes.rewrite32();
     const context = this.expressionContext(4);
     const pw = new PendingWritePoolARM(flp, context, cmdSize, cmdSigned, cond, rd, expr, rewrite);
@@ -1722,7 +1722,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     bytes.setARM(false);
-    bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
+    bytes.forceAlignment(flp, 2, 'Misaligned instruction; add `.align 2`');
     const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
     const context = this.expressionContext(op.doubleInstruction ? 4 : 2);
     const pw = new PendingWriteInstThumb(flp, context, op, syms, rewrite);
@@ -1735,7 +1735,7 @@ export class Import {
     }
     const bytes = this.tailBytes();
     bytes.setARM(false);
-    bytes.forceAlignment(flp, 2, `Misaligned instruction; add \`.align 2\``);
+    bytes.forceAlignment(flp, 2, 'Misaligned instruction; add `.align 2`');
     const rewrite = bytes.rewrite16();
     const context = this.expressionContext(2);
     const pw = new PendingWritePoolThumb(flp, context, 4, rd, expr, rewrite);
@@ -1749,7 +1749,7 @@ export class Import {
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.expressionContext(dataSize);
-    if (dataSize > 1 && dataTypeAligned(dataType)) {
+    if ((dataSize === 2 || dataSize === 4) && dataTypeAligned(dataType)) {
       bytes.forceAlignment(
         flp,
         dataSize,
@@ -1782,7 +1782,7 @@ export class Import {
     const bytes = this.tailBytes();
     const dataSize = dataTypeSize(dataType);
     const context = this.expressionContext(dataSize);
-    if (dataSize > 1 && dataTypeAligned(dataType)) {
+    if ((dataSize === 2 || dataSize === 4) && dataTypeAligned(dataType)) {
       bytes.forceAlignment(
         flp,
         dataSize,

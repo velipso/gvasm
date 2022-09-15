@@ -157,7 +157,7 @@ function parseInitArgs(args: string[]): number | IInitArgs {
 }
 
 function printMakeHelp() {
-  console.log(`gvasm make <input> [-o <output>] [-d NAME=value] [-w]
+  console.log(`gvasm make <input> [-o <output>] [-d NAME=value] [-w] [-x cmd]
 
 <input>        The input .gvasm file
 -o <output>    The output file (default: input with .gba extension)
@@ -165,7 +165,10 @@ function printMakeHelp() {
                -d FOO=1,BAR=2      is equivalent to:
                .def FOO = 1
                .def BAR = 2
--w             Watch for file changes, and recompile incrementally`);
+-w             Watch for file changes, and recompile incrementally
+-x cmd         Run 'cmd' after the output file is written, ex:
+               -x 'open -F -g {}'
+               The '{}' is replaced with the output filename`);
 }
 
 function parseDefines(define: string): ILexKeyValue[] | false {
@@ -184,9 +187,9 @@ function parseDefines(define: string): ILexKeyValue[] | false {
 function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['output', 'define'],
+    string: ['output', 'define', 'execute'],
     boolean: ['help', 'watch'],
-    alias: { h: 'help', o: 'output', d: 'define', w: 'watch' },
+    alias: { h: 'help', o: 'output', d: 'define', w: 'watch', x: 'execute' },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -215,6 +218,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   const output = a.output;
   const watch = a.watch;
   const defines = a.define ? parseDefines(a.define) : [];
+  const execute = a.execute ?? false;
   if (defines === false) {
     return 1;
   }
@@ -223,6 +227,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
     output: output ?? (new Path()).replaceExt(input, '.gba'),
     defines,
     watch,
+    execute,
   };
 }
 

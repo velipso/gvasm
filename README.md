@@ -41,7 +41,7 @@ Every test should pass!
 Assembler
 =========
 
-Read [the assembler manual](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md).
+Read [the assembler manual](./docs/assembler/README.md).
 
 Start by initializing a new file:
 
@@ -106,7 +106,7 @@ done
 References
 ==========
 
-* [Assembler Manual](https://github.com/velipso/gvasm/blob/main/docs/assembler/README.md)
+* [Assembler Manual](./docs/assembler/README.md)
 * [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/main/docs/assembler/asm.html)
 
 GBA Technical Docs

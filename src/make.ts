@@ -17,6 +17,7 @@ export interface IMakeArgs {
   output: string;
   defines: ILexKeyValue[];
   watch: boolean;
+  execute: string | false;
 }
 
 export async function makeFromFile(
@@ -136,12 +137,12 @@ export async function makeResult(
   );
 }
 
-export async function make({ input, output, defines, watch }: IMakeArgs): Promise<number> {
+export async function make({ input, output, defines, watch, execute }: IMakeArgs): Promise<number> {
   try {
     const onResult = async (result: IMakeResult) => {
-      const ts = watch ? `${timestamp()} ` : '';
+      const ts = () => watch ? `${timestamp()} ` : '';
       if ('errors' in result) {
-        console.error(`${ts}Error${result.errors.length === 1 ? '' : 's'}:`);
+        console.error(`${ts()}Error${result.errors.length === 1 ? '' : 's'}:`);
         for (const e of result.errors) {
           console.error(`  ${e}`);
         }
@@ -151,7 +152,12 @@ export async function make({ input, output, defines, watch }: IMakeArgs): Promis
           await file.write(section);
         }
         file.close();
-        console.log(`${ts}Success! Output: ${output}`);
+        console.log(`${ts()}Success! Output: ${output}`);
+        if (execute) {
+          const cmd = execute.split(' ').map((a) => a === '{}' ? output : a);
+          console.log(`${ts()}Running: ${cmd.join(' ')}`);
+          Deno.run({ cmd });
+        }
       }
     };
     await makeResult(input, defines, watch, onResult);

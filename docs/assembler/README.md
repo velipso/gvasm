@@ -19,22 +19,30 @@ block comment
 */
 ```
 
+Instructions to the assembler begin with a period `.`:
+
+```
+.printf "hello, world"  // outputs: hello, world
+.def x = 5
+.printf "x is %d", x    // outputs: x is 5
+```
+
 Literals
 --------
 
 ### Numbers
 
 All numbers during assembly are interpreted as 32-bit signed integers.  There are no floating point
-numbers.
+numbers outside of scripts.
 
 Numbers can be represented in decimal, binary, octal, and hexadecimal, and optionally use `_` as a
 seperator.
 
 ```
-.printf "%i, %i, %i", 123, 1_000, -5    // decimal
-.printf "%b, %b", 0b110011, 0b1111_0000 // binary
-.printf "%o, %o", 0c777, 0c123_456      // octal
-.printf "%x, %x", 0xabcdef12, 0x55_66   // hexadecimal
+.printf "%i, %i, %i", 123, 1_000, -5     // decimal
+.printf "%b, %b", 0b110011, 0b1111_0000  // binary
+.printf "%o, %o", 0c777, 0c123_456       // octal
+.printf "%x, %x", 0xabcdef12, 0x55_66    // hexadecimal
 ```
 
 ### Strings
@@ -125,7 +133,7 @@ Constants can also take parameters:
 
 ```
 .def lerp(a, b, t) = a + (b - a) * t / 100
-.printf "%i", lerp(10, 20, 80) // prints 18 to console
+.printf "%i", lerp(10, 20, 80)  // prints 18 to console
 ```
 
 ### Reserved Constants
@@ -148,7 +156,7 @@ The following constants are always defined and depend on the assembler state:
 Constant Expressions
 --------------------
 
-Operators mostly copy from C.  Operators will return 1 for true, and 0 for false, though any
+Operators mostly copy from C.  Operators will return `1` for true, and `0` for false, though any
 non-zero number is considered true.  Parenthesis can be used to override default precedence.
 
 | Operator              | Description                                            |
@@ -195,85 +203,203 @@ Note: `assert` is useful to verify values at compile-time, for example:
     a * 100 + 30                                        \
   )
 
-.i8 offset(-5) // generates compile-time error
+.i8 offset(-5)  // generates compile-time error
 ```
+
+Raw Data
+--------
+
+Raw data can be written to the output:
+
+```
+.i8 5  // writes the byte 5 to the output
+```
+
+There are a variety of data commands based on the format of the data:
+
+| Command  | Signed?  | Endian? | Aligned? | Bytes |
++----------+----------+---------+----------+-------+
+| `.i8`    | Signed   | Little  | Aligned  | 1     |
+| `.i16`   | Signed   | Little  | Aligned  | 2     |
+| `.i32`   | Signed   | Little  | Aligned  | 4     |
+| `.im8`   | Signed   | Little  | Optional | 1     |
+| `.im16`  | Signed   | Little  | Optional | 2     |
+| `.im32`  | Signed   | Little  | Optional | 4     |
+| `.ib8`   | Signed   | Big     | Aligned  | 1     |
+| `.ib16`  | Signed   | Big     | Aligned  | 2     |
+| `.ib32`  | Signed   | Big     | Aligned  | 4     |
+| `.ibm8`  | Signed   | Big     | Optional | 1     |
+| `.ibm16` | Signed   | Big     | Optional | 2     |
+| `.ibm32` | Signed   | Big     | Optional | 4     |
+| `.u8`    | Unsigned | Little  | Aligned  | 1     |
+| `.u16`   | Unsigned | Little  | Aligned  | 2     |
+| `.u32`   | Unsigned | Little  | Aligned  | 4     |
+| `.um8`   | Unsigned | Little  | Optional | 1     |
+| `.um16`  | Unsigned | Little  | Optional | 2     |
+| `.um32`  | Unsigned | Little  | Optional | 4     |
+| `.ub8`   | Unsigned | Big     | Aligned  | 1     |
+| `.ub16`  | Unsigned | Big     | Aligned  | 2     |
+| `.ub32`  | Unsigned | Big     | Aligned  | 4     |
+| `.ubm8`  | Unsigned | Big     | Optional | 1     |
+| `.ubm16` | Unsigned | Big     | Optional | 2     |
+| `.ubm32` | Unsigned | Big     | Optional | 4     |
+
+For every command, there is also a fill version:
+
+```
+.i8fill 5      // same as: .i8 0, 0, 0, 0, 0
+.u32fill 7, 3  // same as: .u32fill 7, 7, 7
+```
+
+Importing and Including
+-----------------------
+
+Use `.import` and `.include` to access code from other files.
+
+The `.import` statement is used to access constants from other files:
+
+```
+// file1.gvasm
+.import 'file2.gvasm' { foo, bar }
+.printf "foo is %d", foo
+.printf "bar is %d", bar
+
+// file2.gvasm
+.def foo = 1
+.def bar = 2
+```
+
+You can also just import all constants:
+
+```
+// file1.gvasm
+.import 'file2.gvasm' file2
+.printf "file2.foo is %d", file2.foo
+.printf "file2.bar is %d", file2.bar
+
+// file2.gvasm
+.def foo = 1
+.def bar = 2
+```
+
+When a file is imported, the instructions are not included in the final output.  You need to
+`.include` the file where you want the instructions:
+
+```
+// file1.gvasm
+.import 'file2.gvasm' { performWork }
+.begin main
+  .arm
+  mov   r0, #0
+  mov   r1, #1
+  bl    performWork
+.end
+.include 'file2.gvasm'
+
+// file2.gvasm
+.begin performWork
+  .arm
+  add   r0, r1
+  bx    lr
+.end
+```
+
+Notice that the `.import` will give the first file access to the `performWork` label, but the
+location of that label isn't known until the `.include` is processed -- the code inside
+`file2.gvasm` will be written to the output file after `main`.
 
 Structs
 -------
 
-The assembler supports `.struct` in order to define constants incrementally.  Use `.s0`, `.s8`,
-`.s16`, or `.s32` inside a struct to reference a new member.
+The assembler supports `.struct` in order to define constants incrementally.
+
+Use data commands (`.i8`, `.u32`, etc) to specify the type of the field:
 
 ```
-.struct $Player
-  .s8 health, stamina
-  .s32 magic
+.struct Player
+  .i8 health, stamina
+  .i16 magic
 .end
 ```
 
 This is equivalent to defining:
 
 ```
-.def $Player.health = 0
-.def $Player.stamina = 1
-.def $Player.magic = 4 // padded to align to 32-bits
+.def Player.health = 0
+.def Player.stamina = 1
+.def Player.magic = 2
 ```
 
-Note that members will be aligned based on their size.
-
-Structs can be nested inside structs:
+Note that members are _not_ automatically aligned.  Use `.align` to align fields:
 
 ```
-.struct $Player
-  .s8 health
+.struct Player
+  .i8 health
+  .align 4  // adds a gap of 3 bytes
+  .i32 worldX, worldY
+.end
+```
+
+Structs can be nested inside structs, and labels are supported:
+
+```
+.struct Player
+  .i8 health
+  .align 2
   .struct inventory
-    .s16 itemId
-    .s8 amount
+    .i16 itemId
+    .i8 amount
   .end
-  .s32 magic
+  .align 4
+worldPosition:
+  .i32 worldX, worldY
 .end
 ```
 
 Equivalent to:
 
 ```
-.def $Player.health = 0
-.def $Player.inventory.itemId = 2 // padded to align to 16-bits
-.def $Player.inventory.amount = 4
-.def $Player.magic = 8 // padded to align to 32-bits
+.def Player.health = 0
+.def Player.inventory.itemId = 2
+.def Player.inventory.amount = 4
+.def Player.worldPosition = 8
+.def Player.worldX = 8
+.def Player.worldY = 12
 ```
 
 Start offsets are supported:
 
 ```
-.struct $Player = 0x03000000 // start at 0x03000000
-  .s8 health, stamina
-  .s32 magic
+.struct Player = 0x03000000 // start at 0x03000000
+  .i8 health, stamina
+  .align 4
+  .i32 worldX, worldY
 .end
 ```
 
 Equivalent to:
 
 ```
-.def $Player.health = 0x03000000
-.def $Player.stamina = 0x03000001
-.def $Player.magic = 0x03000004
+.def Player.health = 0x03000000
+.def Player.stamina = 0x03000001
+.def Player.worldX = 0x03000004
+.def Player.worldY = 0x03000008
 ```
 
 Arrays are also supported:
 
 ```
-.struct $Player
-  .s16 itemIds[3]
+.struct Player
+  .i16 itemIds[3]
 .end
 ```
 
 Equivalent to:
 
 ```
-.def $Player.itemIds = 0
-.def $Player.itemIds.length = 3  // 3 items in the array
-.def $Player.itemIds.bytes = 6   // 6 total bytes
+.def Player.itemIds = 0
+.def Player.itemIds._length = 3  // 3 items in the array
+.def Player.itemIds._bytes = 6   // 6 total bytes
 ```
 
 Scripts
@@ -333,14 +459,15 @@ can read the memory to load the register.
 For example:
 
 ```
+.arm
 main:
+  ldrh r0, =rgb(12, 31, 5)
+  // ... more code ...
 
-ldrh r0, =rgb(12, 31, 5)
-// ... more code ...
+loop:
+  b loop  // infinite loop
 
-loop: b loop  // infinite loop
-
-.pool // this is where rgb(12, 31, 5) will actually be stored
+  .pool   // this is where rgb(12, 31, 5) will actually be stored
 ```
 
 Notice that the infinite loop prevents the pool data from being wrongly executed.
@@ -472,9 +599,13 @@ Aborts the assembler with the error message provided.  Allows same formatting as
 
 Conditional compilation; only includes sections of code when `<condition>` is true.
 
+### `.import <filename> Name` or `.import <filename> { Name1, Name2, ... }`
+
+Imports constants (definitions, labels, etc) from `<filename>`.
+
 ### `.include <filename>`
 
-Includes a text file by essentially copy/pasting it into the location.
+Includes the code from `<filename>` in the final output.
 
 ### `.logo`
 
@@ -532,7 +663,7 @@ Outputs UTF-8 string.
 
 ### `.struct <name> [= <base>]` / `.end`
 
-Defines constants as offsets from zero, using `.s0`, `.s8`, `.s16`, and `.s32`.
+Defines a structure with typed members.
 
 ### `.thumb`
 

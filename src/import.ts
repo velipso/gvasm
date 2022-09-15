@@ -1450,14 +1450,22 @@ export class Import {
           if (i + 1 >= idPath.length) {
             throw new CompError(flp, 'Cannot use imported name as value');
           }
-          const pf = this.proj.readFileCacheImport(root.fullFile);
+          // track where read is coming from if we're in first phase
+          const pf = this.proj.readFileCacheImport(
+            root.fullFile,
+            failNotFound ? false : this.fullFile,
+          );
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
           }
           return lookup(i + 1, pf.defTable);
         }
         case 'importName': {
-          const pf = this.proj.readFileCacheImport(root.fullFile);
+          // track where read is coming from if we're in first phase
+          const pf = this.proj.readFileCacheImport(
+            root.fullFile,
+            failNotFound ? false : this.fullFile,
+          );
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
           }

@@ -70,9 +70,15 @@ export class Project {
     return this.log;
   }
 
-  readFileCacheImport(filename: string): Import | false {
+  readFileCacheImport(
+    filename: string,
+    fromFilename: string | false,
+  ): Import | false {
     const file = this.fileCache.get(filename);
     if (file && file.imp) {
+      if (fromFilename) {
+        file.scriptParents.add(fromFilename);
+      }
       file.used = true;
       return file.imp;
     }
@@ -326,6 +332,7 @@ export class Project {
         }
         const pathError = () =>
           path.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
+
         const lk = imp.lookup(
           sink.ctx_source(ctx),
           imp.expressionContext(0),
@@ -333,6 +340,7 @@ export class Project {
           path as (string | number)[],
           ctx,
         );
+
         if (lk === 'notfound' || lk === false) {
           sink.abort(ctx, [`Cannot find symbol: ${pathError()}`]);
           return sink.NIL;

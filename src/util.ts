@@ -117,6 +117,53 @@ export function calcRotImm(v: number): number | false {
   return (((16 - r) & 0xf) << 8) | (v & 0xff);
 }
 
+export function setIsSuperset<T>(set: Set<T>, subset: Set<T>) {
+  for (const elem of subset) {
+    if (!set.has(elem)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function setUnion<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const union = new Set(setA);
+  for (const elem of setB) {
+    union.add(elem);
+  }
+  return union;
+}
+
+export function setIntersection<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const inter = new Set<T>();
+  for (const elem of setB) {
+    if (setA.has(elem)) {
+      inter.add(elem);
+    }
+  }
+  return inter;
+}
+
+export function setXor<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const diff = new Set(setA);
+  for (const elem of setB) {
+    if (diff.has(elem)) {
+      diff.delete(elem);
+    } else {
+      diff.add(elem);
+    }
+  }
+  return diff;
+}
+
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const diff = new Set(setA);
+  for (const elem of setB) {
+    diff.delete(elem);
+  }
+  return diff;
+}
+
 export function printf(format: string, ...args: number[]): string {
   let out = '';
   let lastIndex = 0;

@@ -109,6 +109,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     async (result: IMakeResult) => {
       res = result;
     },
+    () => {},
     (filename) => {
       if (filename in test.files) {
         return Promise.resolve(sink.fstype.FILE);
@@ -238,6 +239,7 @@ async function itestWatch(test: ITestWatch): Promise<boolean> {
         }
       }
     },
+    () => {},
     (filename) => {
       if (filename in files) {
         return Promise.resolve(sink.fstype.FILE);
@@ -270,21 +272,22 @@ async function itestWatch(test: ITestWatch): Promise<boolean> {
         throw new Error(`Not found: ${filename}`);
       }
     },
-    async (filenames: string[]): Promise<string[] | false> => {
-      filenames.sort((a, b) => a.localeCompare(b));
-      stdout.push(`watch: ${filenames.join(' ')}`);
+    async (filenames: Set<string>): Promise<Set<string> | false> => {
+      const filenamesList = Array.from(filenames);
+      filenamesList.sort((a, b) => a.localeCompare(b));
+      stdout.push(`watch: ${filenamesList.join(' ')}`);
       historyIndex++;
       if (historyIndex >= test.history.length) {
         return false;
       }
-      const changed: string[] = [];
+      const changed = new Set<string>();
       for (const [filename, body] of Object.entries(test.history[historyIndex])) {
         if (body === false) {
           delete files[filename];
         } else {
           files[filename] = body;
         }
-        changed.push(filename);
+        changed.add(filename);
       }
       return changed;
     },
@@ -317,6 +320,7 @@ async function itestRun(test: ITestRun): Promise<boolean> {
     async (result: IMakeResult) => {
       res = result;
     },
+    () => {},
     (filename) => {
       if (filename in test.files) {
         return Promise.resolve(sink.fstype.FILE);

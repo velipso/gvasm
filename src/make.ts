@@ -10,6 +10,7 @@ import { IMakeResult, Project } from './project.ts';
 import * as sink from './sink.ts';
 import { timestamp } from './util.ts';
 import { ILexKeyValue } from './lexer.ts';
+import { Watcher } from './watcher.ts';
 export type { IMakeResult };
 
 export interface IMakeArgs {
@@ -27,10 +28,11 @@ export async function makeFromFile(
   cwd: string,
   path: Path,
   output: (result: IMakeResult) => Promise<void>,
+  invalidated: (count: number) => void,
   fileType: (filename: string) => Promise<sink.fstype>,
   readTextFile: (filename: string) => Promise<string>,
   readBinaryFile: (filename: string) => Promise<Uint8Array>,
-  watchFileChanges: (filenames: string[]) => Promise<string[] | false>,
+  watchFileChanges: (filenames: Set<string>) => Promise<Set<string> | false>,
   log: (str: string) => void,
 ): Promise<void> {
   const mainFullFile = path.isAbsolute(input) ? input : path.resolve(cwd, input);
@@ -53,7 +55,7 @@ export async function makeFromFile(
       if (changes === false) {
         break;
       }
-      proj.invalidate(changes);
+      invalidated(proj.invalidate(changes));
     }
   } else {
     await output(await proj.make());
@@ -65,9 +67,11 @@ export async function makeResult(
   defines: ILexKeyValue[],
   watch: boolean,
   output: (result: IMakeResult) => Promise<void>,
+  invalidated: (count: number) => void = () => {},
 ): Promise<void> {
   const cwd = Deno.cwd();
   const path = new Path();
+  const watcher = new Watcher();
   await makeFromFile(
     input,
     defines,
@@ -75,6 +79,7 @@ export async function makeResult(
     cwd,
     path,
     output,
+    invalidated,
     async (file: string) => {
       const st = await Deno.stat(file);
       if (st !== null) {
@@ -88,50 +93,18 @@ export async function makeResult(
     },
     Deno.readTextFile,
     Deno.readFile,
-    async (filenames: string[]): Promise<string[]> => {
+    async (filenames: Set<string>): Promise<Set<string>> => {
       console.log(
-        `${timestamp()} Watching ${filenames.length} file${filenames.length === 1 ? '' : 's'}`,
+        `${timestamp()} Watching ${filenames.size} file${filenames.size === 1 ? '' : 's'}`,
       );
-      const watcher = Deno.watchFs(filenames);
-      const iter = watcher[Symbol.asyncIterator]();
-      const nextChange = async (): Promise<string[] | false> => {
-        while (true) {
-          const { value, done } = await iter.next();
-          if (done) return false;
-          if (value.kind !== 'access' && value.paths.length > 0) return value.paths;
-        }
-      };
-
-      let closed = false;
-      const scheduleClose = (timeout: number) =>
-        setTimeout(() => {
-          if (!closed) {
-            closed = true;
-            watcher.close();
-          }
-        }, timeout);
-
-      const changedList = await nextChange();
-      if (changedList === false) {
-        throw new Error('Failed to watch files for changes');
-      }
-      const changed = new Set(changedList);
-      scheduleClose(5000); // close after 5 seconds no matter what
-      while (true) {
-        const timer = scheduleClose(1000); // close after 1 second of inactivity
-        const more = await nextChange();
-        if (more === false) {
-          const ch = Array.from(changed.values());
-          console.log(
-            `${timestamp()} Detected changes:\n  ${
-              ch.map((f) => path.relative(cwd, f)).join('\n  ')
-            }`,
-          );
-          return ch;
-        }
-        clearTimeout(timer);
-        for (const filename of more) changed.add(filename);
-      }
+      watcher.watch(filenames);
+      const changed = await watcher.wait();
+      const ch = Array.from(changed);
+      ch.sort((a, b) => a.localeCompare(b));
+      console.log(
+        `${timestamp()} Detected changes:\n  ${ch.map((f) => path.relative(cwd, f)).join('\n  ')}`,
+      );
+      return changed;
     },
     (str) => console.log(str),
   );
@@ -139,8 +112,8 @@ export async function makeResult(
 
 export async function make({ input, output, defines, watch, execute }: IMakeArgs): Promise<number> {
   try {
+    const ts = () => watch ? `${timestamp()} ` : '';
     const onResult = async (result: IMakeResult) => {
-      const ts = () => watch ? `${timestamp()} ` : '';
       if ('errors' in result) {
         console.error(`${ts()}Error${result.errors.length === 1 ? '' : 's'}:`);
         for (const e of result.errors) {
@@ -160,7 +133,12 @@ export async function make({ input, output, defines, watch, execute }: IMakeArgs
         }
       }
     };
-    await makeResult(input, defines, watch, onResult);
+    const onInvalidated = (count: number) => {
+      if (count > 0) {
+        console.log(`${ts()}Invalidated ${count} file${count === 1 ? '' : 's'}`);
+      }
+    };
+    await makeResult(input, defines, watch, onResult, onInvalidated);
     return 0;
   } catch (e) {
     console.error(e);

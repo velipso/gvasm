@@ -32,6 +32,7 @@ interface IFileCache {
   imp?: Import;
   blob?: Uint8Array;
   scriptParents: Set<string>;
+  scriptEmbed: Set<string>;
 }
 
 export class Project {
@@ -112,7 +113,12 @@ export class Project {
         file.used = true;
         file.imp = imp;
       } else {
-        this.fileCache.set(fullFile, { used: true, imp, scriptParents: new Set() });
+        this.fileCache.set(fullFile, {
+          used: true,
+          imp,
+          scriptParents: new Set(),
+          scriptEmbed: new Set(),
+        });
       }
       await parse(imp, fullFile, this.defines, tks);
       return imp;
@@ -122,7 +128,7 @@ export class Project {
   }
 
   async scriptEmbed(fromFilename: string, filename: string): Promise<Uint8Array | false> {
-    this.usedFilenames.add(filename);
+    this.fileCache.get(fromFilename)?.scriptEmbed.add(filename);
     const file = this.fileCache.get(filename);
     if (file && file.blob) {
       file.used = true;
@@ -136,7 +142,12 @@ export class Project {
         file.blob = blob;
         file.scriptParents.add(fromFilename);
       } else {
-        this.fileCache.set(filename, { used: true, blob, scriptParents: new Set([fromFilename]) });
+        this.fileCache.set(filename, {
+          used: true,
+          blob,
+          scriptParents: new Set([fromFilename]),
+          scriptEmbed: new Set(),
+        });
       }
       return blob;
     } catch (_) {
@@ -161,7 +172,12 @@ export class Project {
       file.used = true;
       file.blob = blob;
     } else {
-      this.fileCache.set(fullFile, { used: true, blob, scriptParents: new Set() });
+      this.fileCache.set(fullFile, {
+        used: true,
+        blob,
+        scriptParents: new Set(),
+        scriptEmbed: new Set(),
+      });
     }
     return blob;
   }
@@ -205,11 +221,31 @@ export class Project {
         crc = crc & 0xff;
       }
 
+      // propagate script embed
+      const used = new Set<string>();
+      const addUsed = (filename: string) => {
+        if (used.has(filename)) {
+          return;
+        }
+        used.add(filename);
+        const file = this.fileCache.get(filename);
+        if (file) {
+          for (const se of file.scriptEmbed) {
+            addUsed(se);
+          }
+        }
+      };
+      for (const [filename, file] of this.fileCache.entries()) {
+        if (file.used) {
+          addUsed(filename);
+        }
+      }
+
       // finalize
       const unused = new Set<string>();
       let debug: IDebugStatement[] = [];
       for (const [filename, file] of this.fileCache.entries()) {
-        if (!file.used) {
+        if (!used.has(filename)) {
           unused.add(filename);
         } else if (file.imp) {
           file.imp.makeEnd(crc);
@@ -252,18 +288,21 @@ export class Project {
     return await (await this.import(flp, fullFile)).flatten(base, startLength);
   }
 
-  filenames(): string[] {
-    return Array.from(this.usedFilenames);
+  filenames(): Set<string> {
+    return this.usedFilenames;
   }
 
-  invalidate(filenames: string[]) {
+  invalidate(filenames: Set<string>) {
+    let total = 0;
     for (const filename of filenames) {
       const file = this.fileCache.get(filename);
       if (file) {
+        total++;
         this.fileCache.delete(filename);
-        this.invalidate(Array.from(file.scriptParents));
+        total += this.invalidate(file.scriptParents);
       }
     }
+    return total;
   }
 
   async runScript(flp: IFilePos, imp: Import, body: string): Promise<ITok[]> {

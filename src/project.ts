@@ -31,6 +31,7 @@ interface IFileCache {
   used: boolean;
   imp?: Import;
   blob?: Uint8Array;
+  imports: { flp: IFilePos; fullFile: string }[];
   scriptParents: Set<string>;
   scriptEmbed: Set<string>;
 }
@@ -93,11 +94,29 @@ export class Project {
     return this.path.resolve(this.path.dirname(fromFilename), filename);
   }
 
-  async import(flp: IFilePos | false, fullFile: string): Promise<Import> {
+  async import(
+    flp: IFilePos | false,
+    fullFile: string,
+    importFroms: string[] = [],
+  ): Promise<Import> {
     this.usedFilenames.add(fullFile);
+
+    if (flp) {
+      const fromFile = this.fileCache.get(flp.filename);
+      if (fromFile && !fromFile.imports.some((f) => f.fullFile === fullFile)) {
+        fromFile.imports.push({ flp, fullFile });
+      }
+    }
+
     const file = this.fileCache.get(fullFile);
     if (file && file.imp) {
       file.used = true;
+      if (!importFroms.includes(fullFile)) {
+        const from = [...importFroms, fullFile];
+        for (const transImp of file.imports) {
+          await this.import(transImp.flp, transImp.fullFile, from);
+        }
+      }
       return file.imp;
     }
     let txt;
@@ -116,6 +135,7 @@ export class Project {
         this.fileCache.set(fullFile, {
           used: true,
           imp,
+          imports: [],
           scriptParents: new Set(),
           scriptEmbed: new Set(),
         });
@@ -145,6 +165,7 @@ export class Project {
         this.fileCache.set(filename, {
           used: true,
           blob,
+          imports: [],
           scriptParents: new Set([fromFilename]),
           scriptEmbed: new Set(),
         });
@@ -175,6 +196,7 @@ export class Project {
       this.fileCache.set(fullFile, {
         used: true,
         blob,
+        imports: [],
         scriptParents: new Set(),
         scriptEmbed: new Set(),
       });
@@ -376,6 +398,7 @@ export class Project {
           sink.ctx_source(ctx),
           imp.expressionContext(0),
           false,
+          imp.fullFile,
           path as (string | number)[],
           ctx,
         );
@@ -393,7 +416,7 @@ export class Project {
               sink.abort(ctx, ['Cannot lookup function in script']);
               return sink.NIL;
             }
-            const n = lk.body.value(lk.context, false);
+            const n = lk.body.value(lk.context, false, imp.fullFile);
             if (n === false) {
               sink.abort(ctx, ['Can\'t calculate value']);
               return sink.NIL;

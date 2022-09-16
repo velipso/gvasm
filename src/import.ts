@@ -347,7 +347,7 @@ class PendingWriteInstARM extends PendingWriteInstCommon<ARM.IOp> {
       if (typeof expr === 'number') {
         symNums[key] = expr;
       } else {
-        const v = expr.value(this.context, failNotFound);
+        const v = expr.value(this.context, failNotFound, false);
         if (v === false) return false;
         symNums[key] = v;
       }
@@ -462,7 +462,7 @@ class PendingWriteInstThumb extends PendingWriteInstCommon<Thumb.IOp> {
       if (typeof expr === 'number') {
         symNums[key] = expr;
       } else {
-        const v = expr.value(this.context, failNotFound);
+        const v = expr.value(this.context, failNotFound, false);
         if (v === false) {
           return false;
         }
@@ -583,8 +583,10 @@ class PendingWriteData extends PendingWrite {
         if (typeof expr === 'number') {
           data.push(expr);
         } else {
-          const v = expr.value(this.context, failNotFound);
-          if (v === false) return false;
+          const v = expr.value(this.context, failNotFound, false);
+          if (v === false) {
+            return false;
+          }
           data.push(v);
         }
       }
@@ -597,7 +599,7 @@ class PendingWriteData extends PendingWrite {
         if (typeof expr === 'number') {
           data.push(expr);
         } else {
-          const v = expr.value(this.context, failNotFound);
+          const v = expr.value(this.context, failNotFound, false);
           if (v === false) {
             data.push(expr);
             allNumber = false;
@@ -650,7 +652,7 @@ class PendingWriteDataFill extends PendingWrite {
     if (failNotFound) {
       const fill = typeof this.fill === 'number'
         ? this.fill
-        : this.fill.value(this.context, failNotFound);
+        : this.fill.value(this.context, failNotFound, false);
       if (fill === false) {
         return false;
       }
@@ -659,7 +661,7 @@ class PendingWriteDataFill extends PendingWrite {
     } else {
       const fill = typeof this.fill === 'number'
         ? this.fill
-        : this.fill.value(this.context, failNotFound);
+        : this.fill.value(this.context, failNotFound, false);
       if (fill === false) {
         return false;
       }
@@ -698,7 +700,7 @@ class PendingWritePrintf extends PendingWrite {
         if (typeof expr === 'number') {
           data.push(expr);
         } else {
-          const v = expr.value(this.context, failNotFound);
+          const v = expr.value(this.context, failNotFound, false);
           if (v === false) return false;
           data.push(v);
         }
@@ -717,7 +719,7 @@ class PendingWritePrintf extends PendingWrite {
         if (typeof expr === 'number') {
           data.push(expr);
         } else {
-          const v = expr.value(this.context, failNotFound);
+          const v = expr.value(this.context, failNotFound, false);
           if (v === false) {
             data.push(expr);
             allNumber = false;
@@ -824,7 +826,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
       // pool is flattened, so we have space in the pool if we need it
       let ex: number | false = false;
       if (this.expr instanceof Expression) {
-        ex = this.expr.value(this.context, failNotFound);
+        ex = this.expr.value(this.context, failNotFound, false);
       } else {
         ex = this.expr;
       }
@@ -905,7 +907,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
     } else {
       // pool isn't flattened yet, so try to convert to inline
       if (this.expr instanceof Expression) {
-        const v = this.expr.value(this.context, failNotFound);
+        const v = this.expr.value(this.context, failNotFound, false);
         if (v === false) {
           return false;
         }
@@ -922,7 +924,7 @@ class PendingWritePoolThumb extends PendingWritePoolCommon {
       // pool is flattened, so we have space in the pool if we need it
       let ex: number | false = false;
       if (this.expr instanceof Expression) {
-        ex = this.expr.value(this.context, failNotFound);
+        ex = this.expr.value(this.context, failNotFound, false);
       } else {
         ex = this.expr;
       }
@@ -963,7 +965,7 @@ class PendingWritePoolThumb extends PendingWritePoolCommon {
     } else {
       // try to cache expression if possible
       if (this.expr instanceof Expression) {
-        const v = this.expr.value(this.context, failNotFound);
+        const v = this.expr.value(this.context, failNotFound, false);
         if (v === false) {
           return false;
         }
@@ -1180,6 +1182,7 @@ export class Import {
   static structSize(
     context: IExpressionContext,
     failNotFound: boolean,
+    fromScript: string | false,
     struct: IStruct,
     base: number,
     useLength: boolean,
@@ -1208,7 +1211,7 @@ export class Import {
             }
           }
           if (member.length) {
-            const length = member.length.value(context, failNotFound);
+            const length = member.length.value(context, failNotFound, fromScript);
             if (length === false) {
               return false;
             }
@@ -1224,7 +1227,7 @@ export class Import {
         case 'label':
           break;
         case 'struct': {
-          const s = Import.structSize(context, failNotFound, member, here, true);
+          const s = Import.structSize(context, failNotFound, fromScript, member, here, true);
           if (s === false) {
             return false;
           }
@@ -1238,7 +1241,7 @@ export class Import {
     }
 
     if (struct.length) {
-      const length = struct.length.value(context, failNotFound);
+      const length = struct.length.value(context, failNotFound, fromScript);
       if (length === false) {
         return false;
       }
@@ -1265,6 +1268,7 @@ export class Import {
     flp: IFilePos,
     context: IExpressionContext,
     failNotFound: boolean,
+    fromScript: string | false,
     idPath: (string | number | Expression)[],
     uniqueId: unknown,
   ): ILookup | 'notfound' | false {
@@ -1285,7 +1289,9 @@ export class Import {
         if (i + 1 < idPath.length) {
           throw new CompError(flp, 'Cannot index into constant number');
         }
-        const length = struct.length === false ? 1 : struct.length.value(structCtx, failNotFound);
+        const length = struct.length === false
+          ? 1
+          : struct.length.value(structCtx, failNotFound, fromScript);
         if (length === false) {
           return false;
         }
@@ -1294,7 +1300,7 @@ export class Import {
         if (i + 1 < idPath.length) {
           throw new CompError(flp, 'Cannot index into constant number');
         }
-        const s = Import.structSize(structCtx, failNotFound, struct, base, true);
+        const s = Import.structSize(structCtx, failNotFound, fromScript, struct, base, true);
         if (s === false) {
           return false;
         }
@@ -1306,18 +1312,20 @@ export class Import {
         if (typeof idHere === 'string') {
           throw new CompError(flp, 'Expecting index into array');
         }
-        const index = typeof idHere === 'number' ? idHere : idHere.value(context, failNotFound);
+        const index = typeof idHere === 'number'
+          ? idHere
+          : idHere.value(context, failNotFound, fromScript);
         if (index === false) {
           return false;
         }
-        const length = struct.length.value(structCtx, failNotFound);
+        const length = struct.length.value(structCtx, failNotFound, fromScript);
         if (length === false) {
           return false;
         }
         if (index < 0 || index >= length) {
           throw new CompError(flp, 'Index outside array boundary');
         }
-        const s = Import.structSize(structCtx, failNotFound, struct, base, false);
+        const s = Import.structSize(structCtx, failNotFound, fromScript, struct, base, false);
         if (s === false) {
           return false;
         }
@@ -1349,14 +1357,14 @@ export class Import {
               if (typeof idNext === 'number' || idNext instanceof Expression) {
                 const index = typeof idNext === 'number'
                   ? idNext
-                  : idNext.value(context, failNotFound);
+                  : idNext.value(context, failNotFound, fromScript);
                 if (index === false) {
                   return false;
                 }
                 if (member.length === false) {
                   throw new CompError(flp, 'Cannot index into non-array');
                 }
-                const length = member.length.value(structCtx, failNotFound);
+                const length = member.length.value(structCtx, failNotFound, fromScript);
                 if (length === false) {
                   return false;
                 }
@@ -1380,7 +1388,7 @@ export class Import {
                 }
                 const length = member.length === false
                   ? 1
-                  : member.length.value(structCtx, failNotFound);
+                  : member.length.value(structCtx, failNotFound, fromScript);
                 if (length === false) {
                   return false;
                 }
@@ -1391,7 +1399,7 @@ export class Import {
                 }
                 const length = member.length === false
                   ? 1
-                  : member.length.value(structCtx, failNotFound);
+                  : member.length.value(structCtx, failNotFound, fromScript);
                 if (length === false) {
                   return false;
                 }
@@ -1399,7 +1407,7 @@ export class Import {
               }
             }
             if (member.length) {
-              const length = member.length.value(structCtx, failNotFound);
+              const length = member.length.value(structCtx, failNotFound, fromScript);
               if (length === false) {
                 return false;
               }
@@ -1421,7 +1429,7 @@ export class Import {
             if (name === idHere) {
               return lookupStruct(i + 1, structCtx, member, here, false);
             }
-            const s = Import.structSize(structCtx, failNotFound, member, here, true);
+            const s = Import.structSize(structCtx, failNotFound, fromScript, member, here, true);
             if (s === false) {
               return false;
             }
@@ -1450,10 +1458,13 @@ export class Import {
           if (i + 1 >= idPath.length) {
             throw new CompError(flp, 'Cannot use imported name as value');
           }
+          if (!fromScript && !failNotFound) {
+            return false;
+          }
           // track where read is coming from if we're in first phase
           const pf = this.proj.readFileCacheImport(
             root.fullFile,
-            failNotFound ? false : this.fullFile,
+            fromScript ? fromScript : failNotFound ? false : this.fullFile,
           );
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
@@ -1461,10 +1472,13 @@ export class Import {
           return lookup(i + 1, pf.defTable);
         }
         case 'importName': {
+          if (!fromScript && !failNotFound) {
+            return false;
+          }
           // track where read is coming from if we're in first phase
           const pf = this.proj.readFileCacheImport(
             root.fullFile,
-            failNotFound ? false : this.fullFile,
+            fromScript ? fromScript : failNotFound ? false : this.fullFile,
           );
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
@@ -1489,7 +1503,9 @@ export class Import {
           }
           return root;
         case 'struct': {
-          const base = root.base === false ? 0 : root.base.value(root.context, failNotFound);
+          const base = root.base === false
+            ? 0
+            : root.base.value(root.context, failNotFound, fromScript);
           if (typeof base !== 'number') {
             return false;
           }
@@ -1960,11 +1976,11 @@ export class Import {
     }
     // validate all structs by walking them
     for (const { flp, context, base, struct } of this.structs) {
-      const baseNum = base === false ? 0 : base.value(context, true);
+      const baseNum = base === false ? 0 : base.value(context, true, false);
       if (baseNum === false) {
         throw new CompError(flp, 'Cannot calculate struct base');
       }
-      if (!Import.structSize(context, true, struct, baseNum, true)) {
+      if (!Import.structSize(context, true, false, struct, baseNum, true)) {
         throw new CompError(flp, 'Cannot calculate struct layout');
       }
     }

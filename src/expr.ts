@@ -572,6 +572,7 @@ export class Expression {
   value(
     context: IExpressionContext,
     failNotFound: boolean,
+    fromScript: string | false,
     params?: number[],
     cpu?: CPU,
   ): number | false {
@@ -610,7 +611,7 @@ export class Expression {
               return assertNever(ex.name);
           }
         case 'lookup': {
-          const v = context.imp.lookup(ex.flp, context, failNotFound, ex.idPath, ex);
+          const v = context.imp.lookup(ex.flp, context, failNotFound, fromScript, ex.idPath, ex);
           const pathError = () =>
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
@@ -643,12 +644,12 @@ export class Expression {
                   }
                   pvalues.push(pv);
                 }
-                return v.body.value(v.context, failNotFound, pvalues);
+                return v.body.value(v.context, failNotFound, fromScript, pvalues);
               } else {
                 if (v.body.paramSize >= 0) {
                   throw new CompError(ex.flp, 'Constant expecting to be called with parameters');
                 }
-                return v.body.value(v.context, failNotFound);
+                return v.body.value(v.context, failNotFound, fromScript);
               }
             case 'scriptExport':
               throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
@@ -714,6 +715,7 @@ export class Expression {
               ex.lookup.flp,
               context,
               failNotFound,
+              fromScript,
               ex.lookup.idPath,
               ex,
             ) === 'notfound'

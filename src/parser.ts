@@ -385,7 +385,7 @@ function validateStr(partStr: string, parser: Parser): boolean {
 }
 
 function validateNum(partNum: number, parser: Parser, imp: Import): boolean {
-  return Expression.parse(parser, imp).value(imp.expressionContext(0), false) === partNum;
+  return Expression.parse(parser, imp).value(imp.expressionContext(0), false, false) === partNum;
 }
 
 function validateSymExpr(
@@ -400,7 +400,7 @@ function validateSymExpr(
     syms[partSym] = ex;
     return true;
   }
-  const v = ex.value(imp.expressionContext(0), true);
+  const v = ex.value(imp.expressionContext(0), true, false);
   if (v === false || v >= 0) {
     return false;
   }
@@ -679,7 +679,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
           switch (tk2.id) {
             case 'align': {
               const context = imp.expressionContext(0);
-              const amount = Expression.parse(parser, imp).value(context, true);
+              const amount = Expression.parse(parser, imp).value(context, true, false);
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
               }
@@ -690,7 +690,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
                   fill = 'nop';
                   parser.nextTok();
                 } else {
-                  const fillx = Expression.parse(parser, imp).value(context, true);
+                  const fillx = Expression.parse(parser, imp).value(context, true, false);
                   if (fillx === false) {
                     throw new CompError(tk, 'Align fill must be constant');
                   }
@@ -706,7 +706,11 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               imp.setMode('arm');
               break;
             case 'base': {
-              const base = Expression.parse(parser, imp).value(imp.expressionContext(0), true);
+              const base = Expression.parse(parser, imp).value(
+                imp.expressionContext(0),
+                true,
+                false,
+              );
               if (base === false) {
                 throw new CompError(tk, 'Base must be constant');
               }
@@ -825,6 +829,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               const amount = Expression.parse(parser, imp).value(
                 imp.expressionContext(0),
                 true,
+                false,
               );
               if (amount === false) {
                 throw new CompError(tk, 'Data fill amount must be constant');
@@ -1106,6 +1111,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
     condition = Expression.parse(parser, imp).value(
       imp.expressionContext(0),
       true,
+      false,
     );
   } catch (e) {
     throw CompError.extend(e, flp, 'Condition unknown at time of execution');
@@ -1130,6 +1136,7 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
       const elseif = Expression.parse(parser, imp).value(
         imp.expressionContext(0),
         true,
+        false,
       );
       if (gotTrue) {
         imp.ifStart(false);
@@ -1447,7 +1454,7 @@ function parseStructBody(parser: Parser, imp: Import, struct: IStruct, active: b
           switch (tk2.id) {
             case 'align': {
               const context = imp.expressionContext(0);
-              const amount = Expression.parse(parser, imp).value(context, true);
+              const amount = Expression.parse(parser, imp).value(context, true, false);
               if (amount === false) {
                 throw new CompError(tk, 'Align amount must be constant');
               }
@@ -1575,6 +1582,7 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
   const condition = Expression.parse(parser, imp).value(
     imp.expressionContext(0),
     true,
+    false,
   );
   parser.forceNewline('`.if` statement');
   if (condition === false) {
@@ -1595,6 +1603,7 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
       const elseif = Expression.parse(parser, imp).value(
         imp.expressionContext(0),
         true,
+        false,
       );
       if (gotTrue) {
         active = false;

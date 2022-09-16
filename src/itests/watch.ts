@@ -180,7 +180,6 @@ end
       'read: /root/test2',
       '> 06',
       'watch: /root/main /root/test1 /root/test2',
-      'read: /root/main',
       'read: /root/test1',
       'read: /root/test2',
       '> 07',
@@ -200,6 +199,44 @@ end
       '/root/test2': `.def bar = 5`,
     }, {
       '/root/test2': `.def bar = 6`,
+    }],
+  });
+
+  def({
+    name: 'watch.cache-intermediate',
+    desc: 'Verify that intermediate imports are cached',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test1',
+      'read: /root/test2',
+      '> 03',
+      'watch: /root/main /root/test1 /root/test2',
+      'read: /root/test2',
+      '> 04',
+      'watch: /root/main /root/test1 /root/test2',
+    ],
+    history: [{
+      '/root/main': `
+.import 'test1' { foo }
+.i8 foo
+`,
+      '/root/test1': `
+.import 'test2' { bar }
+.def foo = bar + 1
+`,
+      '/root/test2': `
+.script
+  export bar = 2
+.end
+`,
+    }, {
+      '/root/test2': `
+.script
+  export bar = 3
+.end
+`,
     }],
   });
 }

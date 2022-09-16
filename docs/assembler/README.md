@@ -218,7 +218,7 @@ Raw data can be written to the output:
 There are a variety of data commands based on the format of the data:
 
 | Command  | Signed?  | Endian? | Aligned? | Bytes |
-+----------+----------+---------+----------+-------+
+|----------|:--------:|:-------:|:--------:|:-----:|
 | `.i8`    | Signed   | Little  | Aligned  | 1     |
 | `.i16`   | Signed   | Little  | Aligned  | 2     |
 | `.i32`   | Signed   | Little  | Aligned  | 4     |

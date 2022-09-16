@@ -248,7 +248,7 @@ For every command, there is also a fill version:
 
 ```
 .i8fill 5      // same as: .i8 0, 0, 0, 0, 0
-.u32fill 7, 3  // same as: .u32fill 7, 7, 7
+.u32fill 7, 3  // same as: .u32 3, 3, 3, 3, 3, 3, 3
 ```
 
 Importing and Including

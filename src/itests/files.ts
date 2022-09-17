@@ -271,4 +271,37 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: 'files.order-of-execution',
+    desc: 'Print messages in each phase of execution',
+    kind: 'make',
+    stdout: [
+      'first = 1',
+      'second = 2',
+      'fourth = 4',
+    ],
+    files: {
+      '/root/main': `
+.import 'test' { fourth }
+.base 0
+
+.printf "fourth = %d", fourth
+.i8 third  /// 03
+
+.def third = _base + 3
+
+.include 'test'
+`,
+      '/root/test': `
+.def first = 1
+
+.printf "second = %d", second
+.printf "first = %d", first
+
+.def second = 2
+.def fourth = _here + 3
+`,
+    },
+  });
 }

@@ -1,12 +1,8 @@
 Assembler
 =========
 
-The assembler can be thought of as running in four passes:
-
-1. Load the files and run scripts
-2. Rewrite constants if possible
-3. Output the binary
-4. Rewrite any remaining constants
+Basic Usage
+-----------
 
 Comments copy C, where `//` is used for end-of-line comments, and `/* */` is used for block
 comments.
@@ -25,6 +21,39 @@ Instructions to the assembler begin with a period `.`:
 .printf "hello, world"  // outputs: hello, world
 .def x = 5
 .printf "x is %d", x    // outputs: x is 5
+```
+
+Example program:
+
+```
+.begin
+  .arm
+  .regs r0-r3, x, y, r6-r11
+  ldr   y, =50
+nextY:
+  ldr   x, =50
+nextX:
+  mov   r0, x
+  mov   r1, y
+  bl    plotXY
+  add   x, #1
+  cmp   x, #100
+  blt   nextX
+  add   y, #1
+  cmp   y, #100
+  blt   nextY
+
+  // infinite loop
+- b     -
+  .pool
+.end
+
+.begin plotXY
+  .arm
+  .regs x, y, r2-r11
+  // do something with x and y
+  bx    lr
+.end
 ```
 
 Literals
@@ -531,8 +560,94 @@ Current register names can be printed to the console via:
 .regs
 ```
 
-Dot Statements
---------------
+Execution Order
+---------------
+
+The assembler can be thought of as running in four phases:
+
+1. Run scripts, evaluate `.if`
+2. Rewrite constants if possible
+3. Output the binary
+4. Rewrite any remaining constants
+
+Importing a file means running the first two phases.  Scripts and `.if` conditionals are evaluated
+immediately.  After that, constants are resolved if possible.
+
+After all files have been imported, the binary is output.
+
+Lastly, any remaining rewrites happen that require knowing final address locations.
+
+For example:
+
+```
+// file1.gvasm
+.import 'file2.gvasm' { fourth }
+.base 0
+.printf "phase 4 = %d", fourth
+.include 'file2.gvasm'
+
+// file2.gvasm
+.def first = 1
+.printf "phase 2 = %d", second
+.printf "phase 1 = %d", first
+.def second = 2
+.def fourth = _here + 4
+```
+
+This program will perhaps surprisingly output:
+
+```
+phase 1 = 1
+phase 2 = 2
+phase 4 = 4
+```
+
+Phase 3 cannot be printed because it only generates data for output.
+
+The `phase 1` log message happens first because `first` is known when the statement is first
+encountered.
+
+The `phase 2` log message happens next because when `file2.gvasm` is finished being imported, it
+recognizes that `second` is now available.
+
+The `phase 4` log message needs `fourth` -- which depends on `_here`.  Calculating `_here` requires
+knowing the address, which requires knowing the base.  These values aren't known until phase 4.
+
+### Watching for Changes
+
+When using the `-w` option (`gvasm make -w game.gvasm`), gvasm will output the binary, but then
+wait for changes to any file.
+
+Once a change is detected, gvasm will rebuild the project.  However, it will only rebuild the parts
+necessary.  This can save significant time during development.
+
+This works by caching results from phase 1-2, and using these cached results for files that haven't
+changed.
+
+For example:
+
+```
+// file1.gvasm
+.printf 'hello'
+.include 'file2.gvasm'
+
+// file2.gvasm
+.printf 'world'
+```
+
+If you run `gvasm make -w file1.gvasm`, it will output `hello` followed by `world`.  But if you only
+update `file2.gvasm`:
+
+```
+// file2.gvasm
+.printf 'earth'
+```
+
+Then only `earth` will be printed -- `hello` won't be printed again because it ran in phase 1 of
+`file1.gvasm`, which didn't change.
+
+Assembler Instructions
+----------------------
 
 ### `.align <alignment>[, <fill>]`
 

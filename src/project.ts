@@ -73,10 +73,7 @@ export class Project {
     return this.log;
   }
 
-  readFileCacheImport(
-    filename: string,
-    fromFilename: string | false,
-  ): Import | false {
+  readFileCacheImport(filename: string, fromFilename: string | false): Import | false {
     const file = this.fileCache.get(filename);
     if (file && file.imp) {
       if (fromFilename) {

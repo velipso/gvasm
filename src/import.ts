@@ -701,7 +701,9 @@ class PendingWritePrintf extends PendingWrite {
           data.push(expr);
         } else {
           const v = expr.value(this.context, failNotFound, false);
-          if (v === false) return false;
+          if (v === false) {
+            return false;
+          }
           data.push(v);
         }
       }
@@ -1442,6 +1444,7 @@ export class Import {
       }
       return 'notfound';
     };
+
     const lookup = (i: number, here: DefMap): ILookup | 'notfound' | false => {
       const p = idPath[i];
       if (typeof p !== 'string') {
@@ -1459,13 +1462,10 @@ export class Import {
             throw new CompError(flp, 'Cannot use imported name as value');
           }
           if (!fromScript && !failNotFound) {
+            // don't resolve external symbols early unless required by a script
             return false;
           }
-          // track where read is coming from if we're in first phase
-          const pf = this.proj.readFileCacheImport(
-            root.fullFile,
-            fromScript ? fromScript : failNotFound ? false : this.fullFile,
-          );
+          const pf = this.proj.readFileCacheImport(root.fullFile, fromScript);
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
           }
@@ -1473,13 +1473,10 @@ export class Import {
         }
         case 'importName': {
           if (!fromScript && !failNotFound) {
+            // don't resolve external symbols early unless required by a script
             return false;
           }
-          // track where read is coming from if we're in first phase
-          const pf = this.proj.readFileCacheImport(
-            root.fullFile,
-            fromScript ? fromScript : failNotFound ? false : this.fullFile,
-          );
+          const pf = this.proj.readFileCacheImport(root.fullFile, fromScript);
           if (!pf) {
             throw new Error(`Failed to reimport: ${root.fullFile}`);
           }

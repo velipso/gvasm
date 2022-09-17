@@ -587,9 +587,9 @@ export class Expression {
             case '_base':
               return context.base;
             case '_bytes':
-              return context.bytes ? context.bytes - context.hereOffset : false;
+              return typeof context.bytes === 'number' ? context.bytes - context.hereOffset : false;
             case '_here':
-              return context.addr ? context.addr - context.hereOffset : false;
+              return typeof context.addr === 'number' ? context.addr - context.hereOffset : false;
             case '_main':
               return context.imp.main ? 1 : 0;
             case '_pc':
@@ -597,9 +597,13 @@ export class Expression {
                 case 'none':
                   throw new CompError(ex.flp, 'Unknown assembler mode (`.arm` or `.thumb`)');
                 case 'arm':
-                  return context.addr ? context.addr - context.hereOffset + 8 : false;
+                  return typeof context.addr === 'number'
+                    ? context.addr - context.hereOffset + 8
+                    : false;
                 case 'thumb':
-                  return context.addr ? context.addr - context.hereOffset + 4 : false;
+                  return typeof context.addr === 'number'
+                    ? context.addr - context.hereOffset + 4
+                    : false;
                 default:
                   return assertNever(context.mode);
               }
@@ -704,7 +708,9 @@ export class Expression {
         }
         case 'assert': {
           const a = get(ex.value);
-          if (a === false) return false;
+          if (a === false) {
+            return false;
+          }
           if (a === 0) {
             throw new CompError(ex.flp, `Failed assertion: ${ex.hint}`);
           }

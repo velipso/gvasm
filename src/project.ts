@@ -19,8 +19,9 @@ export type IMakeResult =
     base: number;
     arm: boolean;
     debug: IDebugStatement[];
+    makeTime: number;
   }
-  | { errors: string[] };
+  | { errors: string[]; makeTime: number };
 
 export interface IBase {
   addr: number;
@@ -206,6 +207,7 @@ export class Project {
   }
 
   async make(): Promise<IMakeResult> {
+    const startTime = Date.now();
     try {
       for (const file of this.fileCache.values()) {
         // mark all files as unused
@@ -294,11 +296,12 @@ export class Project {
         base: base < 0 ? 0x08000000 : base,
         arm,
         debug,
+        makeTime: Date.now() - startTime,
       };
     } catch (e) {
       if (e instanceof CompError) {
         e.mapFilenames((filename) => this.path.relative(this.cwd, filename));
-        return { errors: e.toErrors() };
+        return { errors: e.toErrors(), makeTime: Date.now() - startTime };
       }
       throw e;
     }

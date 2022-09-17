@@ -125,7 +125,16 @@ export async function make({ input, output, defines, watch, execute }: IMakeArgs
           await file.write(section);
         }
         file.close();
-        console.log(`${ts()}Success! Output: ${output}`);
+        const { makeTime } = result;
+        const makeMs = `00${makeTime % 1000}`.substr(-3);
+        const makeS = Math.floor(makeTime / 1000) % 60;
+        const makeM = Math.floor(makeTime / 60000);
+        const makeIn = makeM > 0
+          ? `${makeM}m ${makeS}s`
+          : makeS >= 10
+          ? `${makeS}s`
+          : `${makeS}.${makeMs}s`;
+        console.log(`${ts()}Success in ${makeIn}! Output: ${output}`);
         if (execute) {
           const cmd = execute.split(' ').map((a) => a === '{}' ? output : a);
           console.log(`${ts()}Running: ${cmd.join(' ')}`);

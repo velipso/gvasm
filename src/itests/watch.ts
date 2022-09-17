@@ -239,4 +239,41 @@ end
 `,
     }],
   });
+
+  def({
+    name: 'watch.import-replay',
+    desc: 'Verify import replay happens in correct order',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test1',
+      'read: /root/test2',
+      '> 09',
+      'watch: /root/main /root/test1 /root/test2',
+      'read: /root/test1',
+      '> 0a',
+      'watch: /root/main /root/test1 /root/test2',
+    ],
+    history: [{
+      '/root/main': `
+.import 'test1' { foo }
+.import 'test2' { bar }
+.def baz = 3
+.i8 foo + bar
+`,
+      '/root/test1': `
+.import 'main' { baz }
+.def foo = 2 + baz
+`,
+      '/root/test2': `
+.def bar = 4
+`,
+    }, {
+      '/root/test1': `
+.import 'main' { baz }
+.def foo = 3 + baz
+`,
+    }],
+  });
 }

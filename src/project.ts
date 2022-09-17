@@ -31,6 +31,7 @@ interface IFileCache {
   used: boolean;
   imp?: Import;
   blob?: Uint8Array;
+  importReplay: boolean;
   imports: { flp: IFilePos; fullFile: string }[];
   scriptParents: Set<string>;
   scriptEmbed: Set<string>;
@@ -94,16 +95,16 @@ export class Project {
     return this.path.resolve(this.path.dirname(fromFilename), filename);
   }
 
-  async import(
-    flp: IFilePos | false,
-    fullFile: string,
-    importFroms: string[] = [],
-  ): Promise<Import> {
+  async import(flp: IFilePos | false, fullFile: string): Promise<Import> {
     this.usedFilenames.add(fullFile);
 
     if (flp) {
       const fromFile = this.fileCache.get(flp.filename);
-      if (fromFile && !fromFile.imports.some((f) => f.fullFile === fullFile)) {
+      if (
+        fromFile &&
+        !fromFile.importReplay &&
+        !fromFile.imports.some((f) => f.fullFile === fullFile)
+      ) {
         fromFile.imports.push({ flp, fullFile });
       }
     }
@@ -111,10 +112,10 @@ export class Project {
     const file = this.fileCache.get(fullFile);
     if (file && file.imp) {
       file.used = true;
-      if (!importFroms.includes(fullFile)) {
-        const from = [...importFroms, fullFile];
+      if (file.importReplay) {
+        file.importReplay = false;
         for (const transImp of file.imports) {
-          await this.import(transImp.flp, transImp.fullFile, from);
+          await this.import(transImp.flp, transImp.fullFile);
         }
       }
       return file.imp;
@@ -135,6 +136,7 @@ export class Project {
         this.fileCache.set(fullFile, {
           used: true,
           imp,
+          importReplay: false,
           imports: [],
           scriptParents: new Set(),
           scriptEmbed: new Set(),
@@ -165,6 +167,7 @@ export class Project {
         this.fileCache.set(filename, {
           used: true,
           blob,
+          importReplay: false,
           imports: [],
           scriptParents: new Set([fromFilename]),
           scriptEmbed: new Set(),
@@ -196,6 +199,7 @@ export class Project {
       this.fileCache.set(fullFile, {
         used: true,
         blob,
+        importReplay: false,
         imports: [],
         scriptParents: new Set(),
         scriptEmbed: new Set(),
@@ -206,9 +210,11 @@ export class Project {
 
   async make(): Promise<IMakeResult> {
     try {
-      // mark all files as unused
       for (const file of this.fileCache.values()) {
+        // mark all files as unused
         file.used = false;
+        // since the file is cached, replay imports
+        file.importReplay = true;
         file.imp?.makeStart();
       }
 

@@ -129,6 +129,29 @@ ldrsh.mi r0, =0x1234  /// fc 00 df 41
   });
 
   def({
+    name: 'pool.arm.ldrb',
+    desc: 'ARM pool ldrb',
+    kind: 'make',
+    files: {
+      '/root/main': `.arm
+ldrb r2, [#L_0]      /// 04 20 5f e5
+L_0: .i32 0x1234     /// 34 12 00 00
+ldrb r2, =0x1234     /// 0d 2f a0 e3
+// pool should be empty
+.pool
+
+ldrbmi r0, [#L_1]    /// 0c 00 df 45
+.i32fill 2           /// 00 00 00 00 00 00 00 00
+.i32fill 2           /// 00 00 00 00 00 00 00 00
+L_1: .i32 0x1234     /// 34 12 00 00
+ldrb.mi r0, =0x1234  /// 0d 0f a0 43
+// pool should be empty
+.pool
+`,
+    },
+  });
+
+  def({
     name: 'pool.arm.ldrsb',
     desc: 'ARM pool ldrsb',
     kind: 'make',

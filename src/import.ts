@@ -790,6 +790,11 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
   }
 
   writeInline(ex: number): boolean {
+    if (this.cmdSize === 2) {
+      ex &= 0xffff;
+    } else if (this.cmdSize === 1) {
+      ex &= 0xff;
+    }
     if (this.cmdSigned) {
       // TODO: can we write sign extended loads as movs? probably
       return false;
@@ -842,7 +847,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
       }
 
       if (typeof this.poolAddr !== 'number') {
-        throw new CompError(this.flp, 'Cannot resolve pool; missing `.include` for this file');
+        throw new CompError(this.flp, 'Cannot resolve pool');
       }
 
       const address = this.rewrite.addr();
@@ -852,7 +857,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
 
       if (this.cmdSize === 4) {
         // convert to: ldr rd, [pc, #offset]
-        // cond 0111 1001 1111 rd offset
+        // cond 0111 ?001 1111 rd offset
         const offset = this.poolAddr - address - 8;
         if (offset < -4) {
           throw new Error('Pool offset shouldn\'t be negative');
@@ -874,8 +879,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
         } else if (offset > 0xff) {
           throw new CompError(this.flp, 'Next `.pool` statement too far away');
         }
-        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-          Math.abs(offset) & 0xf;
+        const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) | Math.abs(offset) & 0xf;
         const s = this.cmdSigned ? 0xf0 : 0xb0;
         this.rewrite.write(
           offset < 0
@@ -893,8 +897,7 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
           } else if (offset > 0xff) {
             throw new CompError(this.flp, 'Next `.pool` statement too far away');
           }
-          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) |
-            Math.abs(offset) & 0xf;
+          const mask = (((Math.abs(offset) >> 4) & 0xf) << 8) | Math.abs(offset) & 0xf;
           this.rewrite.write(
             offset < 0
               ? ((this.cond << 28) | 0x015f00d0 | (this.rd << 12) | mask)
@@ -903,7 +906,21 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
           this.poolWriteExpr(ex);
           return true;
         } else {
-          throw new Error('TODO: Not implemented: ldrb pool loads');
+          // convert to: ldrb rd, [pc, #offset]
+          // cond 0101 ?101 1111 rd offset
+          const offset = this.poolAddr - address - 8;
+          if (offset < -4) {
+            throw new Error('Pool offset shouldn\'t be negative');
+          } else if (offset > 0xfff) {
+            throw new CompError(this.flp, 'Next `.pool` statement too far away');
+          }
+          this.rewrite.write(
+            offset < 0
+              ? ((this.cond << 28) | 0x055f0000 | (this.rd << 12) | Math.abs(offset))
+              : ((this.cond << 28) | 0x05df0000 | (this.rd << 12) | offset),
+          );
+          this.poolWriteExpr(ex);
+          return true;
         }
       }
     } else {

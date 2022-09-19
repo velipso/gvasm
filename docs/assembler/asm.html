@@ -700,34 +700,34 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">b&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span>.
+          Branch to <span class="label">Label</span>.
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 1023 instructions</li>
+          <li><span class="label">Label</span> must be within 1023 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bal</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">b</span> <span class="label">@end</span>  <span class="com">// Branch to end.</span>
+<span class="op">b</span> <span class="label">end</span>  <span class="com">// Branch to end.</span>
         <span class="com">// ... later ...</span>
-<span class="label">@end:</span>   <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>   <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -737,38 +737,38 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bcc&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if !<span class="flag">C</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is clear
+          Branch to <span class="label">Label</span> if <span class="flag">C</span> is clear
           (unsigned lower).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
           <li>Assembler also allows <span class="op">blo</span> for this instruction</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bcc</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bcc</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt; 45 (unsigned).</span>
+<span class="op">bcc</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt; 45 (unsigned).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -778,38 +778,38 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bcs&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">C</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is set
+          Branch to <span class="label">Label</span> if <span class="flag">C</span> is set
           (unsigned higher or same).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
           <li>Assembler also allows <span class="op">bhs</span> for this instruction</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bcs</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bcs</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (unsigned).</span>
+<span class="op">bcs</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (unsigned).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -819,36 +819,36 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">beq&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">Z</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is set (equal).
+          Branch to <span class="label">Label</span> if <span class="flag">Z</span> is set (equal).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">beq</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">beq</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 = 45.</span>
+<span class="op">beq</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 = 45.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -858,37 +858,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bge&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">N</span>=<span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">N</span> equals
+          Branch to <span class="label">Label</span> if <span class="flag">N</span> equals
           <span class="flag">V</span> (signed greater or equal).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bge</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bge</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (signed).</span>
+<span class="op">bge</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (signed).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -898,7 +898,7 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bgt&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
@@ -906,30 +906,30 @@ main {
           if !<span class="flag">Z</span> and
           <span class="flag">N</span>=<span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is clear and
+          Branch to <span class="label">Label</span> if <span class="flag">Z</span> is clear and
           <span class="flag">N</span> equals <span class="flag">V</span> (signed greater than).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bgt</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bgt</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt; 45 (signed).</span>
+<span class="op">bgt</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt; 45 (signed).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -939,37 +939,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bhi&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">C</span> and !<span class="flag">Z</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is set and
+          Branch to <span class="label">Label</span> if <span class="flag">C</span> is set and
           <span class="flag">Z</span> is clear (unsigned higher).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bhi</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bhi</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &gt; 45 (unsigned).</span>
+<span class="op">bhi</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt; 45 (unsigned).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1023,7 +1023,7 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bl&nbsp;&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
@@ -1031,24 +1031,24 @@ main {
           <span class="reg">lr</span> =
           <span class="reg">pc</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
           Save return address to <span class="reg">lr</span>, and branch to
-          <span class="label">@Label</span>.
+          <span class="label">Label</span>.
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 2<sup>22</sup> instructions</li>
+          <li><span class="label">Label</span> must be within 2<sup>22</sup> instructions</li>
         </ul>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">bl</span> <span class="label">@routine</span>  <span class="com">// Branch to routine.</span>
+<span class="op">bl</span> <span class="label">routine</span>  <span class="com">// Branch to routine.</span>
              <span class="com">// ... later ...</span>
-<span class="label">@routine:</span>    <span class="com">// Must be half-word aligned.</span>
+<span class="label">routine:</span>    <span class="com">// Must be half-word aligned.</span>
 <span class="op">mov</span> <span class="reg">pc</span>, <span class="reg">lr</span>   <span class="com">// Return to previous location.</span>
 </pre>
       </main>
@@ -1059,7 +1059,7 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">ble&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
@@ -1067,31 +1067,31 @@ main {
           if <span class="flag">Z</span> or
           <span class="flag">N</span>=!<span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is set, or
+          Branch to <span class="label">Label</span> if <span class="flag">Z</span> is set, or
           <span class="flag">N</span> equals not <span class="flag">V</span> (signed less than or
           equal).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">ble</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">ble</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (signed).</span>
+<span class="op">ble</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (signed).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1101,37 +1101,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bls&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if !<span class="flag">C</span> or <span class="flag">Z</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">C</span> is clear or
+          Branch to <span class="label">Label</span> if <span class="flag">C</span> is clear or
           <span class="flag">Z</span> is set (unsigned lower or same).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bls</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bls</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (unsigned).</span>
+<span class="op">bls</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (unsigned).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1141,37 +1141,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">blt&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">N</span>=!<span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">N</span> equals not
+          Branch to <span class="label">Label</span> if <span class="flag">N</span> equals not
           <span class="flag">V</span> (signed less than).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">blt</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">blt</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 &lt; 45 (signed).</span>
+<span class="op">blt</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt; 45 (signed).</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1181,37 +1181,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bmi&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">N</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">N</span> is set
+          Branch to <span class="label">Label</span> if <span class="flag">N</span> is set
           (negative).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bmi</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bmi</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 set.</span>
+<span class="op">bmi</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 set.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1221,37 +1221,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bne&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if !<span class="flag">Z</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">Z</span> is clear
+          Branch to <span class="label">Label</span> if <span class="flag">Z</span> is clear
           (not equal).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bne</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bne</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 != 45.</span>
+<span class="op">bne</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 != 45.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1261,37 +1261,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bpl&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if !<span class="flag">N</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">N</span> is clear
+          Branch to <span class="label">Label</span> if <span class="flag">N</span> is clear
           (positive or zero).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bpl</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bpl</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 clear.</span>
+<span class="op">bpl</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 clear.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1301,37 +1301,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bvc&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if !<span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">V</span> is clear (no
+          Branch to <span class="label">Label</span> if <span class="flag">V</span> is clear (no
           overflow).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bvc</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bvc</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 didn't overflow.</span>
+<span class="op">bvc</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 didn't overflow.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1341,37 +1341,37 @@ main {
         <div class="format">
           <span class="text">
             <span class="op">bvs&nbsp;&nbsp;</span>
-            <span class="label">@Label</span>
+            <span class="label">Label</span>
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           if <span class="flag">V</span>,
           <span class="reg">pc</span> =
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Branch to <span class="label">@Label</span> if <span class="flag">V</span> is set
+          Branch to <span class="label">Label</span> if <span class="flag">V</span> is set
           (overflow).
         </p>
         <h3>Notes</h3>
         <ul>
-          <li><span class="label">@Label</span> must be within 255 instructions</li>
+          <li><span class="label">Label</span> must be within 255 instructions</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">bvs</span>
-          <span class="label">@Label</span>
+          <span class="label">Label</span>
         </p>
         <h3>Example</h3>
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
-<span class="op">bvs</span> <span class="label">@end</span>  <span class="com">// Branch to end if r0 - 45 overflowed.</span>
+<span class="op">bvs</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 overflowed.</span>
           <span class="com">// ... later ...</span>
-<span class="label">@end:</span>     <span class="com">// Must be half-word aligned.</span>
+<span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
     </section>
@@ -1681,40 +1681,40 @@ main {
           <span class="text">
             <span class="op">ldr&nbsp;&nbsp;</span>
             <span class="reg">Rd</span>,
-            [#<span class="label">@Address</span>]
+            [#<span class="label">Address</span>]
           </span>
         </div>
         <div class="summary">
           <span class="com">//</span>
           <span class="reg">Rd</span> =
-          [<span class="label">@Address</span>]
+          [<span class="label">Address</span>]
         </div>
       </header>
       <main>
         <h3>Description</h3>
         <p>
-          Load the 32-bit constant from <span class="label">@Address</span> into
+          Load the 32-bit constant from <span class="label">Address</span> into
           <span class="reg">Rd</span>.
         </p>
         <h3>Notes</h3>
         <ul>
           <li><span class="reg">Rd</span> must range from <span class="reg">r0</span> to
             <span class="reg">r7</span></li>
-          <li><span class="label">@Address</span> must be after the instruction within 1020
+          <li><span class="label">Address</span> must be after the instruction within 1020
             bytes, word aligned</li>
         </ul>
         <h3>ARM Equivalent</h3>
         <p class="armEquivalent">
           <span class="op">ldr</span>
           <span class="reg">Rd</span>,
-          [#<span class="label">@Address</span>]
+          [#<span class="label">Address</span>]
         </p>
         <h3>Example</h3>
 <pre class="example">
-<span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">@data</span>]  <span class="com">// r0 = load 123 from @data</span>
+<span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">data</span>]  <span class="com">// r0 = load 123 from data</span>
                   <span class="com">// ... later ...</span>
 .align <span class="imm">4</span>          <span class="com">// make sure data is word aligned</span>
-<span class="label">@data:</span> .i32 <span class="imm">123</span>   <span class="com">// outputs 123 to the ROM</span>
+<span class="label">data:</span> .i32 <span class="imm">123</span>   <span class="com">// outputs 123 to the ROM</span>
 </pre>
       </main>
     </section>

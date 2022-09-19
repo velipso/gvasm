@@ -107,7 +107,7 @@ References
 ==========
 
 * [Assembler Manual](./docs/assembler/README.md)
-* [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/main/docs/assembler/asm.html)
+* [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/v2/docs/assembler/asm.html)
 
 GBA Technical Docs
 ==================

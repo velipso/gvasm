@@ -726,7 +726,7 @@ main {
         <h3>Example</h3>
 <pre class="example">
 <span class="op">b</span> <span class="label">end</span>  <span class="com">// Branch to end.</span>
-        <span class="com">// ... later ...</span>
+       <span class="com">// ... later ...</span>
 <span class="label">end:</span>   <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -767,7 +767,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bcc</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt; 45 (unsigned).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -808,7 +808,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bcs</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (unsigned).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -847,7 +847,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">beq</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 = 45.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -887,7 +887,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bge</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt;= 45 (signed).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -928,7 +928,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bgt</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt; 45 (signed).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -968,7 +968,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bhi</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &gt; 45 (unsigned).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1047,9 +1047,9 @@ main {
         <h3>Example</h3>
 <pre class="example">
 <span class="op">bl</span> <span class="label">routine</span>  <span class="com">// Branch to routine.</span>
-             <span class="com">// ... later ...</span>
+            <span class="com">// ... later ...</span>
 <span class="label">routine:</span>    <span class="com">// Must be half-word aligned.</span>
-<span class="op">mov</span> <span class="reg">pc</span>, <span class="reg">lr</span>   <span class="com">// Return to previous location.</span>
+<span class="op">mov</span> <span class="reg">pc</span>, <span class="reg">lr</span>  <span class="com">// Return to previous location.</span>
 </pre>
       </main>
     </section>
@@ -1090,7 +1090,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">ble</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (signed).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1130,7 +1130,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bls</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt;= 45 (unsigned).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1170,7 +1170,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">blt</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 &lt; 45 (signed).</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1210,7 +1210,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bmi</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 set.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1250,7 +1250,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bne</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 != 45.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1290,7 +1290,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bpl</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 has bit 31 clear.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1330,7 +1330,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bvc</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 didn't overflow.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1370,7 +1370,7 @@ main {
 <pre class="example">
 <span class="op">cmp</span> <span class="reg">r0</span>, #<span class="imm">45</span>
 <span class="op">bvs</span> <span class="label">end</span>  <span class="com">// Branch to end if r0 - 45 overflowed.</span>
-          <span class="com">// ... later ...</span>
+         <span class="com">// ... later ...</span>
 <span class="label">end:</span>     <span class="com">// Must be half-word aligned.</span>
 </pre>
       </main>
@@ -1712,8 +1712,8 @@ main {
         <h3>Example</h3>
 <pre class="example">
 <span class="op">ldr</span> <span class="reg">r0</span>, [#<span class="label">data</span>]  <span class="com">// r0 = load 123 from data</span>
-                  <span class="com">// ... later ...</span>
-.align <span class="imm">4</span>          <span class="com">// make sure data is word aligned</span>
+                 <span class="com">// ... later ...</span>
+.align <span class="imm">4</span>         <span class="com">// make sure data is word aligned</span>
 <span class="label">data:</span> .i32 <span class="imm">123</span>   <span class="com">// outputs 123 to the ROM</span>
 </pre>
       </main>

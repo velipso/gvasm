@@ -471,7 +471,7 @@ strx r0, [r1, r2] (Player.health)  // =>  strh r0, [r1, r2]
 Note that some instructions are impossible in Thumb mode, depending on the conversion needed.  The
 assembler will error in these instances.
 
-This feature is useful for reducing bugs (ex: accidently using `ldrh` when you should use `ldsh`),
+This feature is useful for reducing bugs (ex: accidentally using `ldrh` when you should use `ldsh`),
 and makes it easier to change structs over time without rewriting a bunch of `ldr`/`str`
 instructions (ex: changing `.u8 health` to `.u16 health`).
 

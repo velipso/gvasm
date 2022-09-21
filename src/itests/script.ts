@@ -141,6 +141,31 @@ include "../one.sink" /// 01 02
   });
 
   def({
+    name: 'script.export-lookup-floating-point',
+    desc: 'Export and lookup floating point numbers',
+    kind: 'make',
+    stdout: ['3', '314'],
+    files: {
+      '/root/main': `
+.script
+  export pi = num.pi
+.end
+.printf "%i", pi
+.if pi != 3
+  .error "pi should be integer"
+.end
+.script
+  var pi = lookup pi
+  say (pi * 100 | num.floor)
+  if pi == 3
+    error "pi should be floating point"
+  end
+.end
+`,
+    },
+  });
+
+  def({
     name: 'script.export-lookup-files',
     desc: 'Export and lookup values between files',
     kind: 'make',

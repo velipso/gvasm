@@ -620,7 +620,7 @@ export class Expression {
           const pathError = () =>
             ex.idPath.map((p) => typeof p === 'string' ? `.${p}` : '[]').join('').substr(1);
           if (typeof v === 'number') {
-            return v;
+            return v | 0;
           }
           if (v === false) {
             if (failNotFound) {

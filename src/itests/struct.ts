@@ -292,4 +292,322 @@ mov r0, r1
 `,
     },
   });
+
+  def({
+    name: 'struct.typed-mem.arm.32',
+    desc: 'Typed ARM ldrx/strx converts to ldr/str',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i32 one
+  .i32 two
+  .u32 three
+.end
+.arm
+ldr  r0, [r1, #S.two]        /// 04 00 91 e5
+ldrx r0, [r1, #S.two]        /// 04 00 91 e5
+ldr  r0, [r1, r2]            /// 02 00 91 e7
+ldrx r0, [r1, r2] (S.two)    /// 02 00 91 e7
+ldr  r0, [r1]                /// 00 00 91 e5
+ldrx r0, [r1] (S.two)        /// 00 00 91 e5
+ldr  r0, [r1, #S.three]      /// 08 00 91 e5
+ldrx r0, [r1, #S.three]      /// 08 00 91 e5
+ldr  r0, [r1, r2]            /// 02 00 91 e7
+ldrx r0, [r1, r2] (S.three)  /// 02 00 91 e7
+ldr  r0, [r1]                /// 00 00 91 e5
+ldrx r0, [r1] (S.three)      /// 00 00 91 e5
+
+str  r0, [r1, #S.two]        /// 04 00 81 e5
+strx r0, [r1, #S.two]        /// 04 00 81 e5
+str  r0, [r1, r2]            /// 02 00 81 e7
+strx r0, [r1, r2] (S.two)    /// 02 00 81 e7
+str  r0, [r1]                /// 00 00 81 e5
+strx r0, [r1] (S.two)        /// 00 00 81 e5
+str  r0, [r1, #S.three]      /// 08 00 81 e5
+strx r0, [r1, #S.three]      /// 08 00 81 e5
+str  r0, [r1, r2]            /// 02 00 81 e7
+strx r0, [r1, r2] (S.three)  /// 02 00 81 e7
+str  r0, [r1]                /// 00 00 81 e5
+strx r0, [r1] (S.three)      /// 00 00 81 e5
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.arm.16',
+    desc: 'Typed ARM ldrx/strx converts to ldrh/ldrsh/strh',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.arm
+ldrsh r0, [r1, #S.two]        /// f2 00 d1 e1
+ldrx  r0, [r1, #S.two]        /// f2 00 d1 e1
+ldrsh r0, [r1, r2]            /// f2 00 91 e1
+ldrx  r0, [r1, r2] (S.two)    /// f2 00 91 e1
+ldrsh r0, [r1]                /// f0 00 d1 e1
+ldrx  r0, [r1] (S.two)        /// f0 00 d1 e1
+ldrh  r0, [r1, #S.three]      /// b4 00 d1 e1
+ldrx  r0, [r1, #S.three]      /// b4 00 d1 e1
+ldrh  r0, [r1, r2]            /// b2 00 91 e1
+ldrx  r0, [r1, r2] (S.three)  /// b2 00 91 e1
+ldrh  r0, [r1]                /// b0 00 d1 e1
+ldrx  r0, [r1] (S.three)      /// b0 00 d1 e1
+
+strh  r0, [r1, #S.two]        /// b2 00 c1 e1
+strx  r0, [r1, #S.two]        /// b2 00 c1 e1
+strh  r0, [r1, r2]            /// b2 00 81 e1
+strx  r0, [r1, r2] (S.two)    /// b2 00 81 e1
+strh  r0, [r1]                /// b0 00 c1 e1
+strx  r0, [r1] (S.two)        /// b0 00 c1 e1
+strh  r0, [r1, #S.three]      /// b4 00 c1 e1
+strx  r0, [r1, #S.three]      /// b4 00 c1 e1
+strh  r0, [r1, r2]            /// b2 00 81 e1
+strx  r0, [r1, r2] (S.three)  /// b2 00 81 e1
+strh  r0, [r1]                /// b0 00 c1 e1
+strx  r0, [r1] (S.three)      /// b0 00 c1 e1
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.arm.8',
+    desc: 'Typed ARM ldrx/strx converts to ldrb/ldrsb/strb',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i8 one
+  .i8 two
+  .u8 three
+.end
+.arm
+ldrsb r0, [r1, #S.two]        /// d1 00 d1 e1
+ldrx  r0, [r1, #S.two]        /// d1 00 d1 e1
+ldrsb r0, [r1, r2]            /// d2 00 91 e1
+ldrx  r0, [r1, r2] (S.two)    /// d2 00 91 e1
+ldrsb r0, [r1]                /// d0 00 d1 e1
+ldrx  r0, [r1] (S.two)        /// d0 00 d1 e1
+ldrb  r0, [r1, #S.three]      /// 02 00 d1 e5
+ldrx  r0, [r1, #S.three]      /// 02 00 d1 e5
+ldrb  r0, [r1, r2]            /// 02 00 d1 e7
+ldrx  r0, [r1, r2] (S.three)  /// 02 00 d1 e7
+ldrb  r0, [r1]                /// 00 00 d1 e5
+ldrx  r0, [r1] (S.three)      /// 00 00 d1 e5
+
+strb  r0, [r1, #S.two]        /// 01 00 c1 e5
+strx  r0, [r1, #S.two]        /// 01 00 c1 e5
+strb  r0, [r1, r2]            /// 02 00 c1 e7
+strx  r0, [r1, r2] (S.two)    /// 02 00 c1 e7
+strb  r0, [r1]                /// 00 00 c1 e5
+strx  r0, [r1] (S.two)        /// 00 00 c1 e5
+strb  r0, [r1, #S.three]      /// 02 00 c1 e5
+strx  r0, [r1, #S.three]      /// 02 00 c1 e5
+strb  r0, [r1, r2]            /// 02 00 c1 e7
+strx  r0, [r1, r2] (S.three)  /// 02 00 c1 e7
+strb  r0, [r1]                /// 00 00 c1 e5
+strx  r0, [r1] (S.three)      /// 00 00 c1 e5
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.32',
+    desc: 'Typed Thumb ldrx/strx converts to ldr/str',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i32 one
+  .i32 two
+  .u32 three
+.end
+.thumb
+ldr  r0, [r1, #S.two]        /// 48 68
+ldrx r0, [r1, #S.two]        /// 48 68
+ldr  r0, [r1, r2]            /// 88 58
+ldrx r0, [r1, r2] (S.two)    /// 88 58
+ldr  r0, [r1]                /// 08 68
+ldrx r0, [r1] (S.two)        /// 08 68
+ldr  r0, [r1, #S.three]      /// 88 68
+ldrx r0, [r1, #S.three]      /// 88 68
+ldr  r0, [r1, r2]            /// 88 58
+ldrx r0, [r1, r2] (S.three)  /// 88 58
+ldr  r0, [r1]                /// 08 68
+ldrx r0, [r1] (S.three)      /// 08 68
+
+str  r0, [r1, #S.two]        /// 48 60
+strx r0, [r1, #S.two]        /// 48 60
+str  r0, [r1, r2]            /// 88 50
+strx r0, [r1, r2] (S.two)    /// 88 50
+str  r0, [r1]                /// 08 60
+strx r0, [r1] (S.two)        /// 08 60
+str  r0, [r1, #S.three]      /// 88 60
+strx r0, [r1, #S.three]      /// 88 60
+str  r0, [r1, r2]            /// 88 50
+strx r0, [r1, r2] (S.three)  /// 88 50
+str  r0, [r1]                /// 08 60
+strx r0, [r1] (S.three)      /// 08 60
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.ldsh-imm',
+    desc: 'Cannot convert ldrx into ldsh when using immediate',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.thumb
+ldrx r0, [r1, #S.two]
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.ldsh-zero',
+    desc: 'Cannot convert ldrx into ldsh when using zero',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.thumb
+ldrx r0, [r1] (S.two)
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.16',
+    desc: 'Typed Thumb ldrx/strx converts to ldrh/ldsh/strh',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.thumb
+// ldsh r0, [r1, #S.two] is an invalid opcode
+// ldrx r0, [r1, #S.two] cannot be converted
+ldsh r0, [r1, r2]            /// 88 5e
+ldrx r0, [r1, r2] (S.two)    /// 88 5e
+// ldsh r0, [r1] is an invalid opcode
+// ldrx r0, [r1] (S.two) cannot be converted
+ldrh r0, [r1, #S.three]      /// 88 88
+ldrx r0, [r1, #S.three]      /// 88 88
+ldrh r0, [r1, r2]            /// 88 5a
+ldrx r0, [r1, r2] (S.three)  /// 88 5a
+ldrh r0, [r1]                /// 08 88
+ldrx r0, [r1] (S.three)      /// 08 88
+
+strh r0, [r1, #S.two]        /// 48 80
+strx r0, [r1, #S.two]        /// 48 80
+strh r0, [r1, r2]            /// 88 52
+strx r0, [r1, r2] (S.two)    /// 88 52
+strh r0, [r1]                /// 08 80
+strx r0, [r1] (S.two)        /// 08 80
+strh r0, [r1, #S.three]      /// 88 80
+strx r0, [r1, #S.three]      /// 88 80
+strh r0, [r1, r2]            /// 88 52
+strx r0, [r1, r2] (S.three)  /// 88 52
+strh r0, [r1]                /// 08 80
+strx r0, [r1] (S.three)      /// 08 80
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.ldsb-imm',
+    desc: 'Cannot convert ldrx into ldsb when using immediate',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct S
+  .i8 one
+  .i8 two
+  .u8 three
+.end
+.thumb
+ldrx r0, [r1, #S.two]
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.ldsb-zero',
+    desc: 'Cannot convert ldrx into ldsb when using zero',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.struct S
+  .i8 one
+  .i8 two
+  .u8 three
+.end
+.thumb
+ldrx r0, [r1] (S.two)
+`,
+    },
+  });
+
+  def({
+    name: 'struct.typed-mem.thumb.8',
+    desc: 'Typed ARM ldrx/strx converts to ldrb/ldsb/strb',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.struct S
+  .i8 one
+  .i8 two
+  .u8 three
+.end
+.thumb
+// ldsb r0, [r1, #S.two] is an invalid opcode
+// ldrx r0, [r1, #S.two] cannot be converted
+ldsb r0, [r1, r2]            /// 88 56
+ldrx r0, [r1, r2] (S.two)    /// 88 56
+// ldsb r0, [r1] is an invalid opcode
+// ldrx r0, [r1] (S.two) cannot be converted
+ldrb r0, [r1, #S.three]      /// 88 78
+ldrx r0, [r1, #S.three]      /// 88 78
+ldrb r0, [r1, r2]            /// 88 5c
+ldrx r0, [r1, r2] (S.three)  /// 88 5c
+ldrb r0, [r1]                /// 08 78
+ldrx r0, [r1] (S.three)      /// 08 78
+
+strb r0, [r1, #S.two]        /// 48 70
+strx r0, [r1, #S.two]        /// 48 70
+strb r0, [r1, r2]            /// 88 54
+strx r0, [r1, r2] (S.two)    /// 88 54
+strb r0, [r1]                /// 08 70
+strx r0, [r1] (S.two)        /// 08 70
+strb r0, [r1, #S.three]      /// 88 70
+strx r0, [r1, #S.three]      /// 88 70
+strb r0, [r1, r2]            /// 88 54
+strx r0, [r1, r2] (S.three)  /// 88 54
+strb r0, [r1]                /// 08 70
+strx r0, [r1] (S.three)      /// 08 70
+`,
+    },
+  });
 }

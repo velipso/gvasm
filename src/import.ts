@@ -10,7 +10,7 @@ import { ARM, Thumb } from './ops.ts';
 import { assertNever, calcRotImm, printf } from './util.ts';
 import { Expression, reservedNames } from './expr.ts';
 import { IBase, Project } from './project.ts';
-import { CompError } from './parser.ts';
+import { CompError, ITypedMemory } from './parser.ts';
 import { stdlib } from './stdlib.ts';
 import {
   IRewrite,
@@ -287,6 +287,7 @@ class BitNumber {
   push(size: number, v: number) {
     this.value |= (v & ((1 << size) - 1)) << this.bpos;
     this.bpos += size;
+    return this;
   }
 
   get() {
@@ -393,7 +394,9 @@ class PendingWriteInstARM extends PendingWriteInstCommon<ARM.IOp> {
           break;
         }
         case 'word': {
-          if (address === false) return false;
+          if (address === false) {
+            return false;
+          }
           const offset = symNums[codePart.sym] - address - 8;
           if (offset & 3) {
             throw new CompError(this.flp, 'Can\'t branch to misaligned memory address');
@@ -407,7 +410,9 @@ class PendingWriteInstARM extends PendingWriteInstCommon<ARM.IOp> {
           if (codePart.k === 'offset12') {
             offset = symNums[codePart.sym];
           } else {
-            if (address === false) return false;
+            if (address === false) {
+              return false;
+            }
             offset = symNums[codePart.sym] - address - 8;
           }
           if (codePart.sign) {
@@ -741,6 +746,432 @@ class PendingWritePrintf extends PendingWrite {
         this.log(msg);
       }
       return true;
+    }
+  }
+}
+
+abstract class PendingWriteTypedMemCommon extends PendingWrite {
+  typedMem: ITypedMemory;
+  rewrite: IRewrite<number>;
+
+  constructor(
+    flp: IFilePos,
+    context: IExpressionContext,
+    typedMem: ITypedMemory,
+    rewrite: IRewrite<number>,
+  ) {
+    super(flp, context);
+    this.typedMem = typedMem;
+    this.rewrite = rewrite;
+  }
+}
+
+class PendingWriteTypedMemARM extends PendingWriteTypedMemCommon {
+  attemptWrite(failNotFound: boolean): boolean {
+    const dataTypeOut: [DataType | false] = [false];
+    const field = this.typedMem.field.value(
+      this.context,
+      failNotFound,
+      false,
+      undefined,
+      undefined,
+      dataTypeOut,
+    );
+    const [dataType] = dataTypeOut;
+    if (field === false || dataType === false) {
+      return false;
+    }
+    switch (dataTypeSize(dataType)) {
+      case 1:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+          case 'strImm':
+            if (this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType)) {
+              const v = this.typedMem.zero ? 0 : Math.abs(field);
+              if (v >= (1 << 8)) {
+                throw new CompError(this.flp, `Offset too large: ${v}`);
+              }
+              this.rewrite.write(
+                new BitNumber(32)
+                  .push(4, v & 0xf)
+                  .push(1, 1) // constant
+                  .push(2, 2) // signed byte
+                  .push(1, 1) // constant
+                  .push(4, (v >> 4) & 0xf)
+                  .push(4, this.typedMem.rd)
+                  .push(4, this.typedMem.rb)
+                  .push(1, 1) // load
+                  .push(1, 0) // no write back
+                  .push(1, 1) // constant
+                  .push(1, field < 0 ? 0 : 1)
+                  .push(1, 1) // pre indexing
+                  .push(3, 0) // constant
+                  .push(4, this.typedMem.cond)
+                  .get(),
+              );
+            } else {
+              const v = this.typedMem.zero ? 0 : Math.abs(field);
+              if (v >= (1 << 12)) {
+                throw new CompError(this.flp, `Offset too large: ${v}`);
+              }
+              this.rewrite.write(
+                new BitNumber(32)
+                  .push(12, v)
+                  .push(4, this.typedMem.rd)
+                  .push(4, this.typedMem.rb)
+                  .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                  .push(1, 0) // no write back
+                  .push(1, 1) // transfer byte
+                  .push(1, field < 0 ? 0 : 1)
+                  .push(1, 1) // pre indexing
+                  .push(1, 0) // immediate offset
+                  .push(2, 1) // constant
+                  .push(4, this.typedMem.cond)
+                  .get(),
+              );
+            }
+            return true;
+          case 'ldrReg':
+          case 'strReg':
+            if (this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType)) {
+              this.rewrite.write(
+                new BitNumber(32)
+                  .push(4, this.typedMem.ro)
+                  .push(1, 1) // constant
+                  .push(2, 2) // signed byte
+                  .push(1, 1) // constant
+                  .push(4, 0) // constant
+                  .push(4, this.typedMem.rd)
+                  .push(4, this.typedMem.rb)
+                  .push(1, 1) // load
+                  .push(1, 0) // no write back
+                  .push(1, 0) // constant
+                  .push(1, 1) // add offset
+                  .push(1, 1) // pre indexing
+                  .push(3, 0) // constant
+                  .push(4, this.typedMem.cond)
+                  .get(),
+              );
+            } else {
+              this.rewrite.write(
+                new BitNumber(32)
+                  .push(4, this.typedMem.ro)
+                  .push(8, 0) // no shift
+                  .push(4, this.typedMem.rd)
+                  .push(4, this.typedMem.rb)
+                  .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                  .push(1, 0) // no write back
+                  .push(1, 1) // transfer byte
+                  .push(1, 1) // add offset
+                  .push(1, 1) // pre indexing
+                  .push(1, 1) // register offset
+                  .push(2, 1) // constant
+                  .push(4, this.typedMem.cond)
+                  .get(),
+              );
+            }
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
+      case 2:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+          case 'strImm': {
+            const v = this.typedMem.zero ? 0 : Math.abs(field);
+            if (v >= (1 << 8)) {
+              throw new CompError(this.flp, `Offset too large: ${v}`);
+            }
+            this.rewrite.write(
+              new BitNumber(32)
+                .push(4, v & 0xf)
+                .push(1, 1) // constant
+                .push(2, this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType) ? 3 : 1)
+                .push(1, 1) // constant
+                .push(4, (v >> 4) & 0xf)
+                .push(4, this.typedMem.rd)
+                .push(4, this.typedMem.rb)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 0) // no write back
+                .push(1, 1) // constant
+                .push(1, field < 0 ? 0 : 1)
+                .push(1, 1) // pre indexing
+                .push(3, 0) // constant
+                .push(4, this.typedMem.cond)
+                .get(),
+            );
+            return true;
+          }
+          case 'ldrReg':
+          case 'strReg':
+            this.rewrite.write(
+              new BitNumber(32)
+                .push(4, this.typedMem.ro)
+                .push(1, 1) // constant
+                .push(2, this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType) ? 3 : 1)
+                .push(1, 1) // constant
+                .push(4, 0) // constant
+                .push(4, this.typedMem.rd)
+                .push(4, this.typedMem.rb)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 0) // no write back
+                .push(1, 0) // constant
+                .push(1, 1) // add offset
+                .push(1, 1) // pre indexing
+                .push(3, 0) // constant
+                .push(4, this.typedMem.cond)
+                .get(),
+            );
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
+      case 4:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+          case 'strImm': {
+            const v = this.typedMem.zero ? 0 : Math.abs(field);
+            if (v >= (1 << 12)) {
+              throw new CompError(this.flp, `Offset too large: ${v}`);
+            }
+            this.rewrite.write(
+              new BitNumber(32)
+                .push(12, v)
+                .push(4, this.typedMem.rd)
+                .push(4, this.typedMem.rb)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 0) // no write back
+                .push(1, 0) // transfer word
+                .push(1, field < 0 ? 0 : 1)
+                .push(1, 1) // pre indexing
+                .push(1, 0) // immediate offset
+                .push(2, 1) // constant
+                .push(4, this.typedMem.cond)
+                .get(),
+            );
+            return true;
+          }
+          case 'ldrReg':
+          case 'strReg':
+            this.rewrite.write(
+              new BitNumber(32)
+                .push(4, this.typedMem.ro)
+                .push(8, 0) // no shift
+                .push(4, this.typedMem.rd)
+                .push(4, this.typedMem.rb)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 0) // no write back
+                .push(1, 0) // transfer word
+                .push(1, 1) // add offset
+                .push(1, 1) // pre indexing
+                .push(1, 1) // register offset
+                .push(2, 1) // constant
+                .push(4, this.typedMem.cond)
+                .get(),
+            );
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
+    }
+  }
+}
+
+class PendingWriteTypedMemThumb extends PendingWriteTypedMemCommon {
+  constructor(
+    flp: IFilePos,
+    context: IExpressionContext,
+    typedMem: ITypedMemory,
+    rewrite: IRewrite<number>,
+  ) {
+    super(flp, context, typedMem, rewrite);
+    const validateReg = (r: number) => {
+      if (r < 0 || r >= 8) {
+        throw new CompError(this.flp, 'Invalid register; register must be in r0-r7 range');
+      }
+    };
+    validateReg(this.typedMem.rd);
+    validateReg(this.typedMem.rb);
+    switch (this.typedMem.kind) {
+      case 'ldrImm':
+      case 'strImm':
+        break;
+      case 'ldrReg':
+      case 'strReg':
+        validateReg(this.typedMem.ro);
+        break;
+      default:
+        assertNever(this.typedMem);
+    }
+  }
+
+  attemptWrite(failNotFound: boolean): boolean {
+    const dataTypeOut: [DataType | false] = [false];
+    const field = this.typedMem.field.value(
+      this.context,
+      failNotFound,
+      false,
+      undefined,
+      undefined,
+      dataTypeOut,
+    );
+    const [dataType] = dataTypeOut;
+    if (field === false || dataType === false) {
+      return false;
+    }
+    switch (dataTypeSize(dataType)) {
+      case 1:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+            if (dataTypeSigned(dataType)) {
+              throw new CompError(
+                this.flp,
+                'Cannot convert `ldrx rX, [rX, #Imm]` into `ldsb rX, [rX, #Imm]` because instruction doesn\'t exist in Thumb',
+              );
+            }
+            // fall through
+          case 'strImm': {
+            const vs = this.typedMem.zero ? 0 : field;
+            if (vs < 0 || vs >= (1 << 5)) {
+              throw new CompError(this.flp, `Offset too large: ${vs}`);
+            }
+            this.rewrite.write(
+              new BitNumber(16)
+                .push(3, this.typedMem.rd)
+                .push(3, this.typedMem.rb)
+                .push(5, vs)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 1) // byte
+                .push(3, 3) // constant
+                .get(),
+            );
+            return true;
+          }
+          case 'ldrReg':
+          case 'strReg':
+            if (this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType)) {
+              this.rewrite.write(
+                new BitNumber(16)
+                  .push(3, this.typedMem.rd)
+                  .push(3, this.typedMem.rb)
+                  .push(3, this.typedMem.ro)
+                  .push(1, 1) // constant
+                  .push(1, 1) // signed
+                  .push(1, 0) // H = 0
+                  .push(4, 5) // constant
+                  .get(),
+              );
+            } else {
+              this.rewrite.write(
+                new BitNumber(16)
+                  .push(3, this.typedMem.rd)
+                  .push(3, this.typedMem.rb)
+                  .push(3, this.typedMem.ro)
+                  .push(1, 0) // constant
+                  .push(1, 1) // byte
+                  .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                  .push(4, 5) // constant
+                  .get(),
+              );
+            }
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
+      case 2:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+            if (dataTypeSigned(dataType)) {
+              throw new CompError(
+                this.flp,
+                'Cannot convert `ldrx rX, [rX, #Imm]` into `ldsh rX, [rX, #Imm]` because instruction doesn\'t exist in Thumb',
+              );
+            }
+            // fall through
+          case 'strImm': {
+            const v = this.typedMem.zero ? 0 : field;
+            if (v & 1) {
+              throw new CompError(this.flp, `Immediate value is not halfword aligned: ${v}`);
+            }
+            const vs = v >> 1;
+            if (vs < 0 || vs >= (1 << 5)) {
+              throw new CompError(this.flp, `Offset too large: ${v}`);
+            }
+            this.rewrite.write(
+              new BitNumber(16)
+                .push(3, this.typedMem.rd)
+                .push(3, this.typedMem.rb)
+                .push(5, vs)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(4, 8) // constant
+                .get(),
+            );
+            return true;
+          }
+          case 'ldrReg':
+          case 'strReg':
+            this.rewrite.write(
+              new BitNumber(16)
+                .push(3, this.typedMem.rd)
+                .push(3, this.typedMem.rb)
+                .push(3, this.typedMem.ro)
+                .push(1, 1) // constant
+                .push(1, this.typedMem.kind.startsWith('ldr') && dataTypeSigned(dataType) ? 1 : 0)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(4, 5) // constant
+                .get(),
+            );
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
+      case 4:
+        switch (this.typedMem.kind) {
+          case 'ldrImm':
+          case 'strImm': {
+            const v = this.typedMem.zero ? 0 : field;
+            if (v & 3) {
+              throw new CompError(this.flp, `Immediate value is not word aligned: ${v}`);
+            }
+            const vs = v >> 2;
+            if (vs < 0 || vs >= (1 << 5)) {
+              throw new CompError(this.flp, `Offset too large: ${v}`);
+            }
+            this.rewrite.write(
+              new BitNumber(16)
+                .push(3, this.typedMem.rd)
+                .push(3, this.typedMem.rb)
+                .push(5, vs)
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(1, 0) // word
+                .push(3, 3) // constant
+                .get(),
+            );
+            return true;
+          }
+          case 'ldrReg':
+          case 'strReg':
+            this.rewrite.write(
+              new BitNumber(16)
+                .push(3, this.typedMem.rd)
+                .push(3, this.typedMem.rb)
+                .push(3, this.typedMem.ro)
+                .push(1, 0) // constant
+                .push(1, 0) // word
+                .push(1, this.typedMem.kind.startsWith('str') ? 0 : 1)
+                .push(4, 5) // constant
+                .get(),
+            );
+            return true;
+          default:
+            assertNever(this.typedMem);
+        }
+        break;
     }
   }
 }
@@ -1734,6 +2165,19 @@ export class Import {
     this.addPendingWrite(pw);
   }
 
+  writeTypedMemARM(flp: IFilePos, typedMem: ITypedMemory) {
+    if (!this.active()) {
+      return;
+    }
+    const bytes = this.tailBytes();
+    bytes.setARM(true);
+    bytes.forceAlignment(flp, 4, 'Misaligned instruction; add `.align 4`');
+    const rewrite = bytes.rewrite32();
+    const context = this.expressionContext(4);
+    const pw = new PendingWriteTypedMemARM(flp, context, typedMem, rewrite);
+    this.addPendingWrite(pw);
+  }
+
   writePoolARM(
     flp: IFilePos,
     cmdSize: number,
@@ -1764,6 +2208,19 @@ export class Import {
     const rewrite = op.doubleInstruction ? bytes.rewrite32() : bytes.rewrite16();
     const context = this.expressionContext(op.doubleInstruction ? 4 : 2);
     const pw = new PendingWriteInstThumb(flp, context, op, syms, rewrite);
+    this.addPendingWrite(pw);
+  }
+
+  writeTypedMemThumb(flp: IFilePos, typedMem: ITypedMemory) {
+    if (!this.active()) {
+      return;
+    }
+    const bytes = this.tailBytes();
+    bytes.setARM(false);
+    bytes.forceAlignment(flp, 2, 'Misaligned instruction; add `.align 2`');
+    const rewrite = bytes.rewrite16();
+    const context = this.expressionContext(2);
+    const pw = new PendingWriteTypedMemThumb(flp, context, typedMem, rewrite);
     this.addPendingWrite(pw);
   }
 

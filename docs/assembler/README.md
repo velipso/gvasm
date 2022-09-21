@@ -431,6 +431,50 @@ Equivalent to:
 .def Player.itemIds._bytes = 6   // 6 total bytes
 ```
 
+Type-aware Memory Load/Stores
+-----------------------------
+
+Since struct members have known types (signed word, unsigned byte, etc), the assembler can
+automatically pick the right `ldr` and `str` instructions based on the member type.
+
+Use `ldrx` and `strx` to use the type information:
+
+```
+.struct Player
+  .u32 id      // => ldr/str
+  .u8  flags   // => ldrb/strb
+  .i8  cursor  // => ldrsb/ldsb/strb
+  .u16 health  // => ldrh/strh
+  .i16 x       // => ldrsh/ldsh/strh
+  .i16 y       // => ldrsh/ldsh/strh
+.end
+
+.arm
+ldr  r1, =PlayerMemoryLocation
+ldrx r0, [r1, #Player.health]
+// the above instruction is automatically converted to:
+//   ldrh r0, [r1, #Player.health]
+// because Player.health is an unsigned halfword
+```
+
+The assembler supports the following syntax for type-aware loads/stores:
+
+```
+ldrx r0, [r1, #Player.health]      // =>  ldrh r0, [r1, #Player.health]
+ldrx r0, [r1] (Player.health)      // =>  ldrh r0, [r1]
+ldrx r0, [r1, r2] (Player.health)  // =>  ldrh r0, [r1, r2]
+strx r0, [r1, #Player.health]      // =>  strh r0, [r1, #Player.health]
+strx r0, [r1] (Player.health)      // =>  strh r0, [r1]
+strx r0, [r1, r2] (Player.health)  // =>  strh r0, [r1, r2]
+```
+
+Note that some instructions are impossible in Thumb mode, depending on the conversion needed.  The
+assembler will error in these instances.
+
+This feature is useful for reducing bugs (ex: accidently using `ldrh` when you should use `ldsh`),
+and makes it easier to change structs over time without rewriting a bunch of `ldr`/`str`
+instructions (ex: changing `.u8 health` to `.u16 health`).
+
 Scripts
 -------
 

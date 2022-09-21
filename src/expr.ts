@@ -7,7 +7,7 @@
 
 import { assertNever, b16, b32, i16, i32, i8, u16, u32, u8 } from './util.ts';
 import { CompError, Parser } from './parser.ts';
-import { IExpressionContext, Import } from './import.ts';
+import { DataType, IExpressionContext, Import } from './import.ts';
 import { IFilePos, ITok } from './lexer.ts';
 import { version } from './main.ts';
 import { CPU } from './run.ts';
@@ -575,6 +575,7 @@ export class Expression {
     fromScript: string | false,
     params?: number[],
     cpu?: CPU,
+    dataTypeOutput?: [DataType | false],
   ): number | false {
     const get = (ex: IExpr): number | false => {
       switch (ex.kind) {
@@ -658,6 +659,9 @@ export class Expression {
             case 'scriptExport':
               throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
             case 'lookupData':
+              if (dataTypeOutput) {
+                dataTypeOutput[0] = v.dataType;
+              }
               return v.value;
             default:
               return assertNever(v);

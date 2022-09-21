@@ -325,6 +325,212 @@ function parseReglist(
   return reglist;
 }
 
+interface ITypedMemoryLdrImm {
+  kind: 'ldrImm';
+  cond: number;
+  rd: number;
+  rb: number;
+  zero: boolean;
+  field: Expression;
+}
+
+interface ITypedMemoryLdrReg {
+  kind: 'ldrReg';
+  cond: number;
+  rd: number;
+  rb: number;
+  ro: number;
+  field: Expression;
+}
+
+interface ITypedMemoryStrImm {
+  kind: 'strImm';
+  cond: number;
+  rd: number;
+  rb: number;
+  zero: boolean;
+  field: Expression;
+}
+
+interface ITypedMemoryStrReg {
+  kind: 'strReg';
+  cond: number;
+  rd: number;
+  rb: number;
+  ro: number;
+  field: Expression;
+}
+
+export type ITypedMemory =
+  | ITypedMemoryLdrImm
+  | ITypedMemoryLdrReg
+  | ITypedMemoryStrImm
+  | ITypedMemoryStrReg;
+
+function parseTypedMemoryStatement(cmd: string, parser: Parser, imp: Import): ITypedMemory | false {
+  let ldr = false;
+  let cond = -1;
+  for (let ci = 0; ci < ARM.conditionEnum.length && cond < 0; ci++) {
+    const ce = ARM.conditionEnum[ci];
+    if (ce !== false) {
+      for (const cs of ce.split('/')) {
+        if (cmd === `ldrx${cs}` || (cs !== '' && cmd === `ldrx.${cs}`)) {
+          ldr = true;
+          cond = ci;
+          break;
+        } else if (cmd === `strx${cs}` || (cs !== '' && cmd === `strx.${cs}`)) {
+          ldr = false;
+          cond = ci;
+          break;
+        }
+      }
+    }
+  }
+  if (cond < 0) {
+    return false;
+  }
+
+  parser.save();
+  try {
+    const tk1 = parser.nextTokOptional();
+    if (!tk1 || tk1.kind !== 'id') {
+      parser.restore();
+      return false;
+    }
+    const rd = imp.decodeRegister(tk1, false);
+    if (rd < 0) {
+      parser.restore();
+      return false;
+    }
+
+    if (!parser.isNext(',')) {
+      parser.restore();
+      return false;
+    }
+    parser.nextTok();
+
+    if (!parser.isNext('[')) {
+      parser.restore();
+      return false;
+    }
+    parser.nextTok();
+
+    const tk2 = parser.nextTokOptional();
+    if (!tk2 || tk2.kind !== 'id') {
+      parser.restore();
+      return false;
+    }
+    const rb = imp.decodeRegister(tk2, false);
+    if (rb < 0) {
+      parser.restore();
+      return false;
+    }
+
+    if (parser.isNext(']')) {
+      // rd, [rb] (field)
+      parser.nextTok();
+      if (!parser.isNext('(')) {
+        parser.restore();
+        return false;
+      }
+      parser.nextTok();
+
+      const field = Expression.parse(parser, imp);
+
+      if (!parser.isNext(')')) {
+        parser.restore();
+        return false;
+      }
+      parser.nextTok();
+
+      parser.forceNewline('typed memory statement');
+      parser.applySave();
+      return {
+        kind: ldr ? 'ldrImm' : 'strImm',
+        cond,
+        rd,
+        rb,
+        zero: true,
+        field,
+      };
+    } else if (parser.isNext(',')) {
+      parser.nextTok();
+      if (parser.isNext('#')) {
+        // rd, [rb, #field]
+        parser.nextTok();
+
+        const field = Expression.parse(parser, imp);
+
+        if (!parser.isNext(']')) {
+          parser.restore();
+          return false;
+        }
+        parser.nextTok();
+
+        parser.forceNewline('typed memory statement');
+        parser.applySave();
+        return {
+          kind: ldr ? 'ldrImm' : 'strImm',
+          cond,
+          rd,
+          rb,
+          zero: false,
+          field,
+        };
+      } else {
+        // rd, [rb, ro] (field)
+        const tk3 = parser.nextTokOptional();
+        if (!tk3 || tk3.kind !== 'id') {
+          parser.restore();
+          return false;
+        }
+        const ro = imp.decodeRegister(tk3, false);
+        if (ro < 0) {
+          parser.restore();
+          return false;
+        }
+
+        if (!parser.isNext(']')) {
+          parser.restore();
+          return false;
+        }
+        parser.nextTok();
+
+        if (!parser.isNext('(')) {
+          parser.restore();
+          return false;
+        }
+        parser.nextTok();
+
+        const field = Expression.parse(parser, imp);
+
+        if (!parser.isNext(')')) {
+          parser.restore();
+          return false;
+        }
+        parser.nextTok();
+
+        parser.forceNewline('typed memory statement');
+        parser.applySave();
+        return {
+          kind: ldr ? 'ldrReg' : 'strReg',
+          cond,
+          rd,
+          rb,
+          ro,
+          field,
+        };
+      }
+    } else {
+      parser.restore();
+      return false;
+    }
+  } catch (_) {
+    parser.restore();
+    return false;
+  }
+}
+
 interface IPool {
   rd: number;
   expr: Expression;
@@ -345,17 +551,17 @@ function parsePoolStatement(parser: Parser, imp: Import): IPool | false {
       return false;
     }
 
-    const tk2 = parser.nextTokOptional();
-    if (!tk2 || tk2.kind !== 'punc' || tk2.punc !== ',') {
+    if (!parser.isNext(',')) {
       parser.restore();
       return false;
     }
+    parser.nextTok();
 
-    const tk3 = parser.nextTokOptional();
-    if (!tk3 || tk3.kind !== 'punc' || tk3.punc !== '=') {
+    if (!parser.isNext('=')) {
       parser.restore();
       return false;
     }
+    parser.nextTok();
 
     // parse rest of expression
     const expr = Expression.parse(parser, imp);
@@ -983,76 +1189,86 @@ async function parseBeginBody(parser: Parser, imp: Import) {
           case 'none':
             throw new CompError(tk, 'Unknown assembler mode (`.arm` or `.thumb`)');
           case 'arm': {
+            const typedMem = parseTypedMemoryStatement(opName, parser, imp);
+            if (typedMem) {
+              imp.writeTypedMemARM(tk, typedMem);
+              break;
+            }
             const pool = parsePoolStatement(parser, imp);
             if (pool) {
               parseARMPoolStatement(tk, opName, pool, imp);
-            } else {
-              const ops = ARM.parsedOps[opName];
-              if (!ops) {
-                throw new CompError(tk, `Unknown ARM command: ${opName}`);
-              }
-              let lastError = new CompError(tk, 'Failed to parse ARM statement');
-              if (
-                !ops.some((op) => {
-                  parser.save();
-                  let res;
-                  try {
-                    res = parseARMStatement(tk, op, parser, imp);
-                  } catch (e) {
-                    if (e instanceof CompError) {
-                      lastError = e;
-                      parser.restore();
-                      return false;
-                    }
-                    throw e;
+              break;
+            }
+            const ops = ARM.parsedOps[opName];
+            if (!ops) {
+              throw new CompError(tk, `Unknown ARM command: ${opName}`);
+            }
+            let lastError = new CompError(tk, 'Failed to parse ARM statement');
+            if (
+              !ops.some((op) => {
+                parser.save();
+                let res;
+                try {
+                  res = parseARMStatement(tk, op, parser, imp);
+                } catch (e) {
+                  if (e instanceof CompError) {
+                    lastError = e;
+                    parser.restore();
+                    return false;
                   }
-                  if (res) {
-                    parser.applySave();
-                    return true;
-                  }
-                  parser.restore();
-                  return false;
-                })
-              ) {
-                throw lastError;
-              }
+                  throw e;
+                }
+                if (res) {
+                  parser.applySave();
+                  return true;
+                }
+                parser.restore();
+                return false;
+              })
+            ) {
+              throw lastError;
             }
             break;
           }
           case 'thumb': {
+            const typedMem = parseTypedMemoryStatement(opName, parser, imp);
+            if (typedMem) {
+              imp.writeTypedMemThumb(tk, typedMem);
+              break;
+            }
             const pool = parsePoolStatement(parser, imp);
             if (pool) {
               parseThumbPoolStatement(tk, opName, pool, imp);
-            } else {
-              const ops = Thumb.parsedOps[opName];
-              if (!ops) {
-                throw new CompError(tk, `Unknown Thumb command: ${opName}`);
-              }
-              let lastError = new CompError(tk, 'Failed to parse Thumb statement');
-              if (
-                !ops.some((op) => {
-                  parser.save();
-                  let res;
-                  try {
-                    res = parseThumbStatement(tk, op, parser, imp);
-                  } catch (e) {
-                    if (e instanceof CompError) {
-                      lastError = e;
-                      parser.restore();
-                      return false;
-                    }
-                    throw e;
+              break;
+            }
+            const ops = Thumb.parsedOps[opName];
+            if (!ops) {
+              throw new CompError(tk, `Unknown Thumb command: ${opName}`);
+            }
+            let lastError = new CompError(tk, 'Failed to parse Thumb statement');
+            if (
+              !ops.some((op) => {
+                parser.save();
+                let res;
+                try {
+                  res = parseThumbStatement(tk, op, parser, imp);
+                } catch (e) {
+                  if (e instanceof CompError) {
+                    lastError = e;
+                    parser.restore();
+                    return false;
                   }
-                  if (res) {
-                    parser.applySave();
-                    return true;
-                  }
-                  parser.restore();
-                  return false;
-                })
-              ) {
-                throw lastError;
-              }
+                  throw e;
+                }
+                if (res) {
+                  parser.applySave();
+                  return true;
+                }
+                parser.restore();
+                return false;
+              })
+            ) {
+              throw lastError;
             }
             break;
           }

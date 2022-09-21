@@ -1505,9 +1505,9 @@ str r2, [r9, #4096]
     kind: 'make',
     files: {
       '/root/main': `.arm
-strh r11, [r4]                /// b0 b0 44 e1
-strhlt r11, [r4]              /// b0 b0 44 b1
-strlth r11, [r4]              /// b0 b0 44 b1
+strh r11, [r4]                /// b0 b0 c4 e1
+strhlt r11, [r4]              /// b0 b0 c4 b1
+strlth r11, [r4]              /// b0 b0 c4 b1
 
 strh r11, [r4, #100]          /// b4 b6 c4 e1
 strhlt r11, [r4, #100]        /// b4 b6 c4 b1
@@ -1602,17 +1602,17 @@ strh r2, [r9, #256]
     kind: 'make',
     files: {
       '/root/main': `.arm
-ldrh r11, [r4]                /// b0 b0 54 e1
-ldrhgt r11, [r4]              /// b0 b0 54 c1
-ldrgth r11, [r4]              /// b0 b0 54 c1
+ldrh r11, [r4]                /// b0 b0 d4 e1
+ldrhgt r11, [r4]              /// b0 b0 d4 c1
+ldrgth r11, [r4]              /// b0 b0 d4 c1
 
-ldrsb r11, [r4]               /// d0 b0 54 e1
-ldrsbgt r11, [r4]             /// d0 b0 54 c1
-ldrgtsb r11, [r4]             /// d0 b0 54 c1
+ldrsb r11, [r4]               /// d0 b0 d4 e1
+ldrsbgt r11, [r4]             /// d0 b0 d4 c1
+ldrgtsb r11, [r4]             /// d0 b0 d4 c1
 
-ldrsh r11, [r4]               /// f0 b0 54 e1
-ldrshgt r11, [r4]             /// f0 b0 54 c1
-ldrgtsh r11, [r4]             /// f0 b0 54 c1
+ldrsh r11, [r4]               /// f0 b0 d4 e1
+ldrshgt r11, [r4]             /// f0 b0 d4 c1
+ldrgtsh r11, [r4]             /// f0 b0 d4 c1
 
 ldrh r11, [r4, #100]          /// b4 b6 d4 e1
 ldrhgt r11, [r4, #100]        /// b4 b6 d4 c1

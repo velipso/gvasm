@@ -2784,7 +2784,7 @@ export namespace ARM {
         { s: 1, k: 'value', sym: 'l', v: 0 }, // store
         { s: 1, k: 'ignored', sym: 'w', v: 0 }, // write back doesn't matter because offset is 0
         { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
-        { s: 1, k: 'ignored', sym: 'u', v: 0 }, // up/down doesn't matter because offset is 0
+        { s: 1, k: 'ignored', sym: 'u', v: 1 }, // up/down doesn't matter because offset is 0
         { s: 1, k: 'value', sym: 'p', v: 1 }, // pre-indexing
         { s: 3, k: 'value', v: 0 },
         condition,
@@ -2934,7 +2934,7 @@ export namespace ARM {
         { s: 1, k: 'value', sym: 'l', v: 1 }, // load
         { s: 1, k: 'ignored', sym: 'w', v: 0 }, // write back doesn't matter because offset is 0
         { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
-        { s: 1, k: 'ignored', sym: 'u', v: 0 }, // up/down doesn't matter because offset is 0
+        { s: 1, k: 'ignored', sym: 'u', v: 1 }, // up/down doesn't matter because offset is 0
         { s: 1, k: 'value', sym: 'p', v: 1 }, // pre-indexing
         { s: 3, k: 'value', v: 0 },
         condition,

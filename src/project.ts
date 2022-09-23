@@ -29,6 +29,7 @@ export interface IBase {
 }
 
 interface IFileCache {
+  flp: IFilePos | false;
   used: boolean;
   imp?: Import;
   blob?: Uint8Array;
@@ -41,6 +42,7 @@ interface IFileCache {
 export class Project {
   private fileCache = new Map<string, IFileCache>();
   private usedFilenames = new Set<string>();
+  private failedImports: CompError[] = [];
   private mainFullFile: string;
   private defines: ILexKeyValue[];
   private cwd: string;
@@ -74,7 +76,11 @@ export class Project {
     return this.log;
   }
 
-  readFileCacheImport(filename: string, fromFilename: string | false): Import | false {
+  readFileCacheImport(
+    filename: string,
+    failNotFound: boolean,
+    fromFilename: string | false,
+  ): Import | false {
     const file = this.fileCache.get(filename);
     if (file && file.imp) {
       if (fromFilename) {
@@ -82,6 +88,9 @@ export class Project {
       }
       file.used = true;
       return file.imp;
+    }
+    if (failNotFound) {
+      throw new CompError(file?.flp ?? false, `Failed to import file: ${filename}`);
     }
     return false;
   }
@@ -93,7 +102,21 @@ export class Project {
     return this.path.resolve(this.path.dirname(fromFilename), filename);
   }
 
-  async import(flp: IFilePos | false, fullFile: string): Promise<Import> {
+  private getOrCreateFileCache(flp: IFilePos | false, fullFile: string): IFileCache {
+    const file = this.fileCache.get(fullFile) ?? {
+      flp,
+      used: true,
+      importReplay: false,
+      imports: [],
+      scriptParents: new Set(),
+      scriptEmbed: new Set(),
+    };
+    this.fileCache.set(fullFile, file);
+    file.used = true;
+    return file;
+  }
+
+  async import(flp: IFilePos | false, fullFile: string): Promise<CompError | Import> {
     this.usedFilenames.add(fullFile);
 
     if (flp) {
@@ -107,103 +130,52 @@ export class Project {
       }
     }
 
-    const file = this.fileCache.get(fullFile);
-    if (file && file.imp) {
-      file.used = true;
-      if (file.importReplay) {
-        file.importReplay = false;
-        for (const transImp of file.imports) {
-          await this.import(transImp.flp, transImp.fullFile);
-        }
+    const file = this.getOrCreateFileCache(flp, fullFile);
+    if (file.importReplay) {
+      file.importReplay = false;
+      for (const transImp of file.imports) {
+        await this.import(transImp.flp, transImp.fullFile);
       }
+    }
+    if (file.imp) {
       return file.imp;
     }
-    let txt;
     try {
-      txt = await this.readTextFile(fullFile);
-    } catch (_) {
-      throw new CompError(flp, `Failed to import file: ${fullFile}`);
-    }
-    try {
+      const txt = await this.readTextFile(fullFile).catch(() => {
+        // swallow i/o errors
+        throw false;
+      });
       const tks = lex(fullFile, txt);
-      const imp = new Import(this, fullFile, this.mainFullFile === fullFile);
-      if (file) {
-        file.used = true;
-        file.imp = imp;
-      } else {
-        this.fileCache.set(fullFile, {
-          used: true,
-          imp,
-          importReplay: false,
-          imports: [],
-          scriptParents: new Set(),
-          scriptEmbed: new Set(),
-        });
-      }
-      await parse(imp, fullFile, this.defines, tks);
-      return imp;
+      file.imp = new Import(this, fullFile, this.mainFullFile === fullFile);
+      await parse(file.imp, fullFile, this.defines, tks);
+      return file.imp;
     } catch (e) {
-      throw CompError.extend(e, flp, `Failed to import file: ${fullFile}`);
+      delete file.imp;
+      const err = CompError.extend(e, flp, `Failed to import file: ${fullFile}`);
+      this.failedImports.push(err);
+      return err;
     }
   }
 
-  async scriptEmbed(fromFilename: string, filename: string): Promise<Uint8Array | false> {
-    this.fileCache.get(fromFilename)?.scriptEmbed.add(filename);
-    const file = this.fileCache.get(filename);
-    if (file && file.blob) {
-      file.used = true;
-      file.scriptParents.add(fromFilename);
-      return file.blob;
+  async embed(
+    flp: IFilePos | false,
+    fullFile: string,
+    fromScript: string | false,
+  ): Promise<Uint8Array | false> {
+    this.usedFilenames.add(fullFile);
+    const file = this.getOrCreateFileCache(flp, fullFile);
+    if (fromScript) {
+      this.fileCache.get(fromScript)?.scriptEmbed.add(fullFile);
+      file.scriptParents.add(fromScript);
     }
     try {
-      const blob = await this.readBinaryFile(filename);
-      if (file) {
-        file.used = true;
-        file.blob = blob;
-        file.scriptParents.add(fromFilename);
-      } else {
-        this.fileCache.set(filename, {
-          used: true,
-          blob,
-          importReplay: false,
-          imports: [],
-          scriptParents: new Set([fromFilename]),
-          scriptEmbed: new Set(),
-        });
+      if (!file.blob) {
+        file.blob = await this.readBinaryFile(fullFile);
       }
-      return blob;
+      return file.blob;
     } catch (_) {
       return false;
     }
-  }
-
-  async embed(flp: IFilePos | false, fullFile: string): Promise<Uint8Array> {
-    this.usedFilenames.add(fullFile);
-    const file = this.fileCache.get(fullFile);
-    if (file && file.blob) {
-      file.used = true;
-      return file.blob;
-    }
-    let blob;
-    try {
-      blob = await this.readBinaryFile(fullFile);
-    } catch (_) {
-      throw new CompError(flp, `Failed to embed file: ${fullFile}`);
-    }
-    if (file) {
-      file.used = true;
-      file.blob = blob;
-    } else {
-      this.fileCache.set(fullFile, {
-        used: true,
-        blob,
-        importReplay: false,
-        imports: [],
-        scriptParents: new Set(),
-        scriptEmbed: new Set(),
-      });
-    }
-    return blob;
   }
 
   async make(): Promise<IMakeResult> {
@@ -219,6 +191,7 @@ export class Project {
 
       // generate the sections
       this.usedFilenames = new Set([this.mainFullFile]);
+      this.failedImports = [];
       const sections = await this.include(
         false,
         this.mainFullFile,
@@ -287,10 +260,20 @@ export class Project {
 
       this.usedFilenames = new Set(this.fileCache.keys());
 
+      // if we have any failed imports that aren't actually used, then we should still error on them
+      if (this.failedImports.length > 0) {
+        return {
+          errors: this.failedImports.map((e) => {
+            e.mapFilenames((filename) => this.path.relative(this.cwd, filename));
+            return e.toErrors();
+          }).flat(),
+          makeTime: Date.now() - startTime,
+        };
+      }
+
       const mainImp = this.fileCache.get(this.mainFullFile)?.imp;
       const base = mainImp?.firstWrittenBase ?? -1;
       const arm = mainImp?.firstWrittenARM ?? true;
-
       return {
         sections,
         base: base < 0 ? 0x08000000 : base,
@@ -313,7 +296,11 @@ export class Project {
     base: IBase,
     startLength: number,
   ): Promise<Uint8Array[]> {
-    return await (await this.import(flp, fullFile)).flatten(base, startLength);
+    const imp = await this.import(flp, fullFile);
+    if (imp instanceof CompError) {
+      throw imp;
+    }
+    return await imp.flatten(base, startLength);
   }
 
   filenames(): Set<string> {
@@ -351,7 +338,7 @@ export class Project {
             await sink.scr_write(scr, body, startLine + 1);
             return true;
           }
-          const data = await this.scriptEmbed(filename, file);
+          const data = await this.embed(flp, file, filename);
           if (data === false) {
             return false;
           }

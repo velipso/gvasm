@@ -276,4 +276,89 @@ end
 `,
     }],
   });
+
+  def({
+    name: 'watch.failed-imports',
+    desc: 'Failed imports should work after file exists',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      '! root/main:2:1: Failed to import file: /root/test',
+      'watch: /root/main /root/test',
+      'read: /root/test',
+      '> 01',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `
+.import 'test' { foo }
+.i8 foo
+`,
+    }, {
+      '/root/test': `
+.def foo = 1
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.failed-includes',
+    desc: 'Failed includes should work after file exists',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      '! root/main:3:10: Failed to import file: /root/test',
+      'watch: /root/main /root/test',
+      'read: /root/test',
+      '> 02 01',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `
+.import 'test' { foo }
+.include 'test'
+.i8 foo
+`,
+    }, {
+      '/root/test': `
+.def foo = 1
+.i8 2
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.import-deleted',
+    desc: 'Deleted file that was imported should recover after placing back',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/test',
+      '> 01',
+      'watch: /root/main /root/test',
+      '! root/main:2:1: Failed to import file: /root/test',
+      'watch: /root/main /root/test',
+      'read: /root/test',
+      '> 02',
+      'watch: /root/main /root/test',
+    ],
+    history: [{
+      '/root/main': `
+.import 'test' { foo }
+.i8 foo
+`,
+      '/root/test': `
+.def foo = 1
+`,
+    }, {
+      '/root/test': false,
+    }, {
+      '/root/test': `
+.def foo = 2
+`,
+    }],
+  });
 }

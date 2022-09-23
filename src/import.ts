@@ -1913,9 +1913,9 @@ export class Import {
             // don't resolve external symbols early unless required by a script
             return false;
           }
-          const pf = this.proj.readFileCacheImport(root.fullFile, fromScript);
+          const pf = this.proj.readFileCacheImport(root.fullFile, failNotFound, fromScript);
           if (!pf) {
-            throw new Error(`Failed to reimport: ${root.fullFile}`);
+            return false;
           }
           return lookup(i + 1, pf.defTable);
         }
@@ -1924,9 +1924,9 @@ export class Import {
             // don't resolve external symbols early unless required by a script
             return false;
           }
-          const pf = this.proj.readFileCacheImport(root.fullFile, fromScript);
+          const pf = this.proj.readFileCacheImport(root.fullFile, failNotFound, fromScript);
           if (!pf) {
-            throw new Error(`Failed to reimport: ${root.fullFile}`);
+            return false;
           }
           return lookup(i, pf.defTable);
         }

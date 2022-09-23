@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IFilePos, ILexKeyValue, ITok } from './lexer.ts';
+import { IFilePos, ITok } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever } from './util.ts';
 import { Expression } from './expr.ts';
@@ -117,19 +117,11 @@ export class Parser {
   }
 
   checkDotStatement(id: string): boolean {
-    if (this.i + 2 > this.tks.length) {
-      return false;
+    if (this.isNext2('.', id)) {
+      this.i += 2;
+      return true;
     }
-    const tk1 = this.tks[this.i];
-    if (tk1.kind !== 'punc' || tk1.punc !== '.') {
-      return false;
-    }
-    const tk2 = this.tks[this.i + 1];
-    if (tk2.kind !== 'id' || tk2.id !== id) {
-      return false;
-    }
-    this.i += 2;
-    return true;
+    return false;
   }
 
   checkEnd(): boolean {
@@ -577,14 +569,8 @@ function parsePoolStatement(parser: Parser, imp: Import): IPool | false {
 function validateStr(partStr: string, parser: Parser): boolean {
   if (partStr === '') {
     return true;
-  }
-  const tk = parser.nextTokOptional();
-  if (
-    tk && (
-      (tk.kind === 'id' && tk.id === partStr) ||
-      (tk.kind === 'punc' && tk.punc === partStr)
-    )
-  ) {
+  } else if (parser.isNext(partStr)) {
+    parser.nextTok();
     return true;
   }
   return false;
@@ -606,7 +592,7 @@ function validateSymExpr(
     syms[partSym] = ex;
     return true;
   }
-  const v = ex.value(imp.expressionContext(0), true, false);
+  const v = ex.value(imp.expressionContext(0), false, false);
   if (v === false || v >= 0) {
     return false;
   }
@@ -1349,11 +1335,16 @@ async function parseIf(flp: IFilePos, parser: Parser, imp: Import) {
       }
       imp.end();
       const exflp = parser.here();
-      const elseif = Expression.parse(parser, imp).value(
-        imp.expressionContext(0),
-        true,
-        false,
-      );
+      let elseif;
+      try {
+        elseif = Expression.parse(parser, imp).value(
+          imp.expressionContext(0),
+          true,
+          false,
+        );
+      } catch (e) {
+        throw CompError.extend(e, exflp, 'Condition unknown at time of execution');
+      }
       if (gotTrue) {
         imp.ifStart(false);
       } else if (elseif === false) {
@@ -1795,11 +1786,16 @@ function parseStructBody(parser: Parser, imp: Import, struct: IStruct, active: b
 }
 
 function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStruct) {
-  const condition = Expression.parse(parser, imp).value(
-    imp.expressionContext(0),
-    true,
-    false,
-  );
+  let condition;
+  try {
+    condition = Expression.parse(parser, imp).value(
+      imp.expressionContext(0),
+      true,
+      false,
+    );
+  } catch (e) {
+    throw CompError.extend(e, flp, 'Condition unknown at time of execution');
+  }
   parser.forceNewline('`.if` statement');
   if (condition === false) {
     throw new CompError(flp, 'Condition unknown at time of execution');
@@ -1816,11 +1812,16 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
         throw new CompError(parser.last(), `Can't have \`.elseif\` after \`.else\``);
       }
       const exflp = parser.here();
-      const elseif = Expression.parse(parser, imp).value(
-        imp.expressionContext(0),
-        true,
-        false,
-      );
+      let elseif;
+      try {
+        elseif = Expression.parse(parser, imp).value(
+          imp.expressionContext(0),
+          true,
+          false,
+        );
+      } catch (e) {
+        throw CompError.extend(e, exflp, 'Condition unknown at time of execution');
+      }
       if (gotTrue) {
         active = false;
       } else if (elseif === false) {
@@ -1841,16 +1842,7 @@ function parseStructIf(flp: IFilePos, parser: Parser, imp: Import, struct: IStru
   }
 }
 
-export async function parse(
-  imp: Import,
-  fullFile: string,
-  defines: ILexKeyValue[],
-  tks: ITok[],
-): Promise<Import> {
-  for (const d of defines) {
-    imp.addSymNum({ filename: fullFile, line: 1, chr: 1 }, d.key, d.value);
-  }
-
+export async function parse(imp: Import, tks: ITok[]): Promise<void> {
   const parser = new Parser(tks);
 
   // parse imports, then body
@@ -1858,6 +1850,6 @@ export async function parse(
   while (parser.hasTok()) {
     await parseBeginBody(parser, imp);
   }
+
   imp.endOfFile();
-  return imp;
 }

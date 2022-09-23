@@ -139,7 +139,9 @@ export class SectionBytes extends Section {
 
   writeArray(v: Uint8Array | number[]) {
     delete this.byteArray;
-    for (let i = 0; i < v.length; i++) this.array.push(v[i] & 0xff);
+    for (let i = 0; i < v.length; i++) {
+      this.array.push(v[i] & 0xff);
+    }
   }
 
   rewrite8(): IRewrite<number> {
@@ -148,7 +150,9 @@ export class SectionBytes extends Section {
     this.array.push(0);
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: (v: number) => {
@@ -167,7 +171,9 @@ export class SectionBytes extends Section {
     this.array.push(0, 0);
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: (v: number) => {
@@ -188,7 +194,9 @@ export class SectionBytes extends Section {
     this.array.push(0, 0, 0, 0);
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: (v: number) => {
@@ -215,11 +223,15 @@ export class SectionBytes extends Section {
     }
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: (v: number[]) => {
-        if (v.length !== size) throw new Error('Bad rewrite for array');
+        if (v.length !== size) {
+          throw new Error('Bad rewrite for array');
+        }
         if (this.byteArray) {
           for (let j = 0; j < size; j++) {
             this.byteArray[i + j] = v[j] & 0xff;
@@ -241,12 +253,16 @@ export class SectionBytes extends Section {
     }
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: littleEndian
         ? (v: number[]) => {
-          if (v.length !== size) throw new Error('Bad rewrite for array');
+          if (v.length !== size) {
+            throw new Error('Bad rewrite for array');
+          }
           if (this.byteArray) {
             for (let j = 0; j < size; j++) {
               this.byteArray[i + j * 2] = v[j] & 0xff;
@@ -260,7 +276,9 @@ export class SectionBytes extends Section {
           }
         }
         : (v: number[]) => {
-          if (v.length !== size) throw new Error('Bad rewrite for array');
+          if (v.length !== size) {
+            throw new Error('Bad rewrite for array');
+          }
           if (this.byteArray) {
             for (let j = 0; j < size; j++) {
               this.byteArray[i + j * 2] = (v[j] >> 8) & 0xff;
@@ -284,12 +302,16 @@ export class SectionBytes extends Section {
     }
     return {
       addr: () => {
-        if (this.addr === false) return false;
+        if (this.addr === false) {
+          return false;
+        }
         return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
       },
       write: littleEndian
         ? (v: number[]) => {
-          if (v.length !== size) throw new Error('Bad rewrite for array');
+          if (v.length !== size) {
+            throw new Error('Bad rewrite for array');
+          }
           if (this.byteArray) {
             for (let j = 0; j < size; j++) {
               this.byteArray[i + j * 4] = v[j] & 0xff;
@@ -307,7 +329,9 @@ export class SectionBytes extends Section {
           }
         }
         : (v: number[]) => {
-          if (v.length !== size) throw new Error('Bad rewrite for array');
+          if (v.length !== size) {
+            throw new Error('Bad rewrite for array');
+          }
           if (this.byteArray) {
             for (let j = 0; j < size; j++) {
               this.byteArray[i + j * 4] = (v[j] >> 24) & 0xff;

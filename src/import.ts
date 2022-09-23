@@ -349,7 +349,9 @@ class PendingWriteInstARM extends PendingWriteInstCommon<ARM.IOp> {
         symNums[key] = expr;
       } else {
         const v = expr.value(this.context, failNotFound, false);
-        if (v === false) return false;
+        if (v === false) {
+          return false;
+        }
         symNums[key] = v;
       }
     }
@@ -2428,8 +2430,12 @@ export class Import {
 
   makeStart() {
     for (const section of this.sections) {
-      if (section instanceof SectionBytes) section.clearAddr();
-      if (section instanceof SectionPool) section.clearWrite();
+      if (section instanceof SectionBytes) {
+        section.clearAddr();
+      }
+      if (section instanceof SectionPool) {
+        section.clearWrite();
+      }
     }
   }
 

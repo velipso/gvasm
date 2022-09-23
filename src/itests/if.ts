@@ -183,25 +183,4 @@ La: .end
       '/root/fail': `.i8 2`,
     },
   });
-
-  /* TODO: this should work... eventually :-(
-  def({
-    name: 'if.use-base',
-    desc: 'If statement can use _base',
-    kind: 'make',
-    stdout: ['base is 0'],
-    files: {
-      '/root/main': `
-.base 0
-.include 'test'
-`,
-      '/root/test': `
-.if _base == 0
-  .printf "base is 0"
-.else
-  .printf "base isn't 0"
-.end
-`,
-    }
-  }); */
 }

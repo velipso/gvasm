@@ -147,7 +147,10 @@ export class Project {
       });
       const tks = lex(fullFile, txt);
       file.imp = new Import(this, fullFile, this.mainFullFile === fullFile);
-      await parse(file.imp, fullFile, this.defines, tks);
+      for (const d of this.defines) {
+        file.imp.addSymNum({ filename: fullFile, line: 1, chr: 1 }, d.key, d.value);
+      }
+      await parse(file.imp, tks);
       return file.imp;
     } catch (e) {
       delete file.imp;

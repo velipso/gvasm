@@ -660,6 +660,7 @@ export class Expression {
               throw new CompError(ex.flp, `Can't access exported values unless they are numbers`);
             case 'lookupData':
               if (dataTypeOutput) {
+                // "return" the data type in out of band variable
                 dataTypeOutput[0] = v.dataType;
               }
               return v.value;
@@ -746,7 +747,9 @@ export class Expression {
         }
         case 'unary': {
           const a = get(ex.value);
-          if (a === false) return false;
+          if (a === false) {
+            return false;
+          }
           switch (ex.op) {
             case '-':
               return -a;
@@ -763,9 +766,13 @@ export class Expression {
         }
         case 'binary': {
           const a = get(ex.left);
-          if (a === false) return false;
+          if (a === false) {
+            return false;
+          }
           const b = get(ex.right);
-          if (b === false) return false;
+          if (b === false) {
+            return false;
+          }
           switch (ex.op) {
             case '+':
               return (a + b) | 0;
@@ -812,7 +819,9 @@ export class Expression {
         }
         case '?:': {
           const condition = get(ex.condition);
-          if (condition === false) return false;
+          if (condition === false) {
+            return false;
+          }
           const iftrue = get(ex.iftrue);
           const iffalse = get(ex.iffalse);
           return condition === 0 ? iffalse : iftrue;

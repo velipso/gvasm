@@ -203,9 +203,9 @@ Strings are binary-safe arrays of bytes, that can be any length, and include any
 255.  Strings have no concept of unicode (though there are basic helper commands in the standard
 library for dealing specifically with UTF-8 strings).
 
-Strings can be specified with single quotes `'` or double quotes `"`.  Single quoted strings do not
-perform any substitution and only have one escape sequence `''` (two single quotes) to indicate a
-single quote character (i.e., `'it''s like this'`).
+Strings can be specified with single quotes `'`, double quotes `"`, or backticks `` ` ``.  Single
+quoted strings do not perform any substitution and only have one escape sequence `''` (two single
+quotes) to indicate a single quote character (i.e., `'it''s like this'`).
 
 Double quoted strings perform substitution via `$`, and have the escape sequences:
 
@@ -233,6 +233,18 @@ say "foo.bar is ${foo.bar}"  // expression subtitution
 say "a + b is ${a + b}"      // expression subtitution
 say "hi: ${str.lower "HI"}"  // nested strings are valid
 ```
+
+Backtick quoted strings can be spread across multiple lines.  They do not perform any substitution
+and do not have any escape sequences.  They can start with a variable number of backticks, and end
+after the same number of backticks are found:
+
+````
+say ```
+here is a long document
+that will end after three
+backticks (`)
+```
+````
 
 The unary `&` operator returns the string length:
 

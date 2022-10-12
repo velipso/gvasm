@@ -1581,6 +1581,9 @@ enum lex_enum {
   STR_INTERP_DLR_ID,
   STR_INTERP_ESC,
   STR_INTERP_ESC_HEX,
+  STR_BACKTICK_START,
+  STR_BACKTICK_BODY,
+  STR_BACKTICK_END,
 }
 
 interface numpart_info {
@@ -1654,6 +1657,8 @@ interface lex_st {
   ch4: string;
   str_hexval: number;
   str_hexleft: number;
+  str_backtick: number;
+  str_backtickend: number;
   numexp: boolean;
 }
 
@@ -1676,6 +1681,8 @@ function lex_reset(lx: lex_st): void {
   lx.braces = [0];
   lx.str_hexval = 0;
   lx.str_hexleft = 0;
+  lx.str_backtick = 0;
+  lx.str_backtickend = 0;
 }
 
 function lex_new(): lex_st {
@@ -1697,6 +1704,8 @@ function lex_new(): lex_st {
     ch4: '',
     str_hexval: 0,
     str_hexleft: 0,
+    str_backtick: 0,
+    str_backtickend: 0,
     numexp: false,
   };
 }
@@ -1779,6 +1788,10 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         tks.push(tok_newline(flp, false));
       } else if (ch1 === '\n' || ch1 === ';') {
         tks.push(tok_newline(flp, ch1 === ';'));
+      } else if (ch1 === '`') {
+        lx.state = lex_enum.STR_BACKTICK_START;
+        lx.str_backtick = 1;
+        tks.push(tok_ks(flp, ks_enum.LPAREN));
       } else if (!isSpace(ch1)) {
         tks.push(tok_error(flp, `Unexpected character: ${ch1}`));
       }
@@ -2153,6 +2166,47 @@ function lex_process(lx: lex_st, tks: tok_st[]): void {
         );
       }
       break;
+
+    case lex_enum.STR_BACKTICK_START:
+      if (ch1 === '`') {
+        lx.str_backtick++;
+      } else {
+        lx.str = ch1;
+        lx.state = lex_enum.STR_BACKTICK_BODY;
+      }
+      break;
+
+    case lex_enum.STR_BACKTICK_BODY:
+      if (ch1 === '`') {
+        if (lx.str_backtick === 1) {
+          lx.state = lex_enum.START;
+          tks.push(tok_str(flpS, lx.str));
+          tks.push(tok_ks(flp, ks_enum.RPAREN));
+        } else {
+          lx.str_backtickend = 1;
+          lx.state = lex_enum.STR_BACKTICK_END;
+        }
+      } else {
+        lx.str += ch1;
+      }
+      break;
+
+    case lex_enum.STR_BACKTICK_END:
+      if (ch1 === '`') {
+        lx.str_backtickend++;
+        if (lx.str_backtick === lx.str_backtickend) {
+          lx.state = lex_enum.START;
+          tks.push(tok_str(flpS, lx.str));
+          tks.push(tok_ks(flp, ks_enum.RPAREN));
+        }
+      } else {
+        for (let i = 0; i < lx.str_backtickend; i++) {
+          lx.str += '`';
+        }
+        lx.str += ch1;
+        lx.state = lex_enum.STR_BACKTICK_BODY;
+      }
+      break;
   }
 }
 
@@ -2252,6 +2306,9 @@ function lex_close(lx: lex_st, flp: filepos_st, tks: tok_st[]): void {
     case lex_enum.STR_INTERP_DLR_ID:
     case lex_enum.STR_INTERP_ESC:
     case lex_enum.STR_INTERP_ESC_HEX:
+    case lex_enum.STR_BACKTICK_START:
+    case lex_enum.STR_BACKTICK_BODY:
+    case lex_enum.STR_BACKTICK_END:
       tks.push(tok_error(lx.flpS, 'Missing end of string'));
       break;
   }

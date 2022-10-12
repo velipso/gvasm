@@ -3276,4 +3276,27 @@ say rand.range 10, 20, 5
 `,
     },
   });
+
+  def({
+    name: 'sink.76.block-string',
+    kind: 'sink',
+    stdout: `
+  hello, world
+
+
+  hello, \`\` world
+
+`,
+    files: {
+      '/root/main.sink': `
+say \`
+  hello, world
+\`
+
+say \`\`\`
+  hello, \`\` world
+\`\`\`
+`,
+    },
+  });
 }

@@ -4099,6 +4099,7 @@ function parser_process(pr: parser_st, stmts: ast_st[]): strnil {
       } else if (tk1.type === tok_enum.IDENT) {
         return parser_lookup(pr, flpT, prs_enum.INCLUDE_LOOKUP);
       } else if (tok_isKS(tk1, ks_enum.LPAREN)) {
+        st.names = null;
         st.state = prs_enum.INCLUDE_STR;
         return null;
       } else if (tok_isKS(tk1, ks_enum.PLUS)) {

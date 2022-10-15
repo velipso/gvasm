@@ -212,14 +212,26 @@ export function load(def: (test: ITest) => void) {
 .i8 clamp(4, 3, 5)              /// 04
 .i8 clamp(4, 5, 3)              /// 04
 .i8 log2(100)                   /// 06
+.i8 log2assert(128)             /// 07
 .i8 max(6, 3, 0, 10, 4)         /// 0a
 .i8 min(6, 3, 0, -3, 4)         /// fd
 .i8 nrt(100, 3)                 /// 04
 .i8 pow(3, 3)                   /// 1b
+.align 2                        /// 00
 .i16 rgb(2, 31, 10)             /// e2 2b
 .i8 sign(0), sign(5), sign(-5)  /// 00 01 ff
 .i8 sqrt(30), sqrt(-30)         /// 05 05
 `,
+    },
+  });
+
+  def({
+    name: 'expr.log2assert',
+    desc: 'Verify log2assert fails when log2 isn\'t exact',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `.i8 log2assert(100)`,
     },
   });
 

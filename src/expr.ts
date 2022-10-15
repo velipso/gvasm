@@ -15,30 +15,40 @@ import { CPU } from './run.ts';
 interface IFunctions {
   [name: string]: {
     size: number;
-    f(p: number[]): number;
+    f(flp: IFilePos, p: number[]): number;
   };
 }
 
 const functions: IFunctions = Object.freeze({
-  abs: { size: 1, f: ([a]) => Math.abs(a) },
+  abs: { size: 1, f: (_, [a]) => Math.abs(a) },
   clamp: {
     size: 3,
-    f: ([a, b, c]) => b <= c ? (a < b ? b : a > c ? c : a) : (a < c ? c : a > b ? b : a),
+    f: (_, [a, b, c]) => b <= c ? (a < b ? b : a > c ? c : a) : (a < c ? c : a > b ? b : a),
   },
-  log2: { size: 1, f: ([a]) => Math.log2(a) },
-  max: { size: -1, f: (p) => Math.max(...p) },
-  min: { size: -1, f: (p) => Math.min(...p) },
-  nrt: { size: 2, f: ([a, b]) => Math.pow(a, 1 / b) },
-  pow: { size: 2, f: ([a, b]) => Math.pow(a, b) },
+  log2: { size: 1, f: (_, [a]) => Math.log2(a) },
+  log2assert: {
+    size: 1,
+    f: (flp, [a]) => {
+      const v = Math.log2(a);
+      if (v !== (v | 0)) {
+        throw new CompError(flp, `Value isn't an exact power of 2: ${a}`);
+      }
+      return v;
+    },
+  },
+  max: { size: -1, f: (_, p) => Math.max(...p) },
+  min: { size: -1, f: (_, p) => Math.min(...p) },
+  nrt: { size: 2, f: (_, [a, b]) => Math.pow(a, 1 / b) },
+  pow: { size: 2, f: (_, [a, b]) => Math.pow(a, b) },
   rgb: {
     size: 3,
-    f: ([r, g, b]) =>
+    f: (_, [r, g, b]) =>
       ((b & 0x1f) << 10) |
       ((g & 0x1f) << 5) |
       (r & 0x1f),
   },
-  sign: { size: 1, f: ([a]) => Math.sign(a) },
-  sqrt: { size: 1, f: ([a]) => Math.sqrt(Math.abs(a)) },
+  sign: { size: 1, f: (_, [a]) => Math.sign(a) },
+  sqrt: { size: 1, f: (_, [a]) => Math.sqrt(Math.abs(a)) },
 });
 
 export const reservedNames = Object.freeze([
@@ -123,6 +133,7 @@ interface IExprDefined {
 
 interface IExprFunc {
   kind: 'func';
+  flp: IFilePos;
   func: string;
   params: IExpr[];
 }
@@ -320,7 +331,7 @@ export class Expression {
           if (functions[t.id].size >= 0) {
             checkParamSize(t, params.length, functions[t.id].size);
           }
-          value = { kind: 'func', func: t.id, params };
+          value = { kind: 'func', flp: t, func: t.id, params };
         } else if (t.id === 'assert') {
           parser.nextTok();
           if (!parser.isNext('(')) {
@@ -743,7 +754,7 @@ export class Expression {
             if (p === false) return false;
             a.push(p);
           }
-          return func.f(a) | 0;
+          return func.f(ex.flp, a) | 0;
         }
         case 'unary': {
           const a = get(ex.value);

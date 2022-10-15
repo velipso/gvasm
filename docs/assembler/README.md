@@ -216,6 +216,7 @@ non-zero number is considered true.  Parenthesis can be used to override default
 | `clamp(a, low, high)` | Clamp `a` between `low` and `high` (inclusive)         |
 | `defined(a)`          | Returns 1 if `a` is defined, otherwise 0               |
 | `log2(a)`             | Log base 2                                             |
+| `log2assert(a)`       | Asserts `a` is a power of 2, and returns log base 2    |
 | `max(a, ...)`         | Maximum of all arguments                               |
 | `min(a, ...)`         | Minimum of all arguments                               |
 | `nrt(a, b)`           | Nth root, returns `pow(a, 1 / b)`                      |

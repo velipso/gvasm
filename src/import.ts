@@ -1242,7 +1242,9 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
           (this.rd << 12) |
           mov,
       );
-      this.poolAddr = 'inline';
+      if (this.poolAddr === 'unknown') {
+        this.poolAddr = 'inline';
+      }
       return true;
     }
     const mvn = calcRotImm(~ex);
@@ -1255,7 +1257,9 @@ class PendingWritePoolARM extends PendingWritePoolCommon {
           (this.rd << 12) |
           mvn,
       );
-      this.poolAddr = 'inline';
+      if (this.poolAddr === 'unknown') {
+        this.poolAddr = 'inline';
+      }
       return true;
     }
     return false;
@@ -1394,7 +1398,9 @@ class PendingWritePoolThumb extends PendingWritePoolCommon {
         // turns out we don't need the pool space... guess it's wasted
         // convert to: add rd, pc, #offset
         this.rewrite.write(0xa000 | (this.rd << 8) | (offset1 >> 2));
-        this.poolAddr = 'inline';
+        if (this.poolAddr === 'unknown') {
+          this.poolAddr = 'inline';
+        }
         return true;
       }
 

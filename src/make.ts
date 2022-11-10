@@ -112,14 +112,17 @@ export async function makeResult(
 
 export async function make({ input, output, defines, watch, execute }: IMakeArgs): Promise<number> {
   try {
+    let returnCode = 0;
     const ts = () => watch ? `${timestamp()} ` : '';
     const onResult = async (result: IMakeResult) => {
       if ('errors' in result) {
+        returnCode = 1;
         console.error(`${ts()}Error${result.errors.length === 1 ? '' : 's'}:`);
         for (const e of result.errors) {
           console.error(`  ${e}`);
         }
       } else {
+        returnCode = 0;
         const file = await Deno.open(output, { write: true, create: true, truncate: true });
         for (const section of result.sections) {
           await file.write(section);
@@ -148,7 +151,7 @@ export async function make({ input, output, defines, watch, execute }: IMakeArgs
       }
     };
     await makeResult(input, defines, watch, onResult, onInvalidated);
-    return 0;
+    return returnCode;
   } catch (e) {
     console.error(e);
     console.error('Unknown fatal error');

@@ -362,10 +362,6 @@ end
     }],
   });
 
-  /*
-
-  TODO: get these tests to pass!
-
   def({
     name: 'watch.lsr',
     desc: 'Instructions that have constant numbers with unknown expressions should work',
@@ -377,6 +373,7 @@ end
       '> 01 00 b0 e1 01 00 b0 e1',
       '> a1 00 b0 e1',
       'watch: /root/main /root/shift',
+      'read: /root/main',
       'read: /root/shift',
       '> a1 00 b0 e1 01 00 b0 e1',
       '> a1 00 b0 e1',
@@ -392,7 +389,7 @@ movs r0, r1, lsr #1
 `,
       '/root/shift': `
 .def shift = 0
-`
+`,
     }, {
       '/root/shift': `
 .def shift = 1
@@ -410,8 +407,10 @@ movs r0, r1, lsr #1
       'read: /root/start',
       '> 01 01 01 01 03 04',
       'watch: /root/main /root/start',
+      'read: /root/main',
       'read: /root/start',
-      '> 02 02 02 02 02 02 02 02 03 08',
+      '> 02 02 02 02 02 02 02 02',
+      '> 03 08',
       'watch: /root/main /root/start',
     ],
     history: [{
@@ -432,7 +431,7 @@ movs r0, r1, lsr #1
       '/root/start': `
 .def start = 4
 .def value = 1
-`
+`,
     }, {
       '/root/start': `
 .def start = 8
@@ -451,8 +450,10 @@ movs r0, r1, lsr #1
       'read: /root/size',
       '> 01 01 01 01 03',
       'watch: /root/main /root/size',
+      'read: /root/main',
       'read: /root/size',
-      '> 02 02 02 02 02 02 02 02 03',
+      '> 02 02 02 02 02 02 02 02',
+      '> 03',
       'watch: /root/main /root/size',
     ],
     history: [{
@@ -465,7 +466,7 @@ movs r0, r1, lsr #1
       '/root/size': `
 .def size = 4
 .def value = 1
-`
+`,
     }, {
       '/root/size': `
 .def size = 8
@@ -484,6 +485,7 @@ movs r0, r1, lsr #1
       'read: /root/start',
       '> 08 00 00 00 08 00 00 00',
       'watch: /root/main /root/start',
+      'read: /root/main',
       'read: /root/start',
       '> 10 00 00 00 10 00 00 00',
       'watch: /root/main /root/start',
@@ -499,7 +501,7 @@ bar:
 `,
       '/root/start': `
 .def start = 8
-`
+`,
     }, {
       '/root/start': `
 .def start = 16
@@ -516,10 +518,11 @@ bar:
       'read: /root/main',
       'read: /root/cond',
       '> 06 06',
-      'watch: /root/main /root/cond',
+      'watch: /root/cond /root/main',
+      'read: /root/main',
       'read: /root/cond',
       '> 07 08',
-      'watch: /root/main /root/cond',
+      'watch: /root/cond /root/main',
     ],
     history: [{
       '/root/main': `
@@ -545,7 +548,7 @@ bar:
 `,
       '/root/cond': `
 .def cond = 1
-`
+`,
     }, {
       '/root/cond': `
 .def cond = 0
@@ -563,6 +566,7 @@ bar:
       'read: /root/offset',
       '> 02 b0 02 b0 82 b0',
       'watch: /root/main /root/offset',
+      'read: /root/main',
       'read: /root/offset',
       '> 82 b0 02 b0 82 b0',
       'watch: /root/main /root/offset',
@@ -577,12 +581,11 @@ add sp, #-8
 `,
       '/root/offset': `
 .def offset = 8
-`
+`,
     }, {
       '/root/offset': `
 .def offset = -8
 `,
     }],
   });
-  */
 }

@@ -140,6 +140,15 @@ export class Project {
     if (file.imp) {
       return file.imp;
     }
+
+    // check failed imports
+    const alreadyFailed = this.failedImports.find(({ errors }) =>
+      errors.some(({ flp }) => flp && flp.filename === fullFile)
+    );
+    if (alreadyFailed) {
+      return alreadyFailed;
+    }
+
     try {
       const txt = await this.readTextFile(fullFile).catch(() => {
         // swallow i/o errors

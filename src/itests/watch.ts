@@ -361,4 +361,228 @@ end
 `,
     }],
   });
+
+  /*
+
+  TODO: get these tests to pass!
+
+  def({
+    name: 'watch.lsr',
+    desc: 'Instructions that have constant numbers with unknown expressions should work',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/shift',
+      '> 01 00 b0 e1 01 00 b0 e1',
+      '> a1 00 b0 e1',
+      'watch: /root/main /root/shift',
+      'read: /root/shift',
+      '> a1 00 b0 e1 01 00 b0 e1',
+      '> a1 00 b0 e1',
+      'watch: /root/main /root/shift',
+    ],
+    history: [{
+      '/root/main': `
+.import 'shift' { shift }
+.arm
+movs r0, r1, lsr #shift
+movs r0, r1, lsr #0
+movs r0, r1, lsr #1
+`,
+      '/root/shift': `
+.def shift = 0
+`
+    }, {
+      '/root/shift': `
+.def shift = 1
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.align',
+    desc: 'Align dependencies should propagate',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/start',
+      '> 01 01 01 01 03 04',
+      'watch: /root/main /root/start',
+      'read: /root/start',
+      '> 02 02 02 02 02 02 02 02 03 08',
+      'watch: /root/main /root/start',
+    ],
+    history: [{
+      '/root/main': `
+.import 'start' { start, value }
+.base 0
+.i8 value
+.align start, value
+.i8 3
+
+.struct foo
+  .i8 one
+  .align start
+  .i8 two
+.end
+.i8 foo.two
+`,
+      '/root/start': `
+.def start = 4
+.def value = 1
+`
+    }, {
+      '/root/start': `
+.def start = 8
+.def value = 2
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.fill',
+    desc: 'Fill dependencies should propagate',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/size',
+      '> 01 01 01 01 03',
+      'watch: /root/main /root/size',
+      'read: /root/size',
+      '> 02 02 02 02 02 02 02 02 03',
+      'watch: /root/main /root/size',
+    ],
+    history: [{
+      '/root/main': `
+.import 'size' { size, value }
+.base 0
+.i8fill size, value
+.i8 3
+`,
+      '/root/size': `
+.def size = 4
+.def value = 1
+`
+    }, {
+      '/root/size': `
+.def size = 8
+.def value = 2
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.base',
+    desc: 'Base dependencies should propagate',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/start',
+      '> 08 00 00 00 08 00 00 00',
+      'watch: /root/main /root/start',
+      'read: /root/start',
+      '> 10 00 00 00 10 00 00 00',
+      'watch: /root/main /root/start',
+    ],
+    history: [{
+      '/root/main': `
+.import 'start' { start }
+.arm
+.base start
+bar:
+.i32 _here
+.i32 bar
+`,
+      '/root/start': `
+.def start = 8
+`
+    }, {
+      '/root/start': `
+.def start = 16
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.if',
+    desc: 'If dependencies should propagate',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/cond',
+      '> 06 06',
+      'watch: /root/main /root/cond',
+      'read: /root/cond',
+      '> 07 08',
+      'watch: /root/main /root/cond',
+    ],
+    history: [{
+      '/root/main': `
+.import 'cond' { cond }
+.if cond
+  .i8 6
+.else
+  .i8 7
+.end
+.struct foo
+  .i32 one
+  .if cond
+    .i8 two
+    .i8 three
+    .i16 four
+  .else
+    .i16 two
+    .i16 three
+    .i32 four
+  .end
+.end
+.i8 foo.four
+`,
+      '/root/cond': `
+.def cond = 1
+`
+    }, {
+      '/root/cond': `
+.def cond = 0
+`,
+    }],
+  });
+
+  def({
+    name: 'watch.add-neg-sp',
+    desc: 'Negative words should work',
+    kind: 'watch',
+    logBytes: true,
+    stdout: [
+      'read: /root/main',
+      'read: /root/offset',
+      '> 02 b0 02 b0 82 b0',
+      'watch: /root/main /root/offset',
+      'read: /root/offset',
+      '> 82 b0 02 b0 82 b0',
+      'watch: /root/main /root/offset',
+    ],
+    history: [{
+      '/root/main': `
+.import 'offset' { offset }
+.thumb
+add sp, #offset
+add sp, #8
+add sp, #-8
+`,
+      '/root/offset': `
+.def offset = 8
+`
+    }, {
+      '/root/offset': `
+.def offset = -8
+`,
+    }],
+  });
+  */
 }

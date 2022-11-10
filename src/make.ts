@@ -81,13 +81,17 @@ export async function makeResult(
     output,
     invalidated,
     async (file: string) => {
-      const st = await Deno.stat(file);
-      if (st !== null) {
-        if (st.isFile) {
-          return sink.fstype.FILE;
-        } else if (st.isDirectory) {
-          return sink.fstype.DIR;
+      try {
+        const st = await Deno.stat(file);
+        if (st !== null) {
+          if (st.isFile) {
+            return sink.fstype.FILE;
+          } else if (st.isDirectory) {
+            return sink.fstype.DIR;
+          }
         }
+      } catch (_) {
+        // result is NONE
       }
       return sink.fstype.NONE;
     },

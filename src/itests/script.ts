@@ -96,6 +96,41 @@ include "../one.sink" /// 01 02
   });
 
   def({
+    name: 'script.empty',
+    desc: 'Empty script block should work',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script
+.end
+`,
+    },
+  });
+
+  def({
+    name: 'script.start-comments',
+    desc: 'Comments at .start should work',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.script // start
+  put '.i8 0, 1, 2, 3'
+  /// 00 01 02 03
+.end
+.script /* start
+*/
+  put '.i8 4, 5, 6, 7'
+  /// 04 05 06 07
+.end
+.script /* start */
+  put '.i8 8, 9, 10, 11'
+  /// 08 09 0a 0b
+.end
+`,
+    },
+  });
+
+  def({
     name: 'script.end-comments',
     desc: 'Comments at .end should work',
     kind: 'make',

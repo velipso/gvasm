@@ -16,13 +16,14 @@ export interface IFilePos {
 type LexState =
   | 'start'
   | 'commentLine'
+  | 'commentLineContinue'
   | 'return'
-  | 'returnNewline'
+  | 'returnContinue'
   | 'newline'
   | 'continue'
   | 'continueSlash'
-  | 'continueCommentBlock'
   | 'commentBlock'
+  | 'commentBlockContinue'
   | 'punc'
   | 'rshift'
   | 'ident'
@@ -175,7 +176,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
         lx.str = '';
         lx.state = 'str';
       } else if (ch1 === '\r') {
-        lx.state = 'returnNewline';
+        lx.state = 'return';
         tks.push(tokNewline(filename, line, chr));
       } else if (ch1 === '\n') {
         lx.state = 'newline';
@@ -191,19 +192,27 @@ function lexProcess(lx: ILex, tks: ITok[]) {
       if (ch1 === '\r') {
         lx.state = 'return';
       } else if (ch1 === '\n') {
+        lx.state = 'newline';
+      }
+      break;
+
+    case 'commentLineContinue':
+      if (ch1 === '\r') {
+        lx.state = 'returnContinue';
+      } else if (ch1 === '\n') {
         lx.state = 'start';
       }
       break;
 
     case 'return':
-      lx.state = 'start';
+      lx.state = 'newline';
       if (ch1 !== '\n') {
         lexProcess(lx, tks);
       }
       break;
 
-    case 'returnNewline':
-      lx.state = 'newline';
+    case 'returnContinue':
+      lx.state = 'start';
       if (ch1 !== '\n') {
         lexProcess(lx, tks);
       }
@@ -247,7 +256,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
 
     case 'continue':
       if (ch1 === '\r') {
-        lx.state = 'return';
+        lx.state = 'returnContinue';
       } else if (ch1 === '\n') {
         lx.state = 'start';
       } else if (ch1 === '/') {
@@ -260,23 +269,23 @@ function lexProcess(lx: ILex, tks: ITok[]) {
 
     case 'continueSlash':
       if (ch1 === '/') {
-        lx.state = 'commentLine';
+        lx.state = 'commentLineContinue';
       } else if (ch1 === '*') {
-        lx.state = 'continueCommentBlock';
+        lx.state = 'commentBlockContinue';
       } else {
         tks.push(tokError(filename, line, chrS, `Unexpected character after backslash: /`));
-      }
-      break;
-
-    case 'continueCommentBlock':
-      if (lx.ch2 === '*' && ch1 === '/') {
-        lx.state = 'continue';
       }
       break;
 
     case 'commentBlock':
       if (lx.ch2 === '*' && ch1 === '/') {
         lx.state = 'start';
+      }
+      break;
+
+    case 'commentBlockContinue':
+      if (lx.ch2 === '*' && ch1 === '/') {
+        lx.state = 'continue';
       }
       break;
 
@@ -511,7 +520,7 @@ function lexProcess(lx: ILex, tks: ITok[]) {
 
     case 'script': {
       lx.str += ch1;
-      const m = lx.str.match(/\n\s*\.end(\r|\n|\s)/);
+      const m = lx.str.match(/(^|\n)\s*\.end(\r|\n|\s)/);
       if (m) {
         tks.push(
           tokScript(filename, line, chr, lx.str.substr(0, lx.str.length - m[0].length)),
@@ -576,14 +585,15 @@ export function lex(filename: string, data: string, startLine = 1): ITok[] {
   switch (lx.state) {
     case 'start':
     case 'commentLine':
+    case 'commentLineContinue':
     case 'return':
-    case 'returnNewline':
+    case 'returnContinue':
     case 'newline':
       break;
     case 'continue':
     case 'continueSlash':
-    case 'continueCommentBlock':
     case 'commentBlock':
+    case 'commentBlockContinue':
     case 'punc':
     case 'rshift':
     case 'ident':

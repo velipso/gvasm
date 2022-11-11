@@ -539,4 +539,51 @@ b:
 `,
     },
   });
+
+  def({
+    name: 'basic.assert-pass',
+    desc: 'Use .assert command',
+    kind: 'make',
+    stdout: [
+      'one',
+      'two',
+      'three (8)',
+      'four (8)',
+    ],
+    files: {
+      '/root/main': `
+.import 'test' { foo }
+.printf "three (%d)", foo
+.printf "two"
+.assert "foo is 8", foo == 8
+.base 0
+.i8fill 8 /// 00 00 00 00 00 00 00 00
+.include 'test'
+`,
+      '/root/test': `
+.def foo = _here
+.printf "one"
+.printf "four (%d)", foo
+`,
+    },
+  });
+
+  def({
+    name: 'basic.assert-fail',
+    desc: 'Use .assert command',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.import 'test' { foo }
+.assert "foo is 8", foo == 8
+.base 0
+.i8fill 4 /// 00 00 00 00
+.include 'test'
+`,
+      '/root/test': `
+.def foo = _here
+`,
+    },
+  });
 }

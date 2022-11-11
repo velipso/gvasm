@@ -720,6 +720,12 @@ Note that `.arm`/`.thumb` is scoped to the closest `.begin`/`.end` block:
 
 See also: `.thumb`.
 
+### `.assert <message>, <condition>`
+
+Assert that `<condition>` is true (non-zero).
+
+If false, the program will error with `Assertion failed: <message>`.
+
 ### `.base <base>`
 
 Sets the base address of the following code.  For regular GBA games, this is `0x08000000` (default).

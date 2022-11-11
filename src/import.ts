@@ -752,6 +752,49 @@ class PendingWritePrintf extends PendingWrite {
   }
 }
 
+class PendingWriteAssert extends PendingWrite {
+  message: string;
+  expr: number | Expression;
+
+  constructor(
+    flp: IFilePos,
+    context: IExpressionContext,
+    message: string,
+    expr: Expression,
+  ) {
+    super(flp, context);
+    this.message = message;
+    this.expr = expr;
+  }
+
+  attemptWrite(failNotFound: boolean): boolean {
+    if (failNotFound) {
+      const v = typeof this.expr === 'number'
+        ? this.expr
+        : this.expr.value(this.context, failNotFound, false);
+      if (v === false) {
+        return false;
+      }
+      if (v === 0) {
+        throw new CompError(this.flp, `Assertion failed: ${this.message}`);
+      }
+      return true;
+    } else {
+      const v = typeof this.expr === 'number'
+        ? this.expr
+        : this.expr.value(this.context, failNotFound, false);
+      if (v === false) {
+        return false;
+      }
+      this.expr = v; // cache result
+      if (v === 0) {
+        throw new CompError(this.flp, `Assertion failed: ${this.message}`);
+      }
+      return true;
+    }
+  }
+}
+
 abstract class PendingWriteTypedMemCommon extends PendingWrite {
   typedMem: ITypedMemory;
   rewrite: IRewrite<number>;
@@ -2324,6 +2367,15 @@ export class Import {
     }
     const context = this.expressionContext(0);
     const pw = new PendingWritePrintf(flp, context, format, args, error, this.proj.getLog());
+    this.addPendingWrite(pw);
+  }
+
+  assert(flp: IFilePos, message: string, expr: Expression) {
+    if (!this.active()) {
+      return;
+    }
+    const context = this.expressionContext(0);
+    const pw = new PendingWriteAssert(flp, context, message, expr);
     this.addPendingWrite(pw);
   }
 

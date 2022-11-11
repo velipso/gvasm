@@ -898,6 +898,20 @@ async function parseBeginBody(parser: Parser, imp: Import) {
               parser.forceNewline('`.arm` statement');
               imp.setMode('arm');
               break;
+            case 'assert': {
+              const tk3 = parser.nextTokOptional();
+              if (!tk3 || tk3.kind !== 'str') {
+                throw new CompError(parser.last(), 'Expecting `.assert "message", condition`');
+              }
+              if (!parser.isNext(',')) {
+                throw new CompError(parser.here(), 'Expecting `.assert "message", condition`');
+              }
+              parser.nextTok();
+              const expr = Expression.parse(parser, imp);
+              parser.forceNewline('`.assert` statement');
+              imp.assert(tk, tk3.str, expr);
+              break;
+            }
             case 'base': {
               const base = Expression.parse(parser, imp).value(
                 imp.expressionContext(0),
@@ -1054,7 +1068,7 @@ async function parseBeginBody(parser: Parser, imp: Import) {
             case 'error': {
               const tk3 = parser.nextTokOptional();
               if (!tk3 || tk3.kind !== 'str') {
-                throw new CompError(parser.last(), 'Expecting `.printf "message"`');
+                throw new CompError(parser.last(), `Expecting \`${tk2.id} "message"\``);
               }
               const args: Expression[] = [];
               while (parser.isNext(',')) {

@@ -25,7 +25,8 @@ deno install --allow-read --allow-write --allow-run -f -r \
 ```
 
 If this is your first time running `deno install`, you will need to add the deno binary directory to
-your path.
+your path.  See the page on [deno install](https://deno.land/manual@v1.27.2/tools/script_installer)
+for more information.
 
 In order to upgrade, simply run the above command again -- it will redownload the latest version and
 install it.

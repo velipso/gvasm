@@ -2049,6 +2049,63 @@ export namespace ARM {
       ref: '4.5,4.5.3,4.5.8.3',
       category: 'Data Processing',
       codeParts: [
+        { s: 12, k: 'value', v: 0 }, // rotimm = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', v: 3 }, // rsb
+        { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'neg$s$cond $Rd',
+        'neg$s.$cond $Rd',
+        'neg$cond$s $Rd',
+      ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const s = !!sym('s');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        if (cpu.test(cond)) {
+          cpu.mov(Rd, cpu.sub(0, cpu.reg(Rd), s));
+        }
+        cpu.next();
+      },
+    },
+    {
+      ref: '4.5,4.5.3,4.5.8.3',
+      category: 'Data Processing',
+      codeParts: [
+        { s: 12, k: 'value', v: 0 }, // rotimm = 0
+        { s: 4, k: 'register', sym: 'Rd' },
+        { s: 4, k: 'register', sym: 'Rn' },
+        { s: 1, k: 'enum', sym: 's', enum: ['', 's'] },
+        { s: 4, k: 'value', v: 3 }, // rsb
+        { s: 1, k: 'value', sym: 'immediate', v: 1 }, // immediate = 1
+        { s: 2, k: 'value', v: 0 },
+        condition,
+      ],
+      syntax: [
+        'neg$s$cond $Rd, $Rn',
+        'neg$s.$cond $Rd, $Rn',
+        'neg$cond$s $Rd, $Rn',
+      ],
+      run: (cpu: CPU, sym: SymReader) => {
+        const s = !!sym('s');
+        const cond = sym('cond');
+        const Rd = sym('Rd');
+        const Rn = sym('Rn');
+        if (cpu.test(cond)) {
+          cpu.mov(Rd, cpu.sub(0, cpu.reg(Rn), s));
+        }
+        cpu.next();
+      },
+    },
+    {
+      ref: '4.5,4.5.3,4.5.8.3',
+      category: 'Data Processing',
+      codeParts: [
         { s: 12, k: 'rotimm', sym: 'expression' },
         { s: 4, k: 'register', sym: 'Rd' },
         { s: 4, k: 'register', sym: 'Rn' },

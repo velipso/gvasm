@@ -2031,4 +2031,30 @@ swi -1
 `,
     },
   });
+
+  def({
+    name: 'arm.neg',
+    desc: 'Negate instruction converted to reverse subtract',
+    kind: 'make',
+    files: {
+      '/root/main': `.arm
+rsb    r3, r5, #0  /// 00 30 65 e2
+neg    r3, r5      /// 00 30 65 e2
+rsbs   r3, r5, #0  /// 00 30 75 e2
+negs   r3, r5      /// 00 30 75 e2
+rsblt  r3, r5, #0  /// 00 30 65 b2
+neglt  r3, r5      /// 00 30 65 b2
+rsbslt r3, r5, #0  /// 00 30 75 b2
+negslt r3, r5      /// 00 30 75 b2
+rsb    r3, #0      /// 00 30 63 e2
+neg    r3          /// 00 30 63 e2
+rsbs   r3, #0      /// 00 30 73 e2
+negs   r3          /// 00 30 73 e2
+rsblt  r3, #0      /// 00 30 63 b2
+neglt  r3          /// 00 30 63 b2
+rsbslt r3, #0      /// 00 30 73 b2
+negslt r3          /// 00 30 73 b2
+`,
+    },
+  });
 }

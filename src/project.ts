@@ -43,6 +43,7 @@ export class Project {
   private fileCache = new Map<string, IFileCache>();
   private usedFilenames = new Set<string>();
   private failedImports: CompError[] = [];
+  private parentIncludes = new Map<string, Set<string>>();
   private mainFullFile: string;
   private defines: ILexKeyValue[];
   private cwd: string;
@@ -204,6 +205,7 @@ export class Project {
       // generate the sections
       this.usedFilenames = new Set([this.mainFullFile]);
       this.failedImports = [];
+      this.parentIncludes = new Map();
       const sections = await this.include(
         false,
         this.mainFullFile,
@@ -308,6 +310,34 @@ export class Project {
     base: IBase,
     startLength: number,
   ): Promise<Uint8Array[]> {
+    if (flp) {
+      // check for circular includes
+      let parents = this.parentIncludes.get(fullFile);
+      if (!parents) {
+        parents = new Set();
+        this.parentIncludes.set(fullFile, parents);
+      }
+      parents.add(flp.filename);
+      const seen = new Set<string>();
+      const queue = [fullFile];
+      while (true) {
+        const s = queue.shift();
+        if (!s) {
+          break;
+        }
+        if (seen.has(s)) {
+          throw new CompError(flp, `Cannot have circular include: ${fullFile}`);
+        }
+        seen.add(s);
+        const parents = this.parentIncludes.get(s);
+        if (parents) {
+          for (const p of parents) {
+            queue.push(p);
+          }
+        }
+      }
+    }
+
     const imp = await this.import(flp, fullFile);
     if (imp instanceof CompError) {
       throw imp;

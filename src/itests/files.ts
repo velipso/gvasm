@@ -100,12 +100,11 @@ export function load(def: (test: ITest) => void) {
     },
   });
 
-  /* TODO: fix eventually
   def({
     name: 'files.include-circular',
     desc: 'Include circular files',
     kind: 'make',
-    //error: true,
+    error: true,
     files: {
       '/root/main': `.include "cir0"`,
       '/root/cir0': `.include "cir1"`,
@@ -123,11 +122,11 @@ export function load(def: (test: ITest) => void) {
     name: 'files.include-self',
     desc: 'Include main file from main file',
     kind: 'make',
-    //error: true,
+    error: true,
     files: {
       '/root/main': `.include "main"`,
     },
-  }); */
+  });
 
   def({
     name: 'files.import-circular',

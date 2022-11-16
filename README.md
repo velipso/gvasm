@@ -22,6 +22,8 @@ deno upgrade
 # install the latest release of gvasm
 deno install --allow-read --allow-write --allow-run -f -r \
   https://raw.githubusercontent.com/velipso/gvasm/main/gvasm.ts
+deno install --allow-read --allow-write -f -r \
+  https://raw.githubusercontent.com/velipso/gvasm/v1.9.4/gvasm.ts
 ```
 
 If this is your first time running `deno install`, you will need to add the deno binary directory to

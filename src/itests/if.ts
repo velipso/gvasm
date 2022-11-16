@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { ITest } from '../itest.ts';
@@ -86,49 +86,49 @@ export function load(def: (test: ITest) => void) {
     stdout: ['pass'],
     files: {
       '/root/main': `
-@L0: .if 0
-@L0:   .if 0
-@L0:     .printf "fail"
-@L0:   .else
-@L0:     .printf "fail"
-@L0:   .end
-@L0: .elseif 0
-@L0:   .if 0
-@L0:     .printf "fail"
-@L0:   .elseif 1
-@L0:     .if 1
-@L0:       .printf "fail"
-@L0:     .end
-@L0:   .end
-@L0: .else
-@L1:   .if 0
-@L0:     .printf "fail"
-@L0:   .elseif 0
-@L0:     .if 1
-@L0:       .printf "fail"
-@L0:     .else
-@L0:       .printf "fail"
-@L0:     .end
-@L0:   .elseif 1
-@L2:     .if 1
-@L3:       .if 1
-@L4:         .if 0
-@L0:           .printf "fail"
-@L0:         .else
-@L5:           .printf "pass"
-@L6:         .end
-@L7:       .else
-@L0:         .printf "fail"
-@L0:       .end
-@L8:     .elseif 1
-@L0:       .printf "fail"
-@L0:     .else
-@L0:       .printf "fail"
-@L0:     .end
-@L9:   .elseif 1
-@L0:     .printf "fail"
-@L0:   .end
-@La: .end
+L0: .if 0
+L0:   .if 0
+L0:     .printf "fail"
+L0:   .else
+L0:     .printf "fail"
+L0:   .end
+L0: .elseif 0
+L0:   .if 0
+L0:     .printf "fail"
+L0:   .elseif 1
+L0:     .if 1
+L0:       .printf "fail"
+L0:     .end
+L0:   .end
+L0: .else
+L1:   .if 0
+L0:     .printf "fail"
+L0:   .elseif 0
+L0:     .if 1
+L0:       .printf "fail"
+L0:     .else
+L0:       .printf "fail"
+L0:     .end
+L0:   .elseif 1
+L2:     .if 1
+L3:       .if 1
+L4:         .if 0
+L0:           .printf "fail"
+L0:         .else
+L5:           .printf "pass"
+L6:         .end
+L7:       .else
+L0:         .printf "fail"
+L0:       .end
+L8:     .elseif 1
+L0:       .printf "fail"
+L0:     .else
+L0:       .printf "fail"
+L0:     .end
+L9:   .elseif 1
+L0:     .printf "fail"
+L0:   .end
+La: .end
 `,
     },
   });
@@ -137,7 +137,6 @@ export function load(def: (test: ITest) => void) {
     name: 'if.include',
     desc: 'Use .include inside .if statements',
     kind: 'make',
-    stdout: ['pass', 'pass', 'pass', 'pass'],
     files: {
       '/root/main': `
 .if 0
@@ -147,7 +146,7 @@ export function load(def: (test: ITest) => void) {
 .elseif 0
   .include "fail"
 .else
-  .include "pass"
+  .include "pass" /// 01
 .end
 
 .if 0
@@ -155,7 +154,7 @@ export function load(def: (test: ITest) => void) {
 .elseif 0
   .include "fail"
 .elseif 1
-  .include "pass"
+  .include "pass" /// 01
 .else
   .include "fail"
 .end
@@ -163,7 +162,7 @@ export function load(def: (test: ITest) => void) {
 .if 0
   .include "fail"
 .elseif 1
-  .include "pass"
+  .include "pass" /// 01
 .elseif 0
   .include "fail"
 .else
@@ -171,7 +170,7 @@ export function load(def: (test: ITest) => void) {
 .end
 
 .if 1
-  .include "pass"
+  .include "pass" /// 01
 .elseif 0
   .include "fail"
 .elseif 0
@@ -180,26 +179,8 @@ export function load(def: (test: ITest) => void) {
   .include "fail"
 .end
 `,
-      '/root/pass': `.printf "pass"`,
-    },
-  });
-
-  def({
-    name: 'if.ignore-errors',
-    desc: 'Ignore errors inside .if 0',
-    kind: 'make',
-    files: {
-      '/root/main': `
-.if 0
-asdf
-hello world
-"what's up"
-@asdf
-@@@@asdf:
-.asdf
-$$$$
-.end
-`,
+      '/root/pass': `.i8 1`,
+      '/root/fail': `.i8 2`,
     },
   });
 }

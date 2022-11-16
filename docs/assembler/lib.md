@@ -12,7 +12,6 @@ Scripting Standard Library
 | [Structured Data](#structured-data) | `struct.*` |
 | [List](#list)                       | `list.*`   |
 | [Pickle](#pickle)                   | `pickle.*` |
-| [Store](#store)                     | `store.*`  |
 | [Image](#image)                     | `image.*`  |
 | [JSON](#json)                       | `json.*`   |
 
@@ -41,18 +40,14 @@ Using these is more efficient than using the `put` equivalents.
 |---------------------|-----------------------------------------------------------------------|
 | `printf "msg", ...` | Same as `put ".printf '$msg', ..."`                                   |
 | `error "msg", ...`  | Same as `put ".error '$msg', ..."`                                    |
+| `align a, b`        | Same as `put ".align $a, $b"`                                         |
 | `i8 a, ...`         | Same as `put ".i8 $a, ..."`                                           |
 | `i16 a, ...`        | Same as `put ".i16 $a, ..."`                                          |
 | `i32 a, ...`        | Same as `put ".i32 $a, ..."`                                          |
 | `i8fill a, v`       | Same as `put ".i8fill $a, $v"`                                        |
 | `i16fill a, v`      | Same as `put ".i16fill $a, $v"`                                       |
 | `i32fill a, v`      | Same as `put ".i32fill $a, $v"`                                       |
-| `b8 a, ...`         | Same as `put ".b8 $a, ..."`                                           |
-| `b16 a, ...`        | Same as `put ".b16 $a, ..."`                                          |
-| `b32 a, ...`        | Same as `put ".b32 $a, ..."`                                          |
-| `b8fill a, v`       | Same as `put ".b8fill $a, $v"`                                        |
-| `b16fill a, v`      | Same as `put ".b16fill $a, $v"`                                       |
-| `b32fill a, v`      | Same as `put ".b32fill $a, $v"`                                       |
+| ... etc             | All other data commands, like `ibm32`, `u16`, `ub8fill`, etc          |
 
 Number
 ------
@@ -302,65 +297,13 @@ pickle.valid '"\u1000"'  // => nil, only bytes in strings are supported ("\u0000
 pickle.valid 'null'      // => 1, JSON formatted serialized value (`null` maps to `nil`)
 ```
 
-Store
------
-
-Each script is executed in its own environment.  That means values cannot be shared across scripts:
-
-```
-// this doesn't work
-.script
-  var x = 5
-.end
-.script
-  say x // error! x is not defined
-.end
-```
-
-One way to share values is to include a common script.  However, this only works for constants:
-
-```
-// common.sink:
-var x = 5
-
-// main.gvasm:
-.script
-  include './common.sink'
-  say x // outputs 5
-  x = 7
-.end
-.script
-  include './common.sink'
-  say x // outputs 5, not 7
-.end
-```
-
-Another way to share values is to store them under a unique key in the global store:
-
-```
-.script
-  store.set 'x', 5
-  store.set 'x', 7 // overwrites old value
-.end
-.script
-  say store.get 'x' // outputs 7
-.end
-```
-
-| Function                     | Description                                                     |
-|------------------------------|-----------------------------------------------------------------|
-| `store.set 'key', value`     | Store `value` in a global state under `'key'`                   |
-| `store.get 'key'[, default]` | Retrieve value stored under `'key'` (or `default` if not found) |
-| `store.has 'key'`            | Returns true if `'key'` is defined in the store                 |
-
-You can delete entries by setting them to `nil`.
-
 Image
 -----
 
-| Function              | Description                                          |
-|-----------------------|------------------------------------------------------|
-| `image.load data`     | Load an image file (.PNG, etc) into a list of pixels |
+| Function              | Description                                                |
+|-----------------------|------------------------------------------------------------|
+| `image.load data`     | Load an image file (.PNG, etc) into a list of pixels       |
+| `image.rgb img, x, y` | Converts pixel to GBA palette format, `-1` for transparent |
 
 You can decode common image formats into raw pixel data for processing.
 
@@ -374,6 +317,10 @@ for var row, y: sprite
   for var pixel, x: row
     var {r, g, b, a} = pixel
     // each component ranges from 0-255
+
+    // alternatively:
+    var col = image.rgb sprite, x, y
+    // col is -1 for transparent, or a 15-bit RGB number (GBA format)
   end
 end
 ```

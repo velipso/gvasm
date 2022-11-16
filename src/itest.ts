@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { load as basicLoad } from './itests/basic.ts';
@@ -21,10 +21,12 @@ import { load as sinkLoad } from './itests/sink.ts';
 import { load as stdlibLoad } from './itests/stdlib.ts';
 import { load as regsLoad } from './itests/regs.ts';
 import { load as runLoad } from './itests/run.ts';
-import { makeFromFile } from './make.ts';
+import { load as watchLoad } from './itests/watch.ts';
+import { IMakeResult, makeFromFile } from './make.ts';
 import { runResult } from './run.ts';
 import * as sink from './sink.ts';
-import { assertNever } from './util.ts';
+import { assertNever, waitForever } from './util.ts';
+import { Path } from './deps.ts';
 
 export interface IItestArgs {
   filters: string[];
@@ -39,6 +41,19 @@ interface ITestMake {
   stdout?: string[];
   rawInclude?: true;
   files: { [filename: string]: string };
+}
+
+interface ITestWatch {
+  name: string;
+  desc: string;
+  kind: 'watch';
+  logBytes?: true;
+  stdout: string[];
+  rawInclude?: true;
+  history: [
+    { [filename: string]: string },
+    ...{ [filename: string]: string | false }[],
+  ];
 }
 
 interface ITestRun {
@@ -56,9 +71,13 @@ interface ITestSink {
   files: { [fiename: string]: string };
 }
 
-export type ITest = ITestMake | ITestRun | ITestSink;
+export type ITest =
+  | ITestMake
+  | ITestWatch
+  | ITestRun
+  | ITestSink;
 
-function extractBytes(data: string): number[] {
+function extractBytes(data: string): Uint8Array {
   const bytes = data
     .split('\n')
     .map((line) => {
@@ -71,48 +90,60 @@ function extractBytes(data: string): number[] {
     })
     .join('')
     .trim();
-  return bytes === '' ? [] : bytes.split(' ').map((n) => parseInt(n, 16));
+  return new Uint8Array(bytes === '' ? [] : bytes.split(' ').map((n) => parseInt(n, 16)));
+}
+
+function hex(n: number) {
+  return `${n < 16 ? '0' : ''}${n.toString(16)}`;
 }
 
 async function itestMake(test: ITestMake): Promise<boolean> {
   const stdout: string[] = [];
-  const res = await makeFromFile(
+  let res: IMakeResult | undefined;
+  await makeFromFile(
     '/root/main',
-    [{ key: 'defined123', value: 123 }],
-    true,
-    (filename) => filename.startsWith('/'),
-    (filename) => {
+    [{ key: 'DEFINED123', value: 123 }],
+    false,
+    '/',
+    new Path(true),
+    async (result: IMakeResult) => {
+      res = result;
+    },
+    () => {},
+    async (filename) => {
       if (filename in test.files) {
-        return Promise.resolve(sink.fstype.FILE);
+        return sink.fstype.FILE;
       } else if (
         Object.keys(test.files).some((f) => f.startsWith(`${filename}/`))
       ) {
-        return Promise.resolve(sink.fstype.DIR);
+        return sink.fstype.DIR;
       }
-      return Promise.resolve(sink.fstype.NONE);
+      return sink.fstype.NONE;
     },
-    (filename) => {
+    async (filename) => {
       if (filename in test.files) {
-        return Promise.resolve(test.files[filename]);
+        return test.files[filename];
       } else {
         throw new Error(`Not found: ${filename}`);
       }
     },
-    (filename) => {
+    async (filename) => {
       if (filename in test.files) {
         if (test.rawInclude) {
-          return Promise.resolve(
-            new TextEncoder().encode(test.files[filename]),
-          );
+          return new TextEncoder().encode(test.files[filename]);
         } else {
-          return Promise.resolve(extractBytes(test.files[filename]));
+          return extractBytes(test.files[filename]);
         }
       } else {
         throw new Error(`Not found: ${filename}`);
       }
     },
+    waitForever,
     (str) => stdout.push(str),
   );
+  if (!res) {
+    throw new Error('No result?');
+  }
   if ('errors' in res) {
     if (test.error) {
       return true;
@@ -145,27 +176,27 @@ async function itestMake(test: ITestMake): Promise<boolean> {
     return true;
   }
 
+  const actual = new Uint8Array(res.sections.map((b) => Array.from(b)).flat());
   const expected = extractBytes(test.files['/root/main']);
-  if (expected.length !== res.result.length) {
+  if (expected.length !== actual.length) {
     console.error(
-      `\nExpected length is ${expected.length} bytes, but got ${res.result.length} bytes`,
+      `\nExpected length is ${expected.length} bytes, but got ${actual.length} bytes`,
     );
     return false;
   }
-  const hex = (n: number) => `${n < 16 ? '0' : ''}${n.toString(16)}`;
   for (let i = 0; i < expected.length; i++) {
-    if (expected[i] !== res.result[i]) {
+    if (expected[i] !== actual[i]) {
       console.error(`\nResult doesn't match expected:`);
       for (
         let s = Math.max(0, i - 5);
         s < Math.min(expected.length, i + 6);
         s++
       ) {
-        if (res.result[s] === expected[s]) {
-          console.error(` result[${s}] = ${hex(res.result[s])} // match`);
+        if (actual[s] === expected[s]) {
+          console.error(` result[${s}] = ${hex(actual[s])} // match`);
         } else {
           console.error(
-            ` result[${s}] = ${hex(res.result[s])} // expected[${s}] = ${hex(expected[s])}`,
+            ` actual[${s}] = ${hex(actual[s])} // expected[${s}] = ${hex(expected[s])}`,
           );
         }
       }
@@ -175,39 +206,155 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   return true;
 }
 
-async function itestRun(test: ITestRun): Promise<boolean> {
+async function itestWatch(test: ITestWatch): Promise<boolean> {
   const stdout: string[] = [];
-  const res = await makeFromFile(
+  let historyIndex = 0;
+  const files = { ...test.history[0] };
+
+  await makeFromFile(
     '/root/main',
-    [{ key: 'defined123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }],
     true,
-    (filename) => filename.startsWith('/'),
-    (filename) => {
-      if (filename in test.files) {
-        return Promise.resolve(sink.fstype.FILE);
-      } else if (
-        Object.keys(test.files).some((f) => f.startsWith(`${filename}/`))
-      ) {
-        return Promise.resolve(sink.fstype.DIR);
-      }
-      return Promise.resolve(sink.fstype.NONE);
-    },
-    (filename) => {
-      if (filename in test.files) {
-        return Promise.resolve(test.files[filename]);
-      } else {
-        throw new Error(`Not found: ${filename}`);
-      }
-    },
-    (filename) => {
-      if (filename in test.files) {
-        return Promise.resolve(extractBytes(test.files[filename]));
-      } else {
-        throw new Error(`Not found: ${filename}`);
+    '/',
+    new Path(true),
+    async (result: IMakeResult) => {
+      if ('sections' in result) {
+        let bytes: number[] = [];
+        for (const sect of result.sections) {
+          bytes = bytes.concat(Array.from(sect));
+        }
+        if (test.logBytes) {
+          if (bytes.length <= 0) {
+            stdout.push('> empty');
+          } else {
+            for (let i = 0; i < bytes.length; i++) {
+              if ((i % 8) === 0) {
+                stdout.push('>');
+              }
+              stdout[stdout.length - 1] += ` ${hex(bytes[i])}`;
+            }
+          }
+        } else {
+          stdout.push(`# ${bytes.length} byte${bytes.length === 1 ? '' : 's'}`);
+        }
+      } else if ('errors' in result) {
+        for (const err of result.errors) {
+          stdout.push(`! ${err}`);
+        }
       }
     },
     () => {},
+    async (filename) => {
+      if (filename in files) {
+        return sink.fstype.FILE;
+      } else if (
+        Object.keys(files).some((f) => f.startsWith(`${filename}/`))
+      ) {
+        return sink.fstype.DIR;
+      }
+      return sink.fstype.NONE;
+    },
+    async (filename) => {
+      if (filename in files) {
+        stdout.push(`read: ${filename}`);
+        return files[filename];
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    async (filename) => {
+      if (filename in files) {
+        stdout.push(`read: ${filename}`);
+        if (test.rawInclude) {
+          return new TextEncoder().encode(files[filename]);
+        } else {
+          return extractBytes(files[filename]);
+        }
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    async (filenames: Set<string>): Promise<Set<string> | false> => {
+      const filenamesList = Array.from(filenames);
+      filenamesList.sort((a, b) => a.localeCompare(b));
+      stdout.push(`watch: ${filenamesList.join(' ')}`);
+      historyIndex++;
+      if (historyIndex >= test.history.length) {
+        return false;
+      }
+      const changed = new Set<string>();
+      for (const [filename, body] of Object.entries(test.history[historyIndex])) {
+        if (body === false) {
+          delete files[filename];
+        } else {
+          files[filename] = body;
+        }
+        changed.add(filename);
+      }
+      return changed;
+    },
+    (str) => stdout.push(str),
   );
+
+  for (let i = 0; i < Math.max(test.stdout.length, stdout.length); i++) {
+    const exp = test.stdout[i];
+    const got = stdout[i];
+    if (exp !== got) {
+      console.error(`\nStdout doesn't match as expected on line ${i + 1}`);
+      console.error(`  expected: ${JSON.stringify(exp)}`);
+      console.error(`  got:      ${JSON.stringify(got)}`);
+      console.error(`Full stdout:\n  ${stdout.join('\n  ')}`);
+      return false;
+    }
+  }
+  return true;
+}
+
+async function itestRun(test: ITestRun): Promise<boolean> {
+  const stdout: string[] = [];
+  let res: IMakeResult | undefined;
+  await makeFromFile(
+    '/root/main',
+    [{ key: 'DEFINED123', value: 123 }],
+    false,
+    '/',
+    new Path(true),
+    async (result: IMakeResult) => {
+      res = result;
+    },
+    () => {},
+    async (filename) => {
+      if (filename in test.files) {
+        return sink.fstype.FILE;
+      } else if (
+        Object.keys(test.files).some((f) => f.startsWith(`${filename}/`))
+      ) {
+        return sink.fstype.DIR;
+      }
+      return sink.fstype.NONE;
+    },
+    async (filename) => {
+      if (filename in test.files) {
+        return test.files[filename];
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    async (filename) => {
+      if (filename in test.files) {
+        return extractBytes(test.files[filename]);
+      } else {
+        throw new Error(`Not found: ${filename}`);
+      }
+    },
+    waitForever,
+    () => {},
+  );
+
+  if (!res) {
+    throw new Error('No result?');
+  }
+
   if ('errors' in res) {
     console.error('');
     for (const err of res.errors) {
@@ -217,7 +364,7 @@ async function itestRun(test: ITestRun): Promise<boolean> {
   }
 
   runResult(
-    res.result,
+    res.sections.map((a) => Array.from(a)).flat(),
     res.base,
     res.arm,
     res.debug,
@@ -241,17 +388,17 @@ async function itestRun(test: ITestRun): Promise<boolean> {
 async function itestSink(test: ITestSink): Promise<boolean> {
   const scr = sink.scr_new(
     {
-      f_fstype: (_scr: sink.scr, file: string): Promise<sink.fstype> => {
+      f_fstype: async (_scr: sink.scr, file: string) => {
         if (file in test.files) {
-          return Promise.resolve(sink.fstype.FILE);
+          return sink.fstype.FILE;
         } else if (
           Object.keys(test.files).some((f) => f.startsWith(`${file}/`))
         ) {
-          return Promise.resolve(sink.fstype.DIR);
+          return sink.fstype.DIR;
         }
-        return Promise.resolve(sink.fstype.NONE);
+        return sink.fstype.NONE;
       },
-      f_fsread: async (_scr: sink.scr, file: string): Promise<boolean> => {
+      f_fsread: async (_scr: sink.scr, file: string) => {
         const data = test.files[file];
         if (typeof data === 'undefined') {
           return false;
@@ -271,12 +418,18 @@ async function itestSink(test: ITestSink): Promise<boolean> {
   if (res) {
     let stdout = '';
     const ctx = sink.ctx_new(scr, {
-      f_say: (_ctx: sink.ctx, str: sink.str): Promise<sink.val> => {
+      f_say: async (_ctx: sink.ctx, str: sink.str) => {
         stdout += `${str}\n`;
-        return Promise.resolve(sink.NIL);
+        return sink.NIL;
       },
-      f_warn: () => Promise.resolve(sink.NIL),
-      f_ask: () => Promise.resolve(sink.NIL),
+      f_warn: async () => sink.NIL,
+      f_ask: async () => sink.NIL,
+      f_xlookup: () => {
+        throw new Error('lookup not supported in itests');
+      },
+      f_xexport: () => {
+        throw new Error('export not supported in itests');
+      },
     });
     sink.ctx_autonative(ctx, 'testnative', null, () => Promise.resolve('test'));
     const run = await sink.ctx_run(ctx);
@@ -305,7 +458,7 @@ async function itestSink(test: ITestSink): Promise<boolean> {
           `\nLine ${
             i +
             1
-          } mismatch:\n  expetected:  ${correctLine}\n  instead got: ${line}`,
+          } mismatch:\n  expected:    ${correctLine}\n  instead got: ${line}`,
         );
         done++;
       }
@@ -346,6 +499,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   stdlibLoad(def);
   regsLoad(def);
   runLoad(def);
+  watchLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));
@@ -369,11 +523,13 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
     }
 
     try {
-      // TODO: switch on different test types
       let pass;
       switch (test.test.kind) {
         case 'make':
           pass = await itestMake(test.test);
+          break;
+        case 'watch':
+          pass = await itestWatch(test.test);
           break;
         case 'run':
           pass = await itestRun(test.test);

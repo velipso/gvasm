@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { ITest } from '../itest.ts';
@@ -94,17 +94,21 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     stdout: ['0x08000000'],
     files: {
-      '/root/main': `@main: .printf "%#08x", @main`,
+      '/root/main': `main: .printf "%#08x", main`,
     },
   });
 
   def({
     name: 'printf.label-unknown',
-    desc: 'Error on unknown label',
+    desc: 'Late print an on unknown label',
     kind: 'make',
-    error: true,
+    stdout: ['hi', '0x08000000'],
     files: {
-      '/root/main': `.printf "%#08x", @main\n@main:`,
+      '/root/main': `
+.printf "%#08x", main
+.printf "hi"
+main:
+`,
     },
   });
 }

@@ -1,17 +1,19 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import { IDebugStatement, makeResult } from './make.ts';
+import { IDebugStatement } from './import.ts';
+import { ILexKeyValue } from './lexer.ts';
 import { parseARM, parseThumb } from './dis.ts';
+import { makeResult } from './make.ts';
 import { assertNever, hex16, hex32, printf } from './util.ts';
 
 export interface IRunArgs {
   input: string;
-  defines: { key: string; value: number }[];
+  defines: ILexKeyValue[];
 }
 
 interface IMemoryRegion {
@@ -250,7 +252,7 @@ export function runResult(
         switch (dbg.kind) {
           case 'log': {
             const args = dbg.args.map((arg) => {
-              const v = arg.value(cpu);
+              const v = arg.value(dbg.context, true, false, undefined, cpu);
               if (v === false) {
                 throw `Unknown value at run-time`;
               }
@@ -266,14 +268,18 @@ export function runResult(
             assertNever(dbg);
         }
       }
-      if (done) break;
+      if (done) {
+        break;
+      }
     }
 
     if (pc === base + bytes.length) {
       done = true;
     }
 
-    if (done) break;
+    if (done) {
+      break;
+    }
 
     // run code here
     const opcode16 = cpu.read16(pc);
@@ -314,22 +320,22 @@ export function runResult(
 
 export async function run({ input, defines }: IRunArgs): Promise<number> {
   try {
-    const result = await makeResult(input, defines);
-
-    if ('errors' in result) {
-      for (const e of result.errors) {
-        console.error(e);
+    await makeResult(input, defines, false, async (result) => {
+      if ('errors' in result) {
+        for (const e of result.errors) {
+          console.error(e);
+        }
+        throw false;
       }
-      throw false;
-    }
 
-    runResult(
-      result.result,
-      result.base,
-      result.arm,
-      result.debug,
-      (str: string) => console.log(str),
-    );
+      runResult(
+        result.sections.map((a) => Array.from(a)).flat(),
+        result.base,
+        result.arm,
+        result.debug,
+        (str: string) => console.log(str),
+      );
+    });
 
     return 0;
   } catch (e) {

@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { ITest } from '../itest.ts';
@@ -129,6 +129,25 @@ export function load(def: (test: ITest) => void) {
   });
 
   def({
+    name: 'files.import-circular',
+    desc: 'Import circular files',
+    kind: 'make',
+    stdout: ['FOO = 2', 'BAR = 1'],
+    files: {
+      '/root/main': `
+.import 'test' { FOO }
+.def BAR = 1
+.printf "FOO = %d", FOO
+`,
+      '/root/test': `
+.import 'main' { BAR }
+.def FOO = 2
+.printf "BAR = %d", BAR
+`,
+    },
+  });
+
+  def({
     name: 'files.embed-basic',
     desc: 'Embed another file',
     kind: 'make',
@@ -216,6 +235,71 @@ export function load(def: (test: ITest) => void) {
 .i32 0
 .embed "hello"
 .i32 -1
+`,
+    },
+  });
+
+  def({
+    name: 'files.import-error',
+    desc: 'Import a missing file',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `
+.import 'foo' { foo }
+.i32 0
+`,
+    },
+  });
+
+  def({
+    name: 'files.import-struct-scope',
+    desc: 'A struct being imported will use the correct scope',
+    kind: 'make',
+    files: {
+      '/root/main': `
+.def FOO = 1
+.struct bar
+  .i8 baz[FOO]
+.end
+.include 'test' /// 01
+`,
+      '/root/test': `
+.import 'main' { bar }
+.i8 bar.baz._length
+`,
+    },
+  });
+
+  def({
+    name: 'files.order-of-execution',
+    desc: 'Print messages in each phase of execution',
+    kind: 'make',
+    stdout: [
+      'first = 1',
+      'second = 2',
+      'fourth = 4',
+    ],
+    files: {
+      '/root/main': `
+.import 'test' { fourth }
+.base 0
+
+.printf "fourth = %d", fourth
+.i8 third  /// 03
+
+.def third = _base + 3
+
+.include 'test'
+`,
+      '/root/test': `
+.def first = 1
+
+.printf "second = %d", second
+.printf "first = %d", first
+
+.def second = 2
+.def fourth = _here + 3
 `,
     },
   });

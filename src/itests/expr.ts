@@ -1,8 +1,8 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
 import { ITest } from '../itest.ts';
@@ -206,20 +206,32 @@ export function load(def: (test: ITest) => void) {
       '/root/main': `
 .i8 abs(5), abs(-5), abs(0)     /// 05 05 00
 .i8 clamp(-1, 3, 5)             /// 03
-.i8 CLAMP(-1, 5, 3)             /// 03
+.i8 clamp(-1, 5, 3)             /// 03
 .i8 clamp(10, 3, 5)             /// 05
 .i8 clamp(10, 5, 3)             /// 05
 .i8 clamp(4, 3, 5)              /// 04
 .i8 clamp(4, 5, 3)              /// 04
 .i8 log2(100)                   /// 06
+.i8 log2assert(128)             /// 07
 .i8 max(6, 3, 0, 10, 4)         /// 0a
 .i8 min(6, 3, 0, -3, 4)         /// fd
 .i8 nrt(100, 3)                 /// 04
 .i8 pow(3, 3)                   /// 1b
+.align 2                        /// 00
 .i16 rgb(2, 31, 10)             /// e2 2b
 .i8 sign(0), sign(5), sign(-5)  /// 00 01 ff
 .i8 sqrt(30), sqrt(-30)         /// 05 05
 `,
+    },
+  });
+
+  def({
+    name: 'expr.log2assert',
+    desc: 'Verify log2assert fails when log2 isn\'t exact',
+    kind: 'make',
+    error: true,
+    files: {
+      '/root/main': `.i8 log2assert(100)`,
     },
   });
 
@@ -249,10 +261,10 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.def $pos2neg($a) = \\
-  assert("must pass positive value to $pos2neg", $a > 0) * \\
-  -$a
-.i8 $pos2neg(5)  /// fb
+.def pos2neg(a) = \\
+  assert("must pass positive value to pos2neg", a > 0) * \\
+  -a
+.i8 pos2neg(5)  /// fb
 `,
     },
   });
@@ -264,10 +276,10 @@ export function load(def: (test: ITest) => void) {
     error: true,
     files: {
       '/root/main': `
-.def $pos2neg($a) = \\
-  assert("must pass positive value to $pos2neg", $a > 0) * \\
-  -$a
-.i8 $pos2neg(-5)
+.def pos2neg(a) = \\
+  assert("must pass positive value to pos2neg", a > 0) * \\
+  -a
+.i8 pos2neg(-5)
 `,
     },
   });
@@ -278,15 +290,15 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.if defined($a)
+.if defined(a)
   .i8 1
 .else
   .i8 2 /// 02
-  .def $a = 3
+  .def a = 3
 .end
 
-.if defined($a)
-  .i8 $a /// 03
+.if defined(a)
+  .i8 a /// 03
 .else
   .i8 4
 .end
@@ -301,11 +313,11 @@ export function load(def: (test: ITest) => void) {
     stdout: ['1', '1'],
     files: {
       '/root/main': `
-.def $a = 0x03000001
+.def a = 0x03000001
 .i32 0 /// 00 00 00 00
-@b:
-.printf "%d", @b - 0x08000000 + 0x03000000 > $a
-.printf "%d", $a < @b - 0x08000000 + 0x03000000
+b:
+.printf "%d", b - 0x08000000 + 0x03000000 > a
+.printf "%d", a < b - 0x08000000 + 0x03000000
 `,
     },
   });
@@ -316,7 +328,7 @@ export function load(def: (test: ITest) => void) {
     kind: 'make',
     files: {
       '/root/main': `
-.i8 $DEFINED123  /// 7b
+.i8 DEFINED123  /// 7b
 `,
     },
   });

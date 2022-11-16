@@ -1,16 +1,14 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
 // by Sean Connelly (@velipso), https://sean.cm
-// The Unlicense License
 // Project Home: https://github.com/velipso/gvasm
+// SPDX-License-Identifier: 0BSD
 //
 
-import * as path from 'https://deno.land/std@0.113.0/path/mod.ts';
-export { path };
-export { parse as argParse } from 'https://deno.land/std@0.113.0/flags/mod.ts';
-export { exists as fileExists } from 'https://deno.land/std@0.113.0/fs/exists.ts';
-
 import * as canvas from 'https://raw.githubusercontent.com/DjDeveloperr/deno-canvas/f6fc1f5a73dc77b991ff035ef1f7627008c6b51c/mod.ts';
+import * as path from 'https://deno.land/std@0.152.0/path/mod.ts';
+export { parse as argParse } from 'https://deno.land/std@0.152.0/flags/mod.ts';
+export { exists as fileExists } from 'https://deno.land/std@0.152.0/fs/exists.ts';
 
 export interface Image {
   width: number;
@@ -38,18 +36,45 @@ export async function loadImage(bytes: Uint8Array): Promise<Image | null> {
   return null;
 }
 
-export function pathJoin(posix: boolean, ...paths: string[]): string {
-  return posix ? path.posix.join(...paths) : path.win32.join(...paths);
-}
+export class Path {
+  posix: boolean;
 
-export function pathDirname(posix: boolean, file: string): string {
-  return posix ? path.posix.dirname(file) : path.win32.dirname(file);
-}
+  constructor(posix: boolean = Path.isNativePosix()) {
+    this.posix = posix;
+  }
 
-export function pathBasename(posix: boolean, file: string): string {
-  return posix ? path.posix.basename(file) : path.win32.basename(file);
-}
+  static isNativePosix() {
+    return path.sep === '/';
+  }
 
-export function pathResolve(posix: boolean, ...paths: string[]): string {
-  return posix ? path.posix.resolve(...paths) : path.win32.resolve(...paths);
+  isAbsolute(file: string): boolean {
+    return this.posix ? path.posix.isAbsolute(file) : path.win32.isAbsolute(file);
+  }
+
+  join(...paths: string[]): string {
+    return this.posix ? path.posix.join(...paths) : path.win32.join(...paths);
+  }
+
+  dirname(file: string): string {
+    return this.posix ? path.posix.dirname(file) : path.win32.dirname(file);
+  }
+
+  basename(file: string): string {
+    return this.posix ? path.posix.basename(file) : path.win32.basename(file);
+  }
+
+  resolve(...paths: string[]): string {
+    return this.posix ? path.posix.resolve(...paths) : path.win32.resolve(...paths);
+  }
+
+  relative(from: string, to: string): string {
+    // TODO: this implicitly uses Deno.cwd(), which seems odd... replace eventually
+    return this.posix ? path.posix.relative(from, to) : path.win32.relative(from, to);
+  }
+
+  replaceExt(filename: string, ext: string): string {
+    return this.posix
+      ? path.posix.format({ ...path.posix.parse(filename), base: undefined, ext })
+      : path.win32.format({ ...path.win32.parse(filename), base: undefined, ext });
+  }
 }

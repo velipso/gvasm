@@ -85,13 +85,13 @@ Keywords and Symbols
 --------------------
 
 ```
-break       end          nil
-continue    enum         return
-declare     for          using
-def         goto         var
-do          if           while
-else        include
-elseif      namespace
+break      end       lookup
+continue   enum      namespace
+declare    export    nil
+def        for       return
+do         goto      using
+else       if        var
+elseif     include   while
 ```
 
 ```
@@ -203,9 +203,9 @@ Strings are binary-safe arrays of bytes, that can be any length, and include any
 255.  Strings have no concept of unicode (though there are basic helper commands in the standard
 library for dealing specifically with UTF-8 strings).
 
-Strings can be specified with single quotes `'` or double quotes `"`.  Single quoted strings do not
-perform any substitution and only have one escape sequence `''` (two single quotes) to indicate a
-single quote character (i.e., `'it''s like this'`).
+Strings can be specified with single quotes `'`, double quotes `"`, or backticks `` ` ``.  Single
+quoted strings do not perform any substitution and only have one escape sequence `''` (two single
+quotes) to indicate a single quote character (i.e., `'it''s like this'`).
 
 Double quoted strings perform substitution via `$`, and have the escape sequences:
 
@@ -233,6 +233,18 @@ say "foo.bar is ${foo.bar}"  // expression subtitution
 say "a + b is ${a + b}"      // expression subtitution
 say "hi: ${str.lower "HI"}"  // nested strings are valid
 ```
+
+Backtick quoted strings can be spread across multiple lines.  They do not perform any substitution
+and do not have any escape sequences.  They can start with a variable number of backticks, and end
+after the same number of backticks are found:
+
+````
+say ```
+here is a long document
+that will end after three
+backticks (`)
+```
+````
 
 The unary `&` operator returns the string length:
 
@@ -735,21 +747,6 @@ var ls = {1, 2} | list.push 3 | list.unshift 0 | list.rev
 say ls  // {3, 2, 1, 0}
 ```
 
-Predefined Commands
--------------------
-
-Scripts inherit commands and values from the outer assembler scope:
-
-```
-.def $FOO = 1
-.def $lerp($a, $b, $t) = $a + ($b - $a) * 100 / $t
-
-.script
-  say $FOO // outputs 1
-  say $lerp 5, 10, 20 // outputs 6
-.end
-```
-
 Namespaces
 ----------
 
@@ -859,3 +856,42 @@ var img = embed './image.png'
 ```
 
 This is equivalent to pasting the binary data as a string in the script.
+
+Lookups and Exports
+-------------------
+
+Scripts are executed before everything else in their own private envirnoment.  However, they can
+access the surrounding environment with `lookup` and export values with `export`.
+
+For example:
+
+```
+.script test1
+  var x = 5
+  export result = {2, 3, 4}
+  export hello = 'world'
+.end
+
+.def one = 1
+
+.script test2
+  // *cannot* access `x` since it is private to the test1 script
+
+  // can access defined constants
+  // outputs: 1
+  say lookup one
+
+  // can access exported values
+  // outputs: {2, 3, 4}
+  say lookup test1.result
+
+  // outputs: world
+  say lookup test1.hello
+
+  export two = 1 + lookup one
+.end
+
+// if scripts export a number, it is accessible in rest of assembler
+// outputs: two = 2
+.printf "two = %d", test2.two
+```

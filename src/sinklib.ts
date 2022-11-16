@@ -108,58 +108,56 @@ export function loadLibIntoContext(
     put.push({ kind: 'bytes', data });
     return sink.NIL;
   };
-  const ib16 = (isB: boolean) =>
-    async (ctx: sink.ctx, args: sink.val[]) => {
-      const data: number[] = [];
-      for (let i = 0; i < args.length; i++) {
-        const arg = args[i];
-        if (typeof arg === 'number') {
-          const v = isB ? b16(arg) : arg;
-          data.push(v & 0xff);
-          data.push((v >>> 8) & 0xff);
-        } else if (sink.islist(arg)) {
-          if ((arg as { gvasmSeen?: true }).gvasmSeen) {
-            throw 'Invalid circular lists';
-          }
-          (arg as { gvasmSeen?: true }).gvasmSeen = true;
-          put.push({ kind: 'bytes', data });
-          data.splice(0, data.length);
-          await ib16(isB)(ctx, arg);
-          delete (arg as { gvasmSeen?: true }).gvasmSeen;
-        } else {
-          throw `Expecting number for argument ${i + 1}`;
+  const ib16 = (isB: boolean) => async (ctx: sink.ctx, args: sink.val[]) => {
+    const data: number[] = [];
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (typeof arg === 'number') {
+        const v = isB ? b16(arg) : arg;
+        data.push(v & 0xff);
+        data.push((v >>> 8) & 0xff);
+      } else if (sink.islist(arg)) {
+        if ((arg as { gvasmSeen?: true }).gvasmSeen) {
+          throw 'Invalid circular lists';
         }
+        (arg as { gvasmSeen?: true }).gvasmSeen = true;
+        put.push({ kind: 'bytes', data });
+        data.splice(0, data.length);
+        await ib16(isB)(ctx, arg);
+        delete (arg as { gvasmSeen?: true }).gvasmSeen;
+      } else {
+        throw `Expecting number for argument ${i + 1}`;
       }
-      put.push({ kind: 'bytes', data });
-      return sink.NIL;
-    };
-  const ib32 = (isB: boolean) =>
-    async (ctx: sink.ctx, args: sink.val[]) => {
-      const data: number[] = [];
-      for (let i = 0; i < args.length; i++) {
-        const arg = args[i];
-        if (typeof arg === 'number') {
-          const v = isB ? b32(arg) : arg;
-          data.push(v & 0xff);
-          data.push((v >>> 8) & 0xff);
-          data.push((v >>> 16) & 0xff);
-          data.push((v >>> 24) & 0xff);
-        } else if (sink.islist(arg)) {
-          if ((arg as { gvasmSeen?: true }).gvasmSeen) {
-            throw 'Invalid circular lists';
-          }
-          (arg as { gvasmSeen?: true }).gvasmSeen = true;
-          put.push({ kind: 'bytes', data });
-          data.splice(0, data.length);
-          await ib32(isB)(ctx, arg);
-          delete (arg as { gvasmSeen?: true }).gvasmSeen;
-        } else {
-          throw `Expecting number for argument ${i + 1}`;
+    }
+    put.push({ kind: 'bytes', data });
+    return sink.NIL;
+  };
+  const ib32 = (isB: boolean) => async (ctx: sink.ctx, args: sink.val[]) => {
+    const data: number[] = [];
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (typeof arg === 'number') {
+        const v = isB ? b32(arg) : arg;
+        data.push(v & 0xff);
+        data.push((v >>> 8) & 0xff);
+        data.push((v >>> 16) & 0xff);
+        data.push((v >>> 24) & 0xff);
+      } else if (sink.islist(arg)) {
+        if ((arg as { gvasmSeen?: true }).gvasmSeen) {
+          throw 'Invalid circular lists';
         }
+        (arg as { gvasmSeen?: true }).gvasmSeen = true;
+        put.push({ kind: 'bytes', data });
+        data.splice(0, data.length);
+        await ib32(isB)(ctx, arg);
+        delete (arg as { gvasmSeen?: true }).gvasmSeen;
+      } else {
+        throw `Expecting number for argument ${i + 1}`;
       }
-      put.push({ kind: 'bytes', data });
-      return sink.NIL;
-    };
+    }
+    put.push({ kind: 'bytes', data });
+    return sink.NIL;
+  };
   const parseFill = (args: sink.val[]) => {
     if (args.length <= 0 || typeof args[0] !== 'number') {
       return Promise.reject(`Expecting number for argument 1`);
@@ -186,38 +184,36 @@ export function loadLibIntoContext(
     put.push({ kind: 'bytes', data });
     return sink.NIL;
   };
-  const ib16fill = (isB: boolean) =>
-    async (_ctx: sink.ctx, args: sink.val[]) => {
-      const { amount, value } = await parseFill(args);
-      const v = isB ? b16(value) : value;
-      const v1 = v & 0xff;
-      const v2 = (v >>> 8) & 0xff;
-      const data: number[] = [];
-      for (let i = 0; i < amount; i++) {
-        data.push(v1);
-        data.push(v2);
-      }
-      put.push({ kind: 'bytes', data });
-      return sink.NIL;
-    };
-  const ib32fill = (isB: boolean) =>
-    async (_ctx: sink.ctx, args: sink.val[]) => {
-      const { amount, value } = await parseFill(args);
-      const v = isB ? b32(value) : value;
-      const v1 = v & 0xff;
-      const v2 = (v >>> 8) & 0xff;
-      const v3 = (v >>> 16) & 0xff;
-      const v4 = (v >>> 24) & 0xff;
-      const data: number[] = [];
-      for (let i = 0; i < amount; i++) {
-        data.push(v1);
-        data.push(v2);
-        data.push(v3);
-        data.push(v4);
-      }
-      put.push({ kind: 'bytes', data });
-      return sink.NIL;
-    };
+  const ib16fill = (isB: boolean) => async (_ctx: sink.ctx, args: sink.val[]) => {
+    const { amount, value } = await parseFill(args);
+    const v = isB ? b16(value) : value;
+    const v1 = v & 0xff;
+    const v2 = (v >>> 8) & 0xff;
+    const data: number[] = [];
+    for (let i = 0; i < amount; i++) {
+      data.push(v1);
+      data.push(v2);
+    }
+    put.push({ kind: 'bytes', data });
+    return sink.NIL;
+  };
+  const ib32fill = (isB: boolean) => async (_ctx: sink.ctx, args: sink.val[]) => {
+    const { amount, value } = await parseFill(args);
+    const v = isB ? b32(value) : value;
+    const v1 = v & 0xff;
+    const v2 = (v >>> 8) & 0xff;
+    const v3 = (v >>> 16) & 0xff;
+    const v4 = (v >>> 24) & 0xff;
+    const data: number[] = [];
+    for (let i = 0; i < amount; i++) {
+      data.push(v1);
+      data.push(v2);
+      data.push(v3);
+      data.push(v4);
+    }
+    put.push({ kind: 'bytes', data });
+    return sink.NIL;
+  };
   sink.ctx_autonative(ctx, 'i8', null, i8);
   sink.ctx_autonative(ctx, 'b8', null, i8);
   sink.ctx_autonative(ctx, 'i16', null, ib16(false));

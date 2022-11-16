@@ -15,7 +15,7 @@ You'll need to install [deno](https://deno.land) on your operating system.
 
 Then run:
 
-```
+```bash
 # install the latest release of deno
 deno upgrade
 
@@ -33,7 +33,7 @@ install it.
 
 You can verify everything installed correctly by running the internal test suite:
 
-```
+```bash
 gvasm itest
 ```
 
@@ -46,7 +46,7 @@ Read [the assembler manual](./docs/assembler/README.md).
 
 Start by initializing a new file:
 
-```
+```bash
 gvasm init MyGame.gvasm
 ```
 
@@ -54,7 +54,7 @@ This will create `MyGame.gvasm` in your current directory with a small example p
 
 You can build this file via:
 
-```
+```bash
 gvasm make MyGame.gvasm
 ```
 
@@ -66,7 +66,7 @@ Disassember and Emulator [WIP]
 
 If you want to play with the disassembler, you can try:
 
-```
+```bash
 gvasm dis gba_bios.bin
 ```
 
@@ -89,7 +89,7 @@ _exit
 
 Then:
 
-```
+```bash
 gvasm run test.gvasm
 ```
 
@@ -110,8 +110,8 @@ Installing Older Version
 If your project uses the older gvasm v1, you can still install the latest release prior to v2 by
 using the `v1.9.4` tag:
 
-```
-deno install --allow-read --allow-write --allow-run -f -r \
+```bash
+deno install --allow-read --allow-write -f -r \
   https://raw.githubusercontent.com/velipso/gvasm/v1.9.4/gvasm.ts
 ```
 
@@ -119,7 +119,7 @@ References
 ==========
 
 * [Assembler Manual](./docs/assembler/README.md)
-* [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/v2/docs/assembler/asm.html)
+* [GBA Instruction Set](https://cdn.githubraw.com/velipso/gvasm/main/docs/assembler/asm.html)
 
 GBA Technical Docs
 ==================

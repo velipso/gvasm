@@ -104,8 +104,8 @@ r0 = 251
 done
 ```
 
-Installing v1.9.4
-=================
+Installing Older Version
+========================
 
 If your project uses the older gvasm v1, you can still install the latest release prior to v2 by
 using the `v1.9.4` tag:

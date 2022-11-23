@@ -13,6 +13,19 @@ interface IFsw {
   files: Set<string>;
 }
 
+function fileExists(filename: string) {
+  try {
+    Deno.statSync(filename);
+    return true;
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      return false;
+    } else {
+      throw e;
+    }
+  }
+}
+
 // Watcher should *constantly* watch for changes, and conservatively call Deno.watchFs(...).
 export class Watcher {
   fsw: IFsw[] = [];
@@ -52,11 +65,12 @@ export class Watcher {
       }
       files = setDifference(files, fsw.files);
     }
-    if (files.size <= 0) {
+    const watchedFiles = Array.from(files).filter(fileExists);
+    if (watchedFiles.length <= 0) {
       return;
     }
 
-    const watcher = Deno.watchFs(Array.from(files));
+    const watcher = Deno.watchFs(watchedFiles);
     const iter = watcher[Symbol.asyncIterator]();
     const id = this.nextId++;
     const next = async () => {

@@ -402,7 +402,7 @@ export class Project {
     if (!await sink.scr_loadfile(scr, startFile)) {
       const sinkErr = sink.scr_geterr(scr);
       if (sinkErr) {
-        throw new CompError(false, sinkErr.replace(/^Error: /, ''));
+        throw new CompError(flp, sinkErr.replace(/^Error: /, ''));
       }
       throw new CompError(flp, 'Failed to run script');
     }
@@ -488,7 +488,7 @@ export class Project {
     if (run !== sink.run.PASS) {
       const sinkErr = sink.ctx_geterr(ctx);
       if (sinkErr) {
-        throw new CompError(false, sinkErr);
+        throw new CompError(flp, sinkErr);
       }
       throw new CompError(flp, 'Failed to run script');
     }

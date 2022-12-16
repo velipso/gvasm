@@ -158,7 +158,7 @@ export function loadLibIntoContext(ctx: sink.ctx, put: ITok[], imp: Import) {
     }
     const wav = loadAudio(new Uint8Array(data as number[]));
     if (typeof wav === 'string') {
-      throw `Failed to load audio: $wav`;
+      throw `Failed to load audio: ${wav}`;
     }
     const ret = new sink.list();
     ret.push(wav.sampleRate);

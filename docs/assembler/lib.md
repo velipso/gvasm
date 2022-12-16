@@ -13,6 +13,7 @@ Scripting Standard Library
 | [List](#list)                       | `list.*`   |
 | [Pickle](#pickle)                   | `pickle.*` |
 | [Image](#image)                     | `image.*`  |
+| [Audio](#audio)                     | `audio.*`  |
 | [JSON](#json)                       | `json.*`   |
 
 Globals
@@ -324,6 +325,27 @@ for var row, y: sprite
   end
 end
 ```
+
+Audio
+-----
+
+| Function              | Description                                                |
+|-----------------------|------------------------------------------------------------|
+| `audio.load data`     | Load an audio file (.WAV) into a list of samples           |
+
+You can decode .WAV files into sample rate and a list of samples for processing.
+
+For example:
+
+```
+var {sampleRate, channels} = audio.load embed './effect.wav'
+```
+
+The `sampleRate` is the number of samples per second, for example, `44100`.
+
+The `channels` is a list of channels (single channel for mono, two channels for stereo, etc).
+
+A channel is a list of samples, normalized from -1 to 1.
 
 JSON
 ----

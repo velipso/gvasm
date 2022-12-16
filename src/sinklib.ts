@@ -10,12 +10,14 @@ import * as sink from './sink.ts';
 import { ITok, lex } from './lexer.ts';
 import { dataTypeCreate, Import } from './import.ts';
 import { loadImage } from './deps.ts';
+import { loadAudio } from './audio.ts';
 import { printf } from './util.ts';
 
 export function loadLibIntoScript(scr: sink.scr) {
   sink.scr_autonative(scr, 'put');
   sink.scr_autonative(scr, 'image.load');
   sink.scr_autonative(scr, 'image.rgb');
+  sink.scr_autonative(scr, 'audio.load');
   sink.scr_autonative(scr, 'error');
   sink.scr_autonative(scr, 'printf');
   sink.scr_autonative(scr, 'align');
@@ -142,6 +144,26 @@ export function loadLibIntoContext(ctx: sink.ctx, put: ITok[], imp: Import) {
       return -1;
     }
     return ((r >> 3) | ((g >> 3) << 5) | ((b >> 3) << 10));
+  });
+  sink.ctx_autonative(ctx, 'audio.load', null, async (_ctx, args) => {
+    if (args.length <= 0) {
+      throw 'Expecting string or list for argument 1';
+    }
+    let data = args[0];
+    if (typeof data === 'string') {
+      data = data.split('').map((a) => a.charCodeAt(0)) as sink.list;
+    }
+    if (!Array.isArray(data)) {
+      throw 'Expecting string or list for argument 1';
+    }
+    const wav = loadAudio(new Uint8Array(data as number[]));
+    if (typeof wav === 'string') {
+      throw `Failed to load audio: $wav`;
+    }
+    const ret = new sink.list();
+    ret.push(wav.sampleRate);
+    ret.push(wav.channels as sink.list);
+    return ret;
   });
   sink.ctx_autonative(ctx, 'printf', null, async (ctx, args) => {
     if (args.length <= 0) {

@@ -29,16 +29,19 @@ export function generateInit(args: IInitArgs): string {
 .stdlib
 
 // GBA header
-.begin
+.begin header
   .arm
   b main
   .logo
   .title "${title.toUpperCase()}"
   .str "${(code + initials + region + maker).toUpperCase()}"
   .i16 150, 0, 0, 0, 0
-  .i8 ${version} // version
+  .i8 ${version}            // version
   .crc
   .i16 0
+  b header         // ensure ROM isn't interpreted as multi-boot
+  .str "SRAM_Vnnn" // tell emulators to reserve 32K of SRAM
+  .align 4
 .end
 
 .begin main

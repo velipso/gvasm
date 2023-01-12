@@ -70,9 +70,6 @@ loop:
   b loop
 
   .pool
-  .align 4
-  .str "FLASH512_Vnnn" // tell emulators we want 512kbit of SRAM
-  .align 4
 .end
 `;
 }

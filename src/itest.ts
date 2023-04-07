@@ -102,7 +102,7 @@ async function itestMake(test: ITestMake): Promise<boolean> {
   let res: IMakeResult | undefined;
   await makeFromFile(
     '/root/main',
-    [{ key: 'DEFINED123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }, { key: 'DEFINEDXYZ', value: 'XYZ' }],
     false,
     '/',
     new Path(true),
@@ -213,7 +213,7 @@ async function itestWatch(test: ITestWatch): Promise<boolean> {
 
   await makeFromFile(
     '/root/main',
-    [{ key: 'DEFINED123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }, { key: 'DEFINEDXYZ', value: 'XYZ' }],
     true,
     '/',
     new Path(true),
@@ -315,7 +315,7 @@ async function itestRun(test: ITestRun): Promise<boolean> {
   let res: IMakeResult | undefined;
   await makeFromFile(
     '/root/main',
-    [{ key: 'DEFINED123', value: 123 }],
+    [{ key: 'DEFINED123', value: 123 }, { key: 'DEFINEDXYZ', value: 'XYZ' }],
     false,
     '/',
     new Path(true),

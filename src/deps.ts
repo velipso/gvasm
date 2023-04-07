@@ -6,9 +6,9 @@
 //
 
 import * as canvas from 'https://raw.githubusercontent.com/DjDeveloperr/deno-canvas/f6fc1f5a73dc77b991ff035ef1f7627008c6b51c/mod.ts';
-import * as path from 'https://deno.land/std@0.152.0/path/mod.ts';
-export { parse as argParse } from 'https://deno.land/std@0.152.0/flags/mod.ts';
-export { exists as fileExists } from 'https://deno.land/std@0.152.0/fs/exists.ts';
+import * as path from 'https://deno.land/std@0.182.0/path/mod.ts';
+export { parse as argParse } from 'https://deno.land/std@0.182.0/flags/mod.ts';
+export { exists as fileExists } from 'https://deno.land/std@0.182.0/fs/exists.ts';
 
 export interface Image {
   width: number;

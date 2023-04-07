@@ -618,7 +618,7 @@ export function lex(filename: string, data: string, startLine = 1): ITok[] {
 
 export interface ILexKeyValue {
   key: string;
-  value: number;
+  value: number | string;
 }
 
 export function lexKeyValue(line: string): ILexKeyValue | false {
@@ -635,6 +635,13 @@ export function lexKeyValue(line: string): ILexKeyValue | false {
     tk4.kind === 'newline'
   ) {
     return { key: tk1.id, value: tk3.num };
+  }
+  if (
+    tk1 && tk2 && tk3 &&
+    tk1.kind === 'id' &&
+    tk2.kind === 'punc' && tk2.punc === '='
+  ) {
+    return { key: tk1.id, value: line.substr(line.indexOf('=') + 1) };
   }
   return false;
 }

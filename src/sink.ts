@@ -12092,8 +12092,8 @@ function pk_fmbin(sp: pk_strpos, strs: string[], li: val[]): val | false {
       if (sp.pos + 1 >= sp.s.length) {
         return false;
       }
-      const res = (sp.s.charCodeAt(sp.pos) |
-        (sp.s.charCodeAt(sp.pos + 1) << 8));
+      const res = sp.s.charCodeAt(sp.pos) |
+        (sp.s.charCodeAt(sp.pos + 1) << 8);
       sp.pos += 2;
       return res;
     }
@@ -12110,10 +12110,10 @@ function pk_fmbin(sp: pk_strpos, strs: string[], li: val[]): val | false {
       if (sp.pos + 3 >= sp.s.length) {
         return false;
       }
-      const res = (sp.s.charCodeAt(sp.pos) +
+      const res = sp.s.charCodeAt(sp.pos) +
         (sp.s.charCodeAt(sp.pos + 1) << 8) +
         (sp.s.charCodeAt(sp.pos + 2) << 16) +
-        ((sp.s.charCodeAt(sp.pos + 3) << 23) * 2));
+        ((sp.s.charCodeAt(sp.pos + 3) << 23) * 2);
       sp.pos += 4;
       return res;
     }

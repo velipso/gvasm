@@ -603,4 +603,21 @@ include "../one.sink" /// 01 02
 `,
     },
   });
+
+  def({
+    name: 'script.define',
+    desc: 'Defines propagate to scripts',
+    kind: 'make',
+    stdout: ['123', '1', 'XYZ', '1'],
+    files: {
+      '/root/main': `
+.script
+  say lookup DEFINED123
+  say isnum lookup DEFINED123
+  say lookup DEFINEDXYZ
+  say isstr lookup DEFINEDXYZ
+.end
+`,
+    },
+  });
 }

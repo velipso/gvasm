@@ -157,8 +157,13 @@ export class Project {
       });
       const tks = lex(fullFile, txt);
       file.imp = new Import(this, fullFile, this.mainFullFile === fullFile);
+      const defFlp = { filename: fullFile, line: 1, chr: 1 };
       for (const d of this.defines) {
-        file.imp.addSymNum({ filename: fullFile, line: 1, chr: 1 }, d.key, d.value);
+        if (typeof d.value === 'number') {
+          file.imp.addSymNum(defFlp, d.key, d.value);
+        } else {
+          file.imp.scriptExport(defFlp, d.key, sink.pickle_binstr(d.value));
+        }
       }
       await parse(file.imp, tks);
       return file.imp;

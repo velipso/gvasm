@@ -13,7 +13,7 @@ import { IItestArgs, itest } from './itest.ts';
 import { argParse, Path } from './deps.ts';
 import { ILexKeyValue, lexKeyValue } from './lexer.ts';
 
-export const version = 2001003;
+export const version = 2002000;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -161,33 +161,36 @@ function printMakeHelp() {
 
 <input>        The input .gvasm file
 -o <output>    The output file (default: input with .gba extension)
--d NAME=value  Define the global NAME, set to value (integer), ex:
-               -d FOO=1,BAR=2      is equivalent to:
-               .def FOO = 1
-               .def BAR = 2
+-d NAME=value  Define the global NAME, set to value (string or integer), ex:
+               -d FOO=1 -d BAR=bar      is equivalent to:
+               .script
+                 export FOO = 1
+                 export BAR = "bar"
+               .end
 -w             Watch for file changes, and recompile incrementally
 -x cmd         Run 'cmd' after the output file is written, ex:
                -x 'open -F -g {}'
                The '{}' is replaced with the output filename`);
 }
 
-function parseDefines(define: string): ILexKeyValue[] | false {
-  const defines: ILexKeyValue[] = [];
-  for (const def of define.split(',')) {
+function parseDefines(defines: string[]): ILexKeyValue[] | false {
+  const result: ILexKeyValue[] = [];
+  for (const def of defines) {
     const kv = lexKeyValue(def);
     if (kv === false) {
       console.error(`Invalid define: ${def}`);
       return false;
     }
-    defines.push(kv);
+    result.push(kv);
   }
-  return defines;
+  return result;
 }
 
 function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
     string: ['output', 'define', 'execute'],
+    collect: ['define'],
     boolean: ['help', 'watch'],
     alias: { h: 'help', o: 'output', d: 'define', w: 'watch', x: 'execute' },
     unknown: (_arg: string, key?: string) => {
@@ -235,10 +238,12 @@ function printRunHelp() {
   console.log(`gvasm run <input> [-d NAME=value] [-w]
 
 <input>        The input .gvasm file
--d NAME=value  Define the global NAME, set to value (integer), ex:
-               -d FOO=1,BAR=2      is equivalent to:
-               .def FOO = 1
-               .def BAR = 2
+-d NAME=value  Define the global NAME, set to value (string or integer), ex:
+               -d FOO=1 -d BAR=bar      is equivalent to:
+               .script
+                 export FOO = 1
+                 export BAR = "bar"
+               .end
 -w             Watch for file changes, and rerun automatically`);
 }
 
@@ -246,6 +251,7 @@ function parseRunArgs(args: string[]): number | IRunArgs {
   let badArgs = false;
   const a = argParse(args, {
     string: ['define'],
+    collect: ['define'],
     boolean: ['help', 'watch'],
     alias: { h: 'help', d: 'define', w: 'watch' },
     unknown: (_arg: string, key?: string) => {

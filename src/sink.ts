@@ -9687,8 +9687,8 @@ function oper_tri(a: val, b: val, c: val, f_trinary: trinary_f): val {
   return f_trinary(a, b, c);
 }
 
-function opihelp_num_max(vals: list | val[], li: list[]): val {
-  let max: val = NIL;
+function opihelp_num_max(vals: list | val[], li: list[]): null | number {
+  let max: null | number = NIL;
   for (let i = 0; i < vals.length; i++) {
     const v = vals[i];
     if (isnum(v)) {
@@ -9716,8 +9716,8 @@ function opi_num_max(vals: list | val[]): val {
   return opihelp_num_max(vals, []);
 }
 
-function opihelp_num_min(vals: list | val[], li: list[]): val {
-  let min: val = NIL;
+function opihelp_num_min(vals: list | val[], li: list[]): null | number {
+  let min: null | number = NIL;
   for (let i = 0; i < vals.length; i++) {
     const v = vals[i];
     if (isnum(v)) {

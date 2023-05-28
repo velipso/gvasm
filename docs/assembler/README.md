@@ -432,6 +432,75 @@ Equivalent to:
 .def Player.itemIds._bytes = 6   // 6 total bytes
 ```
 
+Static Memory Allocation
+------------------------
+
+You can allocate memory for structs by specifying either `iwram` or `ewram`.  This is useful so
+separate pieces of code can reserve memory without interfering with each other.
+
+```
+.struct Player = iwram
+  .i32 x
+  .i32 y
+  .i32 health
+  .i32 magic
+.end
+
+.struct Sprites = ewram
+  .struct entry[128]
+    .i16 x
+    .i16 y
+  .end
+.end
+```
+
+The first time the assembler encounters `iwram`, it will return `0x03000000`.  Every time it
+encounters it again, it will return the next available location in memory (aligned to 4 bytes).
+
+```
+.struct Player = iwram  // returns 0x03000000
+  .i32 health
+.end
+
+.struct Level = iwram   // returns 0x03000004
+  .i32 levelX
+  .i32 levelY
+  .i8 flags
+.end
+
+.struct World = iwram   // returns 0x03000010
+  .i32 width
+  .i32 height
+.end
+```
+
+Using `ewram` is the same, except allocation starts at `0x02000000`.
+
+Allocation happens in the order it's encountered.  Allocation does not happen during `.import`, only
+for `.include`.
+
+IWRAM will overflow at 32512 bytes (32K - 256 bytes reserved for BIOS), and EWRAM will overflow at
+262144 bytes (256K).  For this reason, it's a good idea to reserve some space at the end of IWRAM
+for the user stack.
+
+```
+//
+// ... all your code ...
+//
+
+// lastly:
+.struct endOfIWRAM = iwram
+  .i32 reservedForStack[100]
+.end
+.printf "IWRAM usage: %d bytes", endOfIWRAM - 0x03000000
+
+.struct endOfEWRAM = ewram
+.end
+.printf "EWRAM usage: %d bytes", endOfEWRAM - 0x02000000
+```
+
+This way, if you use too much IWRAM to push the stack off the end, the assembler will error.
+
 Type-aware Memory Load/Stores
 -----------------------------
 

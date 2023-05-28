@@ -145,7 +145,7 @@ export async function make({ input, output, defines, watch, execute }: IMakeArgs
         if (execute) {
           const cmd = execute.split(' ').map((a) => a === '{}' ? output : a);
           console.log(`${ts()}Running: ${cmd.join(' ')}`);
-          Deno.run({ cmd });
+          new Deno.Command(cmd[0], { args: cmd.slice(1) }).spawn();
         }
       }
     };

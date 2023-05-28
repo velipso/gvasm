@@ -22,6 +22,7 @@ import { load as stdlibLoad } from './itests/stdlib.ts';
 import { load as regsLoad } from './itests/regs.ts';
 import { load as runLoad } from './itests/run.ts';
 import { load as watchLoad } from './itests/watch.ts';
+import { load as memoryLoad } from './itests/memory.ts';
 import { IMakeResult, makeFromFile } from './make.ts';
 import { runResult } from './run.ts';
 import * as sink from './sink.ts';
@@ -500,6 +501,7 @@ export async function itest({ filters }: IItestArgs): Promise<number> {
   regsLoad(def);
   runLoad(def);
   watchLoad(def);
+  memoryLoad(def);
 
   // execute the tests that match any filter
   const indexDigits = Math.ceil(Math.log10(tests.length));

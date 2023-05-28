@@ -1613,7 +1613,7 @@ function parseStruct(
   parser: Parser,
   imp: Import,
   allowBase: boolean,
-): { name: string; base: Expression | false; struct: IStruct } {
+): { name: string; base: Expression | 'iwram' | 'ewram' | false; struct: IStruct } {
   const name = parser.nextTok();
   if (name.kind !== 'id') {
     throw new CompError(name, 'Expecting `.struct Name`');
@@ -1627,17 +1627,25 @@ function parseStruct(
     }
     parser.nextTok();
   }
-  let base: Expression | false = false;
+  let base: Expression | 'iwram' | 'ewram' | false = false;
   if (parser.isNext('=')) {
     if (!allowBase) {
       throw new CompError(parser.here(), 'Cannot set struct base inside another struct');
     }
     parser.nextTok();
-    base = Expression.parse(parser, imp);
+    if (parser.isNext('iwram')) {
+      parser.nextTok();
+      base = 'iwram';
+    } else if (parser.isNext('ewram')) {
+      parser.nextTok();
+      base = 'ewram';
+    } else {
+      base = Expression.parse(parser, imp);
+    }
   }
   parser.forceNewline('`.struct` statement');
 
-  const struct: IStruct = { kind: 'struct', flp: name, length, members: [] };
+  const struct: IStruct = { kind: 'struct', flp: name, length, members: [], memoryStart: false };
   while (!parser.checkEnd()) {
     parseStructBody(parser, imp, struct, true);
   }

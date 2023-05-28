@@ -7,12 +7,12 @@
 
 import { IFilePos } from './lexer.ts';
 import { assertNever } from './util.ts';
-import { IBase, Project } from './project.ts';
+import { IBase, IMemory, Project } from './project.ts';
 import { CompError } from './parser.ts';
-import { Mode, PendingWritePoolCommon } from './import.ts';
+import { IExpressionContext, IStruct, Mode, PendingWritePoolCommon } from './import.ts';
 
 export abstract class Section {
-  async flatten(_base: IBase, _startLength: number): Promise<Uint8Array[]> {
+  async flatten(_base: IBase, _memory: IMemory, _startLength: number): Promise<Uint8Array[]> {
     return [];
   }
 }
@@ -37,7 +37,7 @@ export class SectionBytes extends Section {
   private addr: { base: IBase; startLength: number } | false = false;
   firstWrittenARM: boolean | undefined;
 
-  async flatten(base: IBase, startLength: number): Promise<Uint8Array[]> {
+  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
     this.addr = { base, startLength };
     const startAddr = base.addr + startLength - base.relativeTo;
     for (const { flp, align, msg, i } of this.alignments) {
@@ -364,8 +364,8 @@ export class SectionInclude extends Section {
     this.fullFile = fullFile;
   }
 
-  async flatten(base: IBase, startLength: number): Promise<Uint8Array[]> {
-    return await this.proj.include(this.flp, this.fullFile, base, startLength);
+  async flatten(base: IBase, memory: IMemory, startLength: number): Promise<Uint8Array[]> {
+    return await this.proj.include(this.flp, this.fullFile, base, memory, startLength);
   }
 }
 
@@ -381,7 +381,7 @@ export class SectionEmbed extends Section {
     this.fullFile = fullFile;
   }
 
-  async flatten(_base: IBase, _startLength: number): Promise<Uint8Array[]> {
+  async flatten(_base: IBase, _memory: IMemory, _startLength: number): Promise<Uint8Array[]> {
     const data = await this.proj.embed(this.flp, this.fullFile, false);
     if (data === false) {
       throw new CompError(this.flp, `Failed to embed file: ${this.fullFile}`);
@@ -409,7 +409,7 @@ export class SectionPool extends Section {
     }
   }
 
-  async flatten(base: IBase, startLength: number): Promise<Uint8Array[]> {
+  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
     const array: number[] = [];
     let bytes: Uint8Array | undefined = undefined;
     const startAddr = base.addr + startLength - base.relativeTo;
@@ -555,7 +555,7 @@ export class SectionAlign extends Section {
     this.fill = fill;
   }
 
-  async flatten(base: IBase, startLength: number): Promise<Uint8Array[]> {
+  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
     const array: number[] = [];
     const startAddr = base.addr + startLength - base.relativeTo;
     let fill: number[];
@@ -601,4 +601,25 @@ export class SectionBase extends Section {
 }
 
 export class SectionBaseShift extends Section {
+}
+
+export class SectionMemory extends Section {
+  kind: 'iwram' | 'ewram';
+  context: IExpressionContext;
+  struct: IStruct;
+
+  constructor(kind: 'iwram' | 'ewram', context: IExpressionContext, struct: IStruct) {
+    super();
+    this.kind = kind;
+    this.context = context;
+    this.struct = struct;
+  }
+
+  clearMemoryStart() {
+    this.struct.memoryStart = false;
+  }
+
+  setMemoryStart(value: number) {
+    this.struct.memoryStart = value;
+  }
 }

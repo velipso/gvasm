@@ -28,6 +28,11 @@ export interface IBase {
   relativeTo: number;
 }
 
+export interface IMemory {
+  iwram: number;
+  ewram: number;
+}
+
 interface IFileCache {
   flp: IFilePos | false;
   used: boolean;
@@ -215,6 +220,7 @@ export class Project {
         false,
         this.mainFullFile,
         { addr: 0x08000000, relativeTo: 0 },
+        { iwram: 0x03000000, ewram: 0x02000000 },
         0,
       );
 
@@ -313,6 +319,7 @@ export class Project {
     flp: IFilePos | false,
     fullFile: string,
     base: IBase,
+    memory: IMemory,
     startLength: number,
   ): Promise<Uint8Array[]> {
     if (flp) {
@@ -347,7 +354,7 @@ export class Project {
     if (imp instanceof CompError) {
       throw imp;
     }
-    return await imp.flatten(base, startLength);
+    return await imp.flatten(base, memory, startLength);
   }
 
   filenames(): Set<string> {

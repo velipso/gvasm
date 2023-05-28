@@ -9,7 +9,7 @@ import { IFilePos, ITok, ITokId } from './lexer.ts';
 import { ARM, Thumb } from './ops.ts';
 import { assertNever, calcRotImm, printf } from './util.ts';
 import { Expression, reservedNames } from './expr.ts';
-import { IBase, Project } from './project.ts';
+import { IBase, IMemory, Project } from './project.ts';
 import { CompError, ITypedMemory } from './parser.ts';
 import { stdlib } from './stdlib.ts';
 import {
@@ -21,6 +21,7 @@ import {
   SectionBytes,
   SectionEmbed,
   SectionInclude,
+  SectionMemory,
   SectionPool,
 } from './section.ts';
 
@@ -207,7 +208,7 @@ interface IDefStruct {
   kind: 'struct';
   flp: IFilePos;
   context: IExpressionContext;
-  base: Expression | false;
+  base: Expression | 'iwram' | 'ewram' | false;
   struct: IStruct;
 }
 
@@ -226,6 +227,7 @@ export interface IStruct {
   flp: IFilePos;
   length: Expression | false;
   members: { name: string | false; member: IStructMember }[];
+  memoryStart: number | false;
 }
 
 interface IStructData {
@@ -1656,7 +1658,12 @@ export class Import {
     this.defHere[0].set(name, { kind: 'const', context, body });
   }
 
-  addSymStruct(flp: IFilePos, name: string, base: Expression | false, struct: IStruct) {
+  addSymStruct(
+    flp: IFilePos,
+    name: string,
+    base: Expression | 'iwram' | 'ewram' | false,
+    struct: IStruct,
+  ) {
     if (!this.active()) {
       return;
     }
@@ -1665,6 +1672,9 @@ export class Import {
     const defStruct: IDefStruct = { kind: 'struct', flp, context, base, struct };
     this.structs.push(defStruct);
     this.defHere[0].set(name, defStruct);
+    if (base === 'iwram' || base === 'ewram') {
+      this.sections.push(new SectionMemory(base, context, struct));
+    }
   }
 
   stdlib(flp: IFilePos) {
@@ -2001,6 +2011,8 @@ export class Import {
         case 'struct': {
           const base = root.base === false
             ? 0
+            : root.base === 'iwram' || root.base === 'ewram'
+            ? root.struct.memoryStart
             : root.base.value(root.context, failNotFound, fromScript);
           if (typeof base !== 'number') {
             return false;
@@ -2445,7 +2457,7 @@ export class Import {
     return this.levels[0].active;
   }
 
-  async flatten(initialBase: IBase, startLength: number): Promise<Uint8Array[]> {
+  async flatten(initialBase: IBase, memory: IMemory, startLength: number): Promise<Uint8Array[]> {
     this.firstWrittenBase = -1;
     this.firstWrittenARM = true;
     const sections: Uint8Array[] = [];
@@ -2465,9 +2477,26 @@ export class Import {
         if (bases.length <= 0) {
           throw new Error('Unbalanced base shift');
         }
+      } else if (section instanceof SectionMemory) {
+        const { kind, context, struct } = section;
+        const size = Import.structSize(context, true, false, struct, 0, true);
+        if (size === false) {
+          throw new Error('Unknown struct size');
+        }
+        const sizeAligned = size.size + ((size.size % 4) === 0 ? 0 : (4 - (size.size % 4)));
+        section.setMemoryStart(memory[kind]);
+        const iwram = memory.iwram + (kind === 'iwram' ? sizeAligned : 0);
+        const ewram = memory.ewram + (kind === 'ewram' ? sizeAligned : 0);
+        if (iwram - 0x03000000 > 32 * 1024 - 256) {
+          throw new CompError(struct.flp, 'Out of memory for static allocation in IWRAM');
+        }
+        if (ewram - 0x02000000 > 256 * 1024) {
+          throw new CompError(struct.flp, 'Out of memory for static allocation in EWRAM');
+        }
+        memory = { iwram, ewram };
       } else {
         const baseAddr = bases[0].addr;
-        const sects = await section.flatten(bases[0], length);
+        const sects = await section.flatten(bases[0], memory, length);
         for (const sect of sects) {
           if (sect.length <= 0) {
             continue;
@@ -2494,6 +2523,9 @@ export class Import {
       if (section instanceof SectionPool) {
         section.clearWrite();
       }
+      if (section instanceof SectionMemory) {
+        section.clearMemoryStart();
+      }
     }
   }
 
@@ -2511,7 +2543,9 @@ export class Import {
     }
     // validate all structs by walking them
     for (const { flp, context, base, struct } of this.structs) {
-      const baseNum = base === false ? 0 : base.value(context, true, false);
+      const baseNum = base === false || base === 'iwram' || base === 'ewram'
+        ? 0
+        : base.value(context, true, false);
       if (baseNum === false) {
         throw new CompError(flp, 'Cannot calculate struct base');
       }

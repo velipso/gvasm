@@ -15652,7 +15652,7 @@ export function scr_dump(
       const str = prg.debugTable[i];
       const slen = str === null ? 4 : str.length;
       const slenb = '' +
-        String.fromCharCode((slen) & 0xFF) +
+        String.fromCharCode(slen & 0xFF) +
         String.fromCharCode((slen >> 8) & 0xFF) +
         String.fromCharCode((slen >> 16) & 0xFF) +
         String.fromCharCode((slen >> 24) & 0xFF);

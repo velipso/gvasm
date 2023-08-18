@@ -946,7 +946,7 @@ export namespace ARM {
         '$oper$s.$cond $Rd, $Rm, $shift #$amount',
         '$oper$cond$s $Rd, $Rm, $shift #$amount',
       ],
-      run: (cpu: CPU, sym: SymReader) => {
+      run: (cpu: CPU, sym: SymReader): void => {
         const oper = sym('oper');
         const s = !!sym('s');
         const cond = sym('cond');
@@ -1413,7 +1413,7 @@ export namespace ARM {
         '$oper$cond $Rn, #$expression',
         '$oper.$cond $Rn, #$expression',
       ],
-      run: (cpu: CPU, sym: SymReader) => {
+      run: (cpu: CPU, sym: SymReader): void => {
         const oper = sym('oper');
         const cond = sym('cond');
         const Rn = sym('Rn');

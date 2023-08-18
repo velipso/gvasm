@@ -1,0 +1,31 @@
+#!/bin/bash
+
+ROOT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+rm -rf "$ROOT"/tgt
+
+maketgt() {
+  local target_dir="$ROOT"/tgt/gvasm-"$1"
+  local zip_file="$ROOT"/tgt/gvasm-"$1".zip
+
+  mkdir -p "$target_dir"
+
+  deno compile                    \
+  	--target "$1"                 \
+  	--output "$target_dir"/gvasm  \
+  	--allow-read                  \
+  	--allow-write                 \
+  	--allow-run                   \
+  	"$ROOT"/gvasm.ts
+
+  # Navigate to the target directory and zip everything inside it without the directory path
+  (cd "$target_dir" && zip -r "$zip_file" *)
+
+  # Remove the original target directory after creating the zip
+  rm -rf "$target_dir"
+}
+
+maketgt x86_64-unknown-linux-gnu
+maketgt x86_64-pc-windows-msvc
+maketgt x86_64-apple-darwin
+maketgt aarch64-apple-darwin

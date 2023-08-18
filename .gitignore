@@ -1,6 +1,7 @@
 *.sav
 bin2/*
 mgba/*
+tgt/*
 
 # random crap that tends to appear over time
 Thumbs.db

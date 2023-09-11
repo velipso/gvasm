@@ -2493,7 +2493,8 @@ export class Import {
         if (ewram - 0x02000000 > 256 * 1024) {
           throw new CompError(struct.flp, 'Out of memory for static allocation in EWRAM');
         }
-        memory = { iwram, ewram };
+        memory.iwram = iwram;
+        memory.ewram = ewram;
       } else {
         const baseAddr = bases[0].addr;
         const sects = await section.flatten(bases[0], memory, length);

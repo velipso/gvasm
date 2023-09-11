@@ -133,4 +133,39 @@ export function load(def: (test: ITest) => void) {
 `,
     },
   });
+
+  def({
+    name: 'memory.multiple-files',
+    desc: 'Memory allocation across disparate files',
+    kind: 'make',
+    stdout: [
+      'one = 03000000',
+      'two = 03000004',
+      'three = 0300000c',
+    ],
+    files: {
+      '/root/main': `
+.import './two' { two }
+.import './three' { three }
+.struct one = iwram
+  .i32 one
+.end
+.include './two'
+.include './three'
+.printf "one = %08x", one
+.printf "two = %08x", two
+.printf "three = %08x", three
+`,
+      '/root/two': `
+.struct two = iwram
+  .i32 two[2]
+.end
+`,
+      '/root/three': `
+.struct three = iwram
+  .i32 three[3]
+.end
+`,
+    },
+  });
 }

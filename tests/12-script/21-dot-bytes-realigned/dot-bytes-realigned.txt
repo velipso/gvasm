@@ -1,0 +1,3 @@
+name: script.dot-bytes-realigned
+desc: Using align to realign data
+kind: make

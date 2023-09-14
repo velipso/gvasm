@@ -1,0 +1,3 @@
+.thumb
+sbcs r2, r7  /// ba 41
+sbcs r0, r6  /// b0 41

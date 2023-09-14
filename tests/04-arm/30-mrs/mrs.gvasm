@@ -1,0 +1,9 @@
+.arm
+mov r12, cpsr     /// 00 c0 0f e1
+mov r12, spsr     /// 00 c0 4f e1
+movvs r12, cpsr   /// 00 c0 0f 61
+movvs r12, spsr   /// 00 c0 4f 61
+mrs r12, cpsr     /// 00 c0 0f e1
+mrs r12, spsr     /// 00 c0 4f e1
+mrsvs r12, cpsr   /// 00 c0 0f 61
+mrsvs r12, spsr   /// 00 c0 4f 61

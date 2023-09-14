@@ -1,0 +1,11 @@
+var y = 10
+for var x: range y
+  say x
+  y -= 1
+end
+
+y = 10
+for var x: range 0, y, 2
+  say x
+  y -= 4
+end

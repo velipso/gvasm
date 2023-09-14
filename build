@@ -1,0 +1,146 @@
+#!/bin/bash -e
+#
+# Usage:
+#  ./build [zip] [win] [linux] [osx] [osxarm]
+#
+#  No arguments -- build everything and zip it up
+#  Otherwise, each argument enables a particular action
+#
+#  ./build clean
+#
+#  Deletes the tgt directory
+#
+
+ROOT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$ROOT"
+SRC=src2
+TGT=tgt2
+TGT_SRC=tgt2/src2
+
+ZIP=false
+WIN=false
+LINUX=false
+OSX=false
+OSXARM=false
+
+if [[ $# -eq 0 ]]; then
+  ZIP=true
+  WIN=true
+  LINUX=true
+  OSX=true
+  OSXARM=true
+else
+  for arg in "$@"; do
+    if [[ "$arg" == clean ]]; then
+      rm -rf "$TGT"
+      exit 0
+    elif [[ "$arg" == zip ]]; then
+      ZIP=true
+    elif [[ "$arg" == win ]]; then
+      WIN=true
+    elif [[ "$arg" == linux ]]; then
+      LINUX=true
+    elif [[ "$arg" == osx ]]; then
+      OSX=true
+    elif [[ "$arg" == osxarm ]]; then
+      OSXARM=true
+    else
+      echo "Unknown argument: $arg" >&2
+      exit 1
+    fi
+  done
+fi
+
+echo "building tgt2/src2"
+mkdir -p "$TGT_SRC"
+for file in $(find "$SRC" -type f -name '*.c' -or -name '*.h' -or -name '*.c.js' -or -name '*.h.js'); do
+  out="${file/src2/tgt2/src2}"
+  if [[ $file == *.js ]]; then
+    out="${out%.js}"
+    cmd=node
+  else
+    cmd=cat
+  fi
+  if [[ -e "$out" && "$out" -nt "$file" ]]; then
+    echo "  skipping $(basename "$file")"
+  else
+    echo "  $cmd $(basename "$file")"
+    "$cmd" "$file" > "$out"
+  fi
+done
+
+compile() {
+  local TARGET="$1"
+  local EXE="$2"
+  local TGT_OBJ="$TGT"/obj/"$TARGET"
+  local TGT_OUT="$TGT"/out/"$TARGET"
+  mkdir -p "$TGT_OBJ"
+  mkdir -p "$TGT_OUT"
+
+  echo "target $TARGET"
+
+  local OBJ_FILES=()
+  for file in $(find "$TGT_SRC" -type f -name '*.c'); do
+    local filed="${file%.c}.d"
+    local obj="${file/src2/obj/$TARGET}"
+    obj="${obj%.c}.o"
+    OBJ_FILES+=("$obj")
+    local buildo=true
+    if [[ -e "$filed" ]]; then
+      buildo=false
+      for dep in $(node - -- "$filed" <<'EOF'
+        const filed = process.argv[3];
+        const fs = require('fs');
+        const data = fs.readFileSync(filed, 'utf8');
+        console.log(data
+          .split('\n')
+          .map(line => line
+            .replace(/^target: /, '')
+            .replace(/^\s+/, '')
+            .replace(/\\$/, '')
+          )
+          .join('\n')
+        );
+EOF
+); do
+        if [[ -e "$obj" && "$obj" -nt "$dep" ]]; then
+          :
+        else
+          buildo=true
+          echo "  $(basename "$obj") dependency change: $(basename "$dep")"
+          break
+        fi
+      done
+    fi
+    if [[ "$buildo" == true ]]; then
+      echo "  compiling $(basename "$file")"
+      zig cc -MM -MT target -MF "${file%.c}.d" "$file"
+      zig cc -target "$TARGET" -o "$obj" -c "$file" -lm
+    fi
+  done
+  zig cc -o "$TGT_OUT"/"$EXE" -target "$TARGET" -lm "${OBJ_FILES[@]}"
+  rm -f "$TGT_OUT"/gvasm.pdb
+
+  if [[ "$ZIP" == true ]]; then
+    local zip_file="$ROOT"/tgt2/gvasm-"$TARGET".zip
+    rm -f "$zip_file"
+    pushd "$TGT_OUT"
+    zip -r "$zip_file" *
+    popd
+  fi
+
+  echo "  done"
+}
+
+if [[ "$WIN" == true ]]; then
+  compile x86_64-windows gvasm.exe
+fi
+if [[ "$OSX" == true ]]; then
+  compile x86_64-macos gvasm
+fi
+if [[ "$LINUX" == true ]]; then
+  compile x86_64-linux gvasm
+fi
+if [[ "$OSXARM" == true ]]; then
+  compile aarch64-macos gvasm
+fi

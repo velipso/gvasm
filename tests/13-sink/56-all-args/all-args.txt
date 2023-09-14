@@ -1,0 +1,4 @@
+name: sink.all-args
+kind: sink
+$ {1, 2, 3}
+$

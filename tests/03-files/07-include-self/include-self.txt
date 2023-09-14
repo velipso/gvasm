@@ -1,0 +1,4 @@
+name: files.include-self
+desc: Include main file from main file
+kind: make
+error: true

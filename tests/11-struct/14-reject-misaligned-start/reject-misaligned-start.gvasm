@@ -1,0 +1,4 @@
+.struct s = 0x03000001
+  .i8 one, two
+  .i16 three
+.end

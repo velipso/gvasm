@@ -1,0 +1,44 @@
+.arm
+cmn r9, r14              /// 0e 00 79 e1
+cmnpl r9, r14            /// 0e 00 79 51
+cmn.pl r9, r14           /// 0e 00 79 51
+
+cmn r9, r14, lsl #0      /// 0e 00 79 e1
+cmnpl r9, r14, lsl #0    /// 0e 00 79 51
+cmn.pl r9, r14, lsl #0   /// 0e 00 79 51
+
+cmn r9, r14, lsr #0      /// 0e 00 79 e1
+cmnpl r9, r14, lsr #0    /// 0e 00 79 51
+cmn.pl r9, r14, lsr #0   /// 0e 00 79 51
+
+cmn r9, r14, asr #0      /// 0e 00 79 e1
+cmnpl r9, r14, asr #0    /// 0e 00 79 51
+cmn.pl r9, r14, asr #0   /// 0e 00 79 51
+
+cmn r9, r14, ror #0      /// 0e 00 79 e1
+cmnpl r9, r14, ror #0    /// 0e 00 79 51
+cmn.pl r9, r14, ror #0   /// 0e 00 79 51
+
+cmn r9, r14, lsr #32     /// 2e 00 79 e1
+cmnpl r9, r14, lsr #32   /// 2e 00 79 51
+cmn.pl r9, r14, lsr #32  /// 2e 00 79 51
+
+cmn r9, r14, asr #32     /// 4e 00 79 e1
+cmnpl r9, r14, asr #32   /// 4e 00 79 51
+cmn.pl r9, r14, asr #32  /// 4e 00 79 51
+
+cmn r9, r14, rrx         /// 6e 00 79 e1
+cmnpl r9, r14, rrx       /// 6e 00 79 51
+cmn.pl r9, r14, rrx      /// 6e 00 79 51
+
+cmn r9, r14, lsl #5      /// 8e 02 79 e1
+cmnpl r9, r14, asr #15   /// ce 07 79 51
+cmn.pl r9, r14, asr #15  /// ce 07 79 51
+
+cmn r9, r14, lsl r10     /// 1e 0a 79 e1
+cmnpl r9, r14, asr r10   /// 5e 0a 79 51
+cmn.pl r9, r14, asr r10  /// 5e 0a 79 51
+
+cmn r9, #0x34000000      /// 0d 03 79 e3
+cmnpl r9, #0x7800        /// 1e 0b 79 53
+cmn.pl r9, #0x7800       /// 1e 0b 79 53

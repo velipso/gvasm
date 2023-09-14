@@ -1,0 +1,3 @@
+name: pool.thumb.ldr-add
+desc: Thumb pool ldr is converted to add pc
+kind: make

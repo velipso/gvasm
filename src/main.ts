@@ -10,6 +10,7 @@ import { IMakeArgs, make } from './make.ts';
 import { IRunArgs, run } from './run.ts';
 import { dis, IDisArgs } from './dis.ts';
 import { IItestArgs, itest } from './itest.ts';
+import { IRuntestArgs, runtest } from './runtest.ts';
 import { argParse, Path } from './deps.ts';
 import { ILexKeyValue, lexKeyValue } from './lexer.ts';
 
@@ -35,6 +36,7 @@ Command Summary:
   run       Run a .gvasm file in debug mode
   dis       Disassemble a .gba file into a source
   itest     Run internal tests to verify correct behavior
+  runtest   Run external test .txt file
 
 For more help, try:
   gvasm <command> --help`);
@@ -371,6 +373,42 @@ function parseItestArgs(args: string[]): number | IItestArgs {
   return { filters: a._.map((a) => a.toString()) };
 }
 
+function printRuntestHelp() {
+  console.log(`gvasm runtest <file>
+
+<file>  The test .txt file`);
+}
+
+function parseRuntestArgs(args: string[]): number | IRuntestArgs {
+  let badArgs = false;
+  const a = argParse(args, {
+    stopEarly: true,
+    boolean: ['help'],
+    alias: { h: 'help' },
+    unknown: (_arg: string, key?: string) => {
+      if (key) {
+        console.error(`Unknown argument: -${key}`);
+        badArgs = true;
+        return false;
+      }
+      return true;
+    },
+  });
+  if (badArgs) {
+    return 1;
+  }
+  if (a.help) {
+    printRuntestHelp();
+    return 0;
+  }
+  const file = a._.map((a) => a.toString())[0];
+  if (!file) {
+    printRuntestHelp();
+    return 1;
+  }
+  return { file };
+}
+
 export async function main(args: string[]): Promise<number> {
   if (args.length <= 0 || args[0] === '-h' || args[0] === '--help') {
     printVersion();
@@ -410,6 +448,12 @@ export async function main(args: string[]): Promise<number> {
       return itestArgs;
     }
     return await itest(itestArgs);
+  } else if (args[0] === 'runtest') {
+    const runtestArgs = parseRuntestArgs(args.slice(1));
+    if (typeof runtestArgs === 'number') {
+      return runtestArgs;
+    }
+    return await runtest(runtestArgs);
   }
   console.error(`Unknown command: ${args[0]}`);
   return 1;

@@ -1,0 +1,3 @@
+.thumb
+ands r2, r7  /// 3a 40
+ands r0, r6  /// 30 40

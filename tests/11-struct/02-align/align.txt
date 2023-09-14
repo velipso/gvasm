@@ -1,0 +1,3 @@
+name: struct.align
+desc: Struct members should align correctly
+kind: make

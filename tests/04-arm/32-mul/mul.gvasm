@@ -1,0 +1,6 @@
+.arm
+mul r1, r9, r4     /// 99 04 01 e0
+muls r1, r9, r4    /// 99 04 11 e0
+mulhi r1, r9, r4   /// 99 04 01 80
+mulshi r1, r9, r4  /// 99 04 11 80
+mulhis r1, r9, r4  /// 99 04 11 80

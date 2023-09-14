@@ -1,0 +1,5 @@
+name: printf.label-unknown
+desc: Late print an on unknown label
+kind: make
+$ hi
+$ 0x08000000

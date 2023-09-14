@@ -1,0 +1,4 @@
+name: struct.reject-misaligned-start
+desc: Alignment should be based on final location
+kind: make
+error: true

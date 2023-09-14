@@ -1,0 +1,4 @@
+name: const.missing-parameters
+desc: Constant with missing parameters
+kind: make
+error: true

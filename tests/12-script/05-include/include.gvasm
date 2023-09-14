@@ -1,0 +1,5 @@
+.script
+include "common.sink" /// 05 06
+include "common.sink" /// 05 06
+include "../05-test/one.sink" /// 01 02
+.end

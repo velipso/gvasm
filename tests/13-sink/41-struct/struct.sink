@@ -1,0 +1,28 @@
+say struct.str {0x41, 0x42}, {struct.U8, struct.U8}
+say struct.list 'AAAB', {struct.UL32}
+say struct.list 'AAAB', {struct.UB32}
+say struct.size {struct.F32, struct.U8, struct.S16}
+say struct.size {'hello'}
+
+var s = list.str { 0x7F, 0xF0, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01 }
+say struct.list s, {struct.FB64}
+
+say (struct.str {1.5}, {struct.FL64} | str.list)
+say (struct.str {1.5}, {struct.FB64} | str.list)
+
+# test arrays
+
+say struct.list 'AAABAAABAAABAAAB', {struct.UL32, struct.UB32}
+say (struct.str {1, 2, 3, 4, 5, 6, 7, 8}, {struct.UL16, struct.UL32} | str.list)
+
+say struct.size
+say struct.size 'asdf'
+say struct.size struct.U8
+say struct.size {}
+
+if struct.isLE
+  # pass no matter what, just want to make sure the command exists
+  say 'pass'
+else
+  say 'pass'
+end

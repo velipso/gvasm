@@ -1,0 +1,12 @@
+.arm
+L0: .i16 100, 200  /// 64 00 c8 00
+ldr r2, [#L0]      /// 0c 20 1f e5
+ldrb r2, [#L0]     /// 10 20 5f e5
+ldrbge r2, [#L0]   /// 14 20 5f a5
+ldrgeb r2, [#L0]   /// 18 20 5f a5
+
+ldr r2, [#L1]!     /// 08 20 bf e5
+ldrb r2, [#L1]!    /// 04 20 ff e5
+ldrbge r2, [#L1]!  /// 00 20 ff a5
+ldrgeb r2, [#L1]!  /// 04 20 7f a5
+L1: .i16 100, 200  /// 64 00 c8 00

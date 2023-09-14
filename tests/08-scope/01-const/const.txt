@@ -1,0 +1,3 @@
+name: scope.const
+desc: Scope usage with constants
+kind: make

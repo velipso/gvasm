@@ -1,0 +1,4 @@
+name: regs.reserved-name
+desc: Fail to rename to a reserved register
+kind: make
+error: true

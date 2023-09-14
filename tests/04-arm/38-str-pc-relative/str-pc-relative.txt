@@ -1,0 +1,3 @@
+name: arm.str-pc-relative
+desc: Store word relative to PC
+kind: make

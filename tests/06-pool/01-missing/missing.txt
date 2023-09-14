@@ -1,0 +1,4 @@
+name: pool.missing
+desc: Error if .pool is required but missing
+kind: make
+error: true

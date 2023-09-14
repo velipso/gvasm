@@ -1,0 +1,4 @@
+name: files.embed-error
+desc: Embed a missing file
+kind: make
+error: true

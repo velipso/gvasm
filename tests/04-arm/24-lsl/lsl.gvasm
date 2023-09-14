@@ -1,0 +1,37 @@
+.arm
+lsl r3, r14, #0       /// 0e 30 a0 e1
+lsls r3, r14, #0      /// 0e 30 b0 e1
+lslmi r3, r14, #0     /// 0e 30 a0 41
+lslsmi r3, r14, #0    /// 0e 30 b0 41
+lsls.mi r3, r14, #0   /// 0e 30 b0 41
+lslmis r3, r14, #0    /// 0e 30 b0 41
+
+lsl r3, #0            /// 03 30 a0 e1
+lsls r3, #0           /// 03 30 b0 e1
+lslmi r3, #0          /// 03 30 a0 41
+lslsmi r3, #0         /// 03 30 b0 41
+lsls.mi r3, #0        /// 03 30 b0 41
+lslmis r3, #0         /// 03 30 b0 41
+
+
+
+lsl r3, r14, #5       /// 8e 32 a0 e1
+lsls r3, r14, #10     /// 0e 35 b0 e1
+lslmi r3, r14, #15    /// 8e 37 a0 41
+lslsmi r3, r14, #20   /// 0e 3a b0 41
+lsls.mi r3, r14, #25  /// 8e 3c b0 41
+lslmis r3, r14, #30   /// 0e 3f b0 41
+
+lsl r3, r14, r10      /// 1e 3a a0 e1
+lsls r3, r14, r10     /// 1e 3a b0 e1
+lslmi r3, r14, r10    /// 1e 3a a0 41
+lslsmi r3, r14, r10   /// 1e 3a b0 41
+lsls.mi r3, r14, r10  /// 1e 3a b0 41
+lslmis r3, r14, r10   /// 1e 3a b0 41
+
+lsl r3, r10           /// 13 3a a0 e1
+lsls r3, r10          /// 13 3a b0 e1
+lslmi r3, r10         /// 13 3a a0 41
+lslsmi r3, r10        /// 13 3a b0 41
+lsls.mi r3, r10       /// 13 3a b0 41
+lslmis r3, r10        /// 13 3a b0 41

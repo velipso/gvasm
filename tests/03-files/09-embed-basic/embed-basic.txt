@@ -1,0 +1,3 @@
+name: files.embed-basic
+desc: Embed another file
+kind: make

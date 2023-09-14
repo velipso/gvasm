@@ -1,0 +1,3 @@
+name: scope.relative-minus
+desc: Using - for anonymous backward labels
+kind: make

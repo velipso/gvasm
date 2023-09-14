@@ -1,0 +1,6 @@
+var x = 'hello'
+x = x[0:2] ~ 'LL' ~ x[4:]
+say x # heLLo
+
+x = x ~ 1 ~ 2 && x[:]
+say x # heLLo

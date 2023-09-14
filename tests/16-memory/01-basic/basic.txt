@@ -1,0 +1,8 @@
+name: memory.basic
+desc: Basic usage of allocating to IWRAM and EWRAM
+kind: make
+$ i1 03000000
+$ e1 02000000
+$ i2 03000008
+$ i3 0300000C
+$ e2 02000004

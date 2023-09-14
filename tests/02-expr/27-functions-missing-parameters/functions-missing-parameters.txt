@@ -1,0 +1,4 @@
+name: expr.functions-missing-parameters
+desc: Error when function call is missing parameters
+kind: make
+error: true

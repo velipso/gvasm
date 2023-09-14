@@ -1,0 +1,3 @@
+.script
+  printf 'hello %d', 5
+.end

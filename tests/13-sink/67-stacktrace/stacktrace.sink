@@ -1,0 +1,14 @@
+
+def gettrace a
+  def gt1
+    def gt2
+      return stacktrace
+    end
+    return gt2
+  end
+  return pick a == 0, gt1, gettrace a - 1
+end
+
+for var i: gettrace 3
+  say i
+end

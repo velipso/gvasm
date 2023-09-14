@@ -1,0 +1,3 @@
+.arm
+.regs temp0-temp3, foo, bar, baz10-baz8, qux, r5, r20-r20
+.regs

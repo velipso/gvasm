@@ -1,0 +1,4 @@
+name: arm.str-overflow-immediate
+desc: Store with overflow immediate
+kind: make
+error: true

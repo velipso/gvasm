@@ -1,0 +1,9 @@
+.if _main
+  .i8 1          /// 01
+  .script
+    put '.i8 2'  /// 02
+  .end
+  .include "one.gvasm" /// 03 04
+.else
+  .error "fail"
+.end

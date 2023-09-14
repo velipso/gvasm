@@ -1,0 +1,68 @@
+var x, y, z
+
+x = 'abcdef'
+y = x[1:2] = 'GHIJ'
+say x # aGHIJdef
+say y # GH
+
+x = {1, 2, 3, 4, 5}
+y = x[1:2] += {20, 30, 40}
+say x # {1, 22, 33, 4, 5}
+say y # {22, 33}
+
+x = {1, 'abcdef', 2}
+y = x[1][1:2] = 'GHIJ'
+say x # {1, 'aGHIJdef', 2}
+say y # GH
+
+x = {1, 2, 3}
+y = {4, 5, 6, 7, 8, 9}
+z = y[1:2] += x
+say x # {1, 2, 3}
+say y # {4, 6, 8, 7, 8, 9}
+say z # {6, 8}
+
+x = {1}
+y = {2}
+z = y[0:1] = x
+say x # {1}
+say y # {1}
+say z # {1}
+x[0] = 2
+say x # {2}
+say y # {1}
+say z # {1}
+y[0] = 3
+say x # {2}
+say y # {3}
+say z # {1}
+
+x = {2, nil, 3, 4}
+y = x[1:2] ||= {6, 7}
+say x # {2, 6, 3, 4}
+say y # {6, 3}
+
+x = {1, {2, nil, 3, 4}, 5}
+y = x[1][1:2] ||= {6, 7}
+say x # {1, {2, 6, 3, 4}, 5}
+say y # {6, 3}
+
+x = 'hello'
+x[2:2] = nil
+say x
+x = {'hello'}
+x[0][2:2] = nil
+say x
+
+x = {1, {1, 2, 3, 4}, 2}
+x[1][1:2] += {5, 6, 7}
+say x # {1, {1, 7, 9, 4}, 2}
+
+x = {1, 'hello', 2}
+{x[1][2:2], y} = {'LL', 5}
+say x # {1, 'heLLo', 2}
+say y # 5
+
+x = 'hello'
+say ({x[2:2]} = {'LL'}) # {'LL'}
+say x # heLLo

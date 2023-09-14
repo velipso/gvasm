@@ -1,0 +1,4 @@
+name: script.circular-i8
+desc: Use i8 with circular lists
+kind: make
+error: true

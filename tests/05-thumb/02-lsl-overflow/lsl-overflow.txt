@@ -1,0 +1,4 @@
+name: thumb.lsl-overflow
+desc: Logical shift left with overflow
+kind: make
+error: true

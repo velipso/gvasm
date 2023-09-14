@@ -1,0 +1,5 @@
+.script
+  for: range 200000
+    put "// hello"
+  end
+.end

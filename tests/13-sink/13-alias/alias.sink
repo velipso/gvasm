@@ -1,0 +1,10 @@
+var x = {}
+def getx
+  return x
+end
+
+list.push getx, 123
+say x
+say getx[0]
+getx[0] = 456
+say x

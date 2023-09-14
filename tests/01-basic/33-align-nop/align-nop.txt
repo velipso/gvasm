@@ -1,0 +1,3 @@
+name: basic.align-nop
+desc: Align using nop statements
+kind: make

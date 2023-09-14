@@ -1,0 +1,13 @@
+.script // start
+  put '.i8 0, 1, 2, 3'
+  /// 00 01 02 03
+.end
+.script /* start
+*/
+  put '.i8 4, 5, 6, 7'
+  /// 04 05 06 07
+.end
+.script /* start */
+  put '.i8 8, 9, 10, 11'
+  /// 08 09 0a 0b
+.end

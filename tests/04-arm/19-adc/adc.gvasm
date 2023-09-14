@@ -1,0 +1,128 @@
+.arm
+adc r3, r9, r14              /// 0e 30 a9 e0
+adcs r3, r9, r14             /// 0e 30 b9 e0
+adclo r3, r9, r14            /// 0e 30 a9 30
+adcslo r3, r9, r14           /// 0e 30 b9 30
+adclos r3, r9, r14           /// 0e 30 b9 30
+
+adc r3, r14                  /// 0e 30 a3 e0
+adcs r3, r14                 /// 0e 30 b3 e0
+adclo r3, r14                /// 0e 30 a3 30
+adcslo r3, r14               /// 0e 30 b3 30
+adclos r3, r14               /// 0e 30 b3 30
+
+adc r3, r9, r14, lsl #0      /// 0e 30 a9 e0
+adcs r3, r9, r14, lsl #0     /// 0e 30 b9 e0
+adclo r3, r9, r14, lsl #0    /// 0e 30 a9 30
+adcslo r3, r9, r14, lsl #0   /// 0e 30 b9 30
+adclos r3, r9, r14, lsl #0   /// 0e 30 b9 30
+
+adc r3, r9, r14, asl #0      /// 0e 30 a9 e0
+adcs r3, r9, r14, asl #0     /// 0e 30 b9 e0
+adclo r3, r9, r14, asl #0    /// 0e 30 a9 30
+adcslo r3, r9, r14, asl #0   /// 0e 30 b9 30
+adclos r3, r9, r14, asl #0   /// 0e 30 b9 30
+
+adc r3, r9, r14, lsr #0      /// 0e 30 a9 e0
+adcs r3, r9, r14, lsr #0     /// 0e 30 b9 e0
+adclo r3, r9, r14, lsr #0    /// 0e 30 a9 30
+adcslo r3, r9, r14, lsr #0   /// 0e 30 b9 30
+adclos r3, r9, r14, lsr #0   /// 0e 30 b9 30
+
+adc r3, r14, lsr #0          /// 0e 30 a3 e0
+adcs r3, r14, lsr #0         /// 0e 30 b3 e0
+adclo r3, r14, lsr #0        /// 0e 30 a3 30
+adcslo r3, r14, lsr #0       /// 0e 30 b3 30
+adclos r3, r14, lsr #0       /// 0e 30 b3 30
+
+adc r3, r9, r14, asr #0      /// 0e 30 a9 e0
+adcs r3, r9, r14, asr #0     /// 0e 30 b9 e0
+adclo r3, r9, r14, asr #0    /// 0e 30 a9 30
+adcslo r3, r9, r14, asr #0   /// 0e 30 b9 30
+adclos r3, r9, r14, asr #0   /// 0e 30 b9 30
+
+adc r3, r9, r14, ror #0      /// 0e 30 a9 e0
+adcs r3, r9, r14, ror #0     /// 0e 30 b9 e0
+adclo r3, r9, r14, ror #0    /// 0e 30 a9 30
+adcslo r3, r9, r14, ror #0   /// 0e 30 b9 30
+adclos r3, r9, r14, ror #0   /// 0e 30 b9 30
+
+adc r3, r9, r14, lsr #32     /// 2e 30 a9 e0
+adcs r3, r9, r14, lsr #32    /// 2e 30 b9 e0
+adclo r3, r9, r14, lsr #32   /// 2e 30 a9 30
+adcslo r3, r9, r14, lsr #32  /// 2e 30 b9 30
+adclos r3, r9, r14, lsr #32  /// 2e 30 b9 30
+
+adc r3, r14, lsr #32         /// 2e 30 a3 e0
+adcs r3, r14, lsr #32        /// 2e 30 b3 e0
+adclo r3, r14, lsr #32       /// 2e 30 a3 30
+adcslo r3, r14, lsr #32      /// 2e 30 b3 30
+adclos r3, r14, lsr #32      /// 2e 30 b3 30
+
+adc r3, r9, r14, asr #32     /// 4e 30 a9 e0
+adcs r3, r9, r14, asr #32    /// 4e 30 b9 e0
+adclo r3, r9, r14, asr #32   /// 4e 30 a9 30
+adcslo r3, r9, r14, asr #32  /// 4e 30 b9 30
+adclos r3, r9, r14, asr #32  /// 4e 30 b9 30
+
+adc r3, r14, asr #32         /// 4e 30 a3 e0
+adcs r3, r14, asr #32        /// 4e 30 b3 e0
+adclo r3, r14, asr #32       /// 4e 30 a3 30
+adcslo r3, r14, asr #32      /// 4e 30 b3 30
+adclos r3, r14, asr #32      /// 4e 30 b3 30
+
+adc r3, r9, r14, rrx         /// 6e 30 a9 e0
+adcs r3, r9, r14, rrx        /// 6e 30 b9 e0
+adclo r3, r9, r14, rrx       /// 6e 30 a9 30
+adcslo r3, r9, r14, rrx      /// 6e 30 b9 30
+adclos r3, r9, r14, rrx      /// 6e 30 b9 30
+
+adc r3, r14, rrx             /// 6e 30 a3 e0
+adcs r3, r14, rrx            /// 6e 30 b3 e0
+adclo r3, r14, rrx           /// 6e 30 a3 30
+adcslo r3, r14, rrx          /// 6e 30 b3 30
+adclos r3, r14, rrx          /// 6e 30 b3 30
+
+adc r3, r9, r14, lsl #5      /// 8e 32 a9 e0
+adc r3, r9, r14, asl #5      /// 8e 32 a9 e0
+adcs r3, r9, r14, lsr #10    /// 2e 35 b9 e0
+adclo r3, r9, r14, asr #15   /// ce 37 a9 30
+adcslo r3, r9, r14, ror #20  /// 6e 3a b9 30
+adclos r3, r9, r14, lsl #25  /// 8e 3c b9 30
+adclos r3, r9, r14, asl #25  /// 8e 3c b9 30
+
+adc r3, r14, lsl #5          /// 8e 32 a3 e0
+adc r3, r14, asl #5          /// 8e 32 a3 e0
+adcs r3, r14, lsr #10        /// 2e 35 b3 e0
+adclo r3, r14, asr #15       /// ce 37 a3 30
+adcslo r3, r14, ror #20      /// 6e 3a b3 30
+adclos r3, r14, lsl #25      /// 8e 3c b3 30
+adclos r3, r14, asl #25      /// 8e 3c b3 30
+
+adc r3, r9, r14, lsl r10     /// 1e 3a a9 e0
+adc r3, r9, r14, asl r10     /// 1e 3a a9 e0
+adcs r3, r9, r14, lsr r10    /// 3e 3a b9 e0
+adclo r3, r9, r14, asr r10   /// 5e 3a a9 30
+adcslo r3, r9, r14, ror r10  /// 7e 3a b9 30
+adclos r3, r9, r14, lsl r10  /// 1e 3a b9 30
+adclos r3, r9, r14, asl r10  /// 1e 3a b9 30
+
+adc r3, r14, lsl r10         /// 1e 3a a3 e0
+adc r3, r14, asl r10         /// 1e 3a a3 e0
+adcs r3, r14, lsr r10        /// 3e 3a b3 e0
+adclo r3, r14, asr r10       /// 5e 3a a3 30
+adcslo r3, r14, ror r10      /// 7e 3a b3 30
+adclos r3, r14, lsl r10      /// 1e 3a b3 30
+adclos r3, r14, asl r10      /// 1e 3a b3 30
+
+adc r3, r9, #0x34000000      /// 0d 33 a9 e2
+adcs r3, r9, #0x560000       /// 56 38 b9 e2
+adclo r3, r9, #0x7800        /// 1e 3b a9 32
+adcslo r3, r9, #0x91         /// 91 30 b9 32
+adclos r3, r9, #0x50         /// 05 3e b9 32
+
+adc r3, #0x34000000          /// 0d 33 a3 e2
+adcs r3, #0x560000           /// 56 38 b3 e2
+adclo r3, #0x7800            /// 1e 3b a3 32
+adcslo r3, #0x91             /// 91 30 b3 32
+adclos r3, #0x50             /// 05 3e b3 32

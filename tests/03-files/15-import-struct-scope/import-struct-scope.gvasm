@@ -1,0 +1,5 @@
+.def FOO = 1
+.struct bar
+  .i8 baz[FOO]
+.end
+.include 'test.gvasm' /// 01

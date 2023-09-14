@@ -1,0 +1,7 @@
+for var x: range 0, 256, 16
+  say (range x, x + 16 | list.str | str.upper | str.list)
+end
+
+for var x: range 0, 256, 16
+  say (range x, x + 16 | list.str | str.lower | str.list)
+end

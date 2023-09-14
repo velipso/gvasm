@@ -1,0 +1,3 @@
+name: arm.mlal
+desc: Multiply and accumulate long
+kind: make

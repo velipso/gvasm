@@ -1,0 +1,3 @@
+name: arm.strh
+desc: Store half word
+kind: make

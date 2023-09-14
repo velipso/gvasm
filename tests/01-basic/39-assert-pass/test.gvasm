@@ -1,0 +1,3 @@
+.def foo = _here
+.printf "one"
+.printf "four (%d)", foo

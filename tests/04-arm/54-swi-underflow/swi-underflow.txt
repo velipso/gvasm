@@ -1,0 +1,4 @@
+name: arm.swi-underflow
+desc: Software interrupt with underflowed comment
+kind: make
+error: true

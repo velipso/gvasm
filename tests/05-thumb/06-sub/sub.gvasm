@@ -1,0 +1,15 @@
+.thumb
+// subtract registers
+sub r4, r4, r2     /// a4 1a
+sub r4, r2         /// a4 1a
+sub r4, r1, r6     /// 8c 1b
+sub r4, r1, #6     /// 8c 1f
+// subtract immediate
+sub r4, #0         /// 00 3c
+sub r4, #200       /// c8 3c
+sub r4, #255       /// ff 3c
+// subtract sp
+sub sp, #400       /// e4 b0
+sub sp, #404       /// e5 b0
+add sp, #-400      /// e4 b0
+add sp, #-404      /// e5 b0

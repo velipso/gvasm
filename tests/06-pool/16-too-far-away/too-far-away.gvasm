@@ -1,0 +1,6 @@
+.arm
+ldr r2, =12345
+.align 0x1000
+.i32 0
+.i8 0
+.pool

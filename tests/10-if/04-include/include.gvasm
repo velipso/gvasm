@@ -1,0 +1,39 @@
+.if 0
+  .include "fail.gvasm"
+.elseif 0
+  .include "fail.gvasm"
+.elseif 0
+  .include "fail.gvasm"
+.else
+  .include "pass.gvasm" /// 01
+.end
+
+.if 0
+  .include "fail.gvasm"
+.elseif 0
+  .include "fail.gvasm"
+.elseif 1
+  .include "pass.gvasm" /// 01
+.else
+  .include "fail.gvasm"
+.end
+
+.if 0
+  .include "fail.gvasm"
+.elseif 1
+  .include "pass.gvasm" /// 01
+.elseif 0
+  .include "fail.gvasm"
+.else
+  .include "fail.gvasm"
+.end
+
+.if 1
+  .include "pass.gvasm" /// 01
+.elseif 0
+  .include "fail.gvasm"
+.elseif 0
+  .include "fail.gvasm"
+.else
+  .include "fail.gvasm"
+.end

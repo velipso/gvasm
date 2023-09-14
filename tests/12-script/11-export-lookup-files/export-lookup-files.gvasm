@@ -1,0 +1,6 @@
+.import 'hello.gvasm' hello
+.script
+  say lookup hello.one + 1
+  say lookup hello.sc.world
+.end
+.printf "two = %d", hello.sc.two

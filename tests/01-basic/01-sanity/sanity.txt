@@ -1,0 +1,4 @@
+name: basic.sanity
+desc: Basic example program
+kind: make
+$ Main program at 0x080000c0

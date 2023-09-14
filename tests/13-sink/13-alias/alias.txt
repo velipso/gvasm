@@ -1,0 +1,6 @@
+name: sink.alias
+kind: sink
+$ {123}
+$ 123
+$ {456}
+$

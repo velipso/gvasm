@@ -1,0 +1,3 @@
+embed './data1.bin' | str.upper | str.trim | say
+
+include './test/index.sink'

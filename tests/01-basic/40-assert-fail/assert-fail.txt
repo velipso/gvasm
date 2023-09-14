@@ -1,0 +1,4 @@
+name: basic.assert-fail
+desc: Use .assert command
+kind: make
+error: true

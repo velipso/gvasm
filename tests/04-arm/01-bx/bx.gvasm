@@ -1,0 +1,4 @@
+.arm
+bx r9      /// 19 ff 2f e1
+bxeq r14   /// 1e ff 2f 01
+bx.eq r14  /// 1e ff 2f 01

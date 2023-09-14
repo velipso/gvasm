@@ -1,0 +1,4 @@
+name: if.basic
+desc: Basic usage of .if
+kind: make
+$ hi

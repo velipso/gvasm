@@ -1,0 +1,4 @@
+name: struct.reject-duplicate-names
+desc: Reject duplicate member names
+kind: make
+error: true

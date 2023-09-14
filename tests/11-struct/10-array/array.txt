@@ -1,0 +1,3 @@
+name: struct.array
+desc: Arrays inside structs
+kind: make

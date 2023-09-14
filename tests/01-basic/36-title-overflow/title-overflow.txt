@@ -1,0 +1,4 @@
+name: basic.title-overflow
+desc: Error when a .title is too long
+kind: make
+error: true

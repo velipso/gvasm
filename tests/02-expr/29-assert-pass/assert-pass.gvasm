@@ -1,0 +1,4 @@
+.def pos2neg(a) = \
+  assert("must pass positive value to pos2neg", a > 0) * \
+  -a
+.i8 pos2neg(5)  /// fb

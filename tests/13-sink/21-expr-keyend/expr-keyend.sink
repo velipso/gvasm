@@ -1,0 +1,17 @@
+var i = 0
+do
+  say i
+  i += 1
+while i < 3 end
+
+def test msg
+  say msg
+  return {1, 2}
+end
+
+for var v: test 'hi' end
+
+if i < 1 end
+if i < 1 else end
+if i < 1 elseif i < 2 else end
+if i < 1 elseif i < 2 elseif i < 3 end

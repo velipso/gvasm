@@ -1,0 +1,18 @@
+.struct s
+  .i8 one[5]
+  .struct two[3]
+    .i8 three[5]
+  .end
+  .struct four[2]
+    .struct five[3]
+      .i8 six[9]
+    .end
+    .i8 seven
+  .end
+  .i8 eight[1]
+  .i8 nine
+.end
+
+.i8 s.four[1].five[2].six[4]  /// 46
+.i8 s.nine                    /// 4d
+.i8 s._bytes                  /// 4e

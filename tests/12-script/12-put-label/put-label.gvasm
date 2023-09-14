@@ -1,0 +1,9 @@
+.base 0
+.script
+  put 'first:'
+.end
+.script test
+  put 'second:'
+.end
+.printf "%d", first
+.printf "%d", test.second

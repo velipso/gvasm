@@ -1,0 +1,4 @@
+name: printf.unsigned
+desc: Unsigned formatting
+kind: make
+$ -1 4294967295

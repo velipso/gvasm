@@ -1,0 +1,3 @@
+name: arm.ror
+desc: Rotate right
+kind: make

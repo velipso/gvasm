@@ -1,0 +1,3 @@
+.arm
+here:
+ldr r2, =here  /// 02 23 a0 e3

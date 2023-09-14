@@ -1,0 +1,8 @@
+name: sink.namespaces
+kind: sink
+$ adding 4 5
+$ 9
+$ inside obj.test
+$ inside obj.test
+$ q
+$

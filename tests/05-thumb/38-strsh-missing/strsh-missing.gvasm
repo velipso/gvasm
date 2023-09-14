@@ -1,0 +1,2 @@
+.thumb
+strsh r7, [r5, r3]

@@ -1,0 +1,3 @@
+name: sink.d-error
+kind: sink
+error: true

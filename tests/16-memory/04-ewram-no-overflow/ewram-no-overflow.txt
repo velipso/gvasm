@@ -1,0 +1,3 @@
+name: memory.ewram-no-overflow
+desc: EWRAM can allocate 256k
+kind: make

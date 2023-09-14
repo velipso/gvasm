@@ -1,0 +1,4 @@
+name: sink.include-def
+kind: sink
+$ 1 + 2 = 3
+$

@@ -1,0 +1,8 @@
+.arm
+swi 0            /// 00 00 00 ef
+swi 100          /// 64 00 00 ef
+swi 0xffffff     /// ff ff ff ef
+swimi 0          /// 00 00 00 4f
+swimi 100        /// 64 00 00 4f
+swimi 0xffffff   /// ff ff ff 4f
+swi.mi 0xffffff  /// ff ff ff 4f

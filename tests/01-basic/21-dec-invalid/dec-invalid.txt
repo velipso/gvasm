@@ -1,0 +1,4 @@
+name: basic.dec-invalid
+desc: Invalid decimal number
+kind: make
+error: true

@@ -1,0 +1,9 @@
+.import 'test.gvasm' { fourth }
+.base 0
+
+.printf "fourth = %d", fourth
+.i8 third  /// 03
+
+.def third = _base + 3
+
+.include 'test.gvasm'

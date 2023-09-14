@@ -1,0 +1,17 @@
+name: sink.str-trimrevrep
+kind: sink
+$ 9 1
+$ 10 1
+$ 11 1
+$ 12 1
+$ 13 1
+$ 32 1
+$ cba
+$ a
+$ 
+$ 
+$ abc
+$ abcabcabc
+$ 
+$ ""
+$

@@ -1,0 +1,3 @@
+.thumb
+cmn r2, r7  /// fa 42
+cmn r0, r6  /// f0 42

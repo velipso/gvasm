@@ -1,0 +1,3 @@
+.thumb
+mov r8, r8    /// c0 46
+nop           /// c0 46

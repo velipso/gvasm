@@ -1,0 +1,43 @@
+.thumb
+top:
+beq top     /// fe d0
+beq bot     /// 1d d0
+bne top     /// fc d1
+bne bot     /// 1b d1
+bcs top     /// fa d2
+bcs bot     /// 19 d2
+bhs top     /// f8 d2
+bhs bot     /// 17 d2
+bcc top     /// f6 d3
+bcc bot     /// 15 d3
+blo top     /// f4 d3
+blo bot     /// 13 d3
+bmi top     /// f2 d4
+bmi bot     /// 11 d4
+bpl top     /// f0 d5
+bpl bot     /// 0f d5
+bvs top     /// ee d6
+bvs bot     /// 0d d6
+bvc top     /// ec d7
+bvc bot     /// 0b d7
+bhi top     /// ea d8
+bhi bot     /// 09 d8
+bls top     /// e8 d9
+bls bot     /// 07 d9
+bge top     /// e6 da
+bge bot     /// 05 da
+blt top     /// e4 db
+blt bot     /// 03 db
+bgt top     /// e2 dc
+bgt bot     /// 01 dc
+ble top     /// e0 dd
+ble bot     /// ff dd
+bot:
+b bot       /// fe e7
+b top       /// dd e7
+b next      /// 05 e0
+.i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
+next:
+bal next2   /// 05 e0
+.i16fill 6  /// 00 00 00 00 00 00 00 00 00 00 00 00
+next2:

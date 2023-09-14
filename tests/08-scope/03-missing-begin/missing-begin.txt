@@ -1,0 +1,4 @@
+name: scope.missing-begin
+desc: Error if too many .end statements
+kind: make
+error: true

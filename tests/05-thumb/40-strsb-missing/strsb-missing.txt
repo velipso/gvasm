@@ -1,0 +1,4 @@
+name: thumb.strsb-missing
+desc: Verify strsb is missing
+kind: make
+error: true

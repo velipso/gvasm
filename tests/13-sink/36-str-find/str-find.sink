@@ -1,0 +1,39 @@
+say 'find'
+
+say str.find 'asdf', 'A'
+say str.find 'asdf', 'a'
+say str.find 'asdf', 'f'
+say str.find 'asdf', ''
+
+say str.find 'abcdabcd', 'bc'
+say str.find 'abcdabcd', 'bc', 1
+say str.find 'abcdabcd', 'bc', 2
+say str.find 'abcdabcd', 'bc', 5
+say str.find 'abcdabcd', 'bc', 6
+
+say str.find 'abcdabcd', 'bc', -2
+say str.find 'abcdabcd', 'bc', -3
+say str.find 'abcdabcd', 'bc', -6
+say str.find 'abcdabcd', 'bc', -7
+say str.find 'abcdabcd', 'bc', -8
+say str.find 'abcdabcd', 'bc', -999
+
+say 'rfind'
+
+say str.rfind 'asdf', 'A'
+say str.rfind 'asdf', 'a'
+say str.rfind 'asdf', 'f'
+say str.rfind 'asdf', ''
+
+say str.rfind 'abcdabcd', 'bc'
+say str.rfind 'abcdabcd', 'bc', 1
+say str.rfind 'abcdabcd', 'bc', 2
+say str.rfind 'abcdabcd', 'bc', 5
+say str.rfind 'abcdabcd', 'bc', 6
+
+say str.rfind 'abcdabcd', 'bc', -2
+say str.rfind 'abcdabcd', 'bc', -3
+say str.rfind 'abcdabcd', 'bc', -6
+say str.rfind 'abcdabcd', 'bc', -7
+say str.rfind 'abcdabcd', 'bc', -8
+say str.rfind 'abcdabcd', 'bc', -999

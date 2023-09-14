@@ -1,0 +1,3 @@
+name: pool.thumb.ldr-mov
+desc: Thumb pool ldr isn't converted to mov
+kind: make

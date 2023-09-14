@@ -1,0 +1,4 @@
+name: script.missing-end
+desc: Forget to close .script with .end
+kind: make
+error: true

@@ -1,0 +1,4 @@
+name: sink.early-return
+kind: sink
+$ 1
+$

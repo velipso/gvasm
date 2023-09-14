@@ -1,0 +1,7 @@
+name: basic.assert-pass
+desc: Use .assert command
+kind: make
+$ one
+$ two
+$ three (8)
+$ four (8)

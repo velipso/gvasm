@@ -1,0 +1,6 @@
+.arm
+pop {r0-r4, r8, lr}           /// 1f 41 bd e8
+pople {r3, r5-r9, r13-r15}    /// e8 e3 bd d8
+
+pop {r0-r4, r8, lr}^          /// 1f 41 fd e8
+pople {r3, r5-r9, r13-r15}^   /// e8 e3 fd d8

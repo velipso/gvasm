@@ -1,0 +1,6 @@
+.base 0
+.def one = _base + 1
+.thumb
+ldr r0, =one   /// 00 48
+ldr r0, =0     /// 01 48
+.pool          /// 01 00 00 00 00 00 00 00

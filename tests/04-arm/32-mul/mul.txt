@@ -1,0 +1,3 @@
+name: arm.mul
+desc: Multiply
+kind: make

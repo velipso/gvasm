@@ -1,0 +1,3 @@
+name: expr.bitxor
+desc: Bitwise xor
+kind: make

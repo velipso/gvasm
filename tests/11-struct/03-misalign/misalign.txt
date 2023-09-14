@@ -1,0 +1,4 @@
+name: struct.misalign
+desc: Struct should error if members are misaligned
+kind: make
+error: true

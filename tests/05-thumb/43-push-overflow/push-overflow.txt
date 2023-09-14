@@ -1,0 +1,4 @@
+name: thumb.push-overflow
+desc: Verify push doesn't allow high registers
+kind: make
+error: true

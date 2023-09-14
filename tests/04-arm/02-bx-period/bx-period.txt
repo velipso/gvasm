@@ -1,0 +1,4 @@
+name: arm.bx-period
+desc: Branch and exchange can't end in period
+kind: make
+error: true

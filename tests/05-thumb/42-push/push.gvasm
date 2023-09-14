@@ -1,0 +1,10 @@
+.thumb
+push {r0, r1, r5-r7}             /// e3 b4
+stmdb sp!, {r0, r1, r5-r7}       /// e3 b4
+stmfd sp!, {r0, r1, r5-r7}       /// e3 b4
+push {r0, r1, r5-r7, r14}        /// e3 b5
+stmdb sp!, {r0, r1, r5-r7, r14}  /// e3 b5
+stmfd sp!, {r0, r1, r5-r7, r14}  /// e3 b5
+push {r0, lr, r1, r5-r7}         /// e3 b5
+stmdb sp!, {r0, lr, r1, r5-r7}   /// e3 b5
+stmfd sp!, {r0, lr, r1, r5-r7}   /// e3 b5

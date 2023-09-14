@@ -1,0 +1,3 @@
+.struct a
+  .i8 _someName
+.end

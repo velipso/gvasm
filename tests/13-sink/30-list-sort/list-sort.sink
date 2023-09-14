@@ -1,0 +1,73 @@
+say order nil, 0        # -1
+say order nil, ''       # -1
+say order nil, {}       # -1
+
+say order 0, nil        # 1
+say order 0, ''         # -1
+say order 0, {}         # -1
+
+say order '', nil       # 1
+say order '', 0         # 1
+say order '', {}        # -1
+
+say order {}, nil       # 1
+say order {}, 0         # 1
+say order {}, ''        # 1
+
+say order nil, nil      # 0
+
+say order 0, 0          # 0
+say order 5, 0          # 1
+say order 0, 5          # -1
+
+say order '', ''        # 0
+say order '', 'a'       # -1
+say order 'a', ''       # 1
+
+say order 'abc', 'abc'  # 0
+say order 'abcd', 'abc' # 1
+say order 'abc', 'abcd' # -1
+say order 'ab', 'ac'    # -1
+say order 'ac', 'ab'    # 1
+
+var x = {1, 2, 3, 4}
+list.push x, x
+say order x, x          # 0
+
+say order {}, {}        # 0
+say order {}, {1}       # -1
+say order {1}, {}       # 1
+
+say order {1, 5}, {1, nil}  # 1
+say order {1, nil}, {1, 5}  # -1
+
+say order {1}, {1, 5}   # -1
+say order {1, 5}, {1}   # 1
+say order {1}, {1}      # 0
+
+say order num.nan, num.nan  # 0
+say order num.nan, 0        # -1
+say order 0, num.nan        # 1
+
+say list.sort {'a', 0, num.nan, num.inf}
+say list.rsort {'a', 0, num.nan, num.inf}
+
+x = {1, 2, 3}
+list.rsort x
+say x
+
+rand.seed 1234
+for: range 1000
+  var ls = {}
+  for: range 500 + rand.int % 100
+    list.push ls, rand.int % 1000
+  end
+  list.sort ls
+  for var i: range 1, &ls
+    if ls[i - 1] > ls[i]
+      say 'fail'
+      say ls
+    end
+  end
+end
+say 'done'

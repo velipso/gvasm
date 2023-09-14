@@ -1,0 +1,4 @@
+name: const.no-parameters
+desc: Constant with no parameters
+kind: make
+error: true

@@ -1,0 +1,4 @@
+name: basic.oct-invalid
+desc: Invalid octal number
+kind: make
+error: true

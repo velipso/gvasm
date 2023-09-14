@@ -1,0 +1,3 @@
+name: arm.asr
+desc: Arithmetic shift right
+kind: make

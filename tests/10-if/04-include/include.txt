@@ -1,0 +1,3 @@
+name: if.include
+desc: Use .include inside .if statements
+kind: make

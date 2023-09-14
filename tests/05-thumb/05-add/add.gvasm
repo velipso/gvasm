@@ -1,0 +1,24 @@
+.thumb
+// add registers
+add r4, r1, r6     /// 8c 19
+add r4, r1, #6     /// 8c 1d
+add r4, r1, #0     /// 0c 1c
+movs r4, r1        /// 0c 1c
+// add immediate
+add r4, #0         /// 00 34
+add r4, #200       /// c8 34
+add r4, #255       /// ff 34
+// add pc/sp
+add r4, pc, #800   /// c8 a4
+add r4, sp, #844   /// d3 ac
+// add sp
+add sp, #400       /// 64 b0
+add sp, #404       /// 65 b0
+sub sp, #-400      /// 64 b0
+sub sp, #-404      /// 65 b0
+// add hi register
+add r4, r4, r2     /// a4 18
+add r4, r2         /// a4 18
+add r4, r13        /// 6c 44
+add r13, r4        /// a5 44
+add r9, r13        /// e9 44

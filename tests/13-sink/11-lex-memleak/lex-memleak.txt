@@ -1,0 +1,7 @@
+name: sink.lex-memleak
+kind: sink
+$ 1
+$ 2
+$ 3
+$ 4
+$

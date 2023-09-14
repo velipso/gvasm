@@ -1,0 +1,31 @@
+.struct S
+  .i32 one
+  .i32 two
+  .u32 three
+.end
+.thumb
+ldr  r0, [r1, #S.two]        /// 48 68
+ldrx r0, [r1, #S.two]        /// 48 68
+ldr  r0, [r1, r2]            /// 88 58
+ldrx r0, [r1, r2] (S.two)    /// 88 58
+ldr  r0, [r1]                /// 08 68
+ldrx r0, [r1] (S.two)        /// 08 68
+ldr  r0, [r1, #S.three]      /// 88 68
+ldrx r0, [r1, #S.three]      /// 88 68
+ldr  r0, [r1, r2]            /// 88 58
+ldrx r0, [r1, r2] (S.three)  /// 88 58
+ldr  r0, [r1]                /// 08 68
+ldrx r0, [r1] (S.three)      /// 08 68
+
+str  r0, [r1, #S.two]        /// 48 60
+strx r0, [r1, #S.two]        /// 48 60
+str  r0, [r1, r2]            /// 88 50
+strx r0, [r1, r2] (S.two)    /// 88 50
+str  r0, [r1]                /// 08 60
+strx r0, [r1] (S.two)        /// 08 60
+str  r0, [r1, #S.three]      /// 88 60
+strx r0, [r1, #S.three]      /// 88 60
+str  r0, [r1, r2]            /// 88 50
+strx r0, [r1, r2] (S.three)  /// 88 50
+str  r0, [r1]                /// 08 60
+strx r0, [r1] (S.three)      /// 08 60

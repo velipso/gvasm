@@ -1,0 +1,4 @@
+name: expr.assert-fail
+desc: Fail an assertion
+kind: make
+error: true

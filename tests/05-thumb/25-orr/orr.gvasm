@@ -1,0 +1,3 @@
+.thumb
+orr r2, r7  /// 3a 43
+orr r0, r6  /// 30 43

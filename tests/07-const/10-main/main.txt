@@ -1,0 +1,3 @@
+name: const.main
+desc: Constant _main is defined
+kind: make

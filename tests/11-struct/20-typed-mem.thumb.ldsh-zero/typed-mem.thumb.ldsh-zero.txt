@@ -1,0 +1,4 @@
+name: struct.typed-mem.thumb.ldsh-zero
+desc: Cannot convert ldrx into ldsh when using zero
+kind: make
+error: true

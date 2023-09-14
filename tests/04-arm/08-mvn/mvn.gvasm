@@ -1,0 +1,77 @@
+.arm
+mvn r3, r14               /// 0e 30 e0 e1
+mvns r3, r14              /// 0e 30 f0 e1
+mvnmi r3, r14             /// 0e 30 e0 41
+mvnsmi r3, r14            /// 0e 30 f0 41
+mvns.mi r3, r14           /// 0e 30 f0 41
+mvnmis r3, r14            /// 0e 30 f0 41
+
+mvn r3, r14, lsl #0       /// 0e 30 e0 e1
+mvns r3, r14, lsl #0      /// 0e 30 f0 e1
+mvnmi r3, r14, lsl #0     /// 0e 30 e0 41
+mvnsmi r3, r14, lsl #0    /// 0e 30 f0 41
+mvns.mi r3, r14, lsl #0   /// 0e 30 f0 41
+mvnmis r3, r14, lsl #0    /// 0e 30 f0 41
+
+mvn r3, r14, lsr #0       /// 0e 30 e0 e1
+mvns r3, r14, lsr #0      /// 0e 30 f0 e1
+mvnmi r3, r14, lsr #0     /// 0e 30 e0 41
+mvnsmi r3, r14, lsr #0    /// 0e 30 f0 41
+mvns.mi r3, r14, lsr #0   /// 0e 30 f0 41
+mvnmis r3, r14, lsr #0    /// 0e 30 f0 41
+
+mvn r3, r14, asr #0       /// 0e 30 e0 e1
+mvns r3, r14, asr #0      /// 0e 30 f0 e1
+mvnmi r3, r14, asr #0     /// 0e 30 e0 41
+mvnsmi r3, r14, asr #0    /// 0e 30 f0 41
+mvns.mi r3, r14, asr #0   /// 0e 30 f0 41
+mvnmis r3, r14, asr #0    /// 0e 30 f0 41
+
+mvn r3, r14, ror #0       /// 0e 30 e0 e1
+mvns r3, r14, ror #0      /// 0e 30 f0 e1
+mvnmi r3, r14, ror #0     /// 0e 30 e0 41
+mvnsmi r3, r14, ror #0    /// 0e 30 f0 41
+mvns.mi r3, r14, ror #0   /// 0e 30 f0 41
+mvnmis r3, r14, ror #0    /// 0e 30 f0 41
+
+mvn r3, r14, lsr #32      /// 2e 30 e0 e1
+mvns r3, r14, lsr #32     /// 2e 30 f0 e1
+mvnmi r3, r14, lsr #32    /// 2e 30 e0 41
+mvnsmi r3, r14, lsr #32   /// 2e 30 f0 41
+mvns.mi r3, r14, lsr #32  /// 2e 30 f0 41
+mvnmis r3, r14, lsr #32   /// 2e 30 f0 41
+
+mvn r3, r14, asr #32      /// 4e 30 e0 e1
+mvns r3, r14, asr #32     /// 4e 30 f0 e1
+mvnmi r3, r14, asr #32    /// 4e 30 e0 41
+mvnsmi r3, r14, asr #32   /// 4e 30 f0 41
+mvns.mi r3, r14, asr #32  /// 4e 30 f0 41
+mvnmis r3, r14, asr #32   /// 4e 30 f0 41
+
+mvn r3, r14, rrx          /// 6e 30 e0 e1
+mvns r3, r14, rrx         /// 6e 30 f0 e1
+mvnmi r3, r14, rrx        /// 6e 30 e0 41
+mvnsmi r3, r14, rrx       /// 6e 30 f0 41
+mvns.mi r3, r14, rrx      /// 6e 30 f0 41
+mvnmis r3, r14, rrx       /// 6e 30 f0 41
+
+mvn r3, r14, lsl #5       /// 8e 32 e0 e1
+mvns r3, r14, lsr #10     /// 2e 35 f0 e1
+mvnmi r3, r14, asr #15    /// ce 37 e0 41
+mvnsmi r3, r14, ror #20   /// 6e 3a f0 41
+mvns.mi r3, r14, ror #20  /// 6e 3a f0 41
+mvnmis r3, r14, lsl #25   /// 8e 3c f0 41
+
+mvn r3, r14, lsl r10      /// 1e 3a e0 e1
+mvns r3, r14, lsr r10     /// 3e 3a f0 e1
+mvnmi r3, r14, asr r10    /// 5e 3a e0 41
+mvnsmi r3, r14, ror r10   /// 7e 3a f0 41
+mvns.mi r3, r14, ror r10  /// 7e 3a f0 41
+mvnmis r3, r14, lsl r10   /// 1e 3a f0 41
+
+mvn r3, #0x34000000       /// 0d 33 e0 e3
+mvns r3, #0x560000        /// 56 38 f0 e3
+mvnmi r3, #0x7800         /// 1e 3b e0 43
+mvnsmi r3, #0x91          /// 91 30 f0 43
+mvns.mi r3, #0x91         /// 91 30 f0 43
+mvnmis r3, #0x50          /// 05 3e f0 43

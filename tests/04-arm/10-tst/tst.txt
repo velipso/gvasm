@@ -1,0 +1,3 @@
+name: arm.tst
+desc: Bitwise and test
+kind: make

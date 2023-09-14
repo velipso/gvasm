@@ -1,0 +1,19 @@
+.import './config.gvasm' { FOO }
+
+.struct i1 = iwram
+  .i32 i1[FOO]
+.end
+
+.struct e1 = ewram
+  .i32 e1
+.end
+
+.struct i2 = iwram
+  .i32 i2
+.end
+
+.include './config.gvasm'
+
+.printf "i1 %08X", i1
+.printf "e1 %08X", e1
+.printf "i2 %08X", i2

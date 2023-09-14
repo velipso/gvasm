@@ -1,0 +1,4 @@
+name: script.dot-bytes-misaligned
+desc: Misaligned data is an error
+kind: make
+error: true

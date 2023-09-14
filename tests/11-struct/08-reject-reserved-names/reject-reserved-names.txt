@@ -1,0 +1,4 @@
+name: struct.reject-reserved-names
+desc: Reject _name
+kind: make
+error: true

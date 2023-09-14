@@ -1,0 +1,3 @@
+name: const.case-sensitive
+desc: Case-sensitive identifiers
+kind: make

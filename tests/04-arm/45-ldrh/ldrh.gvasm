@@ -1,0 +1,192 @@
+.arm
+ldrh r11, [r4]                /// b0 b0 d4 e1
+ldrhgt r11, [r4]              /// b0 b0 d4 c1
+ldrgth r11, [r4]              /// b0 b0 d4 c1
+
+ldrsb r11, [r4]               /// d0 b0 d4 e1
+ldrsbgt r11, [r4]             /// d0 b0 d4 c1
+ldrgtsb r11, [r4]             /// d0 b0 d4 c1
+
+ldrsh r11, [r4]               /// f0 b0 d4 e1
+ldrshgt r11, [r4]             /// f0 b0 d4 c1
+ldrgtsh r11, [r4]             /// f0 b0 d4 c1
+
+ldrh r11, [r4, #100]          /// b4 b6 d4 e1
+ldrhgt r11, [r4, #100]        /// b4 b6 d4 c1
+ldrgth r11, [r4, #100]        /// b4 b6 d4 c1
+
+ldrsb r11, [r4, #100]         /// d4 b6 d4 e1
+ldrsbgt r11, [r4, #100]       /// d4 b6 d4 c1
+ldrgtsb r11, [r4, #100]       /// d4 b6 d4 c1
+
+ldrsh r11, [r4, #100]         /// f4 b6 d4 e1
+ldrshgt r11, [r4, #100]       /// f4 b6 d4 c1
+ldrgtsh r11, [r4, #100]       /// f4 b6 d4 c1
+
+ldrh r11, [r4, #100]!         /// b4 b6 f4 e1
+ldrhgt r11, [r4, #100]!       /// b4 b6 f4 c1
+ldrgth r11, [r4, #100]!       /// b4 b6 f4 c1
+
+ldrsb r11, [r4, #100]!        /// d4 b6 f4 e1
+ldrsbgt r11, [r4, #100]!      /// d4 b6 f4 c1
+ldrgtsb r11, [r4, #100]!      /// d4 b6 f4 c1
+
+ldrsh r11, [r4, #100]!        /// f4 b6 f4 e1
+ldrshgt r11, [r4, #100]!      /// f4 b6 f4 c1
+ldrgtsh r11, [r4, #100]!      /// f4 b6 f4 c1
+
+ldrh r11, [r4, #-100]         /// b4 b6 54 e1
+ldrhgt r11, [r4, #-100]       /// b4 b6 54 c1
+ldrgth r11, [r4, #-100]       /// b4 b6 54 c1
+
+ldrsb r11, [r4, #-100]        /// d4 b6 54 e1
+ldrsbgt r11, [r4, #-100]      /// d4 b6 54 c1
+ldrgtsb r11, [r4, #-100]      /// d4 b6 54 c1
+
+ldrsh r11, [r4, #-100]        /// f4 b6 54 e1
+ldrshgt r11, [r4, #-100]      /// f4 b6 54 c1
+ldrgtsh r11, [r4, #-100]      /// f4 b6 54 c1
+
+ldrh r11, [r4, #-100]!        /// b4 b6 74 e1
+ldrhgt r11, [r4, #-100]!      /// b4 b6 74 c1
+ldrgth r11, [r4, #-100]!      /// b4 b6 74 c1
+
+ldrsb r11, [r4, #-100]!       /// d4 b6 74 e1
+ldrsbgt r11, [r4, #-100]!     /// d4 b6 74 c1
+ldrgtsb r11, [r4, #-100]!     /// d4 b6 74 c1
+
+ldrsh r11, [r4, #-100]!       /// f4 b6 74 e1
+ldrshgt r11, [r4, #-100]!     /// f4 b6 74 c1
+ldrgtsh r11, [r4, #-100]!     /// f4 b6 74 c1
+
+ldrh r11, [r4, r13]           /// bd b0 94 e1
+ldrhgt r11, [r4, r13]         /// bd b0 94 c1
+ldrgth r11, [r4, r13]         /// bd b0 94 c1
+
+ldrsb r11, [r4, r13]          /// dd b0 94 e1
+ldrsbgt r11, [r4, r13]        /// dd b0 94 c1
+ldrgtsb r11, [r4, r13]        /// dd b0 94 c1
+
+ldrsh r11, [r4, r13]          /// fd b0 94 e1
+ldrshgt r11, [r4, r13]        /// fd b0 94 c1
+ldrgtsh r11, [r4, r13]        /// fd b0 94 c1
+
+ldrh r11, [r4, r13]!          /// bd b0 b4 e1
+ldrhgt r11, [r4, r13]!        /// bd b0 b4 c1
+ldrgth r11, [r4, r13]!        /// bd b0 b4 c1
+
+ldrsb r11, [r4, r13]!         /// dd b0 b4 e1
+ldrsbgt r11, [r4, r13]!       /// dd b0 b4 c1
+ldrgtsb r11, [r4, r13]!       /// dd b0 b4 c1
+
+ldrsh r11, [r4, r13]!         /// fd b0 b4 e1
+ldrshgt r11, [r4, r13]!       /// fd b0 b4 c1
+ldrgtsh r11, [r4, r13]!       /// fd b0 b4 c1
+
+ldrh r11, [r4, +r13]          /// bd b0 94 e1
+ldrhgt r11, [r4, +r13]        /// bd b0 94 c1
+ldrgth r11, [r4, +r13]        /// bd b0 94 c1
+
+ldrsb r11, [r4, +r13]         /// dd b0 94 e1
+ldrsbgt r11, [r4, +r13]       /// dd b0 94 c1
+ldrgtsb r11, [r4, +r13]       /// dd b0 94 c1
+
+ldrsh r11, [r4, +r13]         /// fd b0 94 e1
+ldrshgt r11, [r4, +r13]       /// fd b0 94 c1
+ldrgtsh r11, [r4, +r13]       /// fd b0 94 c1
+
+ldrh r11, [r4, +r13]!         /// bd b0 b4 e1
+ldrhgt r11, [r4, +r13]!       /// bd b0 b4 c1
+ldrgth r11, [r4, +r13]!       /// bd b0 b4 c1
+
+ldrsb r11, [r4, +r13]!        /// dd b0 b4 e1
+ldrsbgt r11, [r4, +r13]!      /// dd b0 b4 c1
+ldrgtsb r11, [r4, +r13]!      /// dd b0 b4 c1
+
+ldrsh r11, [r4, +r13]!        /// fd b0 b4 e1
+ldrshgt r11, [r4, +r13]!      /// fd b0 b4 c1
+ldrgtsh r11, [r4, +r13]!      /// fd b0 b4 c1
+
+ldrh r11, [r4, -r13]          /// bd b0 14 e1
+ldrhgt r11, [r4, -r13]        /// bd b0 14 c1
+ldrgth r11, [r4, -r13]        /// bd b0 14 c1
+
+ldrsb r11, [r4, -r13]         /// dd b0 14 e1
+ldrsbgt r11, [r4, -r13]       /// dd b0 14 c1
+ldrgtsb r11, [r4, -r13]       /// dd b0 14 c1
+
+ldrsh r11, [r4, -r13]         /// fd b0 14 e1
+ldrshgt r11, [r4, -r13]       /// fd b0 14 c1
+ldrgtsh r11, [r4, -r13]       /// fd b0 14 c1
+
+ldrh r11, [r4, -r13]!         /// bd b0 34 e1
+ldrhgt r11, [r4, -r13]!       /// bd b0 34 c1
+ldrgth r11, [r4, -r13]!       /// bd b0 34 c1
+
+ldrsb r11, [r4, -r13]!        /// dd b0 34 e1
+ldrsbgt r11, [r4, -r13]!      /// dd b0 34 c1
+ldrgtsb r11, [r4, -r13]!      /// dd b0 34 c1
+
+ldrsh r11, [r4, -r13]!        /// fd b0 34 e1
+ldrshgt r11, [r4, -r13]!      /// fd b0 34 c1
+ldrgtsh r11, [r4, -r13]!      /// fd b0 34 c1
+
+ldrh r11, [r4], #100          /// b4 b6 d4 e0
+ldrhgt r11, [r4], #100        /// b4 b6 d4 c0
+ldrgth r11, [r4], #100        /// b4 b6 d4 c0
+
+ldrsb r11, [r4], #100         /// d4 b6 d4 e0
+ldrsbgt r11, [r4], #100       /// d4 b6 d4 c0
+ldrgtsb r11, [r4], #100       /// d4 b6 d4 c0
+
+ldrsh r11, [r4], #100         /// f4 b6 d4 e0
+ldrshgt r11, [r4], #100       /// f4 b6 d4 c0
+ldrgtsh r11, [r4], #100       /// f4 b6 d4 c0
+
+ldrh r11, [r4], #-100         /// b4 b6 54 e0
+ldrhgt r11, [r4], #-100       /// b4 b6 54 c0
+ldrgth r11, [r4], #-100       /// b4 b6 54 c0
+
+ldrsb r11, [r4], #-100        /// d4 b6 54 e0
+ldrsbgt r11, [r4], #-100      /// d4 b6 54 c0
+ldrgtsb r11, [r4], #-100      /// d4 b6 54 c0
+
+ldrsh r11, [r4], #-100        /// f4 b6 54 e0
+ldrshgt r11, [r4], #-100      /// f4 b6 54 c0
+ldrgtsh r11, [r4], #-100      /// f4 b6 54 c0
+
+ldrh r11, [r4], r13           /// bd b0 94 e0
+ldrhgt r11, [r4], r13         /// bd b0 94 c0
+ldrgth r11, [r4], r13         /// bd b0 94 c0
+
+ldrsb r11, [r4], r13          /// dd b0 94 e0
+ldrsbgt r11, [r4], r13        /// dd b0 94 c0
+ldrgtsb r11, [r4], r13        /// dd b0 94 c0
+
+ldrsh r11, [r4], r13          /// fd b0 94 e0
+ldrshgt r11, [r4], r13        /// fd b0 94 c0
+ldrgtsh r11, [r4], r13        /// fd b0 94 c0
+
+ldrh r11, [r4], +r13          /// bd b0 94 e0
+ldrhgt r11, [r4], +r13        /// bd b0 94 c0
+ldrgth r11, [r4], +r13        /// bd b0 94 c0
+
+ldrsb r11, [r4], +r13         /// dd b0 94 e0
+ldrsbgt r11, [r4], +r13       /// dd b0 94 c0
+ldrgtsb r11, [r4], +r13       /// dd b0 94 c0
+
+ldrsh r11, [r4], +r13         /// fd b0 94 e0
+ldrshgt r11, [r4], +r13       /// fd b0 94 c0
+ldrgtsh r11, [r4], +r13       /// fd b0 94 c0
+
+ldrh r11, [r4], -r13          /// bd b0 14 e0
+ldrhgt r11, [r4], -r13        /// bd b0 14 c0
+ldrgth r11, [r4], -r13        /// bd b0 14 c0
+
+ldrsb r11, [r4], -r13         /// dd b0 14 e0
+ldrsbgt r11, [r4], -r13       /// dd b0 14 c0
+ldrgtsb r11, [r4], -r13       /// dd b0 14 c0
+
+ldrsh r11, [r4], -r13         /// fd b0 14 e0
+ldrshgt r11, [r4], -r13       /// fd b0 14 c0
+ldrgtsh r11, [r4], -r13       /// fd b0 14 c0

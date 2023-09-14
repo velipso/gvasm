@@ -1,0 +1,3 @@
+name: const.bytes
+desc: Constant _bytes is defined
+kind: make

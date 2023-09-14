@@ -1,0 +1,4 @@
+name: expr.log2assert
+desc: Verify log2assert fails when log2 isn't exact
+kind: make
+error: true

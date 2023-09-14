@@ -1,0 +1,4 @@
+name: regs.print
+desc: Print the register names
+kind: make
+$ print.gvasm:3:1: Registers: temp0, temp1, temp2, temp3, foo, bar, baz10, baz9, baz8, qux, r5, r20

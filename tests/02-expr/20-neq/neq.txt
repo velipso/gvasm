@@ -1,0 +1,3 @@
+name: expr.neq
+desc: Not equal
+kind: make

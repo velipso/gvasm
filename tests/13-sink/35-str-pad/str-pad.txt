@@ -1,0 +1,12 @@
+name: sink.str-pad
+kind: sink
+$ '  hello'
+$ 'hello'
+$ 'hello'
+$ 'hello'
+$ 'hello'
+$ 'hello'
+$ 'hello  '
+$ ' X'
+$ 'X '
+$

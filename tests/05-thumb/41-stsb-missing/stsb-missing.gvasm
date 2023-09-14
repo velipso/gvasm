@@ -1,0 +1,2 @@
+.thumb
+stsb r7, [r5, r3]

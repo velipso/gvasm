@@ -1,0 +1,37 @@
+.arm
+ror r3, r14, #0       /// 0e 30 a0 e1
+rors r3, r14, #0      /// 0e 30 b0 e1
+rormi r3, r14, #0     /// 0e 30 a0 41
+rorsmi r3, r14, #0    /// 0e 30 b0 41
+rors.mi r3, r14, #0   /// 0e 30 b0 41
+rormis r3, r14, #0    /// 0e 30 b0 41
+
+ror r3, #0            /// 03 30 a0 e1
+rors r3, #0           /// 03 30 b0 e1
+rormi r3, #0          /// 03 30 a0 41
+rorsmi r3, #0         /// 03 30 b0 41
+rors.mi r3, #0        /// 03 30 b0 41
+rormis r3, #0         /// 03 30 b0 41
+
+
+
+ror r3, r14, #5       /// ee 32 a0 e1
+rors r3, r14, #10     /// 6e 35 b0 e1
+rormi r3, r14, #15    /// ee 37 a0 41
+rorsmi r3, r14, #20   /// 6e 3a b0 41
+rors.mi r3, r14, #25  /// ee 3c b0 41
+rormis r3, r14, #30   /// 6e 3f b0 41
+
+ror r3, r14, r10      /// 7e 3a a0 e1
+rors r3, r14, r10     /// 7e 3a b0 e1
+rormi r3, r14, r10    /// 7e 3a a0 41
+rorsmi r3, r14, r10   /// 7e 3a b0 41
+rors.mi r3, r14, r10  /// 7e 3a b0 41
+rormis r3, r14, r10   /// 7e 3a b0 41
+
+ror r3, r10           /// 73 3a a0 e1
+rors r3, r10          /// 73 3a b0 e1
+rormi r3, r10         /// 73 3a a0 41
+rorsmi r3, r10        /// 73 3a b0 41
+rors.mi r3, r10       /// 73 3a b0 41
+rormis r3, r10        /// 73 3a b0 41

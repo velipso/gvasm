@@ -1,0 +1,10 @@
+enum zero, one, two, three
+
+say zero, one, two, three
+
+enum five = 5, six, seven, eight, ten = (10), eleven
+
+say five, six, seven, eight, ten, eleven
+
+enum twenty = eleven * 2 - 2
+say twenty

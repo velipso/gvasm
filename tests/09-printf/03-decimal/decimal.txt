@@ -1,0 +1,4 @@
+name: printf.decimal
+desc: Decimal formatting
+kind: make
+$ one hundred 100 two hundred 200

@@ -1,0 +1,3 @@
+.thumb
+stmia r3!, {r0-r3}  /// 0f c3
+stmea r3!, {r0-r3}  /// 0f c3

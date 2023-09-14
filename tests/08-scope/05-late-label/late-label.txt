@@ -1,0 +1,3 @@
+name: scope.late-label
+desc: Late local labels should override higher scope labels
+kind: make

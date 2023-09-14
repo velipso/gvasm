@@ -1,0 +1,8 @@
+.if _main
+  .error "fail"
+.else
+  .i8 3
+  .script
+    put '.i8 4'
+  .end
+.end

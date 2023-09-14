@@ -1,0 +1,3 @@
+name: thumb.muls
+desc: Multiply
+kind: make

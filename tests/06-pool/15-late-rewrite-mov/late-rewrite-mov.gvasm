@@ -1,0 +1,4 @@
+.arm
+ldr r2, =here - 8  /// 02 23 a0 e3
+.pool              /// 00 00 00 00
+here:

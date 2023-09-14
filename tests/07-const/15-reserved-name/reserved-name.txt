@@ -1,0 +1,4 @@
+name: const.reserved-name
+desc: Prevent users from defining names starting with _
+kind: make
+error: true

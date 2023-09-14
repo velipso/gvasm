@@ -1,0 +1,3 @@
+.i32 0
+.include "hello.gvasm"
+.i32 -1

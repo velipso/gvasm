@@ -1,0 +1,31 @@
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.thumb
+// ldsh r0, [r1, #S.two] is an invalid opcode
+// ldrx r0, [r1, #S.two] cannot be converted
+ldsh r0, [r1, r2]            /// 88 5e
+ldrx r0, [r1, r2] (S.two)    /// 88 5e
+// ldsh r0, [r1] is an invalid opcode
+// ldrx r0, [r1] (S.two) cannot be converted
+ldrh r0, [r1, #S.three]      /// 88 88
+ldrx r0, [r1, #S.three]      /// 88 88
+ldrh r0, [r1, r2]            /// 88 5a
+ldrx r0, [r1, r2] (S.three)  /// 88 5a
+ldrh r0, [r1]                /// 08 88
+ldrx r0, [r1] (S.three)      /// 08 88
+
+strh r0, [r1, #S.two]        /// 48 80
+strx r0, [r1, #S.two]        /// 48 80
+strh r0, [r1, r2]            /// 88 52
+strx r0, [r1, r2] (S.two)    /// 88 52
+strh r0, [r1]                /// 08 80
+strx r0, [r1] (S.two)        /// 08 80
+strh r0, [r1, #S.three]      /// 88 80
+strx r0, [r1, #S.three]      /// 88 80
+strh r0, [r1, r2]            /// 88 52
+strx r0, [r1, r2] (S.three)  /// 88 52
+strh r0, [r1]                /// 08 80
+strx r0, [r1] (S.three)      /// 08 80

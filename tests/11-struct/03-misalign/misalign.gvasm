@@ -1,0 +1,4 @@
+.struct s
+  .i8 one
+  .i32 two
+.end

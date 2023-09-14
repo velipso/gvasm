@@ -1,0 +1,7 @@
+name: script.define
+desc: Defines propagate to scripts
+kind: make
+$ 123
+$ 1
+$ XYZ
+$ 1

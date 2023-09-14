@@ -1,0 +1,4 @@
+.thumb
+swi 0    /// 00 df
+swi 100  /// 64 df
+swi 255  /// ff df

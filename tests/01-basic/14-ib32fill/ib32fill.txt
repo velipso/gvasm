@@ -1,0 +1,3 @@
+name: basic.ib32fill
+desc: Use .ib32fill command
+kind: make

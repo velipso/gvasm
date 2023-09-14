@@ -1,0 +1,4 @@
+name: struct.reject-regular
+desc: Reject regular statements inside .struct
+kind: make
+error: true

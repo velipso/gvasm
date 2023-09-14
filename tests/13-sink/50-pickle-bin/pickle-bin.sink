@@ -1,0 +1,13 @@
+def T obj
+  var out = {}
+  for var p: pickle.bin obj | str.list
+    list.push out, (num.hex p, 2)[2:]
+  end
+  say list.join out
+end
+
+T nil
+T {'a', 'a'}
+T {'a', {0}, 'abcd', 'a'}
+var a = {{-250}}; list.push a, a
+T a

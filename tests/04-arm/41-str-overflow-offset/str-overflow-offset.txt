@@ -1,0 +1,4 @@
+name: arm.str-overflow-offset
+desc: Store with overflow offset
+kind: make
+error: true

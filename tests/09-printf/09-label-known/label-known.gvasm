@@ -1,0 +1,1 @@
+main: .printf "%#08x", main

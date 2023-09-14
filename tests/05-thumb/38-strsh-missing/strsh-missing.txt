@@ -1,0 +1,4 @@
+name: thumb.strsh-missing
+desc: Verify strsh is missing
+kind: make
+error: true

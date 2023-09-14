@@ -1,0 +1,3 @@
+name: arm.sub
+desc: Subtraction
+kind: make

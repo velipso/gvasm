@@ -1,0 +1,4 @@
+name: sink.str-escape
+kind: sink
+$ how's it going
+$

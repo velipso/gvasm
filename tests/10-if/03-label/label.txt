@@ -1,0 +1,4 @@
+name: if.label
+desc: Labeled .if statements
+kind: make
+$ pass

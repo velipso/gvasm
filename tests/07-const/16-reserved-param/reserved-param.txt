@@ -1,0 +1,4 @@
+name: const.reserved-param
+desc: Prevent users from defining parameters starting with _
+kind: make
+error: true

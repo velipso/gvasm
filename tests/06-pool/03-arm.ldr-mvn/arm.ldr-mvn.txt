@@ -1,0 +1,3 @@
+name: pool.arm.ldr-mvn
+desc: ARM pool ldr converted to mvn
+kind: make

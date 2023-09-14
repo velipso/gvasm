@@ -1,0 +1,3 @@
+name: thumb.sbcs
+desc: Subtract with carry
+kind: make

@@ -1,0 +1,13 @@
+namespace baz
+  var x
+  def qux
+  end
+end
+
+namespace bar
+  def foo
+  end
+
+  def foo
+  end
+end

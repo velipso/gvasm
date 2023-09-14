@@ -1,0 +1,3 @@
+name: script.start-comments
+desc: Comments at .start should work
+kind: make

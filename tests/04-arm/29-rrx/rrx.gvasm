@@ -1,0 +1,14 @@
+.arm
+rrx r3, r14      /// 6e 30 a0 e1
+rrxs r3, r14     /// 6e 30 b0 e1
+rrxmi r3, r14    /// 6e 30 a0 41
+rrxsmi r3, r14   /// 6e 30 b0 41
+rrxs.mi r3, r14  /// 6e 30 b0 41
+rrxmis r3, r14   /// 6e 30 b0 41
+
+rrx r3           /// 63 30 a0 e1
+rrxs r3          /// 63 30 b0 e1
+rrxmi r3         /// 63 30 a0 41
+rrxsmi r3        /// 63 30 b0 41
+rrxs.mi r3       /// 63 30 b0 41
+rrxmis r3        /// 63 30 b0 41

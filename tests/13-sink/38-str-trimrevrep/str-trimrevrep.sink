@@ -1,0 +1,17 @@
+for var x: range 0, 256
+  var s = list.str {x, x, x, 65, x}
+  if (str.trim s) != s
+    say x, &str.trim s
+  end
+end
+
+say str.rev 'abc'
+say str.rev 'a'
+say str.rev ''
+
+say str.rep 'abc', 0
+say str.rep 'abc', 1
+say str.rep 'abc', 3
+say str.rep '', 99
+
+say '"' ~ (str.trim '   ') ~ '"'

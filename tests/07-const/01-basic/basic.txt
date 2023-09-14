@@ -1,0 +1,3 @@
+name: const.basic
+desc: Basic constant usage
+kind: make

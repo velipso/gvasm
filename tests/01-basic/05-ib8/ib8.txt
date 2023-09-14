@@ -1,0 +1,3 @@
+name: basic.ib8
+desc: Use .ib8 command
+kind: make

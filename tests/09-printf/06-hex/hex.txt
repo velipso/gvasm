@@ -1,0 +1,4 @@
+name: printf.hex
+desc: Hex formatting
+kind: make
+$ two hundred c8 two hundred C8

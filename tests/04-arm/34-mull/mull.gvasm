@@ -1,0 +1,11 @@
+.arm
+umull r5, r3, r13, r11     /// 9d 5b 83 e0
+umulls r5, r3, r13, r11    /// 9d 5b 93 e0
+umullls r5, r3, r13, r11   /// 9d 5b 83 90
+umullsls r5, r3, r13, r11  /// 9d 5b 93 90
+umulllss r5, r3, r13, r11  /// 9d 5b 93 90
+smull r5, r3, r13, r11     /// 9d 5b c3 e0
+smulls r5, r3, r13, r11    /// 9d 5b d3 e0
+smullls r5, r3, r13, r11   /// 9d 5b c3 90
+smullsls r5, r3, r13, r11  /// 9d 5b d3 90
+smulllss r5, r3, r13, r11  /// 9d 5b d3 90

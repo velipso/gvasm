@@ -1,0 +1,3 @@
+name: basic.i32
+desc: Use .i32 command
+kind: make

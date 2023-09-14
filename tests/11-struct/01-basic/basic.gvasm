@@ -1,0 +1,14 @@
+.struct s
+  .i8 one, two
+  .i16 three
+  .i32 four
+five:
+  .i32 six
+.end
+
+.i8 s.one    /// 00
+.i8 s.two    /// 01
+.i8 s.three  /// 02
+.i8 s.four   /// 04
+.i8 s.five   /// 08
+.i8 s.six    /// 08

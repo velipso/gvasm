@@ -1,0 +1,7 @@
+.def first = 1
+
+.printf "second = %d", second
+.printf "first = %d", first
+
+.def second = 2
+.def fourth = _here + 3

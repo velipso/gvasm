@@ -1,0 +1,3 @@
+name: regs.range
+desc: Parse register ranges correctly
+kind: make

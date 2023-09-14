@@ -1,0 +1,765 @@
+.arm
+ldr r2, [r9]                        /// 00 20 99 e5
+ldrb r2, [r9]                       /// 00 20 d9 e5
+ldrge r2, [r9]                      /// 00 20 99 a5
+ldrbge r2, [r9]                     /// 00 20 d9 a5
+ldrgeb r2, [r9]                     /// 00 20 d9 a5
+
+//====================== PRE-INDEX ======================
+
+//
+// IMMEDIATE
+//
+
+ldr r2, [r9, #290]                  /// 22 21 99 e5
+ldrb r2, [r9, #290]                 /// 22 21 d9 e5
+ldrge r2, [r9, #290]                /// 22 21 99 a5
+ldrbge r2, [r9, #290]               /// 22 21 d9 a5
+ldrgeb r2, [r9, #290]               /// 22 21 d9 a5
+
+ldr r2, [r9, #-290]                 /// 22 21 19 e5
+ldrb r2, [r9, #-290]                /// 22 21 59 e5
+ldrge r2, [r9, #-290]               /// 22 21 19 a5
+ldrbge r2, [r9, #-290]              /// 22 21 59 a5
+ldrgeb r2, [r9, #-290]              /// 22 21 59 a5
+
+ldr r2, [r9, #290]!                 /// 22 21 b9 e5
+ldrb r2, [r9, #290]!                /// 22 21 f9 e5
+ldrge r2, [r9, #290]!               /// 22 21 b9 a5
+ldrbge r2, [r9, #290]!              /// 22 21 f9 a5
+ldrgeb r2, [r9, #290]!              /// 22 21 f9 a5
+
+ldr r2, [r9, #-290]!                /// 22 21 39 e5
+ldrb r2, [r9, #-290]!               /// 22 21 79 e5
+ldrge r2, [r9, #-290]!              /// 22 21 39 a5
+ldrbge r2, [r9, #-290]!             /// 22 21 79 a5
+ldrgeb r2, [r9, #-290]!             /// 22 21 79 a5
+
+//
+// NO SHIFT
+//
+
+ldr r2, [r9, r10]                   /// 0a 20 99 e7
+ldrb r2, [r9, r10]                  /// 0a 20 d9 e7
+ldrge r2, [r9, r10]                 /// 0a 20 99 a7
+ldrbge r2, [r9, r10]                /// 0a 20 d9 a7
+ldrgeb r2, [r9, r10]                /// 0a 20 d9 a7
+
+ldr r2, [r9, +r10]                  /// 0a 20 99 e7
+ldrb r2, [r9, +r10]                 /// 0a 20 d9 e7
+ldrge r2, [r9, +r10]                /// 0a 20 99 a7
+ldrbge r2, [r9, +r10]               /// 0a 20 d9 a7
+ldrgeb r2, [r9, +r10]               /// 0a 20 d9 a7
+
+ldr r2, [r9, -r10]                  /// 0a 20 19 e7
+ldrb r2, [r9, -r10]                 /// 0a 20 59 e7
+ldrge r2, [r9, -r10]                /// 0a 20 19 a7
+ldrbge r2, [r9, -r10]               /// 0a 20 59 a7
+ldrgeb r2, [r9, -r10]               /// 0a 20 59 a7
+
+ldr r2, [r9, r10]!                  /// 0a 20 b9 e7
+ldrb r2, [r9, r10]!                 /// 0a 20 f9 e7
+ldrge r2, [r9, r10]!                /// 0a 20 b9 a7
+ldrbge r2, [r9, r10]!               /// 0a 20 f9 a7
+ldrgeb r2, [r9, r10]!               /// 0a 20 f9 a7
+
+ldr r2, [r9, +r10]!                 /// 0a 20 b9 e7
+ldrb r2, [r9, +r10]!                /// 0a 20 f9 e7
+ldrge r2, [r9, +r10]!               /// 0a 20 b9 a7
+ldrbge r2, [r9, +r10]!              /// 0a 20 f9 a7
+ldrgeb r2, [r9, +r10]!              /// 0a 20 f9 a7
+
+ldr r2, [r9, -r10]!                 /// 0a 20 39 e7
+ldrb r2, [r9, -r10]!                /// 0a 20 79 e7
+ldrge r2, [r9, -r10]!               /// 0a 20 39 a7
+ldrbge r2, [r9, -r10]!              /// 0a 20 79 a7
+ldrgeb r2, [r9, -r10]!              /// 0a 20 79 a7
+
+//
+// LSL #0
+//
+
+ldr r2, [r9, r10, lsl #0]           /// 0a 20 99 e7
+ldrb r2, [r9, r10, lsl #0]          /// 0a 20 d9 e7
+ldrge r2, [r9, r10, lsl #0]         /// 0a 20 99 a7
+ldrbge r2, [r9, r10, lsl #0]        /// 0a 20 d9 a7
+ldrgeb r2, [r9, r10, lsl #0]        /// 0a 20 d9 a7
+
+ldr r2, [r9, +r10, lsl #0]          /// 0a 20 99 e7
+ldrb r2, [r9, +r10, lsl #0]         /// 0a 20 d9 e7
+ldrge r2, [r9, +r10, lsl #0]        /// 0a 20 99 a7
+ldrbge r2, [r9, +r10, lsl #0]       /// 0a 20 d9 a7
+ldrgeb r2, [r9, +r10, lsl #0]       /// 0a 20 d9 a7
+
+ldr r2, [r9, -r10, lsl #0]          /// 0a 20 19 e7
+ldrb r2, [r9, -r10, lsl #0]         /// 0a 20 59 e7
+ldrge r2, [r9, -r10, lsl #0]        /// 0a 20 19 a7
+ldrbge r2, [r9, -r10, lsl #0]       /// 0a 20 59 a7
+ldrgeb r2, [r9, -r10, lsl #0]       /// 0a 20 59 a7
+
+ldr r2, [r9, r10, lsl #0]!          /// 0a 20 b9 e7
+ldrb r2, [r9, r10, lsl #0]!         /// 0a 20 f9 e7
+ldrge r2, [r9, r10, lsl #0]!        /// 0a 20 b9 a7
+ldrbge r2, [r9, r10, lsl #0]!       /// 0a 20 f9 a7
+ldrgeb r2, [r9, r10, lsl #0]!       /// 0a 20 f9 a7
+
+ldr r2, [r9, +r10, lsl #0]!         /// 0a 20 b9 e7
+ldrb r2, [r9, +r10, lsl #0]!        /// 0a 20 f9 e7
+ldrge r2, [r9, +r10, lsl #0]!       /// 0a 20 b9 a7
+ldrbge r2, [r9, +r10, lsl #0]!      /// 0a 20 f9 a7
+ldrgeb r2, [r9, +r10, lsl #0]!      /// 0a 20 f9 a7
+
+ldr r2, [r9, -r10, lsl #0]!         /// 0a 20 39 e7
+ldrb r2, [r9, -r10, lsl #0]!        /// 0a 20 79 e7
+ldrge r2, [r9, -r10, lsl #0]!       /// 0a 20 39 a7
+ldrbge r2, [r9, -r10, lsl #0]!      /// 0a 20 79 a7
+ldrgeb r2, [r9, -r10, lsl #0]!      /// 0a 20 79 a7
+
+//
+// LSR #0
+//
+
+ldr r2, [r9, r10, lsr #0]           /// 0a 20 99 e7
+ldrb r2, [r9, r10, lsr #0]          /// 0a 20 d9 e7
+ldrge r2, [r9, r10, lsr #0]         /// 0a 20 99 a7
+ldrbge r2, [r9, r10, lsr #0]        /// 0a 20 d9 a7
+ldrgeb r2, [r9, r10, lsr #0]        /// 0a 20 d9 a7
+
+ldr r2, [r9, +r10, lsr #0]          /// 0a 20 99 e7
+ldrb r2, [r9, +r10, lsr #0]         /// 0a 20 d9 e7
+ldrge r2, [r9, +r10, lsr #0]        /// 0a 20 99 a7
+ldrbge r2, [r9, +r10, lsr #0]       /// 0a 20 d9 a7
+ldrgeb r2, [r9, +r10, lsr #0]       /// 0a 20 d9 a7
+
+ldr r2, [r9, -r10, lsr #0]          /// 0a 20 19 e7
+ldrb r2, [r9, -r10, lsr #0]         /// 0a 20 59 e7
+ldrge r2, [r9, -r10, lsr #0]        /// 0a 20 19 a7
+ldrbge r2, [r9, -r10, lsr #0]       /// 0a 20 59 a7
+ldrgeb r2, [r9, -r10, lsr #0]       /// 0a 20 59 a7
+
+ldr r2, [r9, r10, lsr #0]!          /// 0a 20 b9 e7
+ldrb r2, [r9, r10, lsr #0]!         /// 0a 20 f9 e7
+ldrge r2, [r9, r10, lsr #0]!        /// 0a 20 b9 a7
+ldrbge r2, [r9, r10, lsr #0]!       /// 0a 20 f9 a7
+ldrgeb r2, [r9, r10, lsr #0]!       /// 0a 20 f9 a7
+
+ldr r2, [r9, +r10, lsr #0]!         /// 0a 20 b9 e7
+ldrb r2, [r9, +r10, lsr #0]!        /// 0a 20 f9 e7
+ldrge r2, [r9, +r10, lsr #0]!       /// 0a 20 b9 a7
+ldrbge r2, [r9, +r10, lsr #0]!      /// 0a 20 f9 a7
+ldrgeb r2, [r9, +r10, lsr #0]!      /// 0a 20 f9 a7
+
+ldr r2, [r9, -r10, lsr #0]!         /// 0a 20 39 e7
+ldrb r2, [r9, -r10, lsr #0]!        /// 0a 20 79 e7
+ldrge r2, [r9, -r10, lsr #0]!       /// 0a 20 39 a7
+ldrbge r2, [r9, -r10, lsr #0]!      /// 0a 20 79 a7
+ldrgeb r2, [r9, -r10, lsr #0]!      /// 0a 20 79 a7
+
+//
+// ASR #0
+//
+
+ldr r2, [r9, r10, asr #0]           /// 0a 20 99 e7
+ldrb r2, [r9, r10, asr #0]          /// 0a 20 d9 e7
+ldrge r2, [r9, r10, asr #0]         /// 0a 20 99 a7
+ldrbge r2, [r9, r10, asr #0]        /// 0a 20 d9 a7
+ldrgeb r2, [r9, r10, asr #0]        /// 0a 20 d9 a7
+
+ldr r2, [r9, +r10, asr #0]          /// 0a 20 99 e7
+ldrb r2, [r9, +r10, asr #0]         /// 0a 20 d9 e7
+ldrge r2, [r9, +r10, asr #0]        /// 0a 20 99 a7
+ldrbge r2, [r9, +r10, asr #0]       /// 0a 20 d9 a7
+ldrgeb r2, [r9, +r10, asr #0]       /// 0a 20 d9 a7
+
+ldr r2, [r9, -r10, asr #0]          /// 0a 20 19 e7
+ldrb r2, [r9, -r10, asr #0]         /// 0a 20 59 e7
+ldrge r2, [r9, -r10, asr #0]        /// 0a 20 19 a7
+ldrbge r2, [r9, -r10, asr #0]       /// 0a 20 59 a7
+ldrgeb r2, [r9, -r10, asr #0]       /// 0a 20 59 a7
+
+ldr r2, [r9, r10, asr #0]!          /// 0a 20 b9 e7
+ldrb r2, [r9, r10, asr #0]!         /// 0a 20 f9 e7
+ldrge r2, [r9, r10, asr #0]!        /// 0a 20 b9 a7
+ldrbge r2, [r9, r10, asr #0]!       /// 0a 20 f9 a7
+ldrgeb r2, [r9, r10, asr #0]!       /// 0a 20 f9 a7
+
+ldr r2, [r9, +r10, asr #0]!         /// 0a 20 b9 e7
+ldrb r2, [r9, +r10, asr #0]!        /// 0a 20 f9 e7
+ldrge r2, [r9, +r10, asr #0]!       /// 0a 20 b9 a7
+ldrbge r2, [r9, +r10, asr #0]!      /// 0a 20 f9 a7
+ldrgeb r2, [r9, +r10, asr #0]!      /// 0a 20 f9 a7
+
+ldr r2, [r9, -r10, asr #0]!         /// 0a 20 39 e7
+ldrb r2, [r9, -r10, asr #0]!        /// 0a 20 79 e7
+ldrge r2, [r9, -r10, asr #0]!       /// 0a 20 39 a7
+ldrbge r2, [r9, -r10, asr #0]!      /// 0a 20 79 a7
+ldrgeb r2, [r9, -r10, asr #0]!      /// 0a 20 79 a7
+
+//
+// ROR #0
+//
+
+ldr r2, [r9, r10, ror #0]           /// 0a 20 99 e7
+ldrb r2, [r9, r10, ror #0]          /// 0a 20 d9 e7
+ldrge r2, [r9, r10, ror #0]         /// 0a 20 99 a7
+ldrbge r2, [r9, r10, ror #0]        /// 0a 20 d9 a7
+ldrgeb r2, [r9, r10, ror #0]        /// 0a 20 d9 a7
+
+ldr r2, [r9, +r10, ror #0]          /// 0a 20 99 e7
+ldrb r2, [r9, +r10, ror #0]         /// 0a 20 d9 e7
+ldrge r2, [r9, +r10, ror #0]        /// 0a 20 99 a7
+ldrbge r2, [r9, +r10, ror #0]       /// 0a 20 d9 a7
+ldrgeb r2, [r9, +r10, ror #0]       /// 0a 20 d9 a7
+
+ldr r2, [r9, -r10, ror #0]          /// 0a 20 19 e7
+ldrb r2, [r9, -r10, ror #0]         /// 0a 20 59 e7
+ldrge r2, [r9, -r10, ror #0]        /// 0a 20 19 a7
+ldrbge r2, [r9, -r10, ror #0]       /// 0a 20 59 a7
+ldrgeb r2, [r9, -r10, ror #0]       /// 0a 20 59 a7
+
+ldr r2, [r9, r10, ror #0]!          /// 0a 20 b9 e7
+ldrb r2, [r9, r10, ror #0]!         /// 0a 20 f9 e7
+ldrge r2, [r9, r10, ror #0]!        /// 0a 20 b9 a7
+ldrbge r2, [r9, r10, ror #0]!       /// 0a 20 f9 a7
+ldrgeb r2, [r9, r10, ror #0]!       /// 0a 20 f9 a7
+
+ldr r2, [r9, +r10, ror #0]!         /// 0a 20 b9 e7
+ldrb r2, [r9, +r10, ror #0]!        /// 0a 20 f9 e7
+ldrge r2, [r9, +r10, ror #0]!       /// 0a 20 b9 a7
+ldrbge r2, [r9, +r10, ror #0]!      /// 0a 20 f9 a7
+ldrgeb r2, [r9, +r10, ror #0]!      /// 0a 20 f9 a7
+
+ldr r2, [r9, -r10, ror #0]!         /// 0a 20 39 e7
+ldrb r2, [r9, -r10, ror #0]!        /// 0a 20 79 e7
+ldrge r2, [r9, -r10, ror #0]!       /// 0a 20 39 a7
+ldrbge r2, [r9, -r10, ror #0]!      /// 0a 20 79 a7
+ldrgeb r2, [r9, -r10, ror #0]!      /// 0a 20 79 a7
+
+//
+// LSR #32
+//
+
+ldr r2, [r9, r10, lsr #32]          /// 2a 20 99 e7
+ldrb r2, [r9, r10, lsr #32]         /// 2a 20 d9 e7
+ldrge r2, [r9, r10, lsr #32]        /// 2a 20 99 a7
+ldrbge r2, [r9, r10, lsr #32]       /// 2a 20 d9 a7
+ldrgeb r2, [r9, r10, lsr #32]       /// 2a 20 d9 a7
+
+ldr r2, [r9, +r10, lsr #32]         /// 2a 20 99 e7
+ldrb r2, [r9, +r10, lsr #32]        /// 2a 20 d9 e7
+ldrge r2, [r9, +r10, lsr #32]       /// 2a 20 99 a7
+ldrbge r2, [r9, +r10, lsr #32]      /// 2a 20 d9 a7
+ldrgeb r2, [r9, +r10, lsr #32]      /// 2a 20 d9 a7
+
+ldr r2, [r9, -r10, lsr #32]         /// 2a 20 19 e7
+ldrb r2, [r9, -r10, lsr #32]        /// 2a 20 59 e7
+ldrge r2, [r9, -r10, lsr #32]       /// 2a 20 19 a7
+ldrbge r2, [r9, -r10, lsr #32]      /// 2a 20 59 a7
+ldrgeb r2, [r9, -r10, lsr #32]      /// 2a 20 59 a7
+
+ldr r2, [r9, r10, lsr #32]!         /// 2a 20 b9 e7
+ldrb r2, [r9, r10, lsr #32]!        /// 2a 20 f9 e7
+ldrge r2, [r9, r10, lsr #32]!       /// 2a 20 b9 a7
+ldrbge r2, [r9, r10, lsr #32]!      /// 2a 20 f9 a7
+ldrgeb r2, [r9, r10, lsr #32]!      /// 2a 20 f9 a7
+
+ldr r2, [r9, +r10, lsr #32]!        /// 2a 20 b9 e7
+ldrb r2, [r9, +r10, lsr #32]!       /// 2a 20 f9 e7
+ldrge r2, [r9, +r10, lsr #32]!      /// 2a 20 b9 a7
+ldrbge r2, [r9, +r10, lsr #32]!     /// 2a 20 f9 a7
+ldrgeb r2, [r9, +r10, lsr #32]!     /// 2a 20 f9 a7
+
+ldr r2, [r9, -r10, lsr #32]!        /// 2a 20 39 e7
+ldrb r2, [r9, -r10, lsr #32]!       /// 2a 20 79 e7
+ldrge r2, [r9, -r10, lsr #32]!      /// 2a 20 39 a7
+ldrbge r2, [r9, -r10, lsr #32]!     /// 2a 20 79 a7
+ldrgeb r2, [r9, -r10, lsr #32]!     /// 2a 20 79 a7
+
+//
+// ASR #32
+//
+
+ldr r2, [r9, r10, asr #32]          /// 4a 20 99 e7
+ldrb r2, [r9, r10, asr #32]         /// 4a 20 d9 e7
+ldrge r2, [r9, r10, asr #32]        /// 4a 20 99 a7
+ldrbge r2, [r9, r10, asr #32]       /// 4a 20 d9 a7
+ldrgeb r2, [r9, r10, asr #32]       /// 4a 20 d9 a7
+
+ldr r2, [r9, +r10, asr #32]         /// 4a 20 99 e7
+ldrb r2, [r9, +r10, asr #32]        /// 4a 20 d9 e7
+ldrge r2, [r9, +r10, asr #32]       /// 4a 20 99 a7
+ldrbge r2, [r9, +r10, asr #32]      /// 4a 20 d9 a7
+ldrgeb r2, [r9, +r10, asr #32]      /// 4a 20 d9 a7
+
+ldr r2, [r9, -r10, asr #32]         /// 4a 20 19 e7
+ldrb r2, [r9, -r10, asr #32]        /// 4a 20 59 e7
+ldrge r2, [r9, -r10, asr #32]       /// 4a 20 19 a7
+ldrbge r2, [r9, -r10, asr #32]      /// 4a 20 59 a7
+ldrgeb r2, [r9, -r10, asr #32]      /// 4a 20 59 a7
+
+ldr r2, [r9, r10, asr #32]!         /// 4a 20 b9 e7
+ldrb r2, [r9, r10, asr #32]!        /// 4a 20 f9 e7
+ldrge r2, [r9, r10, asr #32]!       /// 4a 20 b9 a7
+ldrbge r2, [r9, r10, asr #32]!      /// 4a 20 f9 a7
+ldrgeb r2, [r9, r10, asr #32]!      /// 4a 20 f9 a7
+
+ldr r2, [r9, +r10, asr #32]!        /// 4a 20 b9 e7
+ldrb r2, [r9, +r10, asr #32]!       /// 4a 20 f9 e7
+ldrge r2, [r9, +r10, asr #32]!      /// 4a 20 b9 a7
+ldrbge r2, [r9, +r10, asr #32]!     /// 4a 20 f9 a7
+ldrgeb r2, [r9, +r10, asr #32]!     /// 4a 20 f9 a7
+
+ldr r2, [r9, -r10, asr #32]!        /// 4a 20 39 e7
+ldrb r2, [r9, -r10, asr #32]!       /// 4a 20 79 e7
+ldrge r2, [r9, -r10, asr #32]!      /// 4a 20 39 a7
+ldrbge r2, [r9, -r10, asr #32]!     /// 4a 20 79 a7
+ldrgeb r2, [r9, -r10, asr #32]!     /// 4a 20 79 a7
+
+//
+// RRX
+//
+
+ldr r2, [r9, r10, rrx]              /// 6a 20 99 e7
+ldrb r2, [r9, r10, rrx]             /// 6a 20 d9 e7
+ldrge r2, [r9, r10, rrx]            /// 6a 20 99 a7
+ldrbge r2, [r9, r10, rrx]           /// 6a 20 d9 a7
+ldrgeb r2, [r9, r10, rrx]           /// 6a 20 d9 a7
+
+ldr r2, [r9, +r10, rrx]             /// 6a 20 99 e7
+ldrb r2, [r9, +r10, rrx]            /// 6a 20 d9 e7
+ldrge r2, [r9, +r10, rrx]           /// 6a 20 99 a7
+ldrbge r2, [r9, +r10, rrx]          /// 6a 20 d9 a7
+ldrgeb r2, [r9, +r10, rrx]          /// 6a 20 d9 a7
+
+ldr r2, [r9, -r10, rrx]             /// 6a 20 19 e7
+ldrb r2, [r9, -r10, rrx]            /// 6a 20 59 e7
+ldrge r2, [r9, -r10, rrx]           /// 6a 20 19 a7
+ldrbge r2, [r9, -r10, rrx]          /// 6a 20 59 a7
+ldrgeb r2, [r9, -r10, rrx]          /// 6a 20 59 a7
+
+ldr r2, [r9, r10, rrx]!             /// 6a 20 b9 e7
+ldrb r2, [r9, r10, rrx]!            /// 6a 20 f9 e7
+ldrge r2, [r9, r10, rrx]!           /// 6a 20 b9 a7
+ldrbge r2, [r9, r10, rrx]!          /// 6a 20 f9 a7
+ldrgeb r2, [r9, r10, rrx]!          /// 6a 20 f9 a7
+
+ldr r2, [r9, +r10, rrx]!            /// 6a 20 b9 e7
+ldrb r2, [r9, +r10, rrx]!           /// 6a 20 f9 e7
+ldrge r2, [r9, +r10, rrx]!          /// 6a 20 b9 a7
+ldrbge r2, [r9, +r10, rrx]!         /// 6a 20 f9 a7
+ldrgeb r2, [r9, +r10, rrx]!         /// 6a 20 f9 a7
+
+ldr r2, [r9, -r10, rrx]!            /// 6a 20 39 e7
+ldrb r2, [r9, -r10, rrx]!           /// 6a 20 79 e7
+ldrge r2, [r9, -r10, rrx]!          /// 6a 20 39 a7
+ldrbge r2, [r9, -r10, rrx]!         /// 6a 20 79 a7
+ldrgeb r2, [r9, -r10, rrx]!         /// 6a 20 79 a7
+
+//
+// GENERIC SHIFT
+//
+
+ldr r2, [r9, -r10, lsl #13]         /// 8a 26 19 e7
+ldrb r2, [r9, +r10, lsr #13]        /// aa 26 d9 e7
+ldrge r2, [r9, +r10, asr #13]       /// ca 26 99 a7
+ldrbge r2, [r9, r10, ror #13]       /// ea 26 d9 a7
+ldrgeb r2, [r9, -r10, lsl #13]      /// 8a 26 59 a7
+
+ldr r2, [r9, -r10, lsl #13]!        /// 8a 26 39 e7
+ldrb r2, [r9, +r10, lsr #13]!       /// aa 26 f9 e7
+ldrge r2, [r9, +r10, asr #13]!      /// ca 26 b9 a7
+ldrbge r2, [r9, r10, ror #13]!      /// ea 26 f9 a7
+ldrgeb r2, [r9, -r10, lsl #13]!     /// 8a 26 79 a7
+
+//===================== POST-INDEX ======================
+
+//
+// IMMEDIATE
+//
+
+ldr r2, [r9], #290                  /// 22 21 99 e4
+ldrb r2, [r9], #290                 /// 22 21 d9 e4
+ldrge r2, [r9], #290                /// 22 21 99 a4
+ldrbge r2, [r9], #290               /// 22 21 d9 a4
+ldrgeb r2, [r9], #290               /// 22 21 d9 a4
+
+ldr r2, [r9], #-290                 /// 22 21 19 e4
+ldrb r2, [r9], #-290                /// 22 21 59 e4
+ldrge r2, [r9], #-290               /// 22 21 19 a4
+ldrbge r2, [r9], #-290              /// 22 21 59 a4
+ldrgeb r2, [r9], #-290              /// 22 21 59 a4
+
+ldrt r2, [r9], #290                 /// 22 21 b9 e4
+ldrbt r2, [r9], #290                /// 22 21 f9 e4
+ldrtge r2, [r9], #290               /// 22 21 b9 a4
+ldrget r2, [r9], #290               /// 22 21 b9 a4
+ldrbtge r2, [r9], #290              /// 22 21 f9 a4
+ldrgebt r2, [r9], #290              /// 22 21 f9 a4
+
+ldrt r2, [r9], #-290                /// 22 21 39 e4
+ldrbt r2, [r9], #-290               /// 22 21 79 e4
+ldrtge r2, [r9], #-290              /// 22 21 39 a4
+ldrget r2, [r9], #-290              /// 22 21 39 a4
+ldrbtge r2, [r9], #-290             /// 22 21 79 a4
+ldrgebt r2, [r9], #-290             /// 22 21 79 a4
+
+//
+// NO SHIFT
+//
+
+ldr r2, [r9], r10                   /// 0a 20 99 e6
+ldrb r2, [r9], r10                  /// 0a 20 d9 e6
+ldrge r2, [r9], r10                 /// 0a 20 99 a6
+ldrbge r2, [r9], r10                /// 0a 20 d9 a6
+ldrgeb r2, [r9], r10                /// 0a 20 d9 a6
+
+ldr r2, [r9], +r10                  /// 0a 20 99 e6
+ldrb r2, [r9], +r10                 /// 0a 20 d9 e6
+ldrge r2, [r9], +r10                /// 0a 20 99 a6
+ldrbge r2, [r9], +r10               /// 0a 20 d9 a6
+ldrgeb r2, [r9], +r10               /// 0a 20 d9 a6
+
+ldr r2, [r9], -r10                  /// 0a 20 19 e6
+ldrb r2, [r9], -r10                 /// 0a 20 59 e6
+ldrge r2, [r9], -r10                /// 0a 20 19 a6
+ldrbge r2, [r9], -r10               /// 0a 20 59 a6
+ldrgeb r2, [r9], -r10               /// 0a 20 59 a6
+
+ldrt r2, [r9], r10                  /// 0a 20 b9 e6
+ldrbt r2, [r9], r10                 /// 0a 20 f9 e6
+ldrtge r2, [r9], r10                /// 0a 20 b9 a6
+ldrget r2, [r9], r10                /// 0a 20 b9 a6
+ldrbtge r2, [r9], r10               /// 0a 20 f9 a6
+ldrgebt r2, [r9], r10               /// 0a 20 f9 a6
+
+ldrt r2, [r9], +r10                 /// 0a 20 b9 e6
+ldrbt r2, [r9], +r10                /// 0a 20 f9 e6
+ldrtge r2, [r9], +r10               /// 0a 20 b9 a6
+ldrget r2, [r9], +r10               /// 0a 20 b9 a6
+ldrbtge r2, [r9], +r10              /// 0a 20 f9 a6
+ldrgebt r2, [r9], +r10              /// 0a 20 f9 a6
+
+ldrt r2, [r9], -r10                 /// 0a 20 39 e6
+ldrbt r2, [r9], -r10                /// 0a 20 79 e6
+ldrtge r2, [r9], -r10               /// 0a 20 39 a6
+ldrget r2, [r9], -r10               /// 0a 20 39 a6
+ldrbtge r2, [r9], -r10              /// 0a 20 79 a6
+ldrgebt r2, [r9], -r10              /// 0a 20 79 a6
+
+//
+// LSL #0
+//
+
+ldr r2, [r9], r10, lsl #0           /// 0a 20 99 e6
+ldrb r2, [r9], r10, lsl #0          /// 0a 20 d9 e6
+ldrge r2, [r9], r10, lsl #0         /// 0a 20 99 a6
+ldrbge r2, [r9], r10, lsl #0        /// 0a 20 d9 a6
+ldrgeb r2, [r9], r10, lsl #0        /// 0a 20 d9 a6
+
+ldr r2, [r9], +r10, lsl #0          /// 0a 20 99 e6
+ldrb r2, [r9], +r10, lsl #0         /// 0a 20 d9 e6
+ldrge r2, [r9], +r10, lsl #0        /// 0a 20 99 a6
+ldrbge r2, [r9], +r10, lsl #0       /// 0a 20 d9 a6
+ldrgeb r2, [r9], +r10, lsl #0       /// 0a 20 d9 a6
+
+ldr r2, [r9], -r10, lsl #0          /// 0a 20 19 e6
+ldrb r2, [r9], -r10, lsl #0         /// 0a 20 59 e6
+ldrge r2, [r9], -r10, lsl #0        /// 0a 20 19 a6
+ldrbge r2, [r9], -r10, lsl #0       /// 0a 20 59 a6
+ldrgeb r2, [r9], -r10, lsl #0       /// 0a 20 59 a6
+
+ldrt r2, [r9], r10, lsl #0          /// 0a 20 b9 e6
+ldrbt r2, [r9], r10, lsl #0         /// 0a 20 f9 e6
+ldrtge r2, [r9], r10, lsl #0        /// 0a 20 b9 a6
+ldrget r2, [r9], r10, lsl #0        /// 0a 20 b9 a6
+ldrbtge r2, [r9], r10, lsl #0       /// 0a 20 f9 a6
+ldrgebt r2, [r9], r10, lsl #0       /// 0a 20 f9 a6
+
+ldrt r2, [r9], +r10, lsl #0         /// 0a 20 b9 e6
+ldrbt r2, [r9], +r10, lsl #0        /// 0a 20 f9 e6
+ldrtge r2, [r9], +r10, lsl #0       /// 0a 20 b9 a6
+ldrget r2, [r9], +r10, lsl #0       /// 0a 20 b9 a6
+ldrbtge r2, [r9], +r10, lsl #0      /// 0a 20 f9 a6
+ldrgebt r2, [r9], +r10, lsl #0      /// 0a 20 f9 a6
+
+ldrt r2, [r9], -r10, lsl #0         /// 0a 20 39 e6
+ldrbt r2, [r9], -r10, lsl #0        /// 0a 20 79 e6
+ldrtge r2, [r9], -r10, lsl #0       /// 0a 20 39 a6
+ldrget r2, [r9], -r10, lsl #0       /// 0a 20 39 a6
+ldrbtge r2, [r9], -r10, lsl #0      /// 0a 20 79 a6
+ldrgebt r2, [r9], -r10, lsl #0      /// 0a 20 79 a6
+
+//
+// LSR #0
+//
+
+ldr r2, [r9], r10, lsr #0           /// 0a 20 99 e6
+ldrb r2, [r9], r10, lsr #0          /// 0a 20 d9 e6
+ldrge r2, [r9], r10, lsr #0         /// 0a 20 99 a6
+ldrbge r2, [r9], r10, lsr #0        /// 0a 20 d9 a6
+ldrgeb r2, [r9], r10, lsr #0        /// 0a 20 d9 a6
+
+ldr r2, [r9], +r10, lsr #0          /// 0a 20 99 e6
+ldrb r2, [r9], +r10, lsr #0         /// 0a 20 d9 e6
+ldrge r2, [r9], +r10, lsr #0        /// 0a 20 99 a6
+ldrbge r2, [r9], +r10, lsr #0       /// 0a 20 d9 a6
+ldrgeb r2, [r9], +r10, lsr #0       /// 0a 20 d9 a6
+
+ldr r2, [r9], -r10, lsr #0          /// 0a 20 19 e6
+ldrb r2, [r9], -r10, lsr #0         /// 0a 20 59 e6
+ldrge r2, [r9], -r10, lsr #0        /// 0a 20 19 a6
+ldrbge r2, [r9], -r10, lsr #0       /// 0a 20 59 a6
+ldrgeb r2, [r9], -r10, lsr #0       /// 0a 20 59 a6
+
+ldrt r2, [r9], r10, lsr #0          /// 0a 20 b9 e6
+ldrbt r2, [r9], r10, lsr #0         /// 0a 20 f9 e6
+ldrtge r2, [r9], r10, lsr #0        /// 0a 20 b9 a6
+ldrget r2, [r9], r10, lsr #0        /// 0a 20 b9 a6
+ldrbtge r2, [r9], r10, lsr #0       /// 0a 20 f9 a6
+ldrgebt r2, [r9], r10, lsr #0       /// 0a 20 f9 a6
+
+ldrt r2, [r9], +r10, lsr #0         /// 0a 20 b9 e6
+ldrbt r2, [r9], +r10, lsr #0        /// 0a 20 f9 e6
+ldrtge r2, [r9], +r10, lsr #0       /// 0a 20 b9 a6
+ldrget r2, [r9], +r10, lsr #0       /// 0a 20 b9 a6
+ldrbtge r2, [r9], +r10, lsr #0      /// 0a 20 f9 a6
+ldrgebt r2, [r9], +r10, lsr #0      /// 0a 20 f9 a6
+
+ldrt r2, [r9], -r10, lsr #0         /// 0a 20 39 e6
+ldrbt r2, [r9], -r10, lsr #0        /// 0a 20 79 e6
+ldrtge r2, [r9], -r10, lsr #0       /// 0a 20 39 a6
+ldrget r2, [r9], -r10, lsr #0       /// 0a 20 39 a6
+ldrbtge r2, [r9], -r10, lsr #0      /// 0a 20 79 a6
+ldrgebt r2, [r9], -r10, lsr #0      /// 0a 20 79 a6
+
+//
+// ASR #0
+//
+
+ldr r2, [r9], r10, asr #0           /// 0a 20 99 e6
+ldrb r2, [r9], r10, asr #0          /// 0a 20 d9 e6
+ldrge r2, [r9], r10, asr #0         /// 0a 20 99 a6
+ldrbge r2, [r9], r10, asr #0        /// 0a 20 d9 a6
+ldrgeb r2, [r9], r10, asr #0        /// 0a 20 d9 a6
+
+ldr r2, [r9], +r10, asr #0          /// 0a 20 99 e6
+ldrb r2, [r9], +r10, asr #0         /// 0a 20 d9 e6
+ldrge r2, [r9], +r10, asr #0        /// 0a 20 99 a6
+ldrbge r2, [r9], +r10, asr #0       /// 0a 20 d9 a6
+ldrgeb r2, [r9], +r10, asr #0       /// 0a 20 d9 a6
+
+ldr r2, [r9], -r10, asr #0          /// 0a 20 19 e6
+ldrb r2, [r9], -r10, asr #0         /// 0a 20 59 e6
+ldrge r2, [r9], -r10, asr #0        /// 0a 20 19 a6
+ldrbge r2, [r9], -r10, asr #0       /// 0a 20 59 a6
+ldrgeb r2, [r9], -r10, asr #0       /// 0a 20 59 a6
+
+ldrt r2, [r9], r10, asr #0          /// 0a 20 b9 e6
+ldrbt r2, [r9], r10, asr #0         /// 0a 20 f9 e6
+ldrtge r2, [r9], r10, asr #0        /// 0a 20 b9 a6
+ldrget r2, [r9], r10, asr #0        /// 0a 20 b9 a6
+ldrbtge r2, [r9], r10, asr #0       /// 0a 20 f9 a6
+ldrgebt r2, [r9], r10, asr #0       /// 0a 20 f9 a6
+
+ldrt r2, [r9], +r10, asr #0         /// 0a 20 b9 e6
+ldrbt r2, [r9], +r10, asr #0        /// 0a 20 f9 e6
+ldrtge r2, [r9], +r10, asr #0       /// 0a 20 b9 a6
+ldrget r2, [r9], +r10, asr #0       /// 0a 20 b9 a6
+ldrbtge r2, [r9], +r10, asr #0      /// 0a 20 f9 a6
+ldrgebt r2, [r9], +r10, asr #0      /// 0a 20 f9 a6
+
+ldrt r2, [r9], -r10, asr #0         /// 0a 20 39 e6
+ldrbt r2, [r9], -r10, asr #0        /// 0a 20 79 e6
+ldrtge r2, [r9], -r10, asr #0       /// 0a 20 39 a6
+ldrget r2, [r9], -r10, asr #0       /// 0a 20 39 a6
+ldrbtge r2, [r9], -r10, asr #0      /// 0a 20 79 a6
+ldrgebt r2, [r9], -r10, asr #0      /// 0a 20 79 a6
+
+//
+// ROR #0
+//
+
+ldr r2, [r9], r10, ror #0           /// 0a 20 99 e6
+ldrb r2, [r9], r10, ror #0          /// 0a 20 d9 e6
+ldrge r2, [r9], r10, ror #0         /// 0a 20 99 a6
+ldrbge r2, [r9], r10, ror #0        /// 0a 20 d9 a6
+ldrgeb r2, [r9], r10, ror #0        /// 0a 20 d9 a6
+
+ldr r2, [r9], +r10, ror #0          /// 0a 20 99 e6
+ldrb r2, [r9], +r10, ror #0         /// 0a 20 d9 e6
+ldrge r2, [r9], +r10, ror #0        /// 0a 20 99 a6
+ldrbge r2, [r9], +r10, ror #0       /// 0a 20 d9 a6
+ldrgeb r2, [r9], +r10, ror #0       /// 0a 20 d9 a6
+
+ldr r2, [r9], -r10, ror #0          /// 0a 20 19 e6
+ldrb r2, [r9], -r10, ror #0         /// 0a 20 59 e6
+ldrge r2, [r9], -r10, ror #0        /// 0a 20 19 a6
+ldrbge r2, [r9], -r10, ror #0       /// 0a 20 59 a6
+ldrgeb r2, [r9], -r10, ror #0       /// 0a 20 59 a6
+
+ldrt r2, [r9], r10, ror #0          /// 0a 20 b9 e6
+ldrbt r2, [r9], r10, ror #0         /// 0a 20 f9 e6
+ldrtge r2, [r9], r10, ror #0        /// 0a 20 b9 a6
+ldrget r2, [r9], r10, ror #0        /// 0a 20 b9 a6
+ldrbtge r2, [r9], r10, ror #0       /// 0a 20 f9 a6
+ldrgebt r2, [r9], r10, ror #0       /// 0a 20 f9 a6
+
+ldrt r2, [r9], +r10, ror #0         /// 0a 20 b9 e6
+ldrbt r2, [r9], +r10, ror #0        /// 0a 20 f9 e6
+ldrtge r2, [r9], +r10, ror #0       /// 0a 20 b9 a6
+ldrget r2, [r9], +r10, ror #0       /// 0a 20 b9 a6
+ldrbtge r2, [r9], +r10, ror #0      /// 0a 20 f9 a6
+ldrgebt r2, [r9], +r10, ror #0      /// 0a 20 f9 a6
+
+ldrt r2, [r9], -r10, ror #0         /// 0a 20 39 e6
+ldrbt r2, [r9], -r10, ror #0        /// 0a 20 79 e6
+ldrtge r2, [r9], -r10, ror #0       /// 0a 20 39 a6
+ldrget r2, [r9], -r10, ror #0       /// 0a 20 39 a6
+ldrbtge r2, [r9], -r10, ror #0      /// 0a 20 79 a6
+ldrgebt r2, [r9], -r10, ror #0      /// 0a 20 79 a6
+
+//
+// LSR #32
+//
+
+ldr r2, [r9], r10, lsr #32          /// 2a 20 99 e6
+ldrb r2, [r9], r10, lsr #32         /// 2a 20 d9 e6
+ldrge r2, [r9], r10, lsr #32        /// 2a 20 99 a6
+ldrbge r2, [r9], r10, lsr #32       /// 2a 20 d9 a6
+ldrgeb r2, [r9], r10, lsr #32       /// 2a 20 d9 a6
+
+ldr r2, [r9], +r10, lsr #32         /// 2a 20 99 e6
+ldrb r2, [r9], +r10, lsr #32        /// 2a 20 d9 e6
+ldrge r2, [r9], +r10, lsr #32       /// 2a 20 99 a6
+ldrbge r2, [r9], +r10, lsr #32      /// 2a 20 d9 a6
+ldrgeb r2, [r9], +r10, lsr #32      /// 2a 20 d9 a6
+
+ldr r2, [r9], -r10, lsr #32         /// 2a 20 19 e6
+ldrb r2, [r9], -r10, lsr #32        /// 2a 20 59 e6
+ldrge r2, [r9], -r10, lsr #32       /// 2a 20 19 a6
+ldrbge r2, [r9], -r10, lsr #32      /// 2a 20 59 a6
+ldrgeb r2, [r9], -r10, lsr #32      /// 2a 20 59 a6
+
+ldrt r2, [r9], r10, lsr #32         /// 2a 20 b9 e6
+ldrbt r2, [r9], r10, lsr #32        /// 2a 20 f9 e6
+ldrtge r2, [r9], r10, lsr #32       /// 2a 20 b9 a6
+ldrget r2, [r9], r10, lsr #32       /// 2a 20 b9 a6
+ldrbtge r2, [r9], r10, lsr #32      /// 2a 20 f9 a6
+ldrgebt r2, [r9], r10, lsr #32      /// 2a 20 f9 a6
+
+ldrt r2, [r9], +r10, lsr #32        /// 2a 20 b9 e6
+ldrbt r2, [r9], +r10, lsr #32       /// 2a 20 f9 e6
+ldrtge r2, [r9], +r10, lsr #32      /// 2a 20 b9 a6
+ldrget r2, [r9], +r10, lsr #32      /// 2a 20 b9 a6
+ldrbtge r2, [r9], +r10, lsr #32     /// 2a 20 f9 a6
+ldrgebt r2, [r9], +r10, lsr #32     /// 2a 20 f9 a6
+
+ldrt r2, [r9], -r10, lsr #32        /// 2a 20 39 e6
+ldrbt r2, [r9], -r10, lsr #32       /// 2a 20 79 e6
+ldrtge r2, [r9], -r10, lsr #32      /// 2a 20 39 a6
+ldrget r2, [r9], -r10, lsr #32      /// 2a 20 39 a6
+ldrbtge r2, [r9], -r10, lsr #32     /// 2a 20 79 a6
+ldrgebt r2, [r9], -r10, lsr #32     /// 2a 20 79 a6
+
+//
+// ASR #32
+//
+
+ldr r2, [r9], r10, asr #32          /// 4a 20 99 e6
+ldrb r2, [r9], r10, asr #32         /// 4a 20 d9 e6
+ldrge r2, [r9], r10, asr #32        /// 4a 20 99 a6
+ldrbge r2, [r9], r10, asr #32       /// 4a 20 d9 a6
+ldrgeb r2, [r9], r10, asr #32       /// 4a 20 d9 a6
+
+ldr r2, [r9], +r10, asr #32         /// 4a 20 99 e6
+ldrb r2, [r9], +r10, asr #32        /// 4a 20 d9 e6
+ldrge r2, [r9], +r10, asr #32       /// 4a 20 99 a6
+ldrbge r2, [r9], +r10, asr #32      /// 4a 20 d9 a6
+ldrgeb r2, [r9], +r10, asr #32      /// 4a 20 d9 a6
+
+ldr r2, [r9], -r10, asr #32         /// 4a 20 19 e6
+ldrb r2, [r9], -r10, asr #32        /// 4a 20 59 e6
+ldrge r2, [r9], -r10, asr #32       /// 4a 20 19 a6
+ldrbge r2, [r9], -r10, asr #32      /// 4a 20 59 a6
+ldrgeb r2, [r9], -r10, asr #32      /// 4a 20 59 a6
+
+ldrt r2, [r9], r10, asr #32         /// 4a 20 b9 e6
+ldrbt r2, [r9], r10, asr #32        /// 4a 20 f9 e6
+ldrtge r2, [r9], r10, asr #32       /// 4a 20 b9 a6
+ldrget r2, [r9], r10, asr #32       /// 4a 20 b9 a6
+ldrbtge r2, [r9], r10, asr #32      /// 4a 20 f9 a6
+ldrgebt r2, [r9], r10, asr #32      /// 4a 20 f9 a6
+
+ldrt r2, [r9], +r10, asr #32        /// 4a 20 b9 e6
+ldrbt r2, [r9], +r10, asr #32       /// 4a 20 f9 e6
+ldrtge r2, [r9], +r10, asr #32      /// 4a 20 b9 a6
+ldrget r2, [r9], +r10, asr #32      /// 4a 20 b9 a6
+ldrbtge r2, [r9], +r10, asr #32     /// 4a 20 f9 a6
+ldrgebt r2, [r9], +r10, asr #32     /// 4a 20 f9 a6
+
+ldrt r2, [r9], -r10, asr #32        /// 4a 20 39 e6
+ldrbt r2, [r9], -r10, asr #32       /// 4a 20 79 e6
+ldrtge r2, [r9], -r10, asr #32      /// 4a 20 39 a6
+ldrget r2, [r9], -r10, asr #32      /// 4a 20 39 a6
+ldrbtge r2, [r9], -r10, asr #32     /// 4a 20 79 a6
+ldrgebt r2, [r9], -r10, asr #32     /// 4a 20 79 a6
+
+//
+// RRX
+//
+
+ldr r2, [r9], r10, rrx              /// 6a 20 99 e6
+ldrb r2, [r9], r10, rrx             /// 6a 20 d9 e6
+ldrge r2, [r9], r10, rrx            /// 6a 20 99 a6
+ldrbge r2, [r9], r10, rrx           /// 6a 20 d9 a6
+ldrgeb r2, [r9], r10, rrx           /// 6a 20 d9 a6
+
+ldr r2, [r9], +r10, rrx             /// 6a 20 99 e6
+ldrb r2, [r9], +r10, rrx            /// 6a 20 d9 e6
+ldrge r2, [r9], +r10, rrx           /// 6a 20 99 a6
+ldrbge r2, [r9], +r10, rrx          /// 6a 20 d9 a6
+ldrgeb r2, [r9], +r10, rrx          /// 6a 20 d9 a6
+
+ldr r2, [r9], -r10, rrx             /// 6a 20 19 e6
+ldrb r2, [r9], -r10, rrx            /// 6a 20 59 e6
+ldrge r2, [r9], -r10, rrx           /// 6a 20 19 a6
+ldrbge r2, [r9], -r10, rrx          /// 6a 20 59 a6
+ldrgeb r2, [r9], -r10, rrx          /// 6a 20 59 a6
+
+ldrt r2, [r9], r10, rrx             /// 6a 20 b9 e6
+ldrbt r2, [r9], r10, rrx            /// 6a 20 f9 e6
+ldrtge r2, [r9], r10, rrx           /// 6a 20 b9 a6
+ldrget r2, [r9], r10, rrx           /// 6a 20 b9 a6
+ldrbtge r2, [r9], r10, rrx          /// 6a 20 f9 a6
+ldrgebt r2, [r9], r10, rrx          /// 6a 20 f9 a6
+
+ldrt r2, [r9], +r10, rrx            /// 6a 20 b9 e6
+ldrbt r2, [r9], +r10, rrx           /// 6a 20 f9 e6
+ldrtge r2, [r9], +r10, rrx          /// 6a 20 b9 a6
+ldrget r2, [r9], +r10, rrx          /// 6a 20 b9 a6
+ldrbtge r2, [r9], +r10, rrx         /// 6a 20 f9 a6
+ldrgebt r2, [r9], +r10, rrx         /// 6a 20 f9 a6
+
+ldrt r2, [r9], -r10, rrx            /// 6a 20 39 e6
+ldrbt r2, [r9], -r10, rrx           /// 6a 20 79 e6
+ldrtge r2, [r9], -r10, rrx          /// 6a 20 39 a6
+ldrget r2, [r9], -r10, rrx          /// 6a 20 39 a6
+ldrbtge r2, [r9], -r10, rrx         /// 6a 20 79 a6
+ldrgebt r2, [r9], -r10, rrx         /// 6a 20 79 a6
+
+//
+// GENERIC SHIFT
+//
+
+ldr r2, [r9], -r10, lsl #13         /// 8a 26 19 e6
+ldrb r2, [r9], +r10, lsr #13        /// aa 26 d9 e6
+ldrge r2, [r9], +r10, asr #13       /// ca 26 99 a6
+ldrbge r2, [r9], r10, ror #13       /// ea 26 d9 a6
+ldrgeb r2, [r9], -r10, lsl #13      /// 8a 26 59 a6
+
+ldrt r2, [r9], -r10, lsl #13        /// 8a 26 39 e6
+ldrbt r2, [r9], +r10, lsr #13       /// aa 26 f9 e6
+ldrtge r2, [r9], +r10, asr #13      /// ca 26 b9 a6
+ldrget r2, [r9], +r10, asr #13      /// ca 26 b9 a6
+ldrbtge r2, [r9], r10, ror #13      /// ea 26 f9 a6
+ldrgebt r2, [r9], -r10, lsl #13     /// 8a 26 79 a6

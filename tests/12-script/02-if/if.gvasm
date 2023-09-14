@@ -1,0 +1,9 @@
+.if 0
+  .script
+    for: range 5
+      put '.i8 0, 1, 2, 3'
+    end
+  .end
+.else
+  .i8 5 /// 05
+.end

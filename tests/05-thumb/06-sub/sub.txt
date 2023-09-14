@@ -1,0 +1,3 @@
+name: thumb.sub
+desc: Subtract
+kind: make

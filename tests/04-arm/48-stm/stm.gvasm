@@ -1,0 +1,52 @@
+.arm
+stmed r5, {r1-lr}             /// fe 7f 05 e8
+stmdale r5, {r1-lr}           /// fe 7f 05 d8
+stmleda r5, {r1-lr}           /// fe 7f 05 d8
+stmed r5!, {r1-lr}            /// fe 7f 25 e8
+stmdale r5!, {r1-lr}          /// fe 7f 25 d8
+stmleda r5!, {r1-lr}          /// fe 7f 25 d8
+stmed r5, {r1-lr}^            /// fe 7f 45 e8
+stmdale r5, {r1-lr}^          /// fe 7f 45 d8
+stmleda r5, {r1-lr}^          /// fe 7f 45 d8
+stmda r5!, {r1-lr}^           /// fe 7f 65 e8
+stmedle r5!, {r1-lr}^         /// fe 7f 65 d8
+stmleed r5!, {r1-lr}^         /// fe 7f 65 d8
+
+stmea r5, {r1-lr}             /// fe 7f 85 e8
+stmiale r5, {r1-lr}           /// fe 7f 85 d8
+stmleia r5, {r1-lr}           /// fe 7f 85 d8
+stmea r5!, {r1-lr}            /// fe 7f a5 e8
+stmiale r5!, {r1-lr}          /// fe 7f a5 d8
+stmleia r5!, {r1-lr}          /// fe 7f a5 d8
+stmea r5, {r1-lr}^            /// fe 7f c5 e8
+stmiale r5, {r1-lr}^          /// fe 7f c5 d8
+stmleia r5, {r1-lr}^          /// fe 7f c5 d8
+stmia r5!, {r1-lr}^           /// fe 7f e5 e8
+stmeale r5!, {r1-lr}^         /// fe 7f e5 d8
+stmleea r5!, {r1-lr}^         /// fe 7f e5 d8
+
+stmfd r5, {r1-lr}             /// fe 7f 05 e9
+stmdble r5, {r1-lr}           /// fe 7f 05 d9
+stmledb r5, {r1-lr}           /// fe 7f 05 d9
+stmfd r5!, {r1-lr}            /// fe 7f 25 e9
+stmdble r5!, {r1-lr}          /// fe 7f 25 d9
+stmledb r5!, {r1-lr}          /// fe 7f 25 d9
+stmfd r5, {r1-lr}^            /// fe 7f 45 e9
+stmdble r5, {r1-lr}^          /// fe 7f 45 d9
+stmledb r5, {r1-lr}^          /// fe 7f 45 d9
+stmdb r5!, {r1-lr}^           /// fe 7f 65 e9
+stmfdle r5!, {r1-lr}^         /// fe 7f 65 d9
+stmlefd r5!, {r1-lr}^         /// fe 7f 65 d9
+
+stmfa r5, {r1-lr}             /// fe 7f 85 e9
+stmible r5, {r1-lr}           /// fe 7f 85 d9
+stmleib r5, {r1-lr}           /// fe 7f 85 d9
+stmfa r5!, {r1-lr}            /// fe 7f a5 e9
+stmible r5!, {r1-lr}          /// fe 7f a5 d9
+stmleib r5!, {r1-lr}          /// fe 7f a5 d9
+stmfa r5, {r1-lr}^            /// fe 7f c5 e9
+stmible r5, {r1-lr}^          /// fe 7f c5 d9
+stmleib r5, {r1-lr}^          /// fe 7f c5 d9
+stmib r5!, {r1-lr}^           /// fe 7f e5 e9
+stmfale r5!, {r1-lr}^         /// fe 7f e5 d9
+stmlefa r5!, {r1-lr}^         /// fe 7f e5 d9

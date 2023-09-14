@@ -1,0 +1,5 @@
+say 'inside test3.sink'
+
+def test3 a
+  say "test3: $a"
+end

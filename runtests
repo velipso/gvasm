@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+ROOT=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$ROOT"
+
+while IFS= read file; do
+  ./gvasm.ts runtest "$file"
+done < <(find tests -type f -name '*.txt' | sort)

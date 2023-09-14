@@ -1,0 +1,4 @@
+name: printf.label-known
+desc: Known label
+kind: make
+$ 0x08000000

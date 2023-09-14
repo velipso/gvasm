@@ -1,0 +1,3 @@
+name: const.label
+desc: Constant dependent on label rewrites
+kind: make

@@ -1,0 +1,31 @@
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.arm
+ldrsh r0, [r1, #S.two]        /// f2 00 d1 e1
+ldrx  r0, [r1, #S.two]        /// f2 00 d1 e1
+ldrsh r0, [r1, r2]            /// f2 00 91 e1
+ldrx  r0, [r1, r2] (S.two)    /// f2 00 91 e1
+ldrsh r0, [r1]                /// f0 00 d1 e1
+ldrx  r0, [r1] (S.two)        /// f0 00 d1 e1
+ldrh  r0, [r1, #S.three]      /// b4 00 d1 e1
+ldrx  r0, [r1, #S.three]      /// b4 00 d1 e1
+ldrh  r0, [r1, r2]            /// b2 00 91 e1
+ldrx  r0, [r1, r2] (S.three)  /// b2 00 91 e1
+ldrh  r0, [r1]                /// b0 00 d1 e1
+ldrx  r0, [r1] (S.three)      /// b0 00 d1 e1
+
+strh  r0, [r1, #S.two]        /// b2 00 c1 e1
+strx  r0, [r1, #S.two]        /// b2 00 c1 e1
+strh  r0, [r1, r2]            /// b2 00 81 e1
+strx  r0, [r1, r2] (S.two)    /// b2 00 81 e1
+strh  r0, [r1]                /// b0 00 c1 e1
+strx  r0, [r1] (S.two)        /// b0 00 c1 e1
+strh  r0, [r1, #S.three]      /// b4 00 c1 e1
+strx  r0, [r1, #S.three]      /// b4 00 c1 e1
+strh  r0, [r1, r2]            /// b2 00 81 e1
+strx  r0, [r1, r2] (S.three)  /// b2 00 81 e1
+strh  r0, [r1]                /// b0 00 c1 e1
+strx  r0, [r1] (S.three)      /// b0 00 c1 e1

@@ -1,0 +1,10 @@
+say "'${str.pad 'hello', -7}'"
+say "'${str.pad 'hello', -5}'"
+say "'${str.pad 'hello', -1}'"
+say "'${str.pad 'hello',  0}'"
+say "'${str.pad 'hello',  1}'"
+say "'${str.pad 'hello',  5}'"
+say "'${str.pad 'hello',  7}'"
+
+say "'${str.pad 'X', -2.5}'"
+say "'${str.pad 'X',  2.5}'"

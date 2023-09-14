@@ -1,0 +1,14 @@
+name: sink.label-bug
+kind: sink
+$ one
+$ two
+$ two
+$ two
+$ two
+$ two
+$ two
+$ two
+$ two
+$ two
+$ two
+$

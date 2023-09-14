@@ -1,0 +1,6 @@
+name: script.export-lookup-scripts
+desc: Export and lookup values between scripts
+kind: make
+$ 2
+$ {'world', 2}
+$ two = 2, three = 3

@@ -1,0 +1,5 @@
+name: files.import-circular
+desc: Import circular files
+kind: make
+$ FOO = 2
+$ BAR = 1

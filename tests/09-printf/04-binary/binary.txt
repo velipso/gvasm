@@ -1,0 +1,4 @@
+name: printf.binary
+desc: Binary formatting
+kind: make
+$ one hundred 1100100 two hundred 11001000

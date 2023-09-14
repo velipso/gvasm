@@ -1,0 +1,6 @@
+say num.hex 1
+say num.hex 255
+say num.hex 256
+say num.hex {1, 2, 3, 254, 255, 256}
+say num.bin 15
+say num.oct 15

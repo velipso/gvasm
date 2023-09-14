@@ -1,0 +1,4 @@
+name: struct.typed-mem.thumb.ldsh-imm
+desc: Cannot convert ldrx into ldsh when using immediate
+kind: make
+error: true

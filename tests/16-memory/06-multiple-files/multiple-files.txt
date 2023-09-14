@@ -1,0 +1,6 @@
+name: memory.multiple-files
+desc: Memory allocation across disparate files
+kind: make
+$ one = 03000000
+$ two = 03000004
+$ three = 0300000c

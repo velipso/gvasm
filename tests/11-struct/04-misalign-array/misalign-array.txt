@@ -1,0 +1,4 @@
+name: struct.misalign-array
+desc: Struct should become misaligned due to array
+kind: make
+error: true

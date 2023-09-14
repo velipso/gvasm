@@ -1,0 +1,9 @@
+.struct foo = ewram
+  .i8 data[128 * 1024]
+.end
+.struct bar = ewram
+  .i8 data[128 * 1024]
+.end
+.struct baz = ewram
+  .i8 data
+.end

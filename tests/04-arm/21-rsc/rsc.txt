@@ -1,0 +1,3 @@
+name: arm.rsc
+desc: Reverse subtraction with carry
+kind: make

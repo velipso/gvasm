@@ -1,0 +1,5 @@
+name: printf.newline
+desc: Newline in strings
+kind: make
+$ hello,
+$ world

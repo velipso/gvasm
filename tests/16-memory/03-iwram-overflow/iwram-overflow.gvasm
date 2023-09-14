@@ -1,0 +1,9 @@
+.struct foo = iwram
+  .i8 data[16 * 1024 - 256] // 256 bytes reserved for GBA BIOS
+.end
+.struct bar = iwram
+  .i8 data[16 * 1024]
+.end
+.struct baz = iwram
+  .i8 data
+.end

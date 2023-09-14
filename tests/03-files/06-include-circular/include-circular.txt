@@ -1,0 +1,4 @@
+name: files.include-circular
+desc: Include circular files
+kind: make
+error: true

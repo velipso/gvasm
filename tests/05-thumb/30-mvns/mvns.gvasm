@@ -1,0 +1,3 @@
+.thumb
+mvns r2, r7  /// fa 43
+mvns r0, r6  /// f0 43

@@ -1,0 +1,3 @@
+.thumb
+nots r2, r7  /// fa 43
+nots r0, r6  /// f0 43

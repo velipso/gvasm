@@ -1,0 +1,59 @@
+.arm
+strh r11, [r4]                /// b0 b0 c4 e1
+strhlt r11, [r4]              /// b0 b0 c4 b1
+strlth r11, [r4]              /// b0 b0 c4 b1
+
+strh r11, [r4, #100]          /// b4 b6 c4 e1
+strhlt r11, [r4, #100]        /// b4 b6 c4 b1
+strlth r11, [r4, #100]        /// b4 b6 c4 b1
+strh r11, [r4, #100]!         /// b4 b6 e4 e1
+strhlt r11, [r4, #100]!       /// b4 b6 e4 b1
+strlth r11, [r4, #100]!       /// b4 b6 e4 b1
+
+strh r11, [r4, #-100]         /// b4 b6 44 e1
+strhlt r11, [r4, #-100]       /// b4 b6 44 b1
+strlth r11, [r4, #-100]       /// b4 b6 44 b1
+strh r11, [r4, #-100]!        /// b4 b6 64 e1
+strhlt r11, [r4, #-100]!      /// b4 b6 64 b1
+strlth r11, [r4, #-100]!      /// b4 b6 64 b1
+
+strh r11, [r4, r13]           /// bd b0 84 e1
+strhlt r11, [r4, r13]         /// bd b0 84 b1
+strlth r11, [r4, r13]         /// bd b0 84 b1
+strh r11, [r4, r13]!          /// bd b0 a4 e1
+strhlt r11, [r4, r13]!        /// bd b0 a4 b1
+strlth r11, [r4, r13]!        /// bd b0 a4 b1
+
+strh r11, [r4, +r13]          /// bd b0 84 e1
+strhlt r11, [r4, +r13]        /// bd b0 84 b1
+strlth r11, [r4, +r13]        /// bd b0 84 b1
+strh r11, [r4, +r13]!         /// bd b0 a4 e1
+strhlt r11, [r4, +r13]!       /// bd b0 a4 b1
+strlth r11, [r4, +r13]!       /// bd b0 a4 b1
+
+strh r11, [r4, -r13]          /// bd b0 04 e1
+strhlt r11, [r4, -r13]        /// bd b0 04 b1
+strlth r11, [r4, -r13]        /// bd b0 04 b1
+strh r11, [r4, -r13]!         /// bd b0 24 e1
+strhlt r11, [r4, -r13]!       /// bd b0 24 b1
+strlth r11, [r4, -r13]!       /// bd b0 24 b1
+
+strh r11, [r4], #100          /// b4 b6 c4 e0
+strhlt r11, [r4], #100        /// b4 b6 c4 b0
+strlth r11, [r4], #100        /// b4 b6 c4 b0
+
+strh r11, [r4], #-100         /// b4 b6 44 e0
+strhlt r11, [r4], #-100       /// b4 b6 44 b0
+strlth r11, [r4], #-100       /// b4 b6 44 b0
+
+strh r11, [r4], r13           /// bd b0 84 e0
+strhlt r11, [r4], r13         /// bd b0 84 b0
+strlth r11, [r4], r13         /// bd b0 84 b0
+
+strh r11, [r4], +r13          /// bd b0 84 e0
+strhlt r11, [r4], +r13        /// bd b0 84 b0
+strlth r11, [r4], +r13        /// bd b0 84 b0
+
+strh r11, [r4], -r13          /// bd b0 04 e0
+strhlt r11, [r4], -r13        /// bd b0 04 b0
+strlth r11, [r4], -r13        /// bd b0 04 b0

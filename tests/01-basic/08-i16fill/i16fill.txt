@@ -1,0 +1,3 @@
+name: basic.i16fill
+desc: Use .i16fill command
+kind: make

@@ -1,0 +1,29 @@
+.arm
+.if _arm
+  .i8 1      /// 01
+.end
+
+.begin
+  .thumb
+  .if _thumb
+    .i8 2    /// 02
+  .end
+
+  .begin
+    .if _thumb
+      .i8 3  /// 03
+    .end
+    .arm
+    .if _arm
+      .i8 4  /// 04
+    .end
+  .end
+
+  .if _thumb
+    .i8 5    /// 05
+  .end
+.end
+
+.if _arm
+  .i8 6      /// 06
+.end

@@ -1,0 +1,239 @@
+#
+# comment
+#
+
+//
+// another comment
+//
+
+declare add
+
+say 123
+say 70235 + 12703
+say 70235 ~ 12703
+say "hello, world"
+say "hello, " ~ "world"
+
+var x = 1, y = 2, z = "hello"
+x = 123
+y = x + \
+  300
+say "x: $x, y: $y, z: $z"
+
+say add 5000, 1234
+
+def add a, b
+  say "add $a, $b"
+  return a + \ # comment
+    b
+end
+
+x = 1
+
+if x < 0
+  say 'fail'
+elseif x < 1
+  say 'fail'
+else
+  say 'pass'
+end
+
+if x > 0
+  say 'pass'
+elseif x > 0
+  say 'fail'
+elseif x > 1
+  say 'fail'
+else
+  say 'fail'
+end
+
+if x < 0
+  say 'fail'
+elseif x == 1
+  say \ // comment
+    'pass'
+else
+  say 'fail'
+end
+
+say 'goto1'
+goto test
+say 'goto2'
+test:
+say 'goto3'
+
+x = {1, 2, 3, 4}
+
+list.push x, 5
+
+for var e, i: x ~ {6, 7}
+  say "$i: $e"
+  if e == 6
+    break
+  end
+end
+
+say x[0]
+
+x = 3
+for
+  say x
+  if x == 0
+    break
+  end
+  x -= 1
+end
+
+x = 5
+do
+  say x
+while x > 0
+  x -= 1
+end
+
+if isnum x
+  say 'x is num'
+end
+
+x = nil
+if x == nil
+  say 'x is nil'
+end
+
+say 'hello', 'world'
+
+def get_x
+  return x
+end
+
+x = {1, 2, {3, 4}}
+x[0] = 5
+say x[0]
+list.push (get_x)[2], 6
+say x[2][1]
+x[add 2, 3] = add 3, 4
+
+say x
+
+def false
+  say 'false'
+  return nil
+end
+
+def true
+  say 'true'
+  return 1
+end
+
+if (true) && (false)
+  say 'fail'
+end
+
+if (false) && (true)
+  say 'fail'
+end
+
+if (true) || (false)
+  say 'pass'
+end
+
+if (false) || (true)
+  say 'pass'
+end
+
+say pick (true ), (add 1, 2), (add 2, 3)
+say pick (false), (add 3, 4), (add 4, 5)
+
+say 1
+do
+  say 2
+  goto test2
+  say 3
+end
+say 4
+test2:
+say 5
+
+x = {1, 2, 3, 4}
+say x[1:2]  # {2, 3}
+say x       # {1, 2, 3, 4}
+x[1:2] = {6, 7, 8, 9}
+say x       # {1, 6, 7, 8, 9, 4}
+
+x = {1, 2, 3}
+y = x[:]
+y[1] = 4
+say x   # {1, 2, 3}
+say y   # {1, 4, 3}
+
+x = {1, nil, 2}
+x[0] ||= add 1, 2
+x[1] ||= add 3, 4
+say "x[0] = ", x[0], "x[1] = ", x[1]
+
+var a = {'a', 'b', 'c'}
+for var s, i: a
+  say i, s
+end
+
+def fac a
+  if a <= 0
+    return 1
+  end
+  return a * fac a - 1
+end
+say fac 10 # 3628800
+
+
+def one a, b, c
+  def two a, b, d
+    def three a, b, e
+      return a + b + c + d + e
+    end
+    return three b, c, 3
+  end
+  return two b, c, 4
+end
+say one 10, 20, 30  # 97
+
+say add -10, -5
+
+var d
+say d
+
+do
+  var x = 1, y = 2
+
+  def foo a
+    if a < 3
+      return foo a + 1
+    end
+    def bar b
+      if y < 3
+        y += 1
+        return foo y * 2
+      end
+      return a + b + y
+    end
+    return bar a + 3
+  end
+
+  say foo x # 18
+  say y
+end
+
+do
+  var a = {1, 2, 3}
+  say &a
+  a = 'hello'
+  say &a
+end
+
+say 10^-1
+say -10^-1
+
+1, 2, 3 | say
+1, 2, 3 | say 4
+
+say {1, 'two\three''four', 5}

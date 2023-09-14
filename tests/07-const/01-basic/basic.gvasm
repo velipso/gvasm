@@ -1,0 +1,4 @@
+.def FOO = 1
+.def BAR = 2
+.i8 FOO        /// 01
+.i8 FOO + BAR  /// 03

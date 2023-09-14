@@ -1,0 +1,3 @@
+name: arm.adc
+desc: Addition with carry
+kind: make

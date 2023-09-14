@@ -1,0 +1,4 @@
+name: files.import-error
+desc: Import a missing file
+kind: make
+error: true

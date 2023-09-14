@@ -1,0 +1,3 @@
+name: basic.base-in-scope
+desc: Use .base inside a scope
+kind: make

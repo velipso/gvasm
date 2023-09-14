@@ -1,0 +1,3 @@
+name: arm.teq
+desc: Bitwise exclusive or test
+kind: make

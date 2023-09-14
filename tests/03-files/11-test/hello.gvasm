@@ -1,0 +1,3 @@
+.i32 1
+.embed "hello.bin"
+.i32 2

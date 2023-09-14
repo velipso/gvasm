@@ -1,0 +1,3 @@
+.thumb
+bics r2, r7  /// ba 43
+bics r0, r6  /// b0 43

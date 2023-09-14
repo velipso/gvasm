@@ -1,0 +1,3 @@
+name: thumb.rors
+desc: Rotate right
+kind: make

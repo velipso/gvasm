@@ -1,0 +1,3 @@
+name: struct.typed-mem.arm.32
+desc: Typed ARM ldrx/strx converts to ldr/str
+kind: make

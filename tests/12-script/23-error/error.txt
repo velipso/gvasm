@@ -1,0 +1,4 @@
+name: script.error
+desc: Use error command
+kind: make
+error: true

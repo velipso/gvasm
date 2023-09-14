@@ -1,0 +1,10 @@
+name: sink.stacktrace
+kind: sink
+$ gt2 (stacktrace.sink:5:14)
+$ gt1 (stacktrace.sink:7:12)
+$ gettrace (stacktrace.sink:9:23)
+$ gettrace (stacktrace.sink:9:28)
+$ gettrace (stacktrace.sink:9:28)
+$ gettrace (stacktrace.sink:9:28)
+$ stacktrace.sink:12:12
+$

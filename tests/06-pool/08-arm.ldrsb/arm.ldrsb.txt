@@ -1,0 +1,3 @@
+name: pool.arm.ldrsb
+desc: ARM pool ldrsb
+kind: make

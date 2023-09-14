@@ -1,0 +1,11 @@
+.def one       = 1
+.def five      = 5
+.def neg(a)    = -a
+.def add(a, b) = a + b
+.i8 neg(-5)                              /// 05
+.i8 add(1, 2)                            /// 03
+.i8 neg(one)                             /// ff
+.i8 add(one, 2)                          /// 03
+.i8 add(1, five)                         /// 06
+.i8 add(five, neg(one))                  /// 04
+.i8 add(neg(neg(five)), neg(neg(five)))  /// 0a

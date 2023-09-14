@@ -1,0 +1,3 @@
+name: basic.base-default
+desc: Use .i32 command with default base
+kind: make

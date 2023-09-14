@@ -1,0 +1,3 @@
+name: script.i8
+desc: Use .i8 command inside .script
+kind: make

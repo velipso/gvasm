@@ -1,0 +1,3 @@
+name: basic.title
+desc: Use .title command
+kind: make

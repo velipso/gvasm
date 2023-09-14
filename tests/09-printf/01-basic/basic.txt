@@ -1,0 +1,4 @@
+name: printf.basic
+desc: Basic usage of .printf
+kind: make
+$ hello, %world

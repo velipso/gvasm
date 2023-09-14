@@ -1,0 +1,3 @@
+name: thumb.negs-single
+desc: Negate with single operand
+kind: make

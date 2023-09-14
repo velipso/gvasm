@@ -1,0 +1,9 @@
+.arm
+mvn r0, #0x03000000     /// 03 04 e0 e3
+ldr r0, =0xfcffffff     /// 03 04 e0 e3
+ldr r3, =0xcbffffff     /// 0d 33 e0 e3
+ldr r3, =0xffa9ffff     /// 56 38 e0 e3
+ldrmi r3, =0xffff87ff   /// 1e 3b e0 43
+ldrmi r3, =0xffffff6e   /// 91 30 e0 43
+ldr.mi r3, =0xffffff6e  /// 91 30 e0 43
+ldrmi r3, =0xfffffffaf  /// 05 3e e0 43

@@ -1,0 +1,4 @@
+name: script.image.load-fail
+desc: Fail to load image
+kind: make
+error: true

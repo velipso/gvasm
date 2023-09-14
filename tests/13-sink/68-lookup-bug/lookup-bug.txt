@@ -1,0 +1,4 @@
+name: sink.lookup-bug
+kind: sink
+$ 1
+$

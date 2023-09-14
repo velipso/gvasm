@@ -1,0 +1,14 @@
+.script
+  export pi = num.pi
+.end
+.printf "%i", pi
+.if pi != 3
+  .error "pi should be integer"
+.end
+.script
+  var pi = lookup pi
+  say (pi * 100 | num.floor)
+  if pi == 3
+    error "pi should be floating point"
+  end
+.end

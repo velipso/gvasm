@@ -1,0 +1,25 @@
+def test1 a, b, ...c
+  say a, b, c
+end
+
+test1 1, 2, 3, 4, 5 # 1 2 {3, 4, 5}
+
+test1 4 # 4 nil {}
+
+test1 1, 2, 3, 4 # 1 2 {3, 4}
+
+def test2 {a, b, ...c} = {1, 2, 3, 4, 5}
+  say a, b, c
+end
+
+test2 {1} # 1 nil {}
+
+test2 # 1 2 {3, 4, 5}
+
+def test3 {a, b, ...c} = {1, 2, 3, 4, 5}, d = 6, ...e
+  say a, b, c, d, e
+end
+
+test3 {1}, 2, 3 # 1 nil {} 2 {3}
+
+test3 # 1 2 {3, 4, 5} 6 {}

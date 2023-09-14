@@ -1,0 +1,5 @@
+name: sink.embed
+kind: sink
+$ HELLO
+$ ydwoh
+$

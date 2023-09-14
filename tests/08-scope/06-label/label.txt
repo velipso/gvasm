@@ -1,0 +1,3 @@
+name: scope.label
+desc: Labels are strictly local to scope
+kind: make

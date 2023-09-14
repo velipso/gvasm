@@ -1,0 +1,3 @@
+name: const.here
+desc: Constant _here is defined
+kind: make

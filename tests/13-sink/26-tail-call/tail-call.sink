@@ -1,0 +1,8 @@
+def test a
+  if a > 100
+    return stacktrace
+  end
+  return test a + 1
+end
+
+say &test 0

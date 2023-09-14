@@ -1,0 +1,11 @@
+.def one = 1
+.script sc
+  export world = {'world', 2}
+  export two = 2
+.end
+.script
+  say lookup one + 1
+  say lookup sc.world
+  export three = 3
+.end
+.printf "two = %d, three = %d", sc.two, three

@@ -1,0 +1,3 @@
+name: expr.not
+desc: Logical not
+kind: make

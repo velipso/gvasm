@@ -1,0 +1,3 @@
+name: arm.cmn
+desc: Compare negative
+kind: make

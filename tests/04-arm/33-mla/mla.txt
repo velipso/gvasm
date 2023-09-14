@@ -1,0 +1,3 @@
+name: arm.mla
+desc: Multiply and accumulate
+kind: make

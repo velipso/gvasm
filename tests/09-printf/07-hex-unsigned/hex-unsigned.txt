@@ -1,0 +1,4 @@
+name: printf.hex-unsigned
+desc: Hex formatting should be unsigned
+kind: make
+$ 0xFFFFFFFF

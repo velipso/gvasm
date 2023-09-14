@@ -1,0 +1,51 @@
+.arm
+asr r3, r14, #0       /// 0e 30 a0 e1
+asrs r3, r14, #0      /// 0e 30 b0 e1
+asrmi r3, r14, #0     /// 0e 30 a0 41
+asrsmi r3, r14, #0    /// 0e 30 b0 41
+asrs.mi r3, r14, #0   /// 0e 30 b0 41
+asrmis r3, r14, #0    /// 0e 30 b0 41
+
+asr r3, #0            /// 03 30 a0 e1
+asrs r3, #0           /// 03 30 b0 e1
+asrmi r3, #0          /// 03 30 a0 41
+asrsmi r3, #0         /// 03 30 b0 41
+asrs.mi r3, #0        /// 03 30 b0 41
+asrmis r3, #0         /// 03 30 b0 41
+
+
+asr r3, r14, #32      /// 4e 30 a0 e1
+asrs r3, r14, #32     /// 4e 30 b0 e1
+asrmi r3, r14, #32    /// 4e 30 a0 41
+asrsmi r3, r14, #32   /// 4e 30 b0 41
+asrs.mi r3, r14, #32  /// 4e 30 b0 41
+asrmis r3, r14, #32   /// 4e 30 b0 41
+
+asr r3, #32           /// 43 30 a0 e1
+asrs r3, #32          /// 43 30 b0 e1
+asrmi r3, #32         /// 43 30 a0 41
+asrsmi r3, #32        /// 43 30 b0 41
+asrs.mi r3, #32       /// 43 30 b0 41
+asrmis r3, #32        /// 43 30 b0 41
+
+
+asr r3, r14, #5       /// ce 32 a0 e1
+asrs r3, r14, #10     /// 4e 35 b0 e1
+asrmi r3, r14, #15    /// ce 37 a0 41
+asrsmi r3, r14, #20   /// 4e 3a b0 41
+asrs.mi r3, r14, #25  /// ce 3c b0 41
+asrmis r3, r14, #30   /// 4e 3f b0 41
+
+asr r3, r14, r10      /// 5e 3a a0 e1
+asrs r3, r14, r10     /// 5e 3a b0 e1
+asrmi r3, r14, r10    /// 5e 3a a0 41
+asrsmi r3, r14, r10   /// 5e 3a b0 41
+asrs.mi r3, r14, r10  /// 5e 3a b0 41
+asrmis r3, r14, r10   /// 5e 3a b0 41
+
+asr r3, r10           /// 53 3a a0 e1
+asrs r3, r10          /// 53 3a b0 e1
+asrmi r3, r10         /// 53 3a a0 41
+asrsmi r3, r10        /// 53 3a b0 41
+asrs.mi r3, r10       /// 53 3a b0 41
+asrmis r3, r10        /// 53 3a b0 41

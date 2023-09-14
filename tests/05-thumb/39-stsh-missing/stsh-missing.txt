@@ -1,0 +1,4 @@
+name: thumb.stsh-missing
+desc: Verify strh is missing
+kind: make
+error: true

@@ -1,0 +1,18 @@
+def T a
+  say a
+  say (pickle.circular a), (pickle.sibling a)
+end
+
+var a = {1, 2, 3}
+T a
+list.push a, a
+T a
+a = {a, a}
+T a
+a = a[0]
+T a
+a = {a, {{{a}}}}
+T a
+a = {1}
+a = {a, {{{{{1, 2, 3, a}}}}}}
+T a

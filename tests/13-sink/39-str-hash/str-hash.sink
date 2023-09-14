@@ -1,0 +1,15 @@
+for var i: range 0, 100, 5
+  var h = str.hash (str.rep 'x', i), i * 2
+  say i, h[0] + h[1] + h[2] + h[3]
+end
+
+# test static hashes
+say str.hash "test\0one", 123
+say str.hash "test\0two"
+
+# compared to runtime hashing
+var s1 = "test\0one"
+var n1 = 123
+var s2 = "test\0two"
+say str.hash s1, n1
+say str.hash s2

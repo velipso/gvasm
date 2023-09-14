@@ -1,0 +1,27 @@
+rand.seed 988
+
+say num.hex rand.int, 8
+say num.hex rand.int, 8
+say num.hex rand.int, 8
+say num.hex rand.int, 8
+
+var x = {1, 2, 3, 4, 5, 6, 7}
+
+rand.shuffle x
+say x
+
+say rand.pick x
+
+x = rand.getstate
+say x
+
+var i = 0
+var t = 0
+do while i < 1000
+  t += rand.num
+  i += 1
+end
+say num.floor t
+
+rand.setstate x
+say num.hex rand.int, 8

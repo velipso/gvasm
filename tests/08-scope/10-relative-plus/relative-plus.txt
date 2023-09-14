@@ -1,0 +1,3 @@
+name: scope.relative-plus
+desc: Using + for anonymous forward labels
+kind: make

@@ -1,0 +1,3 @@
+name: thumb.eor
+desc: Bitwise exclusive or
+kind: make

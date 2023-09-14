@@ -1,0 +1,25 @@
+name: sink.str-split
+kind: sink
+$ {'crY', '', '', '', 'crY'}
+$ {'R8fx', 'R8fxDz8nR8fxDz8nR8fxDz8n'}
+$ {'', 'bsgp', '', 'bsgp'}
+$ {'', 'dd', '', 'd', '', '', ''}
+$ {'YOcb7'}
+$ {'', '', 'xPxP', '', '', ''}
+$ {'qf7cqf7c', '', 'qf7c'}
+$ {'meI1bcmeI', '', '', '', ''}
+$ {'a', 'a'}
+$ {'k', 'k', 'k', '', '', 'k'}
+$ {'PLf', ''}
+$ {'jHM', 'aEaEjHM', '', 'aE'}
+$ {'', 'aRT'}
+$ {'9dw', '9dw9dw', '', ''}
+$ {'RC5C5', ''}
+$ {'exBexBBa'}
+$ {'7M7M7M7M7M7M7M'}
+$ {'UiUi', 'UiUi', 'Ui', '', ''}
+$ {'', 'e', '', 'eee'}
+$ {'MYMYMY', 'MYMY'}
+$ {'', '', ''}
+$ {'1', '2', '3', '4'}
+$

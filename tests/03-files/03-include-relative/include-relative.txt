@@ -1,0 +1,3 @@
+name: files.include-relative
+desc: Include files relative to included file
+kind: make

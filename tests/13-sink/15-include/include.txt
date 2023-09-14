@@ -1,0 +1,17 @@
+name: sink.include
+kind: sink
+$ start
+$ inside test1.sink
+$ test1: 1
+$ inside test2/index.sink
+$ test2: 2
+$ inside test3.sink
+$ test3: 3
+$ inside test1.sink
+$ test1: 4
+$ inside test2/index.sink
+$ test2: 5
+$ inside test3.sink
+$ test3: 6
+$ end
+$

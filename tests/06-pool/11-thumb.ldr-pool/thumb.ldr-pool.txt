@@ -1,0 +1,3 @@
+name: pool.thumb.ldr-pool
+desc: Thumb pool ldr stored in literal pool
+kind: make

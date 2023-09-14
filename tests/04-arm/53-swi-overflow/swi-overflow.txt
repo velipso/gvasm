@@ -1,0 +1,4 @@
+name: arm.swi-overflow
+desc: Software interrupt with overflowed comment
+kind: make
+error: true

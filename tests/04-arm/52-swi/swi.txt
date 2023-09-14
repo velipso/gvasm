@@ -1,0 +1,3 @@
+name: arm.swi
+desc: Software interrupt
+kind: make

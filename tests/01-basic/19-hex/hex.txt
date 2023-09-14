@@ -1,0 +1,3 @@
+name: basic.hex
+desc: Represent number as hexidecimal
+kind: make

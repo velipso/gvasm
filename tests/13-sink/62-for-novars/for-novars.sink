@@ -1,0 +1,7 @@
+for: range 5
+  say 'hi'
+end
+
+for: {1, 2, 3}
+  say 'yo'
+end

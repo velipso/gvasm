@@ -1,0 +1,4 @@
+name: memory.iwram-overflow
+desc: Overflowing IWRAM will error
+kind: make
+error: true

@@ -1,0 +1,5 @@
+.base 1
+.align 4        /// 00 00 00
+.i8 9           /// 09
+.align 9, 0xcc  /// cc cc cc cc
+.i8 5           /// 05

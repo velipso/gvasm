@@ -1,0 +1,3 @@
+var a = {1}
+a | list.push 2 | list.push 3
+say a

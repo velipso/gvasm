@@ -1,0 +1,5 @@
+name: sink.say-as-cmd
+kind: sink
+$ 
+$ say returns "nil"
+$

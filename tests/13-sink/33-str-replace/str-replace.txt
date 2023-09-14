@@ -1,0 +1,6 @@
+name: sink.str-replace
+kind: sink
+$ heAAo worAd
+$ asdf
+$ BBB
+$

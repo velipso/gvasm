@@ -1,0 +1,4 @@
+name: sink.utf8
+kind: sink
+$ pass
+$

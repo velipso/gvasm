@@ -1,0 +1,27 @@
+.arm
+    mov   r0, #0   /// 00 00 a0 e3
+a:  add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   a        /// fc ff ff ba
+    blt   a        /// fb ff ff ba
+    blt   a        /// fa ff ff ba
+    blt   a        /// f9 ff ff ba
+    blt   a        /// f8 ff ff ba
+
+    mov   r0, #0   /// 00 00 a0 e3
+-   add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   -        /// fc ff ff ba
+    blt   -        /// fb ff ff ba
+    blt   -        /// fa ff ff ba
+    blt   -        /// f9 ff ff ba
+    blt   -        /// f8 ff ff ba
+
+    mov   r0, #0   /// 00 00 a0 e3
+-   add   r0, #1   /// 01 00 80 e2
+    cmp   r0, #50  /// 32 00 50 e3
+    blt   -        /// fc ff ff ba
+    blt   -        /// fb ff ff ba
+    blt   -        /// fa ff ff ba
+    blt   -        /// f9 ff ff ba
+    blt   -        /// f8 ff ff ba

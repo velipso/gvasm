@@ -1,0 +1,3 @@
+name: thumb.ldr
+desc: Load
+kind: make

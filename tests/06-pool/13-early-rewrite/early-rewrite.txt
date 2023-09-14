@@ -1,0 +1,3 @@
+name: pool.early-rewrite
+desc: Use a label to generate a mov statement
+kind: make

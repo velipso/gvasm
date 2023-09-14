@@ -1,0 +1,3 @@
+name: basic.bin
+desc: Represent number as binary
+kind: make

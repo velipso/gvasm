@@ -1,0 +1,4 @@
+name: arm.b-misaligned
+desc: Branch misaligned
+kind: make
+error: true

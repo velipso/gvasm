@@ -1,0 +1,3 @@
+name: arm.ldrh
+desc: Load half word
+kind: make

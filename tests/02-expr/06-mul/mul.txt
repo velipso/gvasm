@@ -1,0 +1,3 @@
+name: expr.mul
+desc: Multiplication
+kind: make

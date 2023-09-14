@@ -1,0 +1,3 @@
+name: arm.mov
+desc: Move
+kind: make

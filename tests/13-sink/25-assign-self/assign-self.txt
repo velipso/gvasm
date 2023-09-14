@@ -1,0 +1,5 @@
+name: sink.assign-self
+kind: sink
+$ heLLo
+$ heLLo
+$

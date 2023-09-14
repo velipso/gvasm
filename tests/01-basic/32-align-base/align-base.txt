@@ -1,0 +1,3 @@
+name: basic.align-base
+desc: Make sure .align takes .base into account
+kind: make

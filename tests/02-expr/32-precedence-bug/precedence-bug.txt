@@ -1,0 +1,5 @@
+name: expr.precedence-bug
+desc: Add/subtract should evaluate before greater than
+kind: make
+$ 1
+$ 1

@@ -1,0 +1,3 @@
+name: const.arm-thumb
+desc: Constants _arm and _thumb are defined
+kind: make

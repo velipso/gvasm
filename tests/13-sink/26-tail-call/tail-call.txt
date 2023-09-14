@@ -1,0 +1,4 @@
+name: sink.tail-call
+kind: sink
+$ 2
+$

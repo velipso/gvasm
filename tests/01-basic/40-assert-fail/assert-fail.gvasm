@@ -1,0 +1,5 @@
+.import 'test.gvasm' { foo }
+.assert "foo is 8", foo == 8
+.base 0
+.i8fill 4 /// 00 00 00 00
+.include 'test.gvasm'

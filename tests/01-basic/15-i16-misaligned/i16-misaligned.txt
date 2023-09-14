@@ -1,0 +1,4 @@
+name: basic.i16-misaligned
+desc: Verify .i16 will error on misaligned data
+kind: make
+error: true

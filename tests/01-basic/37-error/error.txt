@@ -1,0 +1,4 @@
+name: basic.error
+desc: Use .error command
+kind: make
+error: true

@@ -1,0 +1,3 @@
+name: pool.late-rewrite-mov
+desc: Use a label after .pool but backtrack to mov
+kind: make

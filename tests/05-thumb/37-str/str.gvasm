@@ -1,0 +1,19 @@
+.thumb
+// word
+str r7, [r5, r3]     /// ef 50
+str r3, [r6, #116]   /// 73 67
+str r3, [r6, #0]     /// 33 60
+str r3, [r6]         /// 33 60
+str r2, [sp, #492]   /// 7b 92
+str r2, [sp, #0]     /// 00 92
+str r2, [sp]         /// 00 92
+// half word
+strh r7, [r5, r3]    /// ef 52
+strh r3, [r6, #58]   /// 73 87
+strh r3, [r6, #0]    /// 33 80
+strh r3, [r6]        /// 33 80
+// byte
+strb r7, [r5, r3]    /// ef 54
+strb r3, [r6, #29]   /// 73 77
+strb r3, [r6, #0]    /// 33 70
+strb r3, [r6]        /// 33 70

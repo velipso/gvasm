@@ -1,0 +1,3 @@
+name: memory.iwram-no-overflow
+desc: IWRAM can allocate 32k
+kind: make

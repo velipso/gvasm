@@ -1,0 +1,8 @@
+namespace test
+  def range a, b, c
+    return {6, 7, 8}
+  end
+  for var v: range 10
+    say v
+  end
+end

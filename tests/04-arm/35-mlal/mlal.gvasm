@@ -1,0 +1,11 @@
+.arm
+umlal r5, r3, r13, r11     /// 9d 5b a3 e0
+umlals r5, r3, r13, r11    /// 9d 5b b3 e0
+umlalls r5, r3, r13, r11   /// 9d 5b a3 90
+umlalsls r5, r3, r13, r11  /// 9d 5b b3 90
+umlallss r5, r3, r13, r11  /// 9d 5b b3 90
+smlal r5, r3, r13, r11     /// 9d 5b e3 e0
+smlals r5, r3, r13, r11    /// 9d 5b f3 e0
+smlalls r5, r3, r13, r11   /// 9d 5b e3 90
+smlalsls r5, r3, r13, r11  /// 9d 5b f3 90
+smlallss r5, r3, r13, r11  /// 9d 5b f3 90

@@ -1,0 +1,3 @@
+name: arm.sbc
+desc: Subtraction with carry
+kind: make

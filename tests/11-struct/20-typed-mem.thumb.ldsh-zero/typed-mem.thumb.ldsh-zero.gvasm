@@ -1,0 +1,7 @@
+.struct S
+  .i16 one
+  .i16 two
+  .u16 three
+.end
+.thumb
+ldrx r0, [r1] (S.two)

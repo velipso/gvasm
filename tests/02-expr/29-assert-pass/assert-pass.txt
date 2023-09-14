@@ -1,0 +1,3 @@
+name: expr.assert-pass
+desc: Use assert() in an expression
+kind: make

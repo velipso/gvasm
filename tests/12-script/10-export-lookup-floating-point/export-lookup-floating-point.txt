@@ -1,0 +1,5 @@
+name: script.export-lookup-floating-point
+desc: Export and lookup floating point numbers
+kind: make
+$ 3
+$ 314

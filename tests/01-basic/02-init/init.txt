@@ -1,0 +1,4 @@
+name: basic.init
+desc: Make sure init program compiles
+kind: init
+skipBytes: true

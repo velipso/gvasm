@@ -1,0 +1,3 @@
+name: struct.basic
+desc: Basic usage of .struct
+kind: make

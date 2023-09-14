@@ -1,0 +1,3 @@
+name: struct.start-address
+desc: Start address with struct
+kind: make

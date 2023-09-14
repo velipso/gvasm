@@ -1,0 +1,3 @@
+.import 'test.gvasm' { FOO }
+.def BAR = 1
+.printf "FOO = %d", FOO

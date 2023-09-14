@@ -1,0 +1,3 @@
+.struct three = iwram
+  .i32 three[3]
+.end

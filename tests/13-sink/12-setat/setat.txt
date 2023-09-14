@@ -1,0 +1,7 @@
+name: sink.setat
+kind: sink
+$ {0} 1
+$ {0, 1} 2
+$ {0, 1, nil, nil, 4} 5
+$ {0, 1, nil, 3, 8} 5
+$

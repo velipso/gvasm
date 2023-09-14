@@ -1,0 +1,5 @@
+def test ...args
+  say args
+end
+
+test 1, 2, 3

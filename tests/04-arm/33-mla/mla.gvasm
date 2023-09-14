@@ -1,0 +1,6 @@
+.arm
+mla r1, r9, r4, r12     /// 99 c4 21 e0
+mlas r1, r9, r4, r12    /// 99 c4 31 e0
+mlahi r1, r9, r4, r12   /// 99 c4 21 80
+mlashi r1, r9, r4, r12  /// 99 c4 31 80
+mlahis r1, r9, r4, r12  /// 99 c4 31 80

@@ -1,0 +1,4 @@
+include + './test.sink'
+include A './test.sink', B './test.sink', + './test.sink'
+
+foo 1

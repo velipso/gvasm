@@ -1,0 +1,4 @@
+name: stdlib.registers
+desc: Validate register names are equal
+kind: make
+$ success

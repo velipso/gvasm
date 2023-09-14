@@ -1,0 +1,3 @@
+name: basic.base-affects-adr
+desc: Using .base affects addresses in code
+kind: make

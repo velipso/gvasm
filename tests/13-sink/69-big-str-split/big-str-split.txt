@@ -1,0 +1,4 @@
+name: sink.big-str-split
+kind: sink
+$ pass
+$

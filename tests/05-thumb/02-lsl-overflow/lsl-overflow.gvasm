@@ -1,0 +1,2 @@
+.thumb
+lsl r3, r5, #32

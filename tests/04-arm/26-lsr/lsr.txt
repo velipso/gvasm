@@ -1,0 +1,3 @@
+name: arm.lsr
+desc: Logical shift right
+kind: make

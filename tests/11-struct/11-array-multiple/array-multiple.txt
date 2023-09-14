@@ -1,0 +1,3 @@
+name: struct.array-multiple
+desc: Multiple arrays inside structs
+kind: make

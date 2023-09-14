@@ -1,0 +1,3 @@
+name: thumb.tst
+desc: Bit test
+kind: make

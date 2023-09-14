@@ -1,0 +1,62 @@
+for var test1: {
+    # list of codepoints          are codepoints valid
+    {{0, 0, 0                  },         1           },
+    {{0x7F, 0x7F, 0x7F         },         1           },
+    {{0x80, 0x80, 0x80         },         1           },
+    {{0x7FF, 0x7FF, 0x7FF      },         1           },
+    {{0x800, 0x800, 0x800      },         1           },
+    {{0x0FFFF, 0x0FFFF, 0x0FFFF},         1           },
+    {{0x10000, 0x10000, 0x10000},         1           },
+    {{0, 0x7F, 0x80, 0x7FF     },         1           },
+    {{0x7FF, 0x800, 0x0FFFF    },         1           },
+    {{0x0FFFF, 0x10000, 0      },         1           },
+    {{0x10FFFF, 0x10FFFE, 0, 1 },         1           },
+    {{0xD7FF, 0xE000           },         1           },
+    {{0xFFFD, 0x10FFFF         },         1           },
+    {{0x110000                 },       nil           },
+    {{0xD800                   },       nil           },
+    {{0xDE00                   },       nil           },
+    {{0xDFFF                   },       nil           }
+  }
+  var ls = test1[0]
+  var valid = test1[1]
+  if valid != utf8.valid ls
+    say 'utf8.valid fail'
+  end
+  if valid
+    var ls2 = ls | utf8.str | utf8.list
+    if 0 != order ls, ls2
+      say 'utf8.str/utf8.list fail'
+    end
+  end
+end
+
+for var test2: {
+    # bytes                       are bytes valid UTF8
+    {"\x00\x00\x00\x00\x00\x00" ,         1           },
+    {"\x7F\x7F\x7F\x7F\x7F\x7F" ,         1           },
+    {"\xC2\x80\xC2\x80"         ,         1           },
+    {"\xDF\xBF\xDF\xBF"         ,         1           },
+    {"\xE0\xA0\x80"             ,         1           },
+    {"\xEF\xBF\xBF"             ,         1           },
+    {"\xF0\x90\x80\x80"         ,         1           },
+    {"\xF4\x8F\xBF\xBF"         ,         1           },
+    {"\xF4\x9F\xBF\xBF"         ,       nil           },
+    {"\xED\xA0\x80"             ,       nil           },
+    {"\x80"                     ,       nil           },
+    {"\xC2"                     ,       nil           }
+  }
+  var st = test2[0]
+  var valid = test2[1]
+  if valid != utf8.valid st
+    say 'utf8.valid fail'
+  end
+  if valid
+    var st2 = st | utf8.list | utf8.str
+    if st != st2
+      say 'utf8.str/utf8.list fail'
+    end
+  end
+end
+
+say 'pass'

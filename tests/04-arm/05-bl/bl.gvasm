@@ -1,0 +1,7 @@
+.arm
+L1: bl 0x08000008  /// 00 00 00 eb
+L2: bl L1          /// fd ff ff eb
+L3: blhs L3        /// fe ff ff 2b
+bl.cc L4           /// 01 00 00 3b
+.i32 0, 0          /// 00 00 00 00 00 00 00 00
+L4:

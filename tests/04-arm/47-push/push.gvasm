@@ -1,0 +1,6 @@
+.arm
+push {r0-r4, r8, lr}           /// 1f 41 2d e9
+pushle {r3, r5-r9, r13-r15}    /// e8 e3 2d d9
+
+push {r0-r4, r8, lr}^          /// 1f 41 6d e9
+pushle {r3, r5-r9, r13-r15}^   /// e8 e3 6d d9

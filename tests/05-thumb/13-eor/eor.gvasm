@@ -1,0 +1,3 @@
+.thumb
+eor r2, r7  /// 7a 40
+eor r0, r6  /// 70 40

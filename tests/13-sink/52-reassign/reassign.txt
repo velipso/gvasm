@@ -1,0 +1,6 @@
+name: sink.reassign
+kind: sink
+$ {1}
+$ 1
+$ 1
+$

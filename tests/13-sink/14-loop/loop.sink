@@ -1,0 +1,9 @@
+var i = 0
+for
+  say i
+  i += 1
+  if i > 4
+    break
+  end
+end
+say 'done'

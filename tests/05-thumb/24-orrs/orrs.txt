@@ -1,0 +1,3 @@
+name: thumb.orrs
+desc: Bitwise or
+kind: make

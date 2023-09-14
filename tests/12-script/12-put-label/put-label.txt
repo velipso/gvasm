@@ -1,0 +1,5 @@
+name: script.put-label
+desc: Accessing a label that was put by a script
+kind: make
+$ 0
+$ 0

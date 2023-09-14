@@ -1,0 +1,3 @@
+.thumb
+adcs r2, r7  /// 7a 41
+adcs r0, r6  /// 70 41

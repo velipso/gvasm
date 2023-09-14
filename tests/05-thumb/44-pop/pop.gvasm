@@ -1,0 +1,10 @@
+.thumb
+pop {r0, r1, r5-r7}              /// e3 bc
+ldmia sp!, {r0, r1, r5-r7}       /// e3 bc
+ldmfd sp!, {r0, r1, r5-r7}       /// e3 bc
+pop {r0, r1, r5-r7, r15}         /// e3 bd
+ldmia sp!, {r0, r1, r5-r7, r15}  /// e3 bd
+ldmfd sp!, {r0, r1, r5-r7, r15}  /// e3 bd
+pop {r0, pc, r1, r5-r7}          /// e3 bd
+ldmia sp!, {r0, pc, r1, r5-r7}   /// e3 bd
+ldmfd sp!, {r0, pc, r1, r5-r7}   /// e3 bd

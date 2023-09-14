@@ -1,0 +1,4 @@
+name: memory.ewram-overflow
+desc: Overflowing EWRAM will error
+kind: make
+error: true

@@ -1,0 +1,3 @@
+name: scope.multiple-plus
+desc: Using multiple + for anonymous forward labels
+kind: make

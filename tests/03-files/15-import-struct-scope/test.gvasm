@@ -1,0 +1,2 @@
+.import 'import-struct-scope.gvasm' { bar }
+.i8 bar.baz._length

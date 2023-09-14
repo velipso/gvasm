@@ -1,0 +1,3 @@
+name: regs.default
+desc: Verify default registers
+kind: make

@@ -1,0 +1,3 @@
+name: basic.base-relative-bug
+desc: Base should be relative to where it was declared
+kind: make

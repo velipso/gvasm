@@ -1,0 +1,3 @@
+name: expr.lte
+desc: Less than or equal
+kind: make

@@ -1,0 +1,3 @@
+name: script.large-put
+desc: Support a lot of puts
+kind: make

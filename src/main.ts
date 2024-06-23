@@ -1,6 +1,6 @@
 //
 // gvasm - Assembler and disassembler for Game Boy Advance homebrew
-// by Sean Connelly (@velipso), https://sean.cm
+// by Sean Connelly (@velipso), https://sean.fun
 // Project Home: https://github.com/velipso/gvasm
 // SPDX-License-Identifier: 0BSD
 //
@@ -20,7 +20,7 @@ function printVersion() {
   const vmin = Math.floor(version / 1000) % 1000;
   const vpat = version % 1000;
   console.log(`gvasm - Assembler and disassembler for Game Boy Advance homebrew
-by Sean Connelly (@velipso), https://sean.cm
+by Sean Connelly (@velipso), https://sean.fun
 Project Home: https://github.com/velipso/gvasm
 SPDX-License-Identifier: 0BSD
 Version: ${vmaj}.${vmin}.${vpat}`);

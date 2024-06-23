@@ -20,7 +20,7 @@ Then run:
 deno upgrade
 
 # install the latest release of gvasm
-deno install --allow-read --allow-write --allow-run -f -r \
+deno install -g --allow-read --allow-write --allow-run -f -r \
   https://raw.githubusercontent.com/velipso/gvasm/main/gvasm.ts
 ```
 

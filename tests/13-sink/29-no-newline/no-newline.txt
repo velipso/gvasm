@@ -1,0 +1,4 @@
+name: sink.no-newline
+kind: sink
+$ hi
+$

@@ -1,0 +1,3 @@
+name: expr.defined
+desc: Use defined() in an expression
+kind: make

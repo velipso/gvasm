@@ -1,0 +1,7 @@
+name: sink.expr-keyend
+kind: sink
+$ 0
+$ 1
+$ 2
+$ hi
+$

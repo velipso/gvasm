@@ -1,0 +1,3 @@
+.thumb
+ldmia r3!, {r0-r3}  /// 0f cb
+ldmfd r3!, {r0-r3}  /// 0f cb

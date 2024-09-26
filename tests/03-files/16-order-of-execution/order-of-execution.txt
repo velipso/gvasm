@@ -1,0 +1,6 @@
+name: files.order-of-execution
+desc: Print messages in each phase of execution
+kind: make
+$ first = 1
+$ second = 2
+$ fourth = 4

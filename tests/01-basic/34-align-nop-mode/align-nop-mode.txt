@@ -1,0 +1,4 @@
+name: basic.align-nop-mode
+desc: Aligning with nop without mode is an error
+kind: make
+error: true

@@ -1,0 +1,3 @@
+name: basic.oct
+desc: Represent number as octal
+kind: make

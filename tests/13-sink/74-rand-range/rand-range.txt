@@ -1,0 +1,6 @@
+name: sink.rand-range
+kind: sink
+$ 0
+$ 18
+$ 15
+$

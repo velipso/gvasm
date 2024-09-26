@@ -1,0 +1,75 @@
+say  1, -num.nan
+say  2, num.nan + 2
+say  3, 2 + num.nan
+say  4, num.nan - 2
+say  5, 2 - num.nan
+say  6, num.nan * 2
+say  7, 2 * num.nan
+say  8, num.nan / 2
+say  9, 2 / num.nan
+say 10, num.nan % 2
+say 11, 2 % num.nan
+say 12, num.nan ^ 2
+say 13, 2 ^ num.nan
+say 14, num.abs num.nan
+say 15, num.sign num.nan
+say 16, num.max num.nan, 1
+say 17, num.min num.nan, 1
+say 18, num.clamp num.nan, 0, 1
+say 19, num.clamp 0, num.nan, 1
+say 20, num.clamp 1, 0, num.nan
+say 21, num.floor num.nan
+say 22, num.ceil num.nan
+say 23, num.round num.nan
+say 24, num.trunc num.nan
+say 25, num.sin num.nan
+say 26, num.cos num.nan
+say 27, num.tan num.nan
+say 28, num.asin num.nan
+say 29, num.acos num.nan
+say 30, num.atan num.nan
+say 31, num.atan2 1, num.nan
+say 32, num.atan2 num.nan, 1
+say 33, num.log num.nan
+say 34, num.log2 num.nan
+say 35, num.log10 num.nan
+say 36, num.exp num.nan
+say 37, num.lerp num.nan, 1, 0.5
+say 38, num.lerp 0, num.nan, 0.5
+say 39, num.lerp 0, 1, num.nan
+say 40, num.hex num.nan, 2
+say 41, num.hex 2, num.nan
+say 42, num.oct num.nan, 2
+say 43, num.oct 2, num.nan
+say 44, num.bin num.nan, 2
+say 45, num.bin 2, num.nan
+say 46, int.new num.nan
+say 47, int.not num.nan
+say 48, int.and 1, num.nan
+say 49, int.and num.nan, 1
+say 50, int.and 1, 1, 1, 1, 1, 1, num.nan
+say 51, int.or 1, num.nan
+say 52, int.or num.nan, 1
+say 53, int.or 1, 1, 1, 1, 1, 1, num.nan
+say 54, int.xor 1, num.nan
+say 55, int.xor num.nan, 1
+say 56, int.xor 1, 1, 1, 1, 1, 1, num.nan
+say 57, int.shl 256, num.nan
+say 58, int.shl num.nan, 1
+say 59, int.shr 256, num.nan
+say 60, int.shr num.nan, 1
+say 61, int.sar 256, num.nan
+say 62, int.sar num.nan, 1
+say 63, int.add num.nan, 2
+say 64, int.add 2, num.nan
+say 65, int.sub num.nan, 2
+say 66, int.sub 2, num.nan
+say 67, int.mul num.nan, 2
+say 68, int.mul 2, num.nan
+say 69, int.div num.nan, 2
+say 70, int.div 2, num.nan
+say 71, int.mod num.nan, 2
+say 72, int.mod 2, num.nan
+say 73, int.clz num.nan
+say 74, int.pop num.nan
+say 75, int.bswap num.nan

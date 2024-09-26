@@ -1,0 +1,3 @@
+.script
+  image.load {'one', 'two'}
+.end

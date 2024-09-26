@@ -1,0 +1,5 @@
+def foo a, b
+  include 'test.sink'
+end
+
+foo 1, 2

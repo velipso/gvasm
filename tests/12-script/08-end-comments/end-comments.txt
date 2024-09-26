@@ -1,0 +1,3 @@
+name: script.end-comments
+desc: Comments at .end should work
+kind: make

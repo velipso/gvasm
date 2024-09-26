@@ -1,0 +1,10 @@
+.thumb
+// move and shift
+lsr r3, r5, #10  /// ab 0a
+lsr r7, r7, #31  /// ff 0f
+// move and shift
+lsr r3, #10      /// 9b 0a
+lsr r7, #31      /// ff 0f
+// just shift
+lsr r3, r5       /// eb 40
+lsr r7, r7       /// ff 40

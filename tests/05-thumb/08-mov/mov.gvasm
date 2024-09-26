@@ -1,0 +1,9 @@
+.thumb
+// mov immediate
+mov r4, #0    /// 00 24
+mov r4, #100  /// 64 24
+mov r4, #255  /// ff 24
+// mov high register
+mov r4, r13   /// 6c 46
+mov r13, r4   /// a5 46
+mov r9, r13   /// e9 46

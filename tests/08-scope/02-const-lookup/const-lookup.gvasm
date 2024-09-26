@@ -1,0 +1,15 @@
+.def one = 1
+.i8 one         /// 01
+.def two = 2
+.i8 two         /// 02
+.begin
+  .i8 one       /// 01
+  .def two = 3
+  .i8 two       /// 03
+  .begin
+    .i8 one     /// 01
+    .i8 two     /// 03
+  .end
+  .i8 two       /// 03
+.end
+.i8 two         /// 02

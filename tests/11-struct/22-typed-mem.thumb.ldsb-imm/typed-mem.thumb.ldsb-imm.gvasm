@@ -1,0 +1,7 @@
+.struct S
+  .i8 one
+  .i8 two
+  .u8 three
+.end
+.thumb
+ldrx r0, [r1, #S.two]

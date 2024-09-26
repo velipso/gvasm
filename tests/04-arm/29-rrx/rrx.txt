@@ -1,0 +1,3 @@
+name: arm.rrx
+desc: Rotate right extended
+kind: make

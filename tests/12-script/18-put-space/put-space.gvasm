@@ -1,0 +1,3 @@
+.script
+  put ".i8 ", 0xff /// ff
+.end

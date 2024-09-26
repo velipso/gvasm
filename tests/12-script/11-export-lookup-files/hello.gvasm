@@ -1,0 +1,5 @@
+.def one = 1
+.script sc
+  export world = {'world', 2}
+  export two = 2
+.end

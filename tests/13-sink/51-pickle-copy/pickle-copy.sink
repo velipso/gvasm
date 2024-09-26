@@ -1,0 +1,26 @@
+var a = {1, 2, 3}
+say a == a
+
+var c = pickle.copy a
+say a
+say c
+say a == c
+
+list.push a, a
+c = pickle.copy a
+say a
+say c
+say a == c
+say a[3] == a
+say c[3] == c
+
+a = {a, a}
+say a
+c = pickle.copy a
+
+say c
+say a == c
+say a[0] == a[1]
+say c[0] == c[1]
+say a[0][3] == a[1][3]
+say c[0][3] == c[1][3]

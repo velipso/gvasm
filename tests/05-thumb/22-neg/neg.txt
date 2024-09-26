@@ -1,0 +1,3 @@
+name: thumb.neg
+desc: Negate
+kind: make

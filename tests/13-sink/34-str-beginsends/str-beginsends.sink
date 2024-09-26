@@ -1,0 +1,11 @@
+say str.begins 'hello world', 'hello'
+say str.begins 'hello world', 'hellO'
+say str.begins 'a', 'abcd'
+say str.begins 'aaa', 'aaa'
+say str.begins 'asdf', ''
+
+say str.ends 'hello world', 'world'
+say str.ends 'hello world', 'worlD'
+say str.ends 'a', 'abcd'
+say str.ends 'aaa', 'aaa'
+say str.ends 'asdf', ''

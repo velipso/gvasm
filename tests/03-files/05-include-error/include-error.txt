@@ -1,0 +1,4 @@
+name: files.include-error
+desc: Include a missing file
+kind: make
+error: true

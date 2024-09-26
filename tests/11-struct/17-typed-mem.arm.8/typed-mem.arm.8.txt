@@ -1,0 +1,3 @@
+name: struct.typed-mem.arm.8
+desc: Typed ARM ldrx/strx converts to ldrb/ldrsb/strb
+kind: make

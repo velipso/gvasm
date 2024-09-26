@@ -1,0 +1,40 @@
+name: script.json
+desc: Use json.* commands
+kind: make
+$ 0
+$ 0
+$ 1
+$ 1
+$ 1
+$ 2
+$ 2
+$ 3
+$ 3
+$ 4
+$ 4
+$ 5
+$ 5
+$ 1
+$ nil
+$ 123
+$ -45
+$ hi
+$ yo
+$ {{'json'}, {'json'}}
+$ {{'hello', {'json'}}}
+$  object:
+$  [one] 1
+$  [empty] null
+$  [ar] array:
+$  [ar] [0] 1
+$  [ar] [1] 2
+$  [ar] [2] 3
+$  [ar2] array:
+$  [ar2] [0] object:
+$  [ar2] [0] [one] 1
+$  [ar2] [1] object:
+$  [ar2] [1] [two] 2
+$ 3
+$ 200
+$ 300
+$ world

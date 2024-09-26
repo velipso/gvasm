@@ -1,0 +1,2 @@
+.thumb
+push {r0-r8}

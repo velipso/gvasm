@@ -1,0 +1,10 @@
+var x = {}
+x[0] = 0
+say x, &x
+x[1] = 1
+say x, &x
+x[4] = 4
+say x, &x
+x[-2] = 3
+x[-1] = 8
+say x, &x

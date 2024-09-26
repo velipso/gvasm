@@ -1,0 +1,3 @@
+.import 'import-circular.gvasm' { BAR }
+.def FOO = 2
+.printf "BAR = %d", BAR

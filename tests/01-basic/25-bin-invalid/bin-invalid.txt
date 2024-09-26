@@ -1,0 +1,4 @@
+name: basic.bin-invalid
+desc: Invalid binary number
+kind: make
+error: true

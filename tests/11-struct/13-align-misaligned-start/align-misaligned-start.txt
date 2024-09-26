@@ -1,0 +1,3 @@
+name: struct.align-misaligned-start
+desc: Aligning a struct that starts misaligned
+kind: make

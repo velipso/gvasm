@@ -1,0 +1,4 @@
+name: expr.functions-extra-parameters
+desc: Error when function call has extra parameters
+kind: make
+error: true

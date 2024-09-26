@@ -1,0 +1,7 @@
+.import 'test.gvasm' { foo }
+.printf "three (%d)", foo
+.printf "two"
+.assert "foo is 8", foo == 8
+.base 0
+.i8fill 8 /// 00 00 00 00 00 00 00 00
+.include 'test.gvasm'

@@ -1,0 +1,3 @@
+name: thumb.bics
+desc: Bit clear
+kind: make

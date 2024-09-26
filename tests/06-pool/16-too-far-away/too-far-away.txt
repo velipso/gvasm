@@ -1,0 +1,4 @@
+name: pool.too-far-away
+desc: Use .pool too far away from ldr
+kind: make
+error: true

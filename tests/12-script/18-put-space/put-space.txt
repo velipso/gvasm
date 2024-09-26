@@ -1,0 +1,3 @@
+name: script.put-space
+desc: Put with multiple arguments should join with space
+kind: make

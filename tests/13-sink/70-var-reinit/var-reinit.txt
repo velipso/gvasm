@@ -1,0 +1,5 @@
+name: sink.var-reinit
+kind: sink
+$ nil nil nil nil nil nil nil nil
+$ nil nil nil nil nil nil nil nil
+$

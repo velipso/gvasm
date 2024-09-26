@@ -1,0 +1,3 @@
+name: expr.bitnot
+desc: Bitwise not
+kind: make

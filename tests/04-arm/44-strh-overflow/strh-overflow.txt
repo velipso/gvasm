@@ -1,0 +1,4 @@
+name: arm.strh-overflow
+desc: Store half word with overflow offset
+kind: make
+error: true

@@ -1,0 +1,3 @@
+.arm
+.regs a, r1-r11
+mov r0, #0

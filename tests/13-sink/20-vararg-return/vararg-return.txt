@@ -1,0 +1,4 @@
+name: sink.vararg-return
+kind: sink
+$ 2
+$

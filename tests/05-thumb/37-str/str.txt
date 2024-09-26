@@ -1,0 +1,3 @@
+name: thumb.str
+desc: Store
+kind: make

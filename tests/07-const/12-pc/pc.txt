@@ -1,0 +1,3 @@
+name: const.pc
+desc: Constant _pc is defined
+kind: make

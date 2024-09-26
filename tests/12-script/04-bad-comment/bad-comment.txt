@@ -1,0 +1,4 @@
+name: script.bad-comment
+desc: Forget to close block comment in .script
+kind: make
+error: true

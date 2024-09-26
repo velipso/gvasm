@@ -1,0 +1,3 @@
+name: basic.ib32
+desc: Use .ib32 command
+kind: make

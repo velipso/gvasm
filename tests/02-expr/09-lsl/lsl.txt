@@ -1,0 +1,3 @@
+name: expr.lsl
+desc: Logical shift left
+kind: make

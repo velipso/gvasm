@@ -1,0 +1,13 @@
+def foo n
+  say n
+  def bar n2
+    say n2
+    if n2 == 4
+      exit
+    end
+    foo n2 + 1
+  end
+  bar n + 1
+end
+
+foo 1

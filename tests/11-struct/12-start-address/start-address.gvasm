@@ -1,0 +1,7 @@
+.struct s = 0x03000000
+  .i8 one
+  .i8 two
+.end
+
+.i32 s.one      /// 00 00 00 03
+.i32 s.two      /// 01 00 00 03

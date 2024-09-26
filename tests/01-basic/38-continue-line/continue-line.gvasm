@@ -1,0 +1,5 @@
+.i8   \
+ 1    \  // comment here
+ ,    \  /* comment here */
+ 2    \
+ , 3  /// 01 02 03

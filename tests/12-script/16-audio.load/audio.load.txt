@@ -1,0 +1,5 @@
+name: script.audio.load
+desc: Load audio files
+kind: make
+$ rate: 44100, data: 89 87 29 -48 -88 -94 -67 -17 28 33 -19 -63 -53 ;
+$ rate: 32768, data: 90 75 -27 -88 -88 -32 31 16 -59 -51 ;

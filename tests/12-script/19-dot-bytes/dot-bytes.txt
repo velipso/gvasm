@@ -1,0 +1,3 @@
+name: script.dot-bytes
+desc: Use dot statement commands inside .script
+kind: make

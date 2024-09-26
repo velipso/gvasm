@@ -1,0 +1,5 @@
+.i32 0              /// 00 00 00 00
+.embed "hello.bin"  /// 41 42 43 0a
+.embed "hello.bin"  /// 41 42 43 0a
+.embed "hello.bin"  /// 41 42 43 0a
+.i32 -1             /// ff ff ff ff

@@ -1,0 +1,3 @@
+name: basic.ib16
+desc: Use .ib16 command
+kind: make

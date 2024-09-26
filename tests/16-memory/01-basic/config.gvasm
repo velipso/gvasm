@@ -1,0 +1,12 @@
+.def FOO = 2
+
+.struct i3 = iwram
+  .i32 i3
+.end
+
+.struct e2 = ewram
+  .i16 e2
+.end
+
+.printf "i3 %08X", i3
+.printf "e2 %08X", e2

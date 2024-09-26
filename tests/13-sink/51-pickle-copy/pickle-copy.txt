@@ -1,0 +1,19 @@
+name: sink.pickle-copy
+kind: sink
+$ 1
+$ {1, 2, 3}
+$ {1, 2, 3}
+$ nil
+$ {1, 2, 3, {circular}}
+$ {1, 2, 3, {circular}}
+$ nil
+$ 1
+$ 1
+$ {{1, 2, 3, {circular}}, {1, 2, 3, {circular}}}
+$ {{1, 2, 3, {circular}}, {1, 2, 3, {circular}}}
+$ nil
+$ 1
+$ 1
+$ 1
+$ 1
+$

@@ -1,0 +1,10 @@
+.import './two.gvasm' { two }
+.import './three.gvasm' { three }
+.struct one = iwram
+  .i32 one
+.end
+.include './two.gvasm'
+.include './three.gvasm'
+.printf "one = %08x", one
+.printf "two = %08x", two
+.printf "three = %08x", three

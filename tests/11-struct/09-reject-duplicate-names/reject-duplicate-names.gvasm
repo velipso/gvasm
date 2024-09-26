@@ -1,0 +1,5 @@
+.struct a
+  .i8 foo
+  .i8 bar
+  .i16 foo[2]
+.end

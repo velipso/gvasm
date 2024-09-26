@@ -1,0 +1,4 @@
+name: sink.pickle-val
+kind: sink
+$ done
+$

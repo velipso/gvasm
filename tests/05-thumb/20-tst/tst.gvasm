@@ -1,0 +1,3 @@
+.thumb
+tst r2, r7  /// 3a 42
+tst r0, r6  /// 30 42

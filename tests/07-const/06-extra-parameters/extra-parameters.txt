@@ -1,0 +1,4 @@
+name: const.extra-parameters
+desc: Constant with extra parameters
+kind: make
+error: true

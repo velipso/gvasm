@@ -1,0 +1,19 @@
+.thumb
+// move and shift
+lsl r3, r5, #10  /// ab 02
+lsl r7, r7, #31  /// ff 07
+// move and shift
+lsl r3, #10      /// 9b 02
+lsl r7, #31      /// ff 07
+// just shift
+lsl r3, r5       /// ab 40
+lsl r7, r7       /// bf 40
+// move and shift
+asl r3, r5, #10  /// ab 02
+asl r7, r7, #31  /// ff 07
+// move and shift
+asl r3, #10      /// 9b 02
+asl r7, #31      /// ff 07
+// just shift
+asl r3, r5       /// ab 40
+asl r7, r7       /// bf 40

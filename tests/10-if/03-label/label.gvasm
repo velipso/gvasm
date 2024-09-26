@@ -1,0 +1,43 @@
+L0: .if 0
+L0:   .if 0
+L0:     .printf "fail"
+L0:   .else
+L0:     .printf "fail"
+L0:   .end
+L0: .elseif 0
+L0:   .if 0
+L0:     .printf "fail"
+L0:   .elseif 1
+L0:     .if 1
+L0:       .printf "fail"
+L0:     .end
+L0:   .end
+L0: .else
+L1:   .if 0
+L0:     .printf "fail"
+L0:   .elseif 0
+L0:     .if 1
+L0:       .printf "fail"
+L0:     .else
+L0:       .printf "fail"
+L0:     .end
+L0:   .elseif 1
+L2:     .if 1
+L3:       .if 1
+L4:         .if 0
+L0:           .printf "fail"
+L0:         .else
+L5:           .printf "pass"
+L6:         .end
+L7:       .else
+L0:         .printf "fail"
+L0:       .end
+L8:     .elseif 1
+L0:       .printf "fail"
+L0:     .else
+L0:       .printf "fail"
+L0:     .end
+L9:   .elseif 1
+L0:     .printf "fail"
+L0:   .end
+La: .end

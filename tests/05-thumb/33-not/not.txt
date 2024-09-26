@@ -1,0 +1,3 @@
+name: thumb.not
+desc: Move not
+kind: make

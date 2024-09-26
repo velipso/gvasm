@@ -1,0 +1,6 @@
+.script
+  say lookup DEFINED123
+  say isnum lookup DEFINED123
+  say lookup DEFINEDXYZ
+  say isstr lookup DEFINEDXYZ
+.end

@@ -1,0 +1,29 @@
+var a = {1, 2, 3, 4, 5}
+
+list.push a, 6
+
+var b = a
+
+say "~=", (a ~= {7})
+
+say "b: $b"
+
+var c = b
+
+list.append c, {8, 9}
+
+list.prepend c, {-1, 0}
+
+say "b: $b"
+
+say "push", list.push {1, 2, 3}, 4
+
+say list.new 5, 300
+
+say list.find b, 5
+say list.find b, 100
+list.rev b
+say "b: $b"
+
+say list.join b, '_'
+say list.join {'a', 'b'}

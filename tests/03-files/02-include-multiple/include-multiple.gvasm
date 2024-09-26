@@ -1,0 +1,5 @@
+.i32 0                  /// 00 00 00 00
+.include "hello.gvasm"  /// 01 00 00 00
+.include "hello.gvasm"  /// 01 00 00 00
+.include "hello.gvasm"  /// 01 00 00 00
+.i32 -1                 /// ff ff ff ff

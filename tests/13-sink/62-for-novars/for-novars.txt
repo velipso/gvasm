@@ -1,0 +1,11 @@
+name: sink.for-novars
+kind: sink
+$ hi
+$ hi
+$ hi
+$ hi
+$ hi
+$ yo
+$ yo
+$ yo
+$

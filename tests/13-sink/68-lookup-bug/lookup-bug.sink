@@ -1,0 +1,6 @@
+def a
+end
+def b.a
+  return 1
+end
+say b.a

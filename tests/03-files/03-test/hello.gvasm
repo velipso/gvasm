@@ -1,0 +1,3 @@
+.i32 1
+.include "world.gvasm"
+.i32 2

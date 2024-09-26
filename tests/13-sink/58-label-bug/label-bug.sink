@@ -1,0 +1,9 @@
+var i = 0
+label1:
+say 'one'
+label2:
+say 'two'
+i += 1
+if i < 10
+  goto label2
+end

@@ -1,0 +1,56 @@
+def N a
+  if (pickle.valid a) != nil
+    say "fail: expecting invalid\n> \"$a\""
+  end
+end
+
+def Y a
+  if (pickle.valid a) != 1
+    say "fail: expecting json\n> \"$a\""
+  end
+end
+
+N ''
+N 'hi'
+Y '[]'
+Y '0'
+Y '1'
+Y '-0'
+Y '-1'
+Y 'null'
+N '-.1'
+Y '-0.1'
+Y '0e0'
+Y '0e+0'
+Y '1000000e-10000000'
+Y ' null'
+Y 'null '
+N ' 99.e10 '
+Y ' 99.0e-1 '
+Y '[-1,1]'
+Y '[[[[[]]]]]'
+Y '[[[[[1],2],3],4],5]'
+Y '[        ]'
+Y '[     10 ]'
+N ' '
+N ' n'
+N ' nu'
+N ' nul'
+N ' n '
+N ' nu '
+N ' nul '
+Y ' null '
+Y '0.0'
+N '*'
+N '{}'
+N 'true'
+N 'false'
+N '{"hi":"yo"}'
+N '"\u'
+N '"\u"'
+N '"\"'
+N '"\u1000"'
+N '"\u0100"'
+N '"\a"'
+Y '"\u0099"'
+Y '"\u00eF"'

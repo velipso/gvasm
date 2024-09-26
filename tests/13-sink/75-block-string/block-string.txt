@@ -1,0 +1,9 @@
+name: sink.block-string
+kind: sink
+$ 
+$   hello, world
+$ 
+$ 
+$   hello, `` world
+$ 
+$

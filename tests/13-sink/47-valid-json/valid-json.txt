@@ -1,0 +1,3 @@
+name: sink.valid-json
+kind: sink
+$

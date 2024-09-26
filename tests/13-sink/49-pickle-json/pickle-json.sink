@@ -1,0 +1,15 @@
+say pickle.json nil
+say pickle.json 0
+say pickle.json ''
+say pickle.json {}
+
+say pickle.json 100.125
+say pickle.json -100.125
+say pickle.json "r: \r, n: \n, b: \b, f: \f, t: \t"
+say pickle.json list.str {0x00, 0x01, 0x0E, 0x0F, 0x10, 0x11, 0x1E, 0x1F, 0x20}
+
+say pickle.json {1, 2, 3}
+say pickle.json {1, {2, {3, {4, nil}, nil}, nil}, nil}
+
+var a = {'hi'}
+say pickle.json {a, {a}, a}

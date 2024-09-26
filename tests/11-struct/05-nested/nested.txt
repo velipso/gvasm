@@ -1,0 +1,3 @@
+name: struct.nested
+desc: Structs can contain structs
+kind: make

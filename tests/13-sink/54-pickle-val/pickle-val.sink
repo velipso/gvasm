@@ -1,0 +1,57 @@
+def JB a
+  var j = pickle.json a
+  var b = pickle.bin a
+  if (order (pickle.val j), a) != 0
+    say "JSON isn't equal: '$a' != '${pickle.val j}'"
+    say 'fail'
+  end
+  if (order (pickle.val b), a) != 0
+    say "BIN isn't equal: '$a' != '${pickle.val b}'"
+    say 'fail'
+  end
+end
+
+def randstr len
+  var s = {}
+  for var i: range len
+    list.push s, num.floor rand.num * 256
+  end
+  return list.str s
+end
+
+JB nil
+JB 1
+JB -1
+JB 0
+JB -1e-100
+JB -10e-100
+JB 10e-100
+JB 10e100
+JB 300
+JB -300
+JB 70000
+JB -70000
+JB -1.5
+JB 1.5
+rand.seed 0
+for var i: range 100
+  JB randstr 10
+end
+for var i: range 100
+  var s = {}
+  for var j: range 10
+    if rand.num < 0.3
+      s = {s}
+    else
+      var v
+      if rand.num < 0.5
+        v = (num.floor rand.num * 256) / 16
+      elseif rand.num < 0.5
+        v = randstr 10
+      end
+      list.push s, v
+    end
+  end
+  JB s
+end
+say 'done'

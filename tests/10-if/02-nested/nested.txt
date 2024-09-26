@@ -1,0 +1,4 @@
+name: if.nested
+desc: Nested .if statements
+kind: make
+$ pass

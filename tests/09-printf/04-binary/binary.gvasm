@@ -1,0 +1,1 @@
+.printf "one hundred %b two hundred %b", 100, 200

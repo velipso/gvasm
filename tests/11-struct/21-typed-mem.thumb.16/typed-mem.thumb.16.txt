@@ -1,0 +1,3 @@
+name: struct.typed-mem.thumb.16
+desc: Typed Thumb ldrx/strx converts to ldrh/ldsh/strh
+kind: make

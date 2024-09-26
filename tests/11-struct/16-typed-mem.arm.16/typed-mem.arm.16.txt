@@ -1,0 +1,3 @@
+name: struct.typed-mem.arm.16
+desc: Typed ARM ldrx/strx converts to ldrh/ldrsh/strh
+kind: make

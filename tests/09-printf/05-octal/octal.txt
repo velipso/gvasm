@@ -1,0 +1,4 @@
+name: printf.octal
+desc: Octal formatting
+kind: make
+$ one hundred 144 two hundred 310

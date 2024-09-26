@@ -1,0 +1,13 @@
+name: sink.static-cat
+kind: sink
+$ 
+$ ab
+$ cd
+$ abcd
+$ abcd
+$ {}
+$ {1, 2}
+$ {3, 4}
+$ {1, 2, 3, 4}
+$ {1, 2, 3, 4}
+$

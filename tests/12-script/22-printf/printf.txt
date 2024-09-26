@@ -1,0 +1,4 @@
+name: script.printf
+desc: Use printf command
+kind: make
+$ hello 5

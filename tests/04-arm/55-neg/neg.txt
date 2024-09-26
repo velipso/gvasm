@@ -1,0 +1,3 @@
+name: arm.neg
+desc: Negate instruction converted to reverse subtract
+kind: make

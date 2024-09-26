@@ -1,0 +1,4 @@
+name: regs.replace
+desc: Verify register names are replaced
+kind: make
+error: true

@@ -1,0 +1,8 @@
+name: sink.include-plus
+kind: sink
+$ included
+$ included
+$ included
+$ included
+$ foo {1}
+$

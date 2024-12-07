@@ -13,7 +13,7 @@ import { IItestArgs, itest } from "./itest.ts";
 import { argParse, Path } from "./deps.ts";
 import { ILexKeyValue, lexKeyValue } from "./lexer.ts";
 
-export const version = 2003002;
+export const version = 2003003;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;

@@ -5,14 +5,23 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IFilePos } from './lexer.ts';
-import { assertNever } from './util.ts';
-import { IBase, IMemory, Project } from './project.ts';
-import { CompError } from './parser.ts';
-import { IExpressionContext, IStruct, Mode, PendingWritePoolCommon } from './import.ts';
+import { IFilePos } from "./lexer.ts";
+import { assertNever } from "./util.ts";
+import { IBase, IMemory, Project } from "./project.ts";
+import { CompError } from "./parser.ts";
+import {
+  IExpressionContext,
+  IStruct,
+  Mode,
+  PendingWritePoolCommon,
+} from "./import.ts";
 
 export abstract class Section {
-  async flatten(_base: IBase, _memory: IMemory, _startLength: number): Promise<Uint8Array[]> {
+  async flatten(
+    _base: IBase,
+    _memory: IMemory,
+    _startLength: number,
+  ): Promise<Uint8Array[]> {
     return [];
   }
 }
@@ -33,25 +42,34 @@ export class SectionBytes extends Section {
       bytes?: number | false;
     };
   }[] = [];
-  private alignments: { flp: IFilePos; align: 2 | 4; msg: string; i: number }[] = [];
+  private alignments: {
+    flp: IFilePos;
+    align: 2 | 4;
+    msg: string;
+    i: number;
+  }[] = [];
   private addr: { base: IBase; startLength: number } | false = false;
   firstWrittenARM: boolean | undefined;
 
-  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
+  override async flatten(
+    base: IBase,
+    _memory: IMemory,
+    startLength: number,
+  ): Promise<Uint8Array[]> {
     this.addr = { base, startLength };
     const startAddr = base.addr + startLength - base.relativeTo;
     for (const { flp, align, msg, i } of this.alignments) {
       const addr = startAddr + i;
-      if ((addr % align) !== 0) {
+      if (addr % align !== 0) {
         throw new CompError(flp, msg);
       }
     }
     for (const { i, recv } of this.addrRecvs) {
       recv.addr = startAddr + i;
-      if ('base' in recv) {
+      if ("base" in recv) {
         recv.base = base.addr;
       }
-      if ('bytes' in recv) {
+      if ("bytes" in recv) {
         recv.bytes = startLength + i;
       }
     }
@@ -71,10 +89,10 @@ export class SectionBytes extends Section {
     this.addr = false;
     for (const { recv } of this.addrRecvs) {
       recv.addr = false;
-      if ('base' in recv) {
+      if ("base" in recv) {
         recv.base = false;
       }
-      if ('bytes' in recv) {
+      if ("bytes" in recv) {
         recv.bytes = false;
       }
     }
@@ -97,7 +115,7 @@ export class SectionBytes extends Section {
     const i = this.array.length;
     for (let j = 0; j < alignments.length; j++) {
       const a = alignments[j];
-      if (align === a.align && (i % align) === (a.i % align)) {
+      if (align === a.align && i % align === a.i % align) {
         return;
       }
     }
@@ -108,17 +126,162 @@ export class SectionBytes extends Section {
     delete this.byteArray;
     // deno-fmt-ignore
     this.array.push(
-      0x24, 0xff, 0xae, 0x51, 0x69, 0x9a, 0xa2, 0x21, 0x3d, 0x84, 0x82, 0x0a, 0x84, 0xe4, 0x09,
-      0xad, 0x11, 0x24, 0x8b, 0x98, 0xc0, 0x81, 0x7f, 0x21, 0xa3, 0x52, 0xbe, 0x19, 0x93, 0x09,
-      0xce, 0x20, 0x10, 0x46, 0x4a, 0x4a, 0xf8, 0x27, 0x31, 0xec, 0x58, 0xc7, 0xe8, 0x33, 0x82,
-      0xe3, 0xce, 0xbf, 0x85, 0xf4, 0xdf, 0x94, 0xce, 0x4b, 0x09, 0xc1, 0x94, 0x56, 0x8a, 0xc0,
-      0x13, 0x72, 0xa7, 0xfc, 0x9f, 0x84, 0x4d, 0x73, 0xa3, 0xca, 0x9a, 0x61, 0x58, 0x97, 0xa3,
-      0x27, 0xfc, 0x03, 0x98, 0x76, 0x23, 0x1d, 0xc7, 0x61, 0x03, 0x04, 0xae, 0x56, 0xbf, 0x38,
-      0x84, 0x00, 0x40, 0xa7, 0x0e, 0xfd, 0xff, 0x52, 0xfe, 0x03, 0x6f, 0x95, 0x30, 0xf1, 0x97,
-      0xfb, 0xc0, 0x85, 0x60, 0xd6, 0x80, 0x25, 0xa9, 0x63, 0xbe, 0x03, 0x01, 0x4e, 0x38, 0xe2,
-      0xf9, 0xa2, 0x34, 0xff, 0xbb, 0x3e, 0x03, 0x44, 0x78, 0x00, 0x90, 0xcb, 0x88, 0x11, 0x3a,
-      0x94, 0x65, 0xc0, 0x7c, 0x63, 0x87, 0xf0, 0x3c, 0xaf, 0xd6, 0x25, 0xe4, 0x8b, 0x38, 0x0a,
-      0xac, 0x72, 0x21, 0xd4, 0xf8, 0x07,
+      0x24,
+      0xff,
+      0xae,
+      0x51,
+      0x69,
+      0x9a,
+      0xa2,
+      0x21,
+      0x3d,
+      0x84,
+      0x82,
+      0x0a,
+      0x84,
+      0xe4,
+      0x09,
+      0xad,
+      0x11,
+      0x24,
+      0x8b,
+      0x98,
+      0xc0,
+      0x81,
+      0x7f,
+      0x21,
+      0xa3,
+      0x52,
+      0xbe,
+      0x19,
+      0x93,
+      0x09,
+      0xce,
+      0x20,
+      0x10,
+      0x46,
+      0x4a,
+      0x4a,
+      0xf8,
+      0x27,
+      0x31,
+      0xec,
+      0x58,
+      0xc7,
+      0xe8,
+      0x33,
+      0x82,
+      0xe3,
+      0xce,
+      0xbf,
+      0x85,
+      0xf4,
+      0xdf,
+      0x94,
+      0xce,
+      0x4b,
+      0x09,
+      0xc1,
+      0x94,
+      0x56,
+      0x8a,
+      0xc0,
+      0x13,
+      0x72,
+      0xa7,
+      0xfc,
+      0x9f,
+      0x84,
+      0x4d,
+      0x73,
+      0xa3,
+      0xca,
+      0x9a,
+      0x61,
+      0x58,
+      0x97,
+      0xa3,
+      0x27,
+      0xfc,
+      0x03,
+      0x98,
+      0x76,
+      0x23,
+      0x1d,
+      0xc7,
+      0x61,
+      0x03,
+      0x04,
+      0xae,
+      0x56,
+      0xbf,
+      0x38,
+      0x84,
+      0x00,
+      0x40,
+      0xa7,
+      0x0e,
+      0xfd,
+      0xff,
+      0x52,
+      0xfe,
+      0x03,
+      0x6f,
+      0x95,
+      0x30,
+      0xf1,
+      0x97,
+      0xfb,
+      0xc0,
+      0x85,
+      0x60,
+      0xd6,
+      0x80,
+      0x25,
+      0xa9,
+      0x63,
+      0xbe,
+      0x03,
+      0x01,
+      0x4e,
+      0x38,
+      0xe2,
+      0xf9,
+      0xa2,
+      0x34,
+      0xff,
+      0xbb,
+      0x3e,
+      0x03,
+      0x44,
+      0x78,
+      0x00,
+      0x90,
+      0xcb,
+      0x88,
+      0x11,
+      0x3a,
+      0x94,
+      0x65,
+      0xc0,
+      0x7c,
+      0x63,
+      0x87,
+      0xf0,
+      0x3c,
+      0xaf,
+      0xd6,
+      0x25,
+      0xe4,
+      0x8b,
+      0x38,
+      0x0a,
+      0xac,
+      0x72,
+      0x21,
+      0xd4,
+      0xf8,
+      0x07,
     );
   }
 
@@ -134,7 +297,12 @@ export class SectionBytes extends Section {
 
   write32(v: number) {
     delete this.byteArray;
-    this.array.push(v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, (v >> 24) & 0xff);
+    this.array.push(
+      v & 0xff,
+      (v >> 8) & 0xff,
+      (v >> 16) & 0xff,
+      (v >> 24) & 0xff,
+    );
   }
 
   writeArray(v: Uint8Array | number[]) {
@@ -153,7 +321,12 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: (v: number) => {
         if (this.byteArray) {
@@ -174,7 +347,12 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: (v: number) => {
         if (this.byteArray) {
@@ -197,7 +375,12 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: (v: number) => {
         if (this.byteArray) {
@@ -226,11 +409,16 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: (v: number[]) => {
         if (v.length !== size) {
-          throw new Error('Bad rewrite for array');
+          throw new Error("Bad rewrite for array");
         }
         if (this.byteArray) {
           for (let j = 0; j < size; j++) {
@@ -256,41 +444,46 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: littleEndian
         ? (v: number[]) => {
-          if (v.length !== size) {
-            throw new Error('Bad rewrite for array');
-          }
-          if (this.byteArray) {
-            for (let j = 0; j < size; j++) {
-              this.byteArray[i + j * 2] = v[j] & 0xff;
-              this.byteArray[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+            if (v.length !== size) {
+              throw new Error("Bad rewrite for array");
             }
-          } else {
-            for (let j = 0; j < size; j++) {
-              this.array[i + j * 2] = v[j] & 0xff;
-              this.array[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+            if (this.byteArray) {
+              for (let j = 0; j < size; j++) {
+                this.byteArray[i + j * 2] = v[j] & 0xff;
+                this.byteArray[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+              }
+            } else {
+              for (let j = 0; j < size; j++) {
+                this.array[i + j * 2] = v[j] & 0xff;
+                this.array[i + j * 2 + 1] = (v[j] >> 8) & 0xff;
+              }
             }
           }
-        }
         : (v: number[]) => {
-          if (v.length !== size) {
-            throw new Error('Bad rewrite for array');
-          }
-          if (this.byteArray) {
-            for (let j = 0; j < size; j++) {
-              this.byteArray[i + j * 2] = (v[j] >> 8) & 0xff;
-              this.byteArray[i + j * 2 + 1] = v[j] & 0xff;
+            if (v.length !== size) {
+              throw new Error("Bad rewrite for array");
             }
-          } else {
-            for (let j = 0; j < size; j++) {
-              this.array[i + j * 2] = (v[j] >> 8) & 0xff;
-              this.array[i + j * 2 + 1] = v[j] & 0xff;
+            if (this.byteArray) {
+              for (let j = 0; j < size; j++) {
+                this.byteArray[i + j * 2] = (v[j] >> 8) & 0xff;
+                this.byteArray[i + j * 2 + 1] = v[j] & 0xff;
+              }
+            } else {
+              for (let j = 0; j < size; j++) {
+                this.array[i + j * 2] = (v[j] >> 8) & 0xff;
+                this.array[i + j * 2 + 1] = v[j] & 0xff;
+              }
             }
-          }
-        },
+          },
     };
   }
 
@@ -305,49 +498,54 @@ export class SectionBytes extends Section {
         if (this.addr === false) {
           return false;
         }
-        return this.addr.base.addr + this.addr.startLength + i - this.addr.base.relativeTo;
+        return (
+          this.addr.base.addr +
+          this.addr.startLength +
+          i -
+          this.addr.base.relativeTo
+        );
       },
       write: littleEndian
         ? (v: number[]) => {
-          if (v.length !== size) {
-            throw new Error('Bad rewrite for array');
-          }
-          if (this.byteArray) {
-            for (let j = 0; j < size; j++) {
-              this.byteArray[i + j * 4] = v[j] & 0xff;
-              this.byteArray[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
-              this.byteArray[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
-              this.byteArray[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+            if (v.length !== size) {
+              throw new Error("Bad rewrite for array");
             }
-          } else {
-            for (let j = 0; j < size; j++) {
-              this.array[i + j * 4] = v[j] & 0xff;
-              this.array[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
-              this.array[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
-              this.array[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+            if (this.byteArray) {
+              for (let j = 0; j < size; j++) {
+                this.byteArray[i + j * 4] = v[j] & 0xff;
+                this.byteArray[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
+                this.byteArray[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
+                this.byteArray[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+              }
+            } else {
+              for (let j = 0; j < size; j++) {
+                this.array[i + j * 4] = v[j] & 0xff;
+                this.array[i + j * 4 + 1] = (v[j] >> 8) & 0xff;
+                this.array[i + j * 4 + 2] = (v[j] >> 16) & 0xff;
+                this.array[i + j * 4 + 3] = (v[j] >> 24) & 0xff;
+              }
             }
           }
-        }
         : (v: number[]) => {
-          if (v.length !== size) {
-            throw new Error('Bad rewrite for array');
-          }
-          if (this.byteArray) {
-            for (let j = 0; j < size; j++) {
-              this.byteArray[i + j * 4] = (v[j] >> 24) & 0xff;
-              this.byteArray[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
-              this.byteArray[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
-              this.byteArray[i + j * 4 + 3] = v[j] & 0xff;
+            if (v.length !== size) {
+              throw new Error("Bad rewrite for array");
             }
-          } else {
-            for (let j = 0; j < size; j++) {
-              this.array[i + j * 4] = (v[j] >> 24) & 0xff;
-              this.array[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
-              this.array[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
-              this.array[i + j * 4 + 3] = v[j] & 0xff;
+            if (this.byteArray) {
+              for (let j = 0; j < size; j++) {
+                this.byteArray[i + j * 4] = (v[j] >> 24) & 0xff;
+                this.byteArray[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
+                this.byteArray[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
+                this.byteArray[i + j * 4 + 3] = v[j] & 0xff;
+              }
+            } else {
+              for (let j = 0; j < size; j++) {
+                this.array[i + j * 4] = (v[j] >> 24) & 0xff;
+                this.array[i + j * 4 + 1] = (v[j] >> 16) & 0xff;
+                this.array[i + j * 4 + 2] = (v[j] >> 8) & 0xff;
+                this.array[i + j * 4 + 3] = v[j] & 0xff;
+              }
             }
-          }
-        },
+          },
     };
   }
 }
@@ -364,8 +562,18 @@ export class SectionInclude extends Section {
     this.fullFile = fullFile;
   }
 
-  async flatten(base: IBase, memory: IMemory, startLength: number): Promise<Uint8Array[]> {
-    return await this.proj.include(this.flp, this.fullFile, base, memory, startLength);
+  override async flatten(
+    base: IBase,
+    memory: IMemory,
+    startLength: number,
+  ): Promise<Uint8Array[]> {
+    return await this.proj.include(
+      this.flp,
+      this.fullFile,
+      base,
+      memory,
+      startLength,
+    );
   }
 }
 
@@ -381,7 +589,11 @@ export class SectionEmbed extends Section {
     this.fullFile = fullFile;
   }
 
-  async flatten(_base: IBase, _memory: IMemory, _startLength: number): Promise<Uint8Array[]> {
+  override async flatten(
+    _base: IBase,
+    _memory: IMemory,
+    _startLength: number,
+  ): Promise<Uint8Array[]> {
     const data = await this.proj.embed(this.flp, this.fullFile, false);
     if (data === false) {
       throw new CompError(this.flp, `Failed to embed file: ${this.fullFile}`);
@@ -409,13 +621,17 @@ export class SectionPool extends Section {
     }
   }
 
-  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
+  override async flatten(
+    base: IBase,
+    _memory: IMemory,
+    startLength: number,
+  ): Promise<Uint8Array[]> {
     const array: number[] = [];
     let bytes: Uint8Array | undefined = undefined;
     const startAddr = base.addr + startLength - base.relativeTo;
     const lateWrites: { i: number; cmdSize: number }[] = [];
     for (const p of this.pendingPools) {
-      if (p.poolAddr === 'inline') {
+      if (p.poolAddr === "inline") {
         // instruction doesn't need pool
         continue;
       }
@@ -425,7 +641,7 @@ export class SectionPool extends Section {
       // if possible, search the current pool values to see if there are duplicates
       //
 
-      if (typeof p.expr === 'number') {
+      if (typeof p.expr === "number") {
         const ex = p.expr;
         let searchStart = 0;
         while ((startAddr + searchStart) % cmdSize !== 0) {
@@ -436,7 +652,10 @@ export class SectionPool extends Section {
           // is this address range going to be stomped later? then don't rely on it!
           let lateWrite = false;
           for (const lw of lateWrites) {
-            if (searchStart < lw.i + lw.cmdSize && searchStart + cmdSize > lw.i) {
+            if (
+              searchStart < lw.i + lw.cmdSize &&
+              searchStart + cmdSize > lw.i
+            ) {
               lateWrite = true;
               break;
             }
@@ -450,14 +669,16 @@ export class SectionPool extends Section {
               found = array[searchStart] === (ex & 0xff);
               break;
             case 2:
-              found = (array[searchStart] === (ex & 0xff)) &&
-                (array[searchStart + 1] === ((ex >> 8) & 0xff));
+              found =
+                array[searchStart] === (ex & 0xff) &&
+                array[searchStart + 1] === ((ex >> 8) & 0xff);
               break;
             case 4:
-              found = (array[searchStart] === (ex & 0xff)) &&
-                (array[searchStart + 1] === ((ex >> 8) & 0xff)) &&
-                (array[searchStart + 2] === ((ex >> 16) & 0xff)) &&
-                (array[searchStart + 3] === ((ex >> 24) & 0xff));
+              found =
+                array[searchStart] === (ex & 0xff) &&
+                array[searchStart + 1] === ((ex >> 8) & 0xff) &&
+                array[searchStart + 2] === ((ex >> 16) & 0xff) &&
+                array[searchStart + 3] === ((ex >> 24) & 0xff);
               break;
             default:
               throw new Error(`Invalid command size: ${cmdSize}`);
@@ -484,7 +705,7 @@ export class SectionPool extends Section {
       }
       // store the final address
       p.poolAddr = startAddr + array.length;
-      if (typeof p.expr === 'number') {
+      if (typeof p.expr === "number") {
         // early write
         const ex = p.expr;
         switch (cmdSize) {
@@ -495,7 +716,12 @@ export class SectionPool extends Section {
             array.push(ex & 0xff, (ex >> 8) & 0xff);
             break;
           case 4:
-            array.push(ex & 0xff, (ex >> 8) & 0xff, (ex >> 16) & 0xff, (ex >> 24) & 0xff);
+            array.push(
+              ex & 0xff,
+              (ex >> 8) & 0xff,
+              (ex >> 16) & 0xff,
+              (ex >> 24) & 0xff,
+            );
             break;
           default:
             throw new Error(`Invalid command size: ${cmdSize}`);
@@ -510,7 +736,7 @@ export class SectionPool extends Section {
         }
         p.poolWriteExpr = (ex: number) => {
           if (!bytes) {
-            throw new Error('Byte array isn\'t set');
+            throw new Error("Byte array isn't set");
           }
           switch (cmdSize) {
             case 1:
@@ -545,9 +771,9 @@ export class SectionAlign extends Section {
   flp: IFilePos;
   mode: Mode;
   amount: number;
-  fill: number | 'nop';
+  fill: number | "nop";
 
-  constructor(flp: IFilePos, mode: Mode, amount: number, fill: number | 'nop') {
+  constructor(flp: IFilePos, mode: Mode, amount: number, fill: number | "nop") {
     super();
     this.flp = flp;
     this.mode = mode;
@@ -555,21 +781,25 @@ export class SectionAlign extends Section {
     this.fill = fill;
   }
 
-  async flatten(base: IBase, _memory: IMemory, startLength: number): Promise<Uint8Array[]> {
+  override async flatten(
+    base: IBase,
+    _memory: IMemory,
+    startLength: number,
+  ): Promise<Uint8Array[]> {
     const array: number[] = [];
     const startAddr = base.addr + startLength - base.relativeTo;
     let fill: number[];
-    if (this.fill === 'nop') {
+    if (this.fill === "nop") {
       switch (this.mode) {
-        case 'none':
+        case "none":
           throw new CompError(
             this.flp,
-            'Missing mode for nop alignment; use `.arm` or `.thumb` prior to `.align`',
+            "Missing mode for nop alignment; use `.arm` or `.thumb` prior to `.align`",
           );
-        case 'arm':
+        case "arm":
           fill = [0x00, 0x00, 0xa0, 0xe1];
           break;
-        case 'thumb':
+        case "thumb":
           fill = [0xc0, 0x46];
           break;
         default:
@@ -600,15 +830,18 @@ export class SectionBase extends Section {
   }
 }
 
-export class SectionBaseShift extends Section {
-}
+export class SectionBaseShift extends Section {}
 
 export class SectionMemory extends Section {
-  kind: 'iwram' | 'ewram';
+  kind: "iwram" | "ewram";
   context: IExpressionContext;
   struct: IStruct;
 
-  constructor(kind: 'iwram' | 'ewram', context: IExpressionContext, struct: IStruct) {
+  constructor(
+    kind: "iwram" | "ewram",
+    context: IExpressionContext,
+    struct: IStruct,
+  ) {
     super();
     this.kind = kind;
     this.context = context;

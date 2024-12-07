@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import { IInitArgs, init } from './init.ts';
-import { IMakeArgs, make } from './make.ts';
-import { IRunArgs, run } from './run.ts';
-import { dis, IDisArgs } from './dis.ts';
-import { IItestArgs, itest } from './itest.ts';
-import { argParse, Path } from './deps.ts';
-import { ILexKeyValue, lexKeyValue } from './lexer.ts';
+import { IInitArgs, init } from "./init.ts";
+import { IMakeArgs, make } from "./make.ts";
+import { IRunArgs, run } from "./run.ts";
+import { dis, IDisArgs } from "./dis.ts";
+import { IItestArgs, itest } from "./itest.ts";
+import { argParse, Path } from "./deps.ts";
+import { ILexKeyValue, lexKeyValue } from "./lexer.ts";
 
-export const version = 2003001;
+export const version = 2003002;
 
 function printVersion() {
   const vmaj = Math.floor(version / 1000000) % 1000;
@@ -71,16 +71,16 @@ function printInitHelp() {
 function parseInitArgs(args: string[]): number | IInitArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['title', 'initials', 'maker', 'version', 'region', 'code'],
-    boolean: ['help', 'overwrite'],
+    string: ["title", "initials", "maker", "version", "region", "code"],
+    boolean: ["help", "overwrite"],
     alias: {
-      h: 'help',
-      t: 'title',
-      i: 'initials',
-      m: 'maker',
-      v: 'version',
-      r: 'region',
-      c: 'code',
+      h: "help",
+      t: "title",
+      i: "initials",
+      m: "maker",
+      v: "version",
+      r: "region",
+      c: "code",
     },
     unknown: (_arg: string, key?: string) => {
       if (key) {
@@ -99,15 +99,15 @@ function parseInitArgs(args: string[]): number | IInitArgs {
     return 0;
   }
   if (a._.length <= 0) {
-    console.error('Missing output file');
+    console.error("Missing output file");
     return 1;
   }
   if (a._.length > 1) {
-    console.error('Can only have one output file');
+    console.error("Can only have one output file");
     return 1;
   }
   const output = a._[0] as string;
-  const title = a.title ?? 'Game';
+  const title = a.title ?? "Game";
   if (title.length > 12) {
     console.error(
       `Invalid title, must be at most 12 characters, but got: "${title}"`,
@@ -121,25 +121,27 @@ function parseInitArgs(args: string[]): number | IInitArgs {
     );
     return 1;
   }
-  const maker = a.maker ?? '77';
+  const maker = a.maker ?? "77";
   if (maker.length !== 2) {
     console.error(`Invalid maker, must be 2 characters, but got: "${maker}"`);
     return 1;
   }
-  const version = parseInt(a.version ?? '0', 10);
+  const version = parseInt(a.version ?? "0", 10);
   if (
-    isNaN(version) || Math.floor(version) !== version || version < 0 ||
+    isNaN(version) ||
+    Math.floor(version) !== version ||
+    version < 0 ||
     version > 255
   ) {
     console.error(`Invalid version, must be 0..255, but got: ${version}`);
     return 1;
   }
-  const region = a.region ?? 'E';
+  const region = a.region ?? "E";
   if (region.length !== 1) {
     console.error(`Invalid region, must be 1 character, but got: "${region}"`);
     return 1;
   }
-  const code = a.code ?? 'C';
+  const code = a.code ?? "C";
   if (code.length !== 1) {
     console.error(`Invalid code, must be 1 character, but got: "${code}"`);
     return 1;
@@ -189,10 +191,10 @@ function parseDefines(defines: string[]): ILexKeyValue[] | false {
 function parseMakeArgs(args: string[]): number | IMakeArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['output', 'define', 'execute'],
-    collect: ['define'],
-    boolean: ['help', 'watch'],
-    alias: { h: 'help', o: 'output', d: 'define', w: 'watch', x: 'execute' },
+    string: ["output", "define", "execute"],
+    collect: ["define"],
+    boolean: ["help", "watch"],
+    alias: { h: "help", o: "output", d: "define", w: "watch", x: "execute" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -210,11 +212,11 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
     return 0;
   }
   if (a._.length <= 0) {
-    console.error('Missing input file');
+    console.error("Missing input file");
     return 1;
   }
   if (a._.length > 1) {
-    console.error('Can only have one input file');
+    console.error("Can only have one input file");
     return 1;
   }
   const input = a._[0] as string;
@@ -227,7 +229,7 @@ function parseMakeArgs(args: string[]): number | IMakeArgs {
   }
   return {
     input,
-    output: output ?? (new Path()).replaceExt(input, '.gba'),
+    output: output ?? new Path().replaceExt(input, ".gba"),
     defines,
     watch,
     execute,
@@ -250,10 +252,10 @@ function printRunHelp() {
 function parseRunArgs(args: string[]): number | IRunArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['define'],
-    collect: ['define'],
-    boolean: ['help', 'watch'],
-    alias: { h: 'help', d: 'define', w: 'watch' },
+    string: ["define"],
+    collect: ["define"],
+    boolean: ["help", "watch"],
+    alias: { h: "help", d: "define", w: "watch" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -271,11 +273,11 @@ function parseRunArgs(args: string[]): number | IRunArgs {
     return 0;
   }
   if (a._.length <= 0) {
-    console.error('Missing input file');
+    console.error("Missing input file");
     return 1;
   }
   if (a._.length > 1) {
-    console.error('Can only have one input file');
+    console.error("Can only have one input file");
     return 1;
   }
   const input = a._[0] as string;
@@ -299,9 +301,9 @@ function printDisHelp() {
 function parseDisArgs(args: string[]): number | IDisArgs {
   let badArgs = false;
   const a = argParse(args, {
-    string: ['output', 'format'],
-    boolean: ['help'],
-    alias: { h: 'help', o: 'output', f: 'format' },
+    string: ["output", "format"],
+    boolean: ["help"],
+    alias: { h: "help", o: "output", f: "format" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -319,16 +321,16 @@ function parseDisArgs(args: string[]): number | IDisArgs {
     return 0;
   }
   if (a._.length <= 0) {
-    console.error('Missing input file');
+    console.error("Missing input file");
     return 1;
   }
   if (a._.length > 1) {
-    console.error('Can only have one input file');
+    console.error("Can only have one input file");
     return 1;
   }
   const input = a._[0] as string;
-  const format = a.format ?? 'gba';
-  if (format !== 'gba' && format !== 'bin') {
+  const format = a.format ?? "gba";
+  if (format !== "gba" && format !== "bin") {
     console.error(`Invalid format, must be 'gba' or 'bin', but got: ${format}`);
     return 1;
   }
@@ -336,7 +338,7 @@ function parseDisArgs(args: string[]): number | IDisArgs {
   return {
     input,
     format,
-    output: output ?? (new Path()).replaceExt(input, '.gvasm'),
+    output: output ?? new Path().replaceExt(input, ".gvasm"),
   };
 }
 
@@ -350,8 +352,8 @@ function parseItestArgs(args: string[]): number | IItestArgs {
   let badArgs = false;
   const a = argParse(args, {
     stopEarly: true,
-    boolean: ['help'],
-    alias: { h: 'help' },
+    boolean: ["help"],
+    alias: { h: "help" },
     unknown: (_arg: string, key?: string) => {
       if (key) {
         console.error(`Unknown argument: -${key}`);
@@ -372,41 +374,41 @@ function parseItestArgs(args: string[]): number | IItestArgs {
 }
 
 export async function main(args: string[]): Promise<number> {
-  if (args.length <= 0 || args[0] === '-h' || args[0] === '--help') {
+  if (args.length <= 0 || args[0] === "-h" || args[0] === "--help") {
     printVersion();
-    console.log('');
+    console.log("");
     printHelp();
     return 0;
-  } else if (args[0] === '-v' || args[0] === '--version') {
+  } else if (args[0] === "-v" || args[0] === "--version") {
     printVersion();
     return 0;
-  } else if (args[0] === 'init') {
+  } else if (args[0] === "init") {
     const initArgs = parseInitArgs(args.slice(1));
-    if (typeof initArgs === 'number') {
+    if (typeof initArgs === "number") {
       return initArgs;
     }
     return await init(initArgs);
-  } else if (args[0] === 'make') {
+  } else if (args[0] === "make") {
     const makeArgs = parseMakeArgs(args.slice(1));
-    if (typeof makeArgs === 'number') {
+    if (typeof makeArgs === "number") {
       return makeArgs;
     }
     return await make(makeArgs);
-  } else if (args[0] === 'run') {
+  } else if (args[0] === "run") {
     const runArgs = parseRunArgs(args.slice(1));
-    if (typeof runArgs === 'number') {
+    if (typeof runArgs === "number") {
       return runArgs;
     }
     return await run(runArgs);
-  } else if (args[0] === 'dis') {
+  } else if (args[0] === "dis") {
     const disArgs = parseDisArgs(args.slice(1));
-    if (typeof disArgs === 'number') {
+    if (typeof disArgs === "number") {
       return disArgs;
     }
     return await dis(disArgs);
-  } else if (args[0] === 'itest') {
+  } else if (args[0] === "itest") {
     const itestArgs = parseItestArgs(args.slice(1));
-    if (typeof itestArgs === 'number') {
+    if (typeof itestArgs === "number") {
       return itestArgs;
     }
     return await itest(itestArgs);

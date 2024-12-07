@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: 0BSD
 //
 
-import * as canvas from 'https://raw.githubusercontent.com/DjDeveloperr/deno-canvas/ac6f50dcda4471d7710b22eef8017cdd634fb9a9/mod.ts';
-import * as path from 'https://deno.land/std@0.182.0/path/mod.ts';
-export { parse as argParse } from 'https://deno.land/std@0.198.0/flags/mod.ts';
-export { exists as fileExists } from 'https://deno.land/std@0.198.0/fs/exists.ts';
+import * as canvas from "https://raw.githubusercontent.com/DjDeveloperr/deno-canvas/524ab20800dbac3572f32c26131bff99a18083dd/mod.ts";
+import * as path from "https://deno.land/std@0.182.0/path/mod.ts";
+export { parse as argParse } from "https://deno.land/std@0.198.0/flags/mod.ts";
+export { exists as fileExists } from "https://deno.land/std@0.198.0/fs/exists.ts";
 
 export interface Image {
   width: number;
@@ -44,11 +44,13 @@ export class Path {
   }
 
   static isNativePosix() {
-    return path.sep === '/';
+    return path.sep === "/";
   }
 
   isAbsolute(file: string): boolean {
-    return this.posix ? path.posix.isAbsolute(file) : path.win32.isAbsolute(file);
+    return this.posix
+      ? path.posix.isAbsolute(file)
+      : path.win32.isAbsolute(file);
   }
 
   join(...paths: string[]): string {
@@ -64,17 +66,29 @@ export class Path {
   }
 
   resolve(...paths: string[]): string {
-    return this.posix ? path.posix.resolve(...paths) : path.win32.resolve(...paths);
+    return this.posix
+      ? path.posix.resolve(...paths)
+      : path.win32.resolve(...paths);
   }
 
   relative(from: string, to: string): string {
     // TODO: this implicitly uses Deno.cwd(), which seems odd... replace eventually
-    return this.posix ? path.posix.relative(from, to) : path.win32.relative(from, to);
+    return this.posix
+      ? path.posix.relative(from, to)
+      : path.win32.relative(from, to);
   }
 
   replaceExt(filename: string, ext: string): string {
     return this.posix
-      ? path.posix.format({ ...path.posix.parse(filename), base: undefined, ext })
-      : path.win32.format({ ...path.win32.parse(filename), base: undefined, ext });
+      ? path.posix.format({
+          ...path.posix.parse(filename),
+          base: undefined,
+          ext,
+        })
+      : path.win32.format({
+          ...path.win32.parse(filename),
+          base: undefined,
+          ext,
+        });
   }
 }
